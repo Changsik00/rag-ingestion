@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 from unittest.mock import Mock
 from uuid import uuid4
-from app.interfaces.api.main import app, get_scraper, get_repository
+from app.interfaces.api.main import app
+from app.interfaces.api.dependencies import get_scraper, get_repository
 from app.domain.models.ingest import IngestResponse
 from app.domain.entities.document import AtomicDocument
 

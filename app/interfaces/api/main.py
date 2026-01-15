@@ -1,15 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException
 from typing import Annotated, List
-from uuid import UUID
 
 from app.domain.models.ingest import IngestRequest, IngestResponse
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.infrastructure.scrapers.basic import BasicWebScraper
-from app.infrastructure.storage.neo4j import Neo4jStorage
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.composite import CompositeStorage
 from app.use_cases.ingestion import IngestionService
+
+from app.interfaces.api.dependencies import get_ingestion_service, get_repository
+from app.interfaces.api.endpoints.jobs import router as jobs_router
 
 app = FastAPI(
     title="RAG Ingestion API",
@@ -17,23 +15,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Dependency Injection
-def get_scraper():
-    return BasicWebScraper()
-
-def get_repository() -> DocumentRepository:
-    # In a real scenario, these might be singletons or managed by a DI container
-    # For now, we instantiate them per request or use a global.
-    # Using a simple composite for this MVP.
-    neo4j = Neo4jStorage()
-    chroma = ChromaStorage()
-    return CompositeStorage(neo4j=neo4j, chroma=chroma)
-
-def get_ingestion_service(
-    scraper=Depends(get_scraper),
-    repository=Depends(get_repository)
-):
-    return IngestionService(scraper=scraper, repository=repository)
+app.include_router(jobs_router)
 
 @app.post("/ingest/web", response_model=IngestResponse)
 async def ingest_web_page(
