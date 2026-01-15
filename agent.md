@@ -65,6 +65,15 @@ For **EVERY** Task in the approved Plan, the Agent MUST:
 ### 6.2 Tooling Enforcement
 - **GitHub CLI:** The Agent MUST use `gh pr create` to initiate Pull Requests.
 - **Pre-PR Check:** Run full test suites before creating a PR to prevent CI failures.
+- **PR Protocol (Mandatory):**
+    1. **Rich Description:** Create `pr_description.md` in the spec directory (e.g., `specs/001-.../pr_description.md`).
+    2. **Required Sections:**
+        - **Summary:** High-level overview.
+        - **Key Review Points:** What the user should focus on.
+        - **Verification Plan:** Exact steps to verify (Automated & Manual) with commands.
+        - **Tech Stack:** Tools and libraries used.
+    3. **Archive Strategy:** `walkthrough.md` and `pr_description.md` MUST be committed to the `specs/` directory before pushing.
+    4. **Visuals:** Use emojis and clear formatting to enhance readability.
 
 ## 7. Deviation & Hard Stop
 
