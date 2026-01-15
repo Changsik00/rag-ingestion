@@ -12,6 +12,6 @@
     - [x] Unit Test 작성/수정
     - [x] 코드 구현
     - [x] 테스트 검증 (Pass)
-- [ ] **Task 3: Applicaton Layer** - Dummy Nodes 구현 (`src/application/nodes/mock_nodes.py`)
+- [x] **Task 3: Applicaton Layer** - Dummy Nodes 구현 (`src/application/nodes/mock_nodes.py`)
 - [ ] **Task 4: Applicaton Layer** - Workflow 구현 (`src/application/workflow.py`)
 - [ ] **Task 5: Entry Point** - Main 진입점 구현 (`src/main.py`)
