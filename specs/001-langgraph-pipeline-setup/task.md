@@ -1,8 +1,9 @@
 # Task: LangGraph Pipeline Setup (Strict Loop)
 
-- [ ] **Task 0: Environment & Docs**
-    - [ ] `uv init` & `uv add` execution
-    - [ ] `docs/tech_stack.md` creation & `README.md` update
+- [x] **Task 0: Environment & Docs**
+    - [x] `docs/tech_stack.md` creation & `README.md` update (Commit: `1da1651`)
+    - [x] `uv init` execution (Project Initialization)
+    - [x] `uv add` execution (Dependencies: fastapi, langgraph, etc.)
 - [ ] **Task 1: Domain Layer** - `Source` & `Chunk` 모델 구현 (`src/domain/models/source.py`)
     - [ ] Unit Test 작성/수정 (`tests/unit/test_source.py`)
     - [ ] 코드 구현
