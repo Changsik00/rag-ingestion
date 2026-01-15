@@ -55,7 +55,7 @@
     - 재시도 로직 동작 확인
 
 ### Manual Verification
-1.  **서비스 실행**: `docker-compose up --build`
+1.  **서비스 실행**: `docker compose up --build`
 2.  **대시보드 접속**: `http://localhost:8501` 접속
 3.  **수집 요청**: `POST /ingest/web` 요청 전송
 4.  **대시보드 확인**:
