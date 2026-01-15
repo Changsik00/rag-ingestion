@@ -93,6 +93,6 @@ if jobs_data:
                 if job_details.get("status") == "FAILED":
                     if st.button(f"Retry Job {selected_job_id}"):
                         retry_job(selected_job_id)
-                        st.experimental_rerun()
+                        st.rerun()
 else:
     st.info("No jobs found.")

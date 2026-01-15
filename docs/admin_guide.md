@@ -10,7 +10,7 @@ Admin Dashboard는 다음 기능을 제공합니다:
 
 ## 2. 실행 방법
 
-Docker Compose를 사용하여 백엔드(Neo4j, ChromaDB, Streamlit) 서비스를 모두 실행합니다.
+Docker Compose를 사용하여 전체 스택(Backend, Neo4j, ChromaDB, Streamlit)을 한 번에 실행합니다.
 
 ```bash
 docker compose up --build
@@ -18,9 +18,9 @@ docker compose up --build
 
 실행 후 브라우저에서 아래 주소로 접속합니다:
 - **Admin Dashboard**: [http://localhost:8501](http://localhost:8501)
-- **Backend API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs) (백엔드 서버 로컬 실행 시)
+- **Backend API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-> **참고**: 현재 구성에서 백엔드 API(FastAPI)는 호스트 머신에서 별도로 실행하거나, Docker Compose 외부에서 실행해야 할 수 있습니다(개발 환경). Streamlit 컨테이너는 주소 `http://host.docker.internal:8000`을 통해 로컬 백엔드에 접속하도록 설정되어 있습니다.
+> **참고**: `docker-compose.yml`에는 `backend`와 `streamlit` 서비스가 모두 포함되어 있어, 별도의 로컬 서버 실행이 필요 없습니다. `streamlit` 컨테이너는 내부 네트워크를 통해 `backend`와 통신합니다.
 
 ## 3. 주요 기능
 
