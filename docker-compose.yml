@@ -21,6 +21,19 @@ services:
     volumes:
       - chroma_data:/chroma/chroma
 
+  streamlit:
+    image: python:3.9-slim
+    container_name: rag-admin
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      - API_URL=http://host.docker.internal:8000
+    command: >
+      sh -c "pip install streamlit requests pandas && streamlit run app/admin/dashboard.py"
+
 volumes:
   neo4j_data:
   chroma_data:
