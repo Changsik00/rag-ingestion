@@ -1,37 +1,91 @@
-# Queue (Product Backlog)
+# 📋 Master Project Backlog (backlog/queue.md)
 
-이 문서는 `Rag Ingestion` 프로젝트의 작업 대기열(Queue)입니다.
-현재 진행 중인 작업과 앞으로의 계획을 한눈에 파악할 수 있도록 관리합니다.
+이 문서는 프로젝트의 전체 여정과 실행 우선순위를 관리하는 마스터 대시보드입니다. 모든 작업은 `constitution.md`의 **Backlog Law**를 준수하며, 사용자의 승인을 통해 **Spec**으로 승격되어 실행됩니다.
 
-## 🚨 Active Focus (Phase 1: Foundation)
-> **Goal**: LangGraph 기반의 기본 수집 파이프라인 구축 및 데이터 저장소 연결
+## 🚨 Phase 1: The Functional Foundation (MVP)
 
-- [ ] **[EPIC-01] LangGraph Pipeline Setup** 👈 **Current**
-    - `specs/001-langgraph-pipeline.md` 작성 중
-- [ ] **[EPIC-02] Data Ingestion Adapters**
-    - YouTube / Web Source Adapter 구현
-- [ ] **[EPIC-03] Neo4j Integration (Atomic Layer)**
-    - Docker Setup & Basic Cypher Queries
-- [ ] **[EPIC-04] LLM Extraction Node**
+> **목표**: 서버를 띄우고 실제 데이터를 수집하여 DB에 저장하는 "수직적 핵심 기능"을 완성한다.
 
-## 📥 Inbox (New Ideas)
-> 번뜩이는 아이디어나 나중에 검토할 사항들을 이곳에 적어둡니다.
+### [EPIC-01] Core Pipeline & Persistence
 
-- (없음)
+* [/] **Spec 001: FastAPI & Web Collector Skeleton** 🟢 **PR Open**
+  * [x] `uv` 기반 아키텍처 및 FastAPI 서버 기동
+  * [x] `POST /ingest/web` 엔드포인트 구현 (URL -> Markdown 반환)
+  * [x] `pytest`를 이용한 서버 및 수집 로직 통합 테스트
+
+
+* [ ] **Spec 002: Atomic Storage & Swagger Admin**
+  * [ ] Neo4j(Graph) 및 ChromaDB(Vector) 기본 연동
+  * [ ] 수집 문서를 'Atomic Layer' 노드로 저장
+  * [ ] Swagger Docs를 통한 수집 결과물(Document) 조회 및 관리
+
 
 ---
 
-## 📅 Roadmap (Future)
+## 🛠 Phase 2: Observability & Scalability (Admin)
 
-### Phase 2: Ontology (Intent-Driven Layer)
-- [ ] **[EPIC-05] Book Writing Schema**
-- [ ] **[EPIC-06] Strategy Planning Schema**
-- [ ] **[EPIC-07] PPT Schema**
+> **목표**: 인제스션 과정을 모니터링하고, 대량 처리를 위한 비동기 환경을 구축한다.
 
-### Phase 3: Intelligence (Insight & Logic Layer)
-- [ ] **[EPIC-08] Logic Relationship Analysis**
-- [ ] **[EPIC-09] Tree Hierarchy Generation**
+### [EPIC-02] Backoffice & Async Ops
 
-### Phase 4: Integration
-- [ ] **[EPIC-10] MCP Server Implementation**
-- [ ] **[EPIC-11] Background Batch Processor**
+* [ ] **Spec 003: Ingestion Admin Dashboard (Streamlit)**
+  * [ ] 현재 수집 중인 작업 리스트 및 로그 확인 화면 구축
+  * [ ] 실패한 작업 모니터링 및 수동 재시도(Retry) 기능
+
+
+* [ ] **Spec 004: Async Processing & Task Status**
+  * [ ] `BackgroundTasks`를 이용한 비동기 인제스션 처리
+  * [ ] 작업별 상태(Pending/Running/Success/Fail) 추적 API
+
+
+
+---
+
+## 🧠 Phase 3: Progressive Intelligence (Ontology)
+
+> **목표**: 단순 데이터를 "지식"으로 구조화하고 지능형 추출을 시작한다.
+
+### [EPIC-03] Intent-Driven Structuring
+
+* [ ] **Spec 005: Basic Semantic Extraction (Phase 1)**
+  * [ ] Gemini/GPT 연동을 통한 기본 엔티티(인물, 주제, 키워드) 추출
+
+
+* [ ] **Spec 006: Multi-layered Ontology (Phase 2)**
+  * [ ] 사용자 목적(책 쓰기/전략 기획 등)에 따른 동적 온톨로지 매핑
+
+
+* [ ] **Spec 007: Graph Explorer & Vector Search UI**
+  * [ ] ChromaDB 유사도 시각화 및 Neo4j 노드 연결 상태 브리핑
+
+
+
+---
+
+## 🌐 Phase 4: Workflow & Ecosystem (Automation)
+
+> **목표**: 외부 도구와 연동하여 자동화된 지식 생산 생태계를 완성한다.
+
+### [EPIC-04] Advanced Automation & Connectivity
+
+* [ ] **Spec 008: Logic Resolver (Deep Insight)**
+  * [ ] 지식 간 모순(`Contradicts`) 및 보완 관계 자동 탐지
+
+
+* [ ] **Spec 009: n8n Workflow Integration**
+  * [ ] 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템
+
+
+* [ ] **Spec 010: MCP Server & Tree Visualization**
+  * [ ] Claude/Obsidian 연동을 위한 MCP 서버 배포
+  * [ ] 마인드맵용 계층 구조 JSON 생성 API 개발
+
+
+
+---
+
+## 📅 Future Roadmap
+
+* **[EPIC-05] Local LLM Optimization**: Ollama 연동을 통한 보안/비용 절감 모드 지원.
+* **[EPIC-06] Multi-Model Tiers**: 작업 난이도별 모델 자동 배분 로직.
+* **[EPIC-07] User Feedback Loop**: 지식 추출 결과에 대한 사용자 피드백 반영 시스템.

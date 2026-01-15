@@ -42,6 +42,14 @@ Once SDD is selected:
 - **Documentation:** All Agent-generated documentation (Specs, Plans) MUST be written in **Korean** for user clarity.
 - **No Early Execution:** NO code changes or commits until a Plan is explicitly accepted.
 
+### 4.1 Spec Folder Structure (Mandatory)
+For every Spec, creating a dedicated directory `specs/<spec-name>/` is REQUIRED.
+- **Directory Name:** MUST match the feature branch name (excluding prefix). E.g., `feature/001-auth` -> `specs/001-auth/`.
+- **File Composition:**
+    - `spec.md`: The requirement specification.
+    - `plan.md`: The implementation plan.
+    - `task.md`: The execution checklist for this specific spec.
+
 ## 5. Plan & Task Strategy
 
 A Plan is a binding execution contract. It MUST include:
@@ -65,6 +73,15 @@ For **EVERY** Task in the approved Plan, the Agent MUST:
 ### 6.2 Tooling Enforcement
 - **GitHub CLI:** The Agent MUST use `gh pr create` to initiate Pull Requests.
 - **Pre-PR Check:** Run full test suites before creating a PR to prevent CI failures.
+- **PR Protocol (Mandatory):**
+    1. **Rich Description:** Create `pr_description.md` in the spec directory (e.g., `specs/001-.../pr_description.md`).
+    2. **Required Sections:**
+        - **Summary:** High-level overview.
+        - **Key Review Points:** What the user should focus on.
+        - **Verification Plan:** Exact steps to verify (Automated & Manual) with commands.
+        - **Tech Stack:** Tools and libraries used.
+    3. **Archive Strategy:** `walkthrough.md` and `pr_description.md` MUST be committed to the `specs/` directory before pushing.
+    4. **Visuals:** Use emojis and clear formatting to enhance readability.
 
 ## 7. Deviation & Hard Stop
 
