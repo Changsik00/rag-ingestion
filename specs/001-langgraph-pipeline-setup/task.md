@@ -14,4 +14,6 @@
     - [x] 테스트 검증 (Pass)
 - [x] **Task 3: Applicaton Layer** - Dummy Nodes 구현 (`src/application/nodes/mock_nodes.py`)
 - [x] **Task 4: Applicaton Layer** - Workflow 구현 (`src/application/workflow.py`)
-- [ ] **Task 5: Entry Point** - Main 진입점 구현 (`src/main.py`)
+- [x] **Task 5: Entry Point** - Main 진입점 구현 (`src/main.py`)
+    - [x] Integration Test 작성 (`tests/integration/test_pipeline_execution.py`)
+    - [x] CLI 실행 검증 (`uv run python -m src.main`)
