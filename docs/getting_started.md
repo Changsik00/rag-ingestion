@@ -11,6 +11,16 @@
 uv sync
 ```
 
+## Service Ports
+각 서비스는 포트 충돌을 방지하기 위해 아래 포트를 기본값으로 사용합니다. `uvicorn` 실행 시 기본 포트(8000)를 사용하므로, ChromaDB는 8001로 우회 설정되어 있습니다.
+
+| Service | Port | Description |
+| :--- | :--- | :--- |
+| **API Server (FastAPI)** | `8000` | 메인 애플리케이션 (Default) |
+| **ChromaDB** | `8001` | Vector DB (충돌 방지용) |
+| **Neo4j (HTTP)** | `7474` | Graph DB Browser |
+| **Neo4j (Bolt)** | `7687` | Graph DB Connection |
+
 ## Running the Server
 
 FastAPI 서버를 개발 모드(Re-load enabled)로 실행합니다.
