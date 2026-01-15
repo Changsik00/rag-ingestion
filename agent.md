@@ -49,7 +49,6 @@ For every Spec, creating a dedicated directory `specs/<spec-name>/` is REQUIRED.
     - `spec.md`: The requirement specification.
     - `plan.md`: The implementation plan.
     - `task.md`: The execution checklist for this specific spec.
-    - `pr_description.md`: The draft for the Pull Request description.
 
 ## 5. Plan & Task Strategy
 

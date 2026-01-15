@@ -1,6 +1,6 @@
 # Plan: LangGraph Pipeline Setup
 
-Ref: [Spec](file:///Users/ck/Project/doit/rag-ingestion/specs/001-langgraph-pipeline.md)
+Ref: [Spec](file:///Users/ck/Project/doit/rag-ingestion/specs/001-langgraph-pipeline-setup/spec.md)
 
 ## 1. 목표 (Goal)
 데이터 수집 파이프라인의 핵심인 LangGraph 아키텍처 기초를 수립합니다.
@@ -10,6 +10,11 @@ Ref: [Spec](file:///Users/ck/Project/doit/rag-ingestion/specs/001-langgraph-pipe
 - **Dummy Node 사용**: 실제 크롤링 로직 대신 더미 노드를 사용하여, 전체적인 파이프라인 흐름(Flow)과 상태 전이(State Transition)가 정상 작동하는지 검증하는 데 집중합니다.
 
 ## 3. 변경 예정 사항 (Proposed Changes)
+
+### Environment Setup
+- **Initialize**: `uv init`
+- **Dependencies**: `uv add fastapi langgraph langchain pydantic neo4j`
+- **Documentation**: Create `docs/tech_stack.md` and update `README.md`.
 
 ### Domain Layer
 #### [NEW] [source.py](file:///Users/ck/Project/doit/rag-ingestion/src/domain/models/source.py)

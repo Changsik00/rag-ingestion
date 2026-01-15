@@ -13,7 +13,12 @@ Rag Ingestion의 핵심 엔진인 **LangGraph 기반 데이터 수집 파이프�
     - Basic Edge 연결.
 - **Configuration**: 파이프라인 실행을 위한 기본 설정 관리.
 
-## 3. Out of Scope
+## 3. Technology Stack
+- **Environment**: `uv` (Package Manager), Python 3.10+
+- **Framework**: `FastAPI`, `LangGraph`
+- **Data Model**: `Pydantic v2` (No SQLModel), `Neo4j` integration
+
+## 4. Out of Scope
 - 실제 YouTube/Web Scraper 구현 (EPIC-02에서 진행)
 - Neo4j, LLM 연동 로직 구현 (EPIC-03, 04에서 진행)
 
