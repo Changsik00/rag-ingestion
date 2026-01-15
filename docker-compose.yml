@@ -36,7 +36,7 @@ services:
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
     command: >
-      sh -c "pip install fastapi uvicorn neo4j chromadb requests beautifulsoup4 lxml && uvicorn app.interfaces.api.main:app --host 0.0.0.0 --port 8000 --reload"
+      sh -c "pip install fastapi uvicorn neo4j chromadb requests beautifulsoup4 lxml markdownify && uvicorn app.interfaces.api.main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       - neo4j
       - chromadb
