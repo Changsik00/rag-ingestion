@@ -11,3 +11,12 @@ dependencies = [
     "neo4j>=5.28.3",
     "pydantic>=2.12.5",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = "."
+testpaths = ["tests"]

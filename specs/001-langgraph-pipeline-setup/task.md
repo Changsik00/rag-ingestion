@@ -4,10 +4,10 @@
     - [x] `docs/tech_stack.md` creation & `README.md` update (Commit: `1da1651`)
     - [x] `uv init` execution (Project Initialization)
     - [x] `uv add` execution (Dependencies: fastapi, langgraph, etc.)
-- [ ] **Task 1: Domain Layer** - `Source` & `Chunk` 모델 구현 (`src/domain/models/source.py`)
-    - [ ] Unit Test 작성/수정 (`tests/unit/test_source.py`)
-    - [ ] 코드 구현
-    - [ ] 테스트 검증 (Pass)
+- [x] **Task 1: Domain Layer** - `Source` & `Chunk` 모델 구현 (`src/domain/models/source.py`)
+    - [x] Unit Test 작성/수정 (`tests/unit/test_source.py`)
+    - [x] 코드 구현
+    - [x] 테스트 검증 (Pass)
 - [ ] **Task 2: Domain Layer** - `GraphState` 구현 (`src/domain/state.py`)
     - [ ] Unit Test 작성/수정
     - [ ] 코드 구현
