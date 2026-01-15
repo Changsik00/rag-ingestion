@@ -8,11 +8,11 @@ RAG 인제스션 파이프라인의 핵심 골격인 FastAPI 서버를 구축하
   - [x] `fastapi`, `uvicorn`, `pydantic` 설치
   - [x] `beautifulsoup4`, `markdownify`, `requests` 설치
   - [x] 개발용 `pytest`, `httpx` 설치
-- [ ] Clean Architecture 폴더 구조 생성
-  - [ ] `src/adapters/input/api/v1` (API 라우트)
-  - [ ] `src/core/domain` (도메인 모델)
-  - [ ] `src/core/usecases` (비즈니스 로직)
-  - [ ] `src/adapters/output` (스크래퍼 구현체)
+- [x] Clean Architecture 폴더 구조 생성
+  - [x] `src/adapters/input/api/v1` (API 라우트)
+  - [x] `src/core/domain` (도메인 모델)
+  - [x] `src/core/usecases` (비즈니스 로직)
+  - [x] `src/adapters/output` (스크래퍼 구현체)
 - [ ] 도메인 모델 및 포트(Port) 정의
   - [ ] `IngestRequest`, `IngestResponse` 모델 정의
   - [ ] `WebScraperPort` 인터페이스 정의
