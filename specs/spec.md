@@ -1,4 +1,4 @@
-# Spec: 001 - LangGraph Pipeline Setup
+# Spec: LangGraph Pipeline Setup
 
 ## 1. Goal
 Rag Ingestion의 핵심 엔진인 **LangGraph 기반 데이터 수집 파이프라인**의 기초 구조를 수립합니다.
