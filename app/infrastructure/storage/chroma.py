@@ -8,7 +8,7 @@ import os
 class ChromaStorage(DocumentRepository):
     def __init__(self):
         host = os.getenv("CHROMA_HOST", "localhost")
-        port = os.getenv("CHROMA_PORT", "8000")
+        port = os.getenv("CHROMA_PORT", "8001")
         self.client = chromadb.HttpClient(host=host, port=int(port))
         self.collection = self.client.get_or_create_collection(name="documents")
 
