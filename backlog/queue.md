@@ -28,7 +28,7 @@
 
 ### [EPIC-02] Backoffice & Async Ops
 
-* [ ] **Spec 003: Ingestion Admin Dashboard (Streamlit)**
+* [/] **Spec 003: Ingestion Admin Dashboard (Streamlit)**
   * [ ] 현재 수집 중인 작업 리스트 및 로그 확인 화면 구축
   * [ ] 실패한 작업 모니터링 및 수동 재시도(Retry) 기능
 
