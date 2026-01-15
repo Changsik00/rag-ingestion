@@ -1,37 +1,38 @@
 # Queue (Product Backlog)
 
-이 문서는 `Rag Ingestion` 프로젝트의 작업 대기열(Queue)입니다.
-현재 진행 중인 작업과 앞으로의 계획을 한눈에 파악할 수 있도록 관리합니다.
+이 문서는 프로젝트의 **Spec 단위 작업 흐름**을 관리하는 대시보드입니다.
+**Epic**은 큰 목표를, **Spec**은 실제 실행되는 PR 단위(작업 단위)를 나타냅니다.
 
 ## 🚨 Active Focus (Phase 1: Foundation)
-> **Goal**: LangGraph 기반의 기본 수집 파이프라인 구축 및 데이터 저장소 연결
 
-- [ ] **[EPIC-01] LangGraph Pipeline Setup** 👈 **Current**
-    - `specs/001-langgraph-pipeline.md` 작성 중
-- [ ] **[EPIC-02] Data Ingestion Adapters**
-    - YouTube / Web Source Adapter 구현
-- [ ] **[EPIC-03] Neo4j Integration (Atomic Layer)**
-    - Docker Setup & Basic Cypher Queries
-- [ ] **[EPIC-04] LLM Extraction Node**
+### [EPIC-01] LangGraph Pipeline Setup
+> **Goal**: LangGraph 기반의 기본 수집 파이프라인 구조(Domain, Workflow) 수립.
+- [ ] **Spec 001: Pipeline Skeleton** 🟡 **Implementing**
+    - [Detail Link](specs/001-langgraph-pipeline-setup/)
+- [ ] *(Add new Spec here if EPIC-01 needs more work)*
 
-## 📥 Inbox (New Ideas)
-> 번뜩이는 아이디어나 나중에 검토할 사항들을 이곳에 적어둡니다.
-
-- (없음)
+### [EPIC-02] Infrastructure & CI/CD
+> **Goal**: 개발 및 운영을 위한 핵심 인프라 구축.
+- [ ] Logging & GitHub Actions CI Setup
 
 ---
 
 ## 📅 Roadmap (Future)
 
-### Phase 2: Ontology (Intent-Driven Layer)
-- [ ] **[EPIC-05] Book Writing Schema**
-- [ ] **[EPIC-06] Strategy Planning Schema**
-- [ ] **[EPIC-07] PPT Schema**
+### [EPIC-03] Data Ingestion Adapters (Phase 1)
+- [ ] YouTube Transcript Scraper
+- [ ] Web Page Text Extractor
 
-### Phase 3: Intelligence (Insight & Logic Layer)
-- [ ] **[EPIC-08] Logic Relationship Analysis**
-- [ ] **[EPIC-09] Tree Hierarchy Generation**
+### [EPIC-04] Neo4j Integration (Phase 1)
+- [ ] Neo4j Docker & Cypher Setup
 
-### Phase 4: Integration
-- [ ] **[EPIC-10] MCP Server Implementation**
-- [ ] **[EPIC-11] Background Batch Processor**
+### [EPIC-05] LLM Extraction Node (Phase 1)
+- [ ] Gemini 1.5 Flash Integration
+
+### [EPIC-06] Book Writing Schema (Phase 2)
+### [EPIC-07] Strategy Planning Schema (Phase 2)
+### [EPIC-08] PPT Schema (Phase 2)
+### [EPIC-09] Logic Relationship Analysis (Phase 3)
+### [EPIC-10] Tree Hierarchy Generation (Phase 3)
+### [EPIC-11] MCP Server Implementation (Phase 4)
+### [EPIC-12] Background Batch Processor (Phase 4)
