@@ -1,3 +1,4 @@
+from typing import Optional
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.models.ingest import IngestResponse
 from app.domain.interfaces.document_repository import DocumentRepository
@@ -12,9 +13,9 @@ class IngestionService:
         self.repository = repository
         self.job_repository = job_repository
 
-    def ingest(self, url: str) -> IngestResponse:
+    def ingest(self, url: str, retry_of: Optional[str] = None) -> IngestResponse:
         # 1. Create Job (PENDING)
-        job = IngestionJob(source_url=url, status=JobStatus.PENDING)
+        job = IngestionJob(source_url=url, status=JobStatus.PENDING, retry_of=retry_of)
         self.job_repository.create_job(job)
 
         try:

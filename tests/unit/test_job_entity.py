@@ -10,6 +10,8 @@ def test_job_creation():
     assert job.job_id is not None
     assert job.source_url == "http://example.com"
     assert job.status == JobStatus.PENDING
+    assert job.error_message is None
+    assert job.retry_of is None
     assert isinstance(job.created_at, datetime)
     assert isinstance(job.updated_at, datetime)
 

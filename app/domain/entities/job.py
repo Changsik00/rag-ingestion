@@ -17,6 +17,7 @@ class IngestionJob(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     error_message: Optional[str] = None
+    retry_of: Optional[str] = None
 
     class Config:
         frozen = False  # Allow updates

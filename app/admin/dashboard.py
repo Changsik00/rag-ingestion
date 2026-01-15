@@ -90,6 +90,8 @@ if jobs_data:
         if job_details:
             with st.expander("Job Details", expanded=True):
                 st.write(job_details)
+                if job_details.get("retry_of"):
+                    st.info(f"Retried from Job: {job_details['retry_of']}")
                 if job_details.get("status") == "FAILED":
                     if st.button(f"Retry Job {selected_job_id}"):
                         retry_job(selected_job_id)

@@ -56,7 +56,8 @@ def test_get_job():
         "status": "COMPLETED",
         "created_at": "2023-01-01T12:00:00+00:00",
         "updated_at": "2023-01-01T13:00:00+00:00",
-        "error_message": None
+        "error_message": None,
+        "retry_of": None
     }
     record_mock.__getitem__.side_effect = lambda k: node_mock if k == "j" else None
     

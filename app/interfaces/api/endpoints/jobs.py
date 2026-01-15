@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List, Annotated
+from typing import List, Annotated, Optional
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
 from app.use_cases.ingestion import IngestionService
@@ -43,7 +43,7 @@ async def retry_job(
     
     # Re-trigger ingestion (creates a new job trace)
     try:
-        result = service.ingest(job.source_url)
+        result = service.ingest(job.source_url, retry_of=job_id)
         return result
     except Exception as e:
         raise HTTPException(
