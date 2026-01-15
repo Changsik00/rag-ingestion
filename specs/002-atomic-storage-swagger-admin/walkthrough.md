@@ -39,6 +39,12 @@ tests/unit/test_storage.py ..                                          [ 50%]
 tests/integration/test_api_ingest.py ..                                [100%]
 ```
 
-## 5. Next Steps
+## 6. Troubleshooting & Learnings
+
+### 🚨 Port Conflict (8000)
+- **Issue**: ChromaDB와 FastAPI(Uvicorn)가 모두 기본 포트로 `8000`을 사용하여 충돌 발생. `curl` 요청 시 404 에러(Chroma로 요청이 감) 발생.
+- **Fix**: `docker-compose.yml`에서 ChromaDB 포트를 `8001`로 변경하여 해결.
+
+## 7. Next Steps
 - `backlog/queue.md` 업데이트 (Spec 002 완료)
 - Admin Dashboard (Streamlit) 구현 준비
