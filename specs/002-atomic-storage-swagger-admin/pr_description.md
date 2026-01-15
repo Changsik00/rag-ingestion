@@ -32,7 +32,7 @@ PYTHONPATH=. uv run pytest tests/unit/test_storage.py tests/integration/test_api
 실제 DB 연결 테스트는 Docker 환경이 필요합니다.
 ```bash
 # 1. 인프라 실행
-docker-compose up -d
+docker compose up -d
 
 # 2. 서버 실행
 uv run uvicorn app.interfaces.api.main:app --reload
@@ -48,5 +48,5 @@ curl "http://localhost:8000/documents"
 
 ## 🛠️ Tech Stack
 - **Database**: Neo4j 5.x, ChromaDB
-- **Infrastructure**: Docker Compose
+- **Infrastructure**: Docker Compose (via `docker compose`)
 - **Design Pattern**: Repository Pattern, Composite Pattern

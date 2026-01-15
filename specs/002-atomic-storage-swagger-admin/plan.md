@@ -56,7 +56,7 @@
 - **Unit Test**: `StorageInterface` Mocking을 통해 Service 로직 검증.
 
 ### Manual Verification
-1. `docker-compose up -d`로 DB 구동.
+1. `docker compose up -d`로 DB 구동.
 2. `POST /ingest/web`으로 URL 전송.
 3. Neo4j Browser(`http://localhost:7474`)에서 `MATCH (n:Document) RETURN n` 확인.
 4. Swagger UI(`http://localhost:8000/docs`)에서 `GET /documents` 호출.
