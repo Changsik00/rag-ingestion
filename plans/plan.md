@@ -1,6 +1,6 @@
 # Plan: LangGraph Pipeline Setup
 
-Ref: [Spec](file:///Users/ck/Project/doit/rag-ingestion/specs/spec.md)
+Ref: [Spec](file:///Users/ck/Project/doit/rag-ingestion/specs/001-langgraph-pipeline.md)
 
 ## 1. 목표 (Goal)
 데이터 수집 파이프라인의 핵심인 LangGraph 아키텍처 기초를 수립합니다.
