@@ -42,6 +42,15 @@ Once SDD is selected:
 - **Documentation:** All Agent-generated documentation (Specs, Plans) MUST be written in **Korean** for user clarity.
 - **No Early Execution:** NO code changes or commits until a Plan is explicitly accepted.
 
+### 4.1 Spec Folder Structure (Mandatory)
+For every Spec, creating a dedicated directory `specs/<spec-name>/` is REQUIRED.
+- **Directory Name:** MUST match the feature branch name (excluding prefix). E.g., `feature/001-auth` -> `specs/001-auth/`.
+- **File Composition:**
+    - `spec.md`: The requirement specification.
+    - `plan.md`: The implementation plan.
+    - `task.md`: The execution checklist for this specific spec.
+    - `pr_description.md`: The draft for the Pull Request description.
+
 ## 5. Plan & Task Strategy
 
 A Plan is a binding execution contract. It MUST include:
