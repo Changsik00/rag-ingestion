@@ -32,9 +32,36 @@ class LangChainLLMAdapter:
             1. A suitable title (if the original is missing or unclear).
             2. A concise summary (approx. 3 sentences).
             3. A list of 5-10 relevant keywords.
-            4. Key entities classified by type (Person, Organization, Technology, Topic, etc.).
+            4. Key entities classified by EXACTLY one of the following standardized types:
             
-            Focus on capturing the core meaning and most important entities.
+            **CRITICAL: Entity Classification Rules**
+            You MUST classify entities into EXACTLY one of these types:
+            
+            - PERSON: Individual people or fictional characters
+              Examples: "Elon Musk", "Geoffrey Hinton", "Steve Jobs", "Harry Potter"
+            
+            - ORGANIZATION: Companies, institutions, or groups
+              Examples: "Tesla", "MIT", "World Health Organization", "Y Combinator"
+            
+            - TECHNOLOGY: Specific tools, frameworks, languages, or technical products
+              Examples: "Python", "Docker", "GPT-4", "Neo4j", "React", "PostgreSQL"
+            
+            - CONCEPT: Abstract ideas, theories, methodologies, or academic concepts
+              Examples: "Machine Learning", "Clean Architecture", "Quantum Computing", "Lean Startup"
+            
+            - LOCATION: Geographic locations, cities, regions, or countries
+              Examples: "Seoul", "Silicon Valley", "United States", "San Francisco"
+            
+            - EVENT: Specific events, conferences, or historical moments
+              Examples: "OpenAI DevDay 2024", "World War II", "NeurIPS 2024"
+            
+            - ACTIVITY: Actions, tasks, processes, or work activities
+              Examples: "책 쓰기", "벤치마킹", "코드 리뷰", "데이터 분석", "프로토타이핑", "A/B 테스팅"
+            
+            **Important Guidelines**:
+            - If an entity could fit multiple types, prioritize based on context.
+            - Use CONCEPT as a fallback if uncertain between CONCEPT and another type.
+            - For Korean activity names like "벤치마킹" or "책 쓰기", use ACTIVITY type.
             
             Text to analyze:
             {text}
