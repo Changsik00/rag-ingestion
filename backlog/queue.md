@@ -13,12 +13,10 @@
   * [x] `POST /ingest/web` 엔드포인트 구현 (URL -> Markdown 반환)
   * [x] `pytest`를 이용한 서버 및 수집 로직 통합 테스트
 
-
 * [x] **Spec 002: Atomic Storage & Swagger Admin**
   * [x] Neo4j(Graph) 및 ChromaDB(Vector) 기본 연동
   * [x] 수집 문서를 'Atomic Layer' 노드로 저장
   * [x] Swagger Docs를 통한 수집 결과물(Document) 조회 및 관리
-
 
 ---
 
@@ -32,12 +30,9 @@
   * [x] Ingestion Job Tracking (상태 관리)
   * [x] Streamlit Dashboard (모니터링 & 재시도)
 
-
-* [ ] **Spec 004: Async Processing & Task Status**
-  * [ ] `BackgroundTasks`를 이용한 비동기 인제스션 처리
-  * [ ] 작업별 상태(Pending/Running/Success/Fail) 추적 API
-
-
+* [x] **Spec 004: Async Processing & Task Status**
+  * [x] `BackgroundTasks`를 이용한 비동기 인제스션 처리
+  * [x] 작업별 상태(Pending/Running/Success/Fail) 추적 API
 
 ---
 
@@ -50,15 +45,11 @@
 * [ ] **Spec 005: Basic Semantic Extraction (Phase 1)**
   * [ ] Gemini/GPT 연동을 통한 기본 엔티티(인물, 주제, 키워드) 추출
 
-
 * [ ] **Spec 006: Multi-layered Ontology (Phase 2)**
   * [ ] 사용자 목적(책 쓰기/전략 기획 등)에 따른 동적 온톨로지 매핑
 
-
 * [ ] **Spec 007: Graph Explorer & Vector Search UI**
   * [ ] ChromaDB 유사도 시각화 및 Neo4j 노드 연결 상태 브리핑
-
-
 
 ---
 
@@ -68,24 +59,35 @@
 
 ### [EPIC-04] Advanced Automation & Connectivity
 
+* [ ] **Tech Task: Transition to LangGraph**
+  * [ ] 복잡한 순환 참조 및 상태 관리를 위해 LangChain -> LangGraph 마이그레이션 수행
+
+
 * [ ] **Spec 008: Logic Resolver (Deep Insight)**
   * [ ] 지식 간 모순(`Contradicts`) 및 보완 관계 자동 탐지
 
-
 * [ ] **Spec 009: n8n Workflow Integration**
   * [ ] 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템
-
 
 * [ ] **Spec 010: MCP Server & Tree Visualization**
   * [ ] Claude/Obsidian 연동을 위한 MCP 서버 배포
   * [ ] 마인드맵용 계층 구조 JSON 생성 API 개발
 
-
-
 ---
 
+
 ## 📅 Future Roadmap
+
+> **Note**: 미래의 Spec 번호는 잠정적이며, 진행 상황에 따라 변경될 수 있습니다. (예: Spec ???)
 
 * **[EPIC-05] Local LLM Optimization**: Ollama 연동을 통한 보안/비용 절감 모드 지원.
 * **[EPIC-06] Multi-Model Tiers**: 작업 난이도별 모델 자동 배분 로직.
 * **[EPIC-07] User Feedback Loop**: 지식 추출 결과에 대한 사용자 피드백 반영 시스템.
+
+---
+
+## 🧊 Icebox (Ideas & Archive)
+
+> **목표**: 현재 페이즈와 무관하게 보존할 아이디어 저장소.
+
+* **[Tech] Multi-Model Comparison**: 다양한 LLM(GPT, Claude 등)을 붙여 정보 추출 품질 및 비용 비교 분석.
