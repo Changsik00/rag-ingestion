@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from typing import List, Annotated, Optional
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
 from app.use_cases.ingestion import IngestionService
-from app.schemas.ingest import IngestResponse
 from app.interfaces.api.dependencies import get_job_repository, get_ingestion_service
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -28,9 +27,10 @@ async def get_job(
         )
     return job
 
-@router.post("/{job_id}/retry", response_model=IngestResponse)
+@router.post("/{job_id}/retry", status_code=status.HTTP_202_ACCEPTED)
 async def retry_job(
     job_id: str,
+    background_tasks: BackgroundTasks,
     repo: JobRepository = Depends(get_job_repository),
     service: IngestionService = Depends(get_ingestion_service)
 ):
@@ -43,8 +43,9 @@ async def retry_job(
     
     # Re-trigger ingestion (creates a new job trace)
     try:
-        result = service.ingest(job.source_url, retry_of=job_id)
-        return result
+        new_job = service.create_job(job.source_url, retry_of=job_id)
+        background_tasks.add_task(service.process_job, new_job.job_id)
+        return {"job_id": new_job.job_id, "status": new_job.status}
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

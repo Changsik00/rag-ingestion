@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, status
 from typing import Annotated, List
 
 from app.schemas.ingest import IngestRequest, IngestResponse
@@ -17,14 +17,16 @@ app = FastAPI(
 
 app.include_router(jobs_router)
 
-@app.post("/ingest/web", response_model=IngestResponse)
+@app.post("/ingest/web", status_code=status.HTTP_202_ACCEPTED)
 async def ingest_web_page(
     request: IngestRequest,
+    background_tasks: BackgroundTasks,
     service: Annotated[IngestionService, Depends(get_ingestion_service)]
 ):
     try:
-        result = service.ingest(str(request.url))
-        return result
+        job = service.create_job(str(request.url))
+        background_tasks.add_task(service.process_job, job.job_id)
+        return {"job_id": job.job_id, "status": job.status}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
