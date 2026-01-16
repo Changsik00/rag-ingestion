@@ -7,11 +7,14 @@ from app.domain.interfaces.job_repository import JobRepository
 from app.domain.entities.job import IngestionJob, JobStatus
 from datetime import datetime, timezone
 
+from app.domain.services.semantic_extractor import SemanticExtractor
+
 class IngestionService:
-    def __init__(self, scraper: ScraperInterface, repository: DocumentRepository, job_repository: JobRepository):
+    def __init__(self, scraper: ScraperInterface, repository: DocumentRepository, job_repository: JobRepository, extractor: Optional[SemanticExtractor] = None):
         self.scraper = scraper
         self.repository = repository
         self.job_repository = job_repository
+        self.extractor = extractor
 
     def create_job(self, url: str, retry_of: Optional[str] = None) -> IngestionJob:
         """Create and persist a new job in PENDING state."""
@@ -35,23 +38,35 @@ class IngestionService:
             # 2. Scrape
             result = self.scraper.scrape(job.source_url)
             
-            # 3. Map to Domain Entity
+            # 3. Semantic Extraction (Spec 005)
+            if self.extractor:
+                try:
+                    semantic_data = self.extractor.extract(result.markdown)
+                    if semantic_data:
+                        # Append semantic data to metadata
+                        result.metadata["semantic_data"] = semantic_data.model_dump()
+                except Exception as e:
+                    # Extraction failure should not fail the entire job, but log it
+                    # In a real app, use proper logging
+                    print(f"Semantic extraction failed for job {job_id}: {e}")
+
+            # 4. Map to Domain Entity
             doc = AtomicDocument(
                 content=result.markdown,
                 source_url=str(result.url),
                 metadata=result.metadata
             )
             
-            # 4. Save Document
+            # 5. Save Document
             self.repository.save(doc)
             
-            # 5. Update Job (COMPLETED)
+            # 6. Update Job (COMPLETED)
             job.status = JobStatus.COMPLETED
             job.updated_at = datetime.now(timezone.utc)
             self.job_repository.update_job(job)
             
         except Exception as e:
-            # 6. Update Job (FAILED) if error occurs
+            # 7. Update Job (FAILED) if error occurs
             job.status = JobStatus.FAILED
             job.updated_at = datetime.now(timezone.utc)
             job.error_message = str(e)
