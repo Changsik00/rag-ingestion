@@ -3,7 +3,7 @@ name = "rag-ingestion"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.9.6"
+requires-python = ">=3.10"
 dependencies = [
     "beautifulsoup4>=4.14.3",
     "fastapi>=0.128.0",
@@ -14,8 +14,8 @@ dependencies = [
     "neo4j>=5.17.0",
     "chromadb-client>=0.4.18",
     "python-dotenv>=1.0.1",
-    "langchain>=0.1.0",
-    "langchain-google-genai>=0.0.9",
+    "langchain>=0.3.0",
+    "langchain-google-genai>=4.0.0",
 ]
 
 [dependency-groups]
