@@ -55,19 +55,26 @@ def test_retry_job_endpoint():
     mock_job_repo.get_job.return_value = job
     
     mock_service = Mock(spec=IngestionService)
-    expected_response = IngestResponse(url="http://test.com/", markdown="# Rescraped", metadata={})
-    mock_service.ingest.return_value = expected_response
+    new_job = IngestionJob(
+        job_id="new-job-id",
+        source_url="http://test.com", 
+        status=JobStatus.PENDING,
+        retry_of="test-id"
+    )
+    mock_service.create_job.return_value = new_job
     
     app.dependency_overrides[get_job_repository] = lambda: mock_job_repo
     app.dependency_overrides[get_ingestion_service] = lambda: mock_service
     
     response = client.post("/jobs/test-id/retry")
     
-    assert response.status_code == 200
+    assert response.status_code == 202
     data = response.json()
-    assert data["markdown"] == "# Rescraped"
+    assert data["job_id"] == "new-job-id"
+    assert data["status"] == "PENDING"
     
     mock_job_repo.get_job.assert_called_once_with("test-id")
-    mock_service.ingest.assert_called_once_with("http://test.com", retry_of="test-id")
+    mock_service.create_job.assert_called_once_with("http://test.com", retry_of="test-id")
+    mock_service.process_job.assert_called_once_with("new-job-id")
     
     app.dependency_overrides.clear()
