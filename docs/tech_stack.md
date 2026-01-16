@@ -27,4 +27,13 @@
 
 ## 4. Pipeline & Logic
 - **LangGraph**: 상태 기반(State-based)의 복잡한 에이전트 워크플로우 제어.
-- **Neo4j**: 지식 간의 관계(Onotology)를 저장하고 탐색.
+- **Neo4j**: 지식 간의 관계(Ontology)를 저장하고 탐색.
+
+## 5. Code Quality & Linting
+- **Ruff**
+    - **Selection Reason**:
+        - Rust로 작성된 초고속 Python linter + formatter
+        - pycodestyle, pyflakes, isort, pep8-naming 등을 통합하여 관리
+        - `--fix` 옵션으로 대부분의 이슈 자동 수정
+        - 기존 도구들(flake8, black, isort) 대비 10~100배 빠른 속도
+    - **Configuration**: `pyproject.toml`에서 규칙 설정 (`line-length=120`, Python 3.10+ 타겟)

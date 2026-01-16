@@ -1,8 +1,9 @@
-from typing import Optional
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from functools import lru_cache
 from dotenv import load_dotenv
+
+from app.infrastructure.llm import LangChainLLMAdapter
 
 load_dotenv()
 
@@ -19,6 +20,14 @@ class LLMFactory:
             temperature=temperature,
             google_api_key=api_key
         )
+    
+    @staticmethod
+    @lru_cache()
+    def get_llm_adapter(model: str = "gemini-2.0-flash-exp", temperature: float = 0.0) -> LangChainLLMAdapter:
+        """LangChain Adapter 반환 (LLMInterface 구현체)"""
+        llm = LLMFactory.get_google_llm(model, temperature)
+        return LangChainLLMAdapter(llm)
 
-def get_llm() -> ChatGoogleGenerativeAI:
-    return LLMFactory.get_google_llm()
+def get_llm() -> LangChainLLMAdapter:
+    """Adapter 반환 (DI용)"""
+    return LLMFactory.get_llm_adapter()

@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 import pandas as pd
-from datetime import datetime
 import os
 
 # Configuration
@@ -71,9 +70,12 @@ if jobs_data:
     # Style status
     def color_status(val):
         color = 'grey'
-        if val == 'COMPLETED': color = 'green'
-        elif val == 'FAILED': color = 'red'
-        elif val == 'RUNNING': color = 'orange'
+        if val == 'COMPLETED':
+            color = 'green'
+        elif val == 'FAILED':
+            color = 'red'
+        elif val == 'RUNNING':
+            color = 'orange'
         return f'color: {color}'
     
     if "status" in df.columns:

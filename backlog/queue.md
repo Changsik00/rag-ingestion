@@ -42,14 +42,26 @@
 
 ### [EPIC-03] Intent-Driven Structuring
 
-* [ ] **Spec 005: Basic Semantic Extraction (Phase 1)**
-  * [ ] Gemini/GPT 연동을 통한 기본 엔티티(인물, 주제, 키워드) 추출
+* [x] **Spec 005: Basic Semantic Extraction**
+  * [x] LangChain + Gemini 2.0 Flash 연동을 통한 기본 메타데이터 추출
+  * [x] Title, Summary, Keywords, Entities 구조화 추출
+  * [x] `SemanticExtractor` 도메인 서비스 구현
+  * [x] 단위 및 통합 테스트 작성
 
-* [ ] **Spec 006: Multi-layered Ontology (Phase 2)**
-  * [ ] 사용자 목적(책 쓰기/전략 기획 등)에 따른 동적 온톨로지 매핑
+* [x] **Spec 006: Clean Architecture Refactoring**
+  * [x] Domain 레이어를 외부 프레임워크로부터 격리
+  * [x] Python Protocol을 활용한 LLM 인터페이스 추상화
+  * [x] Infrastructure에 LangChain Adapter 분리
+  * [x] Ruff linter 도입 및 코드 품질 개선
 
-* [ ] **Spec 007: Graph Explorer & Vector Search UI**
-  * [ ] ChromaDB 유사도 시각화 및 Neo4j 노드 연결 상태 브리핑
+* [ ] **Spec 007: Ontology Design (Multi-layered)**
+  * [ ] 추출된 Entity를 목적별로 분류 (Person, Organization, Technology, Topic, etc)
+  * [ ] 관계 스키마 설계 (MENTIONS, RELATED_TO, CONTRADICTS, etc)
+
+* [ ] **Spec 008: Knowledge Graph Construction**
+  * [ ] Entity를 Neo4j 노드로 매핑
+  * [ ] Entity 간 관계 생성 및 그래프 구축
+  * [ ] Graph 탐색 API 개발
 
 ---
 
@@ -60,16 +72,16 @@
 ### [EPIC-04] Advanced Automation & Connectivity
 
 * [ ] **Tech Task: Transition to LangGraph**
-  * [ ] 복잡한 순환 참조 및 상태 관리를 위해 LangChain -> LangGraph 마이그레이션 수행
+  * [ ] 복잡한 순환 참조 및 상태 관리를 위해 LangChain → LangGraph 마이그레이션 수행
 
 
-* [ ] **Spec 008: Logic Resolver (Deep Insight)**
+* [ ] **Spec 009: Logic Resolver (Deep Insight)**
   * [ ] 지식 간 모순(`Contradicts`) 및 보완 관계 자동 탐지
 
-* [ ] **Spec 009: n8n Workflow Integration**
+* [ ] **Spec 010: n8n Workflow Integration**
   * [ ] 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템
 
-* [ ] **Spec 010: MCP Server & Tree Visualization**
+* [ ] **Spec 011: MCP Server & Tree Visualization**
   * [ ] Claude/Obsidian 연동을 위한 MCP 서버 배포
   * [ ] 마인드맵용 계층 구조 JSON 생성 API 개발
 
