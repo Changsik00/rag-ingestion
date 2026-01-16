@@ -1,6 +1,6 @@
 from typing import Optional
 from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.models.ingest import IngestResponse
+from app.schemas.ingest import IngestResponse
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.job_repository import JobRepository

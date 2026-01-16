@@ -2,7 +2,7 @@ from unittest.mock import Mock, ANY
 import pytest
 from app.use_cases.ingestion import IngestionService
 from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.models.ingest import IngestResponse
+from app.schemas.ingest import IngestResponse
 from app.domain.entities.job import JobStatus
 
 def test_ingest_web_page_success():

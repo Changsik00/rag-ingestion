@@ -3,7 +3,7 @@ from typing import List, Annotated, Optional
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
 from app.use_cases.ingestion import IngestionService
-from app.domain.models.ingest import IngestResponse
+from app.schemas.ingest import IngestResponse
 from app.interfaces.api.dependencies import get_job_repository, get_ingestion_service
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])

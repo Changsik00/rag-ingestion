@@ -1,6 +1,6 @@
 import requests
 from markdownify import markdownify as md
-from app.domain.models.ingest import IngestResponse
+from app.schemas.ingest import IngestResponse
 from app.domain.interfaces.scraper import ScraperInterface
 
 class BasicWebScraper(ScraperInterface):

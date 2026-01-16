@@ -5,7 +5,7 @@ from app.interfaces.api.dependencies import get_job_repository, get_ingestion_se
 from app.domain.entities.job import IngestionJob, JobStatus
 from datetime import datetime, timezone
 from app.use_cases.ingestion import IngestionService
-from app.domain.models.ingest import IngestResponse
+from app.schemas.ingest import IngestResponse
 
 client = TestClient(app)
 
@@ -68,6 +68,6 @@ def test_retry_job_endpoint():
     assert data["markdown"] == "# Rescraped"
     
     mock_job_repo.get_job.assert_called_once_with("test-id")
-    mock_service.ingest.assert_called_once_with("http://test.com")
+    mock_service.ingest.assert_called_once_with("http://test.com", retry_of="test-id")
     
     app.dependency_overrides.clear()
