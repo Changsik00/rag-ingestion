@@ -8,7 +8,7 @@
 
 ### [EPIC-01] Core Pipeline & Persistence
 
-* [/] **Spec 001: FastAPI & Web Collector Skeleton** 🟢 **PR Open**
+* [x] **Spec 001: FastAPI & Web Collector Skeleton**
   * [x] `uv` 기반 아키텍처 및 FastAPI 서버 기동
   * [x] `POST /ingest/web` 엔드포인트 구현 (URL -> Markdown 반환)
   * [x] `pytest`를 이용한 서버 및 수집 로직 통합 테스트
