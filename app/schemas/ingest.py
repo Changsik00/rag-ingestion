@@ -1,5 +1,5 @@
 from pydantic import BaseModel, HttpUrl, Field
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 class IngestRequest(BaseModel):
     url: HttpUrl = Field(..., description="Target URL to ingest")

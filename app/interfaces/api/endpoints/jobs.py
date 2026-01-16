@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
-from typing import List, Annotated, Optional
+from typing import List
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
 from app.use_cases.ingestion import IngestionService

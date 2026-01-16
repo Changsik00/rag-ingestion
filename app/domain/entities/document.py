@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 from uuid import uuid4, UUID
 from datetime import datetime
-from typing import Optional
 
 class AtomicDocument(BaseModel):
     id: UUID = Field(default_factory=uuid4)

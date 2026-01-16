@@ -1,4 +1,3 @@
-from typing import Optional
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from functools import lru_cache

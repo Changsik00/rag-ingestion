@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, status
 from typing import Annotated, List
 
-from app.schemas.ingest import IngestRequest, IngestResponse, AsyncIngestResponse
+from app.schemas.ingest import IngestRequest, AsyncIngestResponse
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.use_cases.ingestion import IngestionService
