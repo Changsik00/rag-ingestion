@@ -51,3 +51,14 @@ rag-ingestion/
 ### 4. `interfaces/api/main.py` 위치 선정 이유
 -   **Why**: 프레임워크도 "세부 사항"이기 때문입니다.
 -   Django나 FastAPI 같은 웹 프레임워크는 도메인의 주인이 아닙니다. 도메인을 외부에 노출시키는 '인터페이스'일 뿐입니다. 따라서 `app/` 최상단이 아닌 `interfaces/api/`에 위치시킵니다.
+
+### 5. 데이터 저장 전략: Job과 Doc의 분리 (Separation of Concerns)
+-   **Why**: 운영 데이터(Operations)와 지식 데이터(Knowledge)의 생명주기와 목적이 다르기 때문입니다.
+    -   **Job (작업)**: "어떻게(How) 가져왔는가?"에 대한 기록. (**Process**)
+    -   **Doc (문서)**: "무엇을(What) 가져왔는가?"에 대한 결과물. (**Product**)
+-   **Hybrid Storage 구성**:
+    -   **Job → Neo4j**: 작업 흐름, 상태(Status), 재시도 이력(Retry Traceability) 등 **관계 중심**의 데이터이므로 그래프 DB가 적합합니다.
+    -   **Doc → Neo4j + ChromaDB**:
+        -   **Neo4j**: 문서의 메타데이터, 구조, 지식 그래프(Ontology) 표현.
+        -   **ChromaDB**: 의미 기반 검색(Semantic Search)을 위한 벡터 임베딩 저장.
+-   **Future Vision**: 향후 `(Job)-[:CREATED]->(Doc)` 관계를 통해 데이터의 출처(Provenance)를 추적하고, 단순 검색을 넘어선 **Graph RAG**로 발전시킬 기반을 마련합니다.
