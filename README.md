@@ -18,6 +18,27 @@
     
 
 ---
+## 🏃 Quick Start & Service Ports
+
+개발 및 운영을 위한 빠른 실행 가이드입니다. 더 자세한 내용은 [docs/admin_guide.md](docs/admin_guide.md)를 참고하세요.
+
+### 1. 실행 명령어
+```bash
+# 전체 스택 실행 (Backend, Admin, DBs)
+docker compose up --build
+
+# 전체 종료 및 정리
+docker compose down
+```
+
+### 2. 서비스 포트 (Service Endpoints)
+| 서비스 (Service) | 포트 (Port) | 접속 주소 (URL) | 설명 |
+| :--- | :--- | :--- | :--- |
+| **Admin Dashboard** | `8501` | [http://localhost:8501](http://localhost:8501) | 작업 상태 모니터링 및 제어 |
+| **Backend API** | `8000` | [http://localhost:8000/docs](http://localhost:8000/docs) | REST API 문서 (Swagger UI) |
+| **Neo4j** | `7474` | [http://localhost:7474](http://localhost:7474) | 그래프 DB 브라우저 (ID/PW: neo4j/password) |
+
+---
 
 ## 📂 상세 온톨로지 전략 (Detailed Ontology Strategy)
 
