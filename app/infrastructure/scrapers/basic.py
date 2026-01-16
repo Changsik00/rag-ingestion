@@ -1,11 +1,14 @@
 import requests
 from markdownify import markdownify as md
-from app.domain.models.ingest import IngestResponse
+from app.schemas.ingest import IngestResponse
 from app.domain.interfaces.scraper import ScraperInterface
 
 class BasicWebScraper(ScraperInterface):
     def scrape(self, url: str) -> IngestResponse:
-        response = requests.get(url)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         
         # Convert HTML to Markdown

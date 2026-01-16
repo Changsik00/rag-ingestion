@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from app.domain.models.ingest import IngestResponse
+from app.schemas.ingest import IngestResponse
 
 class ScraperInterface(ABC):
     @abstractmethod
