@@ -14,10 +14,12 @@ from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
 from app.infrastructure.storage.neo4j_job_repo import Neo4jJobRepository
 from app.domain.services.semantic_extractor import SemanticExtractor
+from app.core.llm import get_llm
 
 @lru_cache
 def get_semantic_extractor() -> SemanticExtractor:
-    return SemanticExtractor()
+    llm_adapter = get_llm()  # LangChainLLMAdapter 반환
+    return SemanticExtractor(llm=llm_adapter)
 
 def get_ingestion_service(
     scraper: Annotated[ScraperInterface, Depends(get_scraper)],
