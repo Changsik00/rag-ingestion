@@ -5,44 +5,11 @@ from app.interfaces.api.main import app
 from app.interfaces.api.dependencies import get_scraper, get_repository
 from app.schemas.ingest import IngestResponse
 from app.domain.entities.document import AtomicDocument
+from app.domain.entities.job import IngestionJob, JobStatus
 
 client = TestClient(app)
 
-def test_ingest_web_endpoint():
-    # Mock Scraper
-    mock_scraper = Mock()
-    mock_scraper.scrape.return_value = IngestResponse(
-        url="http://test.com",
-        markdown="# Test",
-        metadata={"status": 200}
-    )
-    
-    # Mock Repository
-    mock_repo = Mock()
-    mock_repo.save.return_value = None
-
-    # Override Dependencies
-    app.dependency_overrides[get_scraper] = lambda: mock_scraper
-    app.dependency_overrides[get_repository] = lambda: mock_repo
-    
-    # Act
-    response = client.post(
-        "/ingest/web",
-        json={"url": "http://test.com"}
-    )
-    
-    # Assert
-    assert response.status_code == 200
-    data = response.json()
-    assert data["url"] == "http://test.com/"
-    assert data["markdown"] == "# Test"
-    
-    # Verify Mock Interactions
-    mock_scraper.scrape.assert_called_once()
-    mock_repo.save.assert_called_once()
-    
-    # Clean up
-    app.dependency_overrides.clear()
+# test_ingest_web_endpoint is superseded by tests/integration/test_async_ingest.py
 
 def test_list_documents_endpoint():
     # Mock Repository
