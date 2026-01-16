@@ -1,54 +1,39 @@
-from typing import Optional
 import logging
-from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import PydanticOutputParser
-from langchain_core.exceptions import OutputParserException
-from langchain_google_genai import ChatGoogleGenerativeAI
-
-from app.core.llm import get_llm
+from typing import Optional
+from app.domain.interfaces.llm import LLMInterface
 from app.domain.schemas.extraction import ExtractedMetadata
 
 logger = logging.getLogger(__name__)
 
-class SemanticExtractor:
-    def __init__(self, llm: Optional[ChatGoogleGenerativeAI] = None):
-        self.llm = llm or get_llm()
-        self.parser = PydanticOutputParser(pydantic_object=ExtractedMetadata)
-        self.prompt = PromptTemplate(
-            template="""
-            You are an advanced AI assistant capable of analyzing text and extracting structured metadata.
-            
-            Please analyze the following text and extract:
-            1. A suitable title (if the original is missing or unclear).
-            2. A concise summary (approx. 3 sentences).
-            3. A list of 5-10 relevant keywords.
-            4. Key entities classified by type (Person, Organization, Technology, Topic, etc.).
-            
-            Focus on capturing the core meaning and most important entities.
-            
-            Text to analyze:
-            {text}
-            
-            {format_instructions}
-            """,
-            input_variables=["text"],
-            partial_variables={"format_instructions": self.parser.get_format_instructions()}
-        )
-        self.chain = self.prompt | self.llm | self.parser
 
+class SemanticExtractor:
+    """
+    도메인 서비스: 텍스트 메타데이터 추출 오케스트레이션
+    
+    외부 프레임워크(LangChain 등)에 독립적인 순수 비즈니스 로직.
+    구체적인 LLM 구현은 Infrastructure 레이어에서 주입.
+    """
+    
+    def __init__(self, llm: LLMInterface):
+        """
+        Args:
+            llm: LLM 인터페이스 구현체 (Infrastructure에서 주입)
+        """
+        self.llm = llm
+    
     def extract(self, text: str) -> Optional[ExtractedMetadata]:
         """
-        Extracts semantic metadata from the given text synchronously.
-        Returns None if extraction fails.
+        텍스트에서 메타데이터 추출
+        
+        Args:
+            text: 분석할 텍스트
+            
+        Returns:
+            ExtractedMetadata: 추출된 메타데이터 (실패 시 None)
+            
+        Example:
+            >>> llm_adapter = LangChainLLMAdapter(...)
+            >>> extractor = SemanticExtractor(llm=llm_adapter)
+            >>> metadata = extractor.extract("Sample text")
         """
-        try:
-            # Gemini might have token limits, checking length might be good, 
-            # but for now we rely on the model's capacity (approx 30k tokens for Pro).
-            # We might want to truncate if it's too huge, but let's keep it simple for now.
-            logger.info("Starting semantic extraction via LLM...")
-            result = self.chain.invoke({"text": text})
-            logger.info("Semantic extraction completed successfully.")
-            return result
-        except Exception as e:
-            logger.error(f"Failed to extract semantic metadata: {e}")
-            return None
+        return self.llm.extract_metadata(text)
