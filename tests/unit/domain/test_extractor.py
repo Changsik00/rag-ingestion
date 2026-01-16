@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 from app.domain.services.semantic_extractor import SemanticExtractor
 from app.domain.schemas.extraction import ExtractedMetadata
+from app.domain.schemas.ontology import EntityType
 from app.domain.interfaces.llm import LLMInterface
 
 
@@ -10,10 +11,18 @@ def test_extract_success():
     # Setup: Protocol Mock
     mock_llm = MagicMock(spec=LLMInterface)
     expected_metadata = ExtractedMetadata(
-        title="Test Title",
-        summary="Test Summary",
-        keywords=["k1", "k2"],
-        entities={"Person": ["Tester"]}
+        title="AI Research and Development Practices",
+        summary="Comprehensive guide on modern AI development",
+        keywords=["AI", "Research", "Development"],
+        entities={
+            EntityType.PERSON: ["Geoffrey Hinton", "Yann LeCun"],
+            EntityType.ORGANIZATION: ["Google DeepMind", "Meta AI"],
+            EntityType.TECHNOLOGY: ["Python", "PyTorch", "TensorFlow"],
+            EntityType.CONCEPT: ["Deep Learning", "Neural Networks"],
+            EntityType.LOCATION: ["Silicon Valley", "Montreal"],
+            EntityType.EVENT: ["NeurIPS 2024"],
+            EntityType.ACTIVITY: ["벤치마킹", "모델 학습", "데이터 전처리"]
+        }
     )
     mock_llm.extract_metadata.return_value = expected_metadata
     
@@ -23,10 +32,11 @@ def test_extract_success():
     
     # Verify
     assert result is not None
-    assert result.title == "Test Title"
-    assert result.summary == "Test Summary"
-    assert result.keywords == ["k1", "k2"]
-    assert result.entities == {"Person": ["Tester"]}
+    assert result.title == "AI Research and Development Practices"
+    assert result.summary == "Comprehensive guide on modern AI development"
+    assert result.keywords == ["AI", "Research", "Development"]
+    assert result.entities[EntityType.PERSON] == ["Geoffrey Hinton", "Yann LeCun"]
+    assert result.entities[EntityType.ACTIVITY] == ["벤치마킹", "모델 학습", "데이터 전처리"]
     mock_llm.extract_metadata.assert_called_once_with("Dummy text")
 
 
