@@ -5,6 +5,8 @@ from app.domain.interfaces.job_repository import JobRepository
 from app.use_cases.ingestion import IngestionService
 from app.interfaces.api.dependencies import get_job_repository, get_ingestion_service
 
+from app.schemas.ingest import AsyncIngestResponse
+
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 @router.get("", response_model=List[IngestionJob])
@@ -27,7 +29,7 @@ async def get_job(
         )
     return job
 
-@router.post("/{job_id}/retry", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/{job_id}/retry", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
 async def retry_job(
     job_id: str,
     background_tasks: BackgroundTasks,

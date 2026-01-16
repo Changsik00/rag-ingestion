@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, status
 from typing import Annotated, List
 
-from app.schemas.ingest import IngestRequest, IngestResponse
+from app.schemas.ingest import IngestRequest, IngestResponse, AsyncIngestResponse
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.use_cases.ingestion import IngestionService
@@ -17,7 +17,7 @@ app = FastAPI(
 
 app.include_router(jobs_router)
 
-@app.post("/ingest/web", status_code=status.HTTP_202_ACCEPTED)
+@app.post("/ingest/web", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
 async def ingest_web_page(
     request: IngestRequest,
     background_tasks: BackgroundTasks,
