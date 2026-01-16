@@ -40,3 +40,6 @@ MANIFEST
 
 # LangGraph / LangChain
 .langchain/
+
+# Agent
+.agent/
