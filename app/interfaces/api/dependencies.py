@@ -7,6 +7,7 @@ from neo4j import GraphDatabase, Driver
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.interfaces.job_repository import JobRepository
+from app.use_cases.ingestion import IngestionService
 
 from app.infrastructure.scrapers.basic import BasicWebScraper
 from app.infrastructure.storage.neo4j import Neo4jStorage
@@ -16,11 +17,44 @@ from app.infrastructure.storage.neo4j_job_repo import Neo4jJobRepository
 from app.domain.services.semantic_extractor import SemanticExtractor
 from app.core.llm import get_llm
 
+
+# Scraper dependency
+@lru_cache
+def get_scraper() -> ScraperInterface:
+    return BasicWebScraper()
+
+
+# Neo4j driver dependency
+@lru_cache
+def get_neo4j_driver() -> Driver:
+    uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
+    user = os.getenv("NEO4J_USER", "neo4j")
+    password = os.getenv("NEO4J_PASSWORD", "password")
+    return GraphDatabase.driver(uri, auth=(user, password))
+
+
+# Document repository dependency
+@lru_cache
+def get_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> DocumentRepository:
+    neo4j_storage = Neo4jStorage(driver)
+    chroma_storage = ChromaStorage()
+    return CompositeStorage(neo4j_storage, chroma_storage)
+
+
+# Job repository dependency
+@lru_cache
+def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> JobRepository:
+    return Neo4jJobRepository(driver)
+
+
+# Semantic extractor dependency
 @lru_cache
 def get_semantic_extractor() -> SemanticExtractor:
     llm_adapter = get_llm()  # LangChainLLMAdapter 반환
     return SemanticExtractor(llm=llm_adapter)
 
+
+# Ingestion service dependency
 def get_ingestion_service(
     scraper: Annotated[ScraperInterface, Depends(get_scraper)],
     repository: Annotated[DocumentRepository, Depends(get_repository)],
