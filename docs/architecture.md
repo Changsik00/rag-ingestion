@@ -51,3 +51,33 @@ rag-ingestion/
 ### 4. `interfaces/api/main.py` 위치 선정 이유
 -   **Why**: 프레임워크도 "세부 사항"이기 때문입니다.
 -   Django나 FastAPI 같은 웹 프레임워크는 도메인의 주인이 아닙니다. 도메인을 외부에 노출시키는 '인터페이스'일 뿐입니다. 따라서 `app/` 최상단이 아닌 `interfaces/api/`에 위치시킵니다.
+
+### 5. 데이터 저장 전략: Job과 Doc의 분리 (Separation of Concerns)
+
+본 프로젝트는 **운영 데이터(Job)**와 **지식 데이터(Doc)**를 구조적으로 분리하여 관리합니다. 이는 두 데이터의 성격과 관리 목적이 근본적으로 다르기 때문입니다.
+
+#### 5.1 저장소 구성 (Where to Store?)
+| 데이터 (Data) | 저장소 (Database) | 역할 (Role) |
+| :--- | :--- | :--- |
+| **Job (작업)** | **Neo4j** | **운영 관리 (Operations)**. 수집 작업의 상태(성공/실패/재시도), 시점, 에러 메시지 등 **Task의 흐름(Flow)**을 그래프로 관리합니다. |
+| **Doc (문서)** | **Neo4j** + **ChromaDB** | **지식 저장 (Knowledge)**. 수집된 실제 콘텐츠입니다. <br> - **Neo4j**: 문서의 메타데이터, 구조, 다른 문서와의 관계 (Ontology). <br> - **ChromaDB**: 텍스트의 벡터 임베딩 (Vector Embedding)을 저장하여 의미 기반 검색(RAG)을 지원합니다. |
+
+#### 5.2 분리 저장의 이유 (Rationale)
+1.  **관점의 차이 (Process vs Product)**
+    -   **Job**은 "어떻게(How) 가져왔는가?"에 대한 **과정(Process)**의 기록입니다.
+    -   **Doc**은 "무엇을(What) 가져왔는가?"에 대한 **결과물(Product)**입니다.
+    -   수집 작업이 실패하더라도(Job Fail), 이전에 수집된 문서는 검색되어야 하며, 반대로 문서를 삭제해도 감사(Audit)를 위해 수집 이력은 남아야 합니다.
+2.  **하이브리드 스토리지 (Hybrid Storage Strategy)**
+    -   Job은 작업 간의 선후 관계, 재시도 트리(`retry_of`) 등 **관계(Relationship)**가 중요하므로 Graph DB가 적합합니다.
+    -   Doc은 구조적 관계(Graph)와 의미적 유사도(Vector)가 모두 필요하므로, **Composite Storage Pattern**을 적용하여 각 DB의 장점을 극대화합니다.
+
+#### 5.3 로드맵: 온톨로지 및 지식 그래프 (Future Roadmap)
+현재는 데이터를 "적재(Node Creation)"하는 Foundation 단계입니다. 향후 다음과 같이 **관계(Relationship)**를 중심으로 발전합니다.
+
+1.  **Provenance (출처 추적)**
+    -   `(Job)-[:CREATED]->(Document)` 관계를 형성하여, 특정 문서가 언제, 어떤 작업으로 수집되었는지 추적합니다.
+2.  **Knowledge Graph (지식 그래프화)**
+    -   단순 텍스트 저장을 넘어, 문서 내용에서 **Entity(개체)**와 **Relation(관계)**을 추출하여 연결합니다.
+    -   예: `(Document A)-[:MENTIONS]->(Person B)-[:WORKS_FOR]->(Company C)`
+3.  **Graph RAG**
+    -   단순 벡터 검색(Vector Search)의 한계를 넘어, 그래프 관계를 활용한 복합 추론(Reasoning)이 가능한 RAG 시스템으로 고도화합니다.

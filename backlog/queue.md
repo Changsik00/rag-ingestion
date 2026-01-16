@@ -14,10 +14,10 @@
   * [x] `pytest`를 이용한 서버 및 수집 로직 통합 테스트
 
 
-* [ ] **Spec 002: Atomic Storage & Swagger Admin**
-  * [ ] Neo4j(Graph) 및 ChromaDB(Vector) 기본 연동
-  * [ ] 수집 문서를 'Atomic Layer' 노드로 저장
-  * [ ] Swagger Docs를 통한 수집 결과물(Document) 조회 및 관리
+* [x] **Spec 002: Atomic Storage & Swagger Admin**
+  * [x] Neo4j(Graph) 및 ChromaDB(Vector) 기본 연동
+  * [x] 수집 문서를 'Atomic Layer' 노드로 저장
+  * [x] Swagger Docs를 통한 수집 결과물(Document) 조회 및 관리
 
 
 ---
@@ -28,9 +28,9 @@
 
 ### [EPIC-02] Backoffice & Async Ops
 
-* [ ] **Spec 003: Ingestion Admin Dashboard (Streamlit)**
-  * [ ] 현재 수집 중인 작업 리스트 및 로그 확인 화면 구축
-  * [ ] 실패한 작업 모니터링 및 수동 재시도(Retry) 기능
+* [x] **Spec 003: Ingestion Admin Dashboard (Streamlit)**
+  * [x] Ingestion Job Tracking (상태 관리)
+  * [x] Streamlit Dashboard (모니터링 & 재시도)
 
 
 * [ ] **Spec 004: Async Processing & Task Status**
