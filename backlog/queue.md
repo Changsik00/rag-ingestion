@@ -134,6 +134,13 @@
 
 > **목표**: 언제 해도 상관없지만 보존할 가치가 있는 아이디어. 시간과 우선순위에 따라 Spec으로 승격될 수 있음.
 
+* **[Testing] Integration Test Scenarios 확장** (Spec 009 미구현 분)
+  * 성공 시나리오: 중복 URL 처리, 다양한 콘텐츠 타입
+  * 실패 시나리오: 타임아웃, 네트워크 오류, 잘못된 Job ID, 빈 콘텐츠
+  * Edge Cases: 매우 긴 URL, 매우 큰 HTML (10MB+), Redirect 처리
+  * **상세 내용**: `specs/009-testing-strategy/remaining_scenarios.md` 참조
+  * **우선순위**: High - 잘못된 Job ID → 404, 중복 URL 처리
+
 * **[Feature] API Input Validation & Error Handling Improvement**
   * Pydantic validator 강화
   * 명확한 에러 메시지 (한글/영문)
