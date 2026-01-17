@@ -141,6 +141,7 @@
   * **상세 내용**: `specs/009-testing-strategy/remaining_scenarios.md` 참조
   * **우선순위**: High - 잘못된 Job ID → 404, 중복 URL 처리
 
+
 * **[Feature] API Input Validation & Error Handling Improvement**
   * Pydantic validator 강화
   * 명확한 에러 메시지 (한글/영문)
