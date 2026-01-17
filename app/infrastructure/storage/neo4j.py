@@ -1,16 +1,13 @@
 from typing import List, Optional
 from uuid import UUID
-from neo4j import GraphDatabase
+from neo4j import Driver
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
-import os
+
 
 class Neo4jStorage(DocumentRepository):
-    def __init__(self):
-        uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-        user = os.getenv("NEO4J_USER", "neo4j")
-        password = os.getenv("NEO4J_PASSWORD", "password")
-        self.driver = GraphDatabase.driver(uri, auth=(user, password))
+    def __init__(self, driver: Driver):
+        self.driver = driver
 
     def close(self):
         self.driver.close()
