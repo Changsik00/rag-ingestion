@@ -5,65 +5,65 @@
 - [x] Spec 번호 확정 (010)
 - [x] spec.md 작성
 - [x] plan.md 작성
-- [ ] task.md 작성
-- [ ] 사용자 승인 대기
-- [ ] 브랜치 생성 및 구현 (승인 후)
+- [x] task.md 작성
+- [x] 사용자 승인 완료
+- [x] 브랜치 생성 및 구현 시작
 
 ---
 
 ## Task 1: 브랜치 생성 및 준비
 
-- [ ] 브랜치 생성: `git checkout -b feature/010-knowledge-graph-construction`
-- [ ] spec.md, plan.md, task.md 커밋
+- [x] 브랜치 생성: `git checkout -b feature/010-knowledge-graph-construction`
+- [x] spec.md, plan.md, task.md 커밋
+- [x] 커밋: `docs: add spec 010 - knowledge graph construction`
 
 ---
 
 ## Task 2: Domain Layer - GraphRepository 인터페이스
 
-- [ ] `app/domain/interfaces/graph_repository.py` 생성
-  - [ ] `save_entity(name, type)` 메서드 정의
-  - [ ] `create_mention_relationship(doc_id, entity_name)` 메서드 정의
-  - [ ] `get_entities_by_document(doc_id)` 메서드 정의
-  - [ ] `get_document_ids_by_entity(entity_name)` 메서드 정의
-  - [ ] `list_all_entities(limit)` 메서드 정의
-- [ ] 커밋: `feat: add GraphRepository interface`
+- [x] `app/domain/interfaces/graph_repository.py` 생성
+  - [x] `save_entity(name, type)` 메서드 정의
+  - [x] `create_mention_relationship(doc_id, entity_name)` 메서드 정의
+  - [x] `get_entities_by_document(doc_id)` 메서드 정의
+  - [x] `get_document_ids_by_entity(entity_name)` 메서드 정의
+  - [x] `list_all_entities(limit)` 메서드 정의
 
 ---
 
 ## Task 3: Infrastructure Layer - Cypher Query Templates
 
-- [ ] `app/infrastructure/storage/cypher_queries.py` 생성
-  - [ ] `MERGE_ENTITY` 쿼리 템플릿
-  - [ ] `CREATE_ENTITY_INDEX` 쿼리 템플릿
-  - [ ] `CREATE_MENTIONS_RELATIONSHIP` 쿼리 템플릿
-  - [ ] `GET_ENTITIES_BY_DOCUMENT` 쿼리 템플릿
-  - [ ] `GET_DOCUMENT_IDS_BY_ENTITY` 쿼리 템플릿
-  - [ ] `LIST_ALL_ENTITIES` 쿼리 템플릿
-- [ ] 커밋: `feat: add Cypher query templates`
+- [x] `app/infrastructure/storage/cypher_queries.py` 생성
+  - [x] `MERGE_ENTITY` 쿼리 템플릿
+  - [x] `CREATE_ENTITY_INDEX` 쿼리 템플릿
+  - [x] `CREATE_MENTIONS_RELATIONSHIP` 쿼리 템플릿
+  - [x] `GET_ENTITIES_BY_DOCUMENT` 쿼리 템플릿
+  - [x] `GET_DOCUMENT_IDS_BY_ENTITY` 쿼리 템플릿
+  - [x] `LIST_ALL_ENTITIES` 쿼리 템플릿
+- [x] 커밋: `feat: add GraphRepository interface and Cypher query templates`
 
 ---
 
 ## Task 4: Infrastructure Layer - Neo4jGraphRepository 구현
 
-- [ ] `app/infrastructure/storage/neo4j_graph.py` 생성
-  - [ ] `cypher_queries` 모듈 import
-  - [ ] `__init__` 및 인덱스 생성 로직
-  - [ ] `save_entity` 구현 (MERGE 로직)
-  - [ ] `create_mention_relationship` 구현
-  - [ ] `get_entities_by_document` 구현
-  - [ ] `get_document_ids_by_entity` 구현
-  - [ ] `list_all_entities` 구현
-- [ ] 커밋: `feat: implement Neo4jGraphRepository`
+- [x] `app/infrastructure/storage/neo4j_graph.py` 생성
+  - [x] `cypher_queries` 모듈 import
+  - [x] `__init__` 및 인덱스 생성 로직
+  - [x] `save_entity` 구현 (MERGE 로직)
+  - [x] `create_mention_relationship` 구현
+  - [x] `get_entities_by_document` 구현
+  - [x] `get_document_ids_by_entity` 구현
+  - [x] `list_all_entities` 구현
+- [ ] 커밋 대기: `feat: implement Neo4jGraphRepository`
 
 ---
 
 ## Task 5: Application Layer - IngestionService 수정
 
-- [ ] `app/use_cases/ingestion.py` 수정
-  - [ ] GraphRepository 생성자 파라미터 추가
-  - [ ] `_build_knowledge_graph` 메서드 추가
-  - [ ] `process_job` 메서드에서 Entity 그래프 구축 호출
-- [ ] 커밋: `feat: integrate knowledge graph building in ingestion`
+- [x] `app/use_cases/ingestion.py` 수정
+  - [x] GraphRepository 생성자 파라미터 추가
+  - [x] `_build_knowledge_graph` 메서드 추가
+  - [x] `process_job` 메서드에서 Entity 그래프 구축 호출
+- [ ] 커밋 대기: `feat: integrate knowledge graph building in ingestion`
 
 ---
 
