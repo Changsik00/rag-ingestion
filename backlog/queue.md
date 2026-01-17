@@ -54,14 +54,15 @@
   * [x] Infrastructure에 LangChain Adapter 분리
   * [x] Ruff linter 도입 및 코드 품질 개선
 
-* [ ] **Spec 007: Ontology Design (Multi-layered)**
-  * [ ] 추출된 Entity를 목적별로 분류 (Person, Organization, Technology, Topic, etc)
-  * [ ] 관계 스키마 설계 (MENTIONS, RELATED_TO, CONTRADICTS, etc)
+* [x] **Spec 007: Ontology Design (Multi-layered)**
+  * [x] 추출된 Entity를 목적별로 분류 (Person, Organization, Technology, Topic, etc)
+  * [x] 관계 스키마 설계 (MENTIONS, RELATED_TO, CONTRADICTS, etc)
 
 * [ ] **Spec 008: Knowledge Graph Construction**
   * [ ] Entity를 Neo4j 노드로 매핑
   * [ ] Entity 간 관계 생성 및 그래프 구축
   * [ ] Graph 탐색 API 개발
+  * **Note**: 현재는 metadata의 entities를 JSON 문자열로 직렬화하여 저장 중. 향후 Entity를 별도 노드로 분리하여 관계 기반 쿼리 가능하게 개선 필요
 
 ---
 

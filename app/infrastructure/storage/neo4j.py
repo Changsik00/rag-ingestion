@@ -1,4 +1,5 @@
 from uuid import UUID
+import json
 
 from neo4j import Driver
 
@@ -14,6 +15,18 @@ class Neo4jStorage(DocumentRepository):
         self.driver.close()
 
     def save(self, document: AtomicDocument) -> None:
+        # Flatten metadata to avoid nested map errors in Neo4j
+        # Neo4j only allows primitives and arrays of primitives as property values
+        flattened_metadata = {}
+        
+        for key, value in document.metadata.items():
+            if isinstance(value, (dict, list)):
+                # Serialize complex types to JSON string
+                flattened_metadata[f"{key}_json"] = json.dumps(value)
+            else:
+                # Keep primitive types as-is
+                flattened_metadata[key] = value
+        
         query = """
         MERGE (d:Document {id: $id})
         SET d.content = $content,
@@ -27,7 +40,7 @@ class Neo4jStorage(DocumentRepository):
                 content=document.content,
                 source_url=document.source_url,
                 created_at=document.created_at.isoformat(),
-                metadata=document.metadata
+                metadata=flattened_metadata
             )
 
     def get(self, doc_id: UUID) -> AtomicDocument | None:
