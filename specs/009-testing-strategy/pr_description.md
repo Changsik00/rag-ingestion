@@ -1,4 +1,4 @@
-# Walkthrough: Spec 009 - Testing Strategy Improvement
+# PR Description: Spec 009 - Testing Strategy Improvement
 
 이 문서는 Spec 009에서 구현한 내용과 검증 결과를 요약합니다.
 
