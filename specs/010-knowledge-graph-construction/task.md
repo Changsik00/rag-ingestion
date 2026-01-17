@@ -69,10 +69,10 @@
 
 ## Task 6: Dependency Injection - GraphRepository 추가
 
-- [ ] `app/interfaces/api/dependencies.py` 수정
-  - [ ] `get_graph_repository()` 함수 추가
-  - [ ] `get_ingestion_service()`에 GraphRepository 주입
-- [ ] 커밋: `feat: add GraphRepository dependency injection`
+- [x] `app/interfaces/api/dependencies.py` 수정
+  - [x] `get_graph_repository()` 함수 추가
+  - [x] `get_ingestion_service()`에 GraphRepository 주입
+- [ ] 커밋 대기: `feat: add GraphRepository dependency injection`
 
 ---
 
