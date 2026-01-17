@@ -6,6 +6,7 @@ from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.interfaces.api.dependencies import get_ingestion_service, get_repository
 from app.interfaces.api.endpoints.jobs import router as jobs_router
+from app.interfaces.api.endpoints.entities import router as entities_router
 from app.schemas.ingest import AsyncIngestResponse, IngestRequest
 from app.use_cases.ingestion import IngestionService
 
@@ -16,6 +17,7 @@ app = FastAPI(
 )
 
 app.include_router(jobs_router)
+app.include_router(entities_router)
 
 @app.post("/ingest/web", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
 async def ingest_web_page(

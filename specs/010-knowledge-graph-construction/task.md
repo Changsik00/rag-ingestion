@@ -78,13 +78,13 @@
 
 ## Task 7: API Layer - Entity 엔드포인트
 
-- [ ] `app/interfaces/api/endpoints/entities.py` 생성
-  - [ ] `GET /entities` - 전체 Entity 목록
-  - [ ] `GET /entities/{name}/documents` - Entity별 Document 목록
-  - [ ] `GET /entities/{name}/info` - Entity 정보
-- [ ] `app/interfaces/api/main.py` 수정
-  - [ ] entities router 추가
-- [ ] 커밋: `feat: add entity API endpoints`
+- [x] `app/interfaces/api/endpoints/entities.py` 생성
+  - [x] `GET /entities` - 전체 Entity 목록
+  - [x] `GET /entities/{name}/documents` - Entity별 Document 목록
+  - [x] `GET /entities/{name}/info` - Entity 정보
+- [x] `app/interfaces/api/main.py` 수정
+  - [x] entities router 추가
+- [ ] 커밋 대기: `feat: add entity API endpoints`
 
 ---
 
