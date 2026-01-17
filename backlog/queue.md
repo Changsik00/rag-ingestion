@@ -74,11 +74,12 @@
 
 > **목표**: 테스트 전략 및 품질 보증 체계 강화. 통합 환경에서만 발견되는 버그를 조기에 차단하기 위한 개선 작업.
 
-* [/] **Spec 009: Testing Strategy Improvement**
-  * [ ] Contract Testing 도입 (인터페이스-구현체 계약 검증)
-  * [ ] Integration Test 강화 (BDD, 예외 시나리오 집중)
-  * [ ] 테스트 전략 문서화 (TDD vs BDD 가이드)
-  * [ ] 통합 환경 버그를 테스트 단계에서 조기 발견
+* [x] **Spec 009: Testing Strategy Improvement**
+  * [x] Contract Testing 도입 (인터페이스-구현체 계약 검증) - 32 passed, 2 skipped
+  * [x] Integration Test 강화 (BDD, 예외 시나리오 집중) - 6 passed, 1 skipped
+  * [x] 테스트 전략 문서화 (TDD vs BDD 가이드)
+  * [x] BDD/TDD 테스트 구조 개선 및 Use Case Stories 작성
+  * [x] 미구현 시나리오 문서화 (Icebox에 등록)
 
 ---
 
