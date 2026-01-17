@@ -11,8 +11,8 @@
 - [x] Task 7: Integration Test - 실패 시나리오 (3/7 구현)
 - [x] Task 8: Integration Test - Edge Cases (2/5 구현)
 - [x] Task 9: Integration Test - Dependency Injection 검증
-- [ ] Task 10: 전체 테스트 실행 및 검증
-- [ ] Task 11: PR 준비 및 문서화
+- [x] Task 10: 전체 테스트 실행 및 검증 (Contract Tests 수행)
+- [x] Task 11: PR 준비 및 문서화
 
 ---
 
