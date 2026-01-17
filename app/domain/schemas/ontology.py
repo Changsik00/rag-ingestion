@@ -6,7 +6,7 @@ Entity 타입과 Relationship 타입을 정의하는 스키마.
 """
 
 from enum import Enum
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -35,17 +35,17 @@ class RelationshipType(str, Enum):
     """
     # Document-Entity 관계
     MENTIONS = "MENTIONS"              # Document -> Entity
-    
+
     # Person 관계
     WORKS_FOR = "WORKS_FOR"            # Person -> Organization
     FOUNDED = "FOUNDED"                # Person -> Organization
     PERFORMED = "PERFORMED"            # Person -> Activity
-    
+
     # Technology/Concept 관계
     USES = "USES"                      # Organization -> Technology
     SUPPORTS = "SUPPORTS"              # Technology -> Activity
     RELATED_TO = "RELATED_TO"          # Concept -> Concept
-    
+
     # Activity 관계
     PART_OF = "PART_OF"                # Activity -> Activity
 
@@ -67,8 +67,8 @@ class TypedEntity(BaseModel):
     name: str = Field(description="Entity 이름")
     type: EntityType = Field(description="Entity 타입")
     confidence: float = Field(
-        default=1.0, 
-        ge=0.0, 
+        default=1.0,
+        ge=0.0,
         le=1.0,
         description="분류 신뢰도 (0.0 ~ 1.0)"
     )

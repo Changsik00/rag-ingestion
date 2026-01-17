@@ -1,9 +1,12 @@
-from typing import List, Optional
+import json
+import os
 from uuid import UUID
+
 import chromadb
+
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
-import os
+
 
 class ChromaStorage(DocumentRepository):
     def __init__(self):
@@ -13,18 +16,31 @@ class ChromaStorage(DocumentRepository):
         self.collection = self.client.get_or_create_collection(name="documents")
 
     def save(self, document: AtomicDocument) -> None:
+        # Flatten metadata to comply with ChromaDB constraints
+        # ChromaDB only accepts str, int, float, bool as metadata values
+        flattened_metadata = {"source_url": document.source_url}
+        
+        for key, value in document.metadata.items():
+            if isinstance(value, (dict, list)):
+                # Serialize complex types to JSON string
+                flattened_metadata[f"{key}_json"] = json.dumps(value)
+            elif isinstance(value, (str, int, float, bool, type(None))):
+                # Keep primitive types as-is
+                flattened_metadata[key] = value
+            # Skip other types that ChromaDB doesn't support
+        
         self.collection.add(
             documents=[document.content],
-            metadatas=[{"source_url": document.source_url, **document.metadata}],
+            metadatas=[flattened_metadata],
             ids=[str(document.id)]
         )
 
-    def get(self, doc_id: UUID) -> Optional[AtomicDocument]:
+    def get(self, doc_id: UUID) -> AtomicDocument | None:
         # Chroma is less suitable for primary retrieval, but consistent interface requires it.
         # Minimal implementation for now.
         result = self.collection.get(ids=[str(doc_id)])
         if result and result['documents']:
-             # Reconstructing object from Chroma is lossy (no full metadata usually), 
+             # Reconstructing object from Chroma is lossy (no full metadata usually),
              # but we implement basic mapping.
              return AtomicDocument(
                  id=doc_id,
@@ -34,7 +50,7 @@ class ChromaStorage(DocumentRepository):
              )
         return None
 
-    def list_documents(self, limit: int = 10) -> List[AtomicDocument]:
+    def list_documents(self, limit: int = 10) -> list[AtomicDocument]:
         # Chroma peek
         result = self.collection.peek(limit=limit)
         docs = []

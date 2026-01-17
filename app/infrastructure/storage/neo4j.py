@@ -1,21 +1,32 @@
-from typing import List, Optional
 from uuid import UUID
-from neo4j import GraphDatabase
+import json
+
+from neo4j import Driver
+
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
-import os
+
 
 class Neo4jStorage(DocumentRepository):
-    def __init__(self):
-        uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-        user = os.getenv("NEO4J_USER", "neo4j")
-        password = os.getenv("NEO4J_PASSWORD", "password")
-        self.driver = GraphDatabase.driver(uri, auth=(user, password))
+    def __init__(self, driver: Driver):
+        self.driver = driver
 
     def close(self):
         self.driver.close()
 
     def save(self, document: AtomicDocument) -> None:
+        # Flatten metadata to avoid nested map errors in Neo4j
+        # Neo4j only allows primitives and arrays of primitives as property values
+        flattened_metadata = {}
+        
+        for key, value in document.metadata.items():
+            if isinstance(value, (dict, list)):
+                # Serialize complex types to JSON string
+                flattened_metadata[f"{key}_json"] = json.dumps(value)
+            else:
+                # Keep primitive types as-is
+                flattened_metadata[key] = value
+        
         query = """
         MERGE (d:Document {id: $id})
         SET d.content = $content,
@@ -24,15 +35,15 @@ class Neo4jStorage(DocumentRepository):
             d += $metadata
         """
         with self.driver.session() as session:
-            session.run(query, 
+            session.run(query,
                 id=str(document.id),
                 content=document.content,
                 source_url=document.source_url,
                 created_at=document.created_at.isoformat(),
-                metadata=document.metadata
+                metadata=flattened_metadata
             )
 
-    def get(self, doc_id: UUID) -> Optional[AtomicDocument]:
+    def get(self, doc_id: UUID) -> AtomicDocument | None:
         query = "MATCH (d:Document {id: $id}) RETURN d"
         with self.driver.session() as session:
             result = session.run(query, id=str(doc_id)).single()
@@ -46,7 +57,7 @@ class Neo4jStorage(DocumentRepository):
                 )
         return None
 
-    def list_documents(self, limit: int = 10) -> List[AtomicDocument]:
+    def list_documents(self, limit: int = 10) -> list[AtomicDocument]:
         query = "MATCH (d:Document) RETURN d LIMIT $limit"
         docs = []
         with self.driver.session() as session:

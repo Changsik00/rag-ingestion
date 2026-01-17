@@ -1,15 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
-from typing import List
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
-from app.use_cases.ingestion import IngestionService
-from app.interfaces.api.dependencies import get_job_repository, get_ingestion_service
-
+from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository
 from app.schemas.ingest import AsyncIngestResponse
+from app.use_cases.ingestion import IngestionService
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
-@router.get("", response_model=List[IngestionJob])
+@router.get("", response_model=list[IngestionJob])
 async def list_jobs(
     limit: int = 50,
     repo: JobRepository = Depends(get_job_repository)
@@ -24,7 +24,7 @@ async def get_job(
     job = repo.get_job(job_id)
     if not job:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job {job_id} not found"
         )
     return job
@@ -39,10 +39,10 @@ async def retry_job(
     job = repo.get_job(job_id)
     if not job:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job {job_id} not found"
         )
-    
+
     # Re-trigger ingestion (creates a new job trace)
     try:
         new_job = service.create_job(job.source_url, retry_of=job_id)

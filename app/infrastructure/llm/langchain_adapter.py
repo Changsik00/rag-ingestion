@@ -1,7 +1,7 @@
 import logging
-from typing import Optional
-from langchain_core.prompts import PromptTemplate
+
 from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.domain.schemas.extraction import ExtractedMetadata
@@ -16,7 +16,7 @@ class LangChainLLMAdapter:
     Infrastructure 레이어에 위치하여 Domain을 외부 프레임워크로부터 격리.
     기존 SemanticExtractor의 LangChain 로직을 이곳으로 이동.
     """
-    
+
     def __init__(self, llm: ChatGoogleGenerativeAI):
         """
         Args:
@@ -72,8 +72,8 @@ class LangChainLLMAdapter:
             partial_variables={"format_instructions": self.parser.get_format_instructions()}
         )
         self.chain = self.prompt | self.llm | self.parser
-    
-    def extract_metadata(self, text: str) -> Optional[ExtractedMetadata]:
+
+    def extract_metadata(self, text: str) -> ExtractedMetadata | None:
         """
         LLMInterface 구현: 텍스트에서 메타데이터 추출
         

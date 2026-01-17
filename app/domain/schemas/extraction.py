@@ -1,14 +1,16 @@
-from typing import List, Dict, Optional
-from pydantic import BaseModel, Field, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from app.domain.schemas.ontology import EntityType
+
 
 class ExtractedMetadata(BaseModel):
     """Schema for metadata extracted from text using LLM."""
-    
-    title: Optional[str] = Field(description="A concise and accurate title for the content.")
+
+    title: str | None = Field(description="A concise and accurate title for the content.")
     summary: str = Field(description="A comprehensive summary of the content (approx. 3 sentences).")
-    keywords: List[str] = Field(description="List of 5-10 key topics or tags related to the content.")
-    entities: Dict[EntityType, List[str]] = Field(
+    keywords: list[str] = Field(description="List of 5-10 key topics or tags related to the content.")
+    entities: dict[EntityType, list[str]] = Field(
         description="Extracted entities grouped by standardized type (EntityType enum)."
     )
 

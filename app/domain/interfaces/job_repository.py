@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+
 from app.domain.entities.job import IngestionJob
+
 
 class JobRepository(ABC):
     @abstractmethod
@@ -14,11 +15,11 @@ class JobRepository(ABC):
         pass
 
     @abstractmethod
-    def get_job(self, job_id: str) -> Optional[IngestionJob]:
+    def get_job(self, job_id: str) -> IngestionJob | None:
         """Retrieve a job by its ID."""
         pass
 
     @abstractmethod
-    def list_jobs(self, limit: int = 50) -> List[IngestionJob]:
+    def list_jobs(self, limit: int = 50) -> list[IngestionJob]:
         """List recent ingestion jobs."""
         pass

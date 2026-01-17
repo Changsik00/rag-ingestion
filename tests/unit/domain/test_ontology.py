@@ -1,6 +1,5 @@
-import pytest
-from app.domain.schemas.ontology import EntityType, RelationshipType
 from app.domain.schemas.extraction import ExtractedMetadata
+from app.domain.schemas.ontology import EntityType, RelationshipType
 
 
 def test_entity_type_enum_values():

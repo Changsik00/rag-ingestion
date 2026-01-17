@@ -1,6 +1,8 @@
 from unittest.mock import Mock, patch
+
 from app.infrastructure.scrapers.basic import BasicWebScraper
-from app.domain.models.ingest import IngestResponse
+from app.schemas.ingest import IngestResponse
+
 
 @patch("requests.get")
 def test_scrape_basic_html(mock_get):
@@ -19,7 +21,10 @@ def test_scrape_basic_html(mock_get):
     assert str(result.url).rstrip('/') == url.rstrip('/')
     assert "Hello World" in result.markdown
     assert "This is a test" in result.markdown
-    mock_get.assert_called_once_with(url)
+    # Scraper adds User-Agent header, so verify it was called with headers
+    mock_get.assert_called_once()
+    assert mock_get.call_args[0][0] == url
+    assert "User-Agent" in mock_get.call_args[1]["headers"]
 
 @patch("requests.get")
 def test_scrape_failure(mock_get):

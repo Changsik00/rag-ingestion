@@ -1,21 +1,21 @@
+import os
 from functools import lru_cache
 from typing import Annotated
+
 from fastapi import Depends
-import os
-from neo4j import GraphDatabase, Driver
+from neo4j import Driver, GraphDatabase
 
+from app.core.llm import get_llm
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.interfaces.job_repository import JobRepository
-from app.use_cases.ingestion import IngestionService
-
+from app.domain.interfaces.scraper import ScraperInterface
+from app.domain.services.semantic_extractor import SemanticExtractor
 from app.infrastructure.scrapers.basic import BasicWebScraper
-from app.infrastructure.storage.neo4j import Neo4jStorage
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
+from app.infrastructure.storage.neo4j import Neo4jStorage
 from app.infrastructure.storage.neo4j_job_repo import Neo4jJobRepository
-from app.domain.services.semantic_extractor import SemanticExtractor
-from app.core.llm import get_llm
+from app.use_cases.ingestion import IngestionService
 
 
 # Scraper dependency

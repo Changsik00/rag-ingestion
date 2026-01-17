@@ -54,14 +54,22 @@
   * [x] Infrastructure에 LangChain Adapter 분리
   * [x] Ruff linter 도입 및 코드 품질 개선
 
-* [ ] **Spec 007: Ontology Design (Multi-layered)**
-  * [ ] 추출된 Entity를 목적별로 분류 (Person, Organization, Technology, Topic, etc)
-  * [ ] 관계 스키마 설계 (MENTIONS, RELATED_TO, CONTRADICTS, etc)
+* [x] **Spec 007: Ontology Design (Multi-layered)**
+  * [x] 추출된 Entity를 목적별로 분류 (Person, Organization, Technology, Topic, etc)
+  * [x] 관계 스키마 설계 (MENTIONS, RELATED_TO, CONTRADICTS, etc)
 
 * [ ] **Spec 008: Knowledge Graph Construction**
   * [ ] Entity를 Neo4j 노드로 매핑
   * [ ] Entity 간 관계 생성 및 그래프 구축
   * [ ] Graph 탐색 API 개발
+  * **Note**: 현재는 metadata의 entities를 JSON 문자열로 직렬화하여 저장 중. 향후 Entity를 별도 노드로 분리하여 관계 기반 쿼리 가능하게 개선 필요
+
+* [ ] **Spec 009: Embedding Strategy Refactoring**
+  * [ ] ChromaDB default local embedding → API 기반 embedding 전환 (Gemini/OpenAI)
+  * [ ] Heavy ML dependencies 제거 (onnxruntime, tokenizers)
+  * [ ] Backend 컨테이너 경량화
+  * [ ] Optional: Embedding worker 분리 아키텍처 고려
+  * **현재 상태**: ChromaDB가 all-MiniLM-L6-v2 로컬 모델 사용 중 (간접 의존성으로 onnxruntime, tokenizers 필요)
 
 ---
 
@@ -103,3 +111,7 @@
 > **목표**: 현재 페이즈와 무관하게 보존할 아이디어 저장소.
 
 * **[Tech] Multi-Model Comparison**: 다양한 LLM(GPT, Claude 등)을 붙여 정보 추출 품질 및 비용 비교 분석.
+* **[Tech] E2E Testing with Playwright**: Playwright를 활용한 End-to-End 테스트 자동화
+  * API 엔드포인트 통합 테스트
+  * Admin Dashboard (Streamlit) UI 테스트
+  * 전체 워크플로우 검증 (Ingest → Store → Retrieve)

@@ -1,13 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, status
-from typing import Annotated, List
+from typing import Annotated
 
-from app.schemas.ingest import IngestRequest, AsyncIngestResponse
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
+
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.use_cases.ingestion import IngestionService
-
 from app.interfaces.api.dependencies import get_ingestion_service, get_repository
 from app.interfaces.api.endpoints.jobs import router as jobs_router
+from app.schemas.ingest import AsyncIngestResponse, IngestRequest
+from app.use_cases.ingestion import IngestionService
 
 app = FastAPI(
     title="RAG Ingestion API",
@@ -30,7 +30,7 @@ async def ingest_web_page(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/documents", response_model=List[AtomicDocument])
+@app.get("/documents", response_model=list[AtomicDocument])
 async def list_documents(
     repository: Annotated[DocumentRepository, Depends(get_repository)],
     limit: int = 10
