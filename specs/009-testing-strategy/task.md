@@ -140,11 +140,10 @@
 ## Task 11: PR 준비 및 문서화
 
 - [x] `specs/009-testing-strategy/pr_description.md` 작성
-- [ ] `specs/009-testing-strategy/pr_description.md` 작성 (선택사항, 생략)
-- [x] 모든 변경사항 커밋 (14개 커밋 완료)
+- [x] `spec.md`, `plan.md` 추가 (일관성)
+- [x] 모든 변경사항 커밋 (15개 커밋 완료)
 - [x] 푸시: `git push origin feature/009-testing-strategy`
 - [x] GitHub PR 생성 및 제목 수정: `feat(spec-009): testing strategy improvement`
-- [x] 커밋: `docs: add walkthrough for Spec 009`
 
 
 ---
