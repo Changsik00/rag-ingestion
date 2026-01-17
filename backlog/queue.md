@@ -64,6 +64,13 @@
   * [ ] Graph 탐색 API 개발
   * **Note**: 현재는 metadata의 entities를 JSON 문자열로 직렬화하여 저장 중. 향후 Entity를 별도 노드로 분리하여 관계 기반 쿼리 가능하게 개선 필요
 
+* [ ] **Spec 009: Embedding Strategy Refactoring**
+  * [ ] ChromaDB default local embedding → API 기반 embedding 전환 (Gemini/OpenAI)
+  * [ ] Heavy ML dependencies 제거 (onnxruntime, tokenizers)
+  * [ ] Backend 컨테이너 경량화
+  * [ ] Optional: Embedding worker 분리 아키텍처 고려
+  * **현재 상태**: ChromaDB가 all-MiniLM-L6-v2 로컬 모델 사용 중 (간접 의존성으로 onnxruntime, tokenizers 필요)
+
 ---
 
 ## 🌐 Phase 4: Workflow & Ecosystem (Automation)
