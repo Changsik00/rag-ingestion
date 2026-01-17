@@ -13,6 +13,7 @@
 - [x] Task 9: Integration Test - Dependency Injection 검증
 - [x] Task 10: 전체 테스트 실행 및 검증 (Contract Tests 수행)
 - [x] Task 11: PR 준비 및 문서화
+- [x] Task 12: BDD/TDD 구조 개선 및 Use Case Stories 작성
 
 ---
 
@@ -128,19 +129,42 @@
 
 ## Task 10: 전체 테스트 실행 및 검증
 
-- [-] 전체 테스트 실행: `pytest -v` (Docker 필요)
+- [ ] 전체 테스트 실행: `pytest -v` (Docker 필요, 선택사항)
 - [x] Contract Tests 실행: `pytest tests/contracts/ -v` (32 passed, 2 skipped)
-- [-] Integration Tests 실행: `pytest tests/integration/ -v` (Docker Compose 필요)
+- [x] Integration Tests 실행: `pytest tests/integration/bdd/ -v` (6 passed, 1 skipped)
 - [x] Contract Tests 통과 확인
-- [-] 별도 커밋 불필요 (테스트만 수행)
+- [x] Integration Tests 통과 확인 (httpbin.org URL 적용)
 
 ---
 
 ## Task 11: PR 준비 및 문서화
 
 - [x] `specs/009-testing-strategy/walkthrough.md` 작성
-- [-] `specs/009-testing-strategy/pr_description.md` 작성 (선택사항)
-- [x] 모든 변경사항 커밋 (10개 커밋 완료)
-- [-] 푸시: `git push origin feature/009-testing-strategy` (사용자 직접 수행)
-- [-] GitHub PR 생성: `gh pr create` (사용자 직접 수행)
+- [ ] `specs/009-testing-strategy/pr_description.md` 작성 (선택사항, 생략)
+- [x] 모든 변경사항 커밋 (14개 커밋 완료)
+- [x] 푸시: `git push origin feature/009-testing-strategy`
+- [x] GitHub PR 생성 및 제목 수정: `feat(spec-009): testing strategy improvement`
 - [x] 커밋: `docs: add walkthrough for Spec 009`
+
+
+---
+
+## Task 12: BDD/TDD 구조 개선 및 Use Case Stories 작성
+
+- [x] Integration Tests 디렉토리 구조 분석
+- [x] `tests/integration/bdd/` 생성 (시나리오 기반)
+- [x] `tests/integration/tdd/` 생성 (기술 검증)
+- [x] `scenarios/` → `bdd/`로 이동
+- [x] 기술 검증 테스트들을 `tdd/`로 이동
+  - [x] test_dependency_injection.py
+  - [x] test_api_ingest.py
+  - [x] test_async_ingest.py
+  - [x] test_jobs.py
+- [x] `tests/integration/USE_CASES.md` 작성
+  - [x] Use Case 1: 웹 콘텐츠 수집 및 저장
+  - [x] Use Case 2: 예외 상황 처리
+  - [x] Use Case 3: 동시성 및 확장성
+  - [x] Use Case와 테스트 매핑 테이블
+- [x] 테스트 실행 확인: `pytest tests/integration/bdd/ -v -m integration`
+- [x] 커밋: `refactor: restructure integration tests with BDD/TDD pattern`
+
