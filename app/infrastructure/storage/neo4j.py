@@ -1,6 +1,7 @@
-from typing import List, Optional
 from uuid import UUID
+
 from neo4j import Driver
+
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
 
@@ -21,7 +22,7 @@ class Neo4jStorage(DocumentRepository):
             d += $metadata
         """
         with self.driver.session() as session:
-            session.run(query, 
+            session.run(query,
                 id=str(document.id),
                 content=document.content,
                 source_url=document.source_url,
@@ -29,7 +30,7 @@ class Neo4jStorage(DocumentRepository):
                 metadata=document.metadata
             )
 
-    def get(self, doc_id: UUID) -> Optional[AtomicDocument]:
+    def get(self, doc_id: UUID) -> AtomicDocument | None:
         query = "MATCH (d:Document {id: $id}) RETURN d"
         with self.driver.session() as session:
             result = session.run(query, id=str(doc_id)).single()
@@ -43,7 +44,7 @@ class Neo4jStorage(DocumentRepository):
                 )
         return None
 
-    def list_documents(self, limit: int = 10) -> List[AtomicDocument]:
+    def list_documents(self, limit: int = 10) -> list[AtomicDocument]:
         query = "MATCH (d:Document) RETURN d LIMIT $limit"
         docs = []
         with self.driver.session() as session:

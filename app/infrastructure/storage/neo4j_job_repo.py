@@ -1,8 +1,10 @@
-from typing import List, Optional
+from datetime import datetime
+
 from neo4j import Driver
+
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.job_repository import JobRepository
-from datetime import datetime
+
 
 class Neo4jJobRepository(JobRepository):
     def __init__(self, driver: Driver):
@@ -46,7 +48,7 @@ class Neo4jJobRepository(JobRepository):
         with self.driver.session() as session:
             session.run(query, params)
 
-    def get_job(self, job_id: str) -> Optional[IngestionJob]:
+    def get_job(self, job_id: str) -> IngestionJob | None:
         query = """
         MATCH (j:IngestionJob {job_id: $job_id})
         RETURN j
@@ -56,7 +58,7 @@ class Neo4jJobRepository(JobRepository):
             record = result.single()
             if not record:
                 return None
-            
+
             node = record["j"]
             return IngestionJob(
                 job_id=node["job_id"],
@@ -68,7 +70,7 @@ class Neo4jJobRepository(JobRepository):
                 retry_of=node.get("retry_of")
             )
 
-    def list_jobs(self, limit: int = 50) -> List[IngestionJob]:
+    def list_jobs(self, limit: int = 50) -> list[IngestionJob]:
         query = """
         MATCH (j:IngestionJob)
         RETURN j

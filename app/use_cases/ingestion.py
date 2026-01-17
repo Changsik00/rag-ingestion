@@ -1,21 +1,21 @@
-from typing import Optional
-from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.interfaces.document_repository import DocumentRepository
-from app.domain.entities.document import AtomicDocument
-from app.domain.interfaces.job_repository import JobRepository
-from app.domain.entities.job import IngestionJob, JobStatus
 from datetime import datetime, timezone
 
+from app.domain.entities.document import AtomicDocument
+from app.domain.entities.job import IngestionJob, JobStatus
+from app.domain.interfaces.document_repository import DocumentRepository
+from app.domain.interfaces.job_repository import JobRepository
+from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.services.semantic_extractor import SemanticExtractor
 
+
 class IngestionService:
-    def __init__(self, scraper: ScraperInterface, repository: DocumentRepository, job_repository: JobRepository, extractor: Optional[SemanticExtractor] = None):
+    def __init__(self, scraper: ScraperInterface, repository: DocumentRepository, job_repository: JobRepository, extractor: SemanticExtractor | None = None):
         self.scraper = scraper
         self.repository = repository
         self.job_repository = job_repository
         self.extractor = extractor
 
-    def create_job(self, url: str, retry_of: Optional[str] = None) -> IngestionJob:
+    def create_job(self, url: str, retry_of: str | None = None) -> IngestionJob:
         """Create and persist a new job in PENDING state."""
         job = IngestionJob(source_url=url, status=JobStatus.PENDING, retry_of=retry_of)
         self.job_repository.create_job(job)
@@ -36,7 +36,7 @@ class IngestionService:
 
             # 2. Scrape
             result = self.scraper.scrape(job.source_url)
-            
+
             # 3. Semantic Extraction (Spec 005)
             if self.extractor:
                 try:
@@ -55,15 +55,15 @@ class IngestionService:
                 source_url=str(result.url),
                 metadata=result.metadata
             )
-            
+
             # 5. Save Document
             self.repository.save(doc)
-            
+
             # 6. Update Job (COMPLETED)
             job.status = JobStatus.COMPLETED
             job.updated_at = datetime.now(timezone.utc)
             self.job_repository.update_job(job)
-            
+
         except Exception as e:
             # 7. Update Job (FAILED) if error occurs
             job.status = JobStatus.FAILED

@@ -103,3 +103,7 @@
 > **목표**: 현재 페이즈와 무관하게 보존할 아이디어 저장소.
 
 * **[Tech] Multi-Model Comparison**: 다양한 LLM(GPT, Claude 등)을 붙여 정보 추출 품질 및 비용 비교 분석.
+* **[Tech] E2E Testing with Playwright**: Playwright를 활용한 End-to-End 테스트 자동화
+  * API 엔드포인트 통합 테스트
+  * Admin Dashboard (Streamlit) UI 테스트
+  * 전체 워크플로우 검증 (Ingest → Store → Retrieve)

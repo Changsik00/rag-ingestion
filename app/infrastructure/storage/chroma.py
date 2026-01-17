@@ -1,9 +1,11 @@
-from typing import List, Optional
+import os
 from uuid import UUID
+
 import chromadb
+
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
-import os
+
 
 class ChromaStorage(DocumentRepository):
     def __init__(self):
@@ -19,12 +21,12 @@ class ChromaStorage(DocumentRepository):
             ids=[str(document.id)]
         )
 
-    def get(self, doc_id: UUID) -> Optional[AtomicDocument]:
+    def get(self, doc_id: UUID) -> AtomicDocument | None:
         # Chroma is less suitable for primary retrieval, but consistent interface requires it.
         # Minimal implementation for now.
         result = self.collection.get(ids=[str(doc_id)])
         if result and result['documents']:
-             # Reconstructing object from Chroma is lossy (no full metadata usually), 
+             # Reconstructing object from Chroma is lossy (no full metadata usually),
              # but we implement basic mapping.
              return AtomicDocument(
                  id=doc_id,
@@ -34,7 +36,7 @@ class ChromaStorage(DocumentRepository):
              )
         return None
 
-    def list_documents(self, limit: int = 10) -> List[AtomicDocument]:
+    def list_documents(self, limit: int = 10) -> list[AtomicDocument]:
         # Chroma peek
         result = self.collection.peek(limit=limit)
         docs = []

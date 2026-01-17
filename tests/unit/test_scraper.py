@@ -1,6 +1,8 @@
 from unittest.mock import Mock, patch
+
 from app.infrastructure.scrapers.basic import BasicWebScraper
 from app.schemas.ingest import IngestResponse
+
 
 @patch("requests.get")
 def test_scrape_basic_html(mock_get):

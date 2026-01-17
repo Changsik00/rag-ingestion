@@ -1,7 +1,9 @@
 import requests
 from markdownify import markdownify as md
-from app.schemas.ingest import IngestResponse
+
 from app.domain.interfaces.scraper import ScraperInterface
+from app.schemas.ingest import IngestResponse
+
 
 class BasicWebScraper(ScraperInterface):
     def scrape(self, url: str) -> IngestResponse:
@@ -10,10 +12,10 @@ class BasicWebScraper(ScraperInterface):
         }
         response = requests.get(url, headers=headers)
         response.raise_for_status()
-        
+
         # Convert HTML to Markdown
         markdown_content = md(response.text)
-        
+
         return IngestResponse(
             url=url,
             markdown=markdown_content,

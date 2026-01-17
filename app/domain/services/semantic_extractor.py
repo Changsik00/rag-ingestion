@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+
 from app.domain.interfaces.llm import LLMInterface
 from app.domain.schemas.extraction import ExtractedMetadata
 
@@ -13,15 +13,15 @@ class SemanticExtractor:
     외부 프레임워크(LangChain 등)에 독립적인 순수 비즈니스 로직.
     구체적인 LLM 구현은 Infrastructure 레이어에서 주입.
     """
-    
+
     def __init__(self, llm: LLMInterface):
         """
         Args:
             llm: LLM 인터페이스 구현체 (Infrastructure에서 주입)
         """
         self.llm = llm
-    
-    def extract(self, text: str) -> Optional[ExtractedMetadata]:
+
+    def extract(self, text: str) -> ExtractedMetadata | None:
         """
         텍스트에서 메타데이터 추출
         

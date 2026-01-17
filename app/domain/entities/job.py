@@ -1,8 +1,9 @@
+import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
-import uuid
+
 from pydantic import BaseModel, Field
+
 
 class JobStatus(str, Enum):
     PENDING = "PENDING"
@@ -16,8 +17,8 @@ class IngestionJob(BaseModel):
     status: JobStatus = JobStatus.PENDING
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    error_message: Optional[str] = None
-    retry_of: Optional[str] = None
+    error_message: str | None = None
+    retry_of: str | None = None
 
     class Config:
         frozen = False  # Allow updates

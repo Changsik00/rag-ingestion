@@ -1,9 +1,9 @@
-import pytest
 from unittest.mock import MagicMock
-from app.domain.services.semantic_extractor import SemanticExtractor
+
+from app.domain.interfaces.llm import LLMInterface
 from app.domain.schemas.extraction import ExtractedMetadata
 from app.domain.schemas.ontology import EntityType
-from app.domain.interfaces.llm import LLMInterface
+from app.domain.services.semantic_extractor import SemanticExtractor
 
 
 def test_extract_success():
@@ -25,11 +25,11 @@ def test_extract_success():
         }
     )
     mock_llm.extract_metadata.return_value = expected_metadata
-    
+
     # Execute
     extractor = SemanticExtractor(llm=mock_llm)
     result = extractor.extract("Dummy text")
-    
+
     # Verify
     assert result is not None
     assert result.title == "AI Research and Development Practices"
@@ -45,11 +45,11 @@ def test_extract_failure():
     # Setup
     mock_llm = MagicMock(spec=LLMInterface)
     mock_llm.extract_metadata.return_value = None
-    
+
     # Execute
     extractor = SemanticExtractor(llm=mock_llm)
     result = extractor.extract("Dummy text")
-    
+
     # Verify
     assert result is None
     mock_llm.extract_metadata.assert_called_once_with("Dummy text")

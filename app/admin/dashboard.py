@@ -1,7 +1,8 @@
-import streamlit as st
-import requests
-import pandas as pd
 import os
+
+import pandas as pd
+import requests
+import streamlit as st
 
 # Configuration
 API_URL = os.getenv("API_URL", "http://localhost:8000")
@@ -47,26 +48,26 @@ jobs_data = fetch_jobs(limit)
 
 if jobs_data:
     df = pd.DataFrame(jobs_data)
-    
+
     # Format dates
     if "created_at" in df.columns:
         df["created_at"] = pd.to_datetime(df["created_at"])
     if "updated_at" in df.columns:
         df["updated_at"] = pd.to_datetime(df["updated_at"])
-    
+
     # KPIs
     col1, col2, col3 = st.columns(3)
     total_jobs = len(df)
     failed_jobs = len(df[df["status"] == "FAILED"]) if "status" in df.columns else 0
     running_jobs = len(df[df["status"] == "RUNNING"]) if "status" in df.columns else 0
-    
+
     col1.metric("Total Jobs", total_jobs)
     col2.metric("Failed", failed_jobs)
     col3.metric("Running", running_jobs)
 
     # Job List
     st.subheader("Job List")
-    
+
     # Style status
     def color_status(val):
         color = 'grey'
@@ -77,7 +78,7 @@ if jobs_data:
         elif val == 'RUNNING':
             color = 'orange'
         return f'color: {color}'
-    
+
     if "status" in df.columns:
         st.dataframe(df.style.applymap(color_status, subset=['status']), use_container_width=True)
     else:
@@ -86,7 +87,7 @@ if jobs_data:
     # Detail & Actions
     st.subheader("Actions")
     selected_job_id = st.selectbox("Select Job to View/Retry", options=df["job_id"].tolist() if "job_id" in df.columns else [])
-    
+
     if selected_job_id:
         job_details = next((item for item in jobs_data if item["job_id"] == selected_job_id), None)
         if job_details:

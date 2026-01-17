@@ -2,6 +2,7 @@ import os
 import sys
 import uuid
 from datetime import datetime, timedelta, timezone
+
 from neo4j import GraphDatabase
 
 # Add project root to path to allow imports from app
@@ -29,7 +30,7 @@ def seed_data():
     repo = Neo4jJobRepository(driver)
 
     print("Seeding dummy jobs...")
-    
+
     now = datetime.now(timezone.utc)
 
     # 1. Successful Job

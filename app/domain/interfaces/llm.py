@@ -1,4 +1,5 @@
-from typing import Protocol, Optional
+from typing import Protocol
+
 from app.domain.schemas.extraction import ExtractedMetadata
 
 
@@ -9,8 +10,8 @@ class LLMInterface(Protocol):
     Python Protocol을 사용하여 Duck Typing 기반 인터페이스 정의.
     구체적 구현체는 Infrastructure 레이어에서 제공.
     """
-    
-    def extract_metadata(self, text: str) -> Optional[ExtractedMetadata]:
+
+    def extract_metadata(self, text: str) -> ExtractedMetadata | None:
         """
         텍스트에서 구조화된 메타데이터 추출
         
