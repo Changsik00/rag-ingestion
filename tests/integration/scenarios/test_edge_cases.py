@@ -24,7 +24,8 @@ def test_url_with_special_characters():
     import time
     
     # Given: 한글이 포함된 URL (URL encoding 필요)
-    url_with_korean = "https://example.com/테스트/페이지"
+    # Note: httpbin 사용 (404 방지)
+    url_with_korean = "https://httpbin.org/anything/테스트"
     
     # When: 수집 요청
     response = client.post("/ingest/web", json={
@@ -53,7 +54,7 @@ def test_url_with_special_characters():
         
         # FAILED라면 명확한 이유가 있어야 함
         if job["status"] == "FAILED":
-            assert job.get("error") is not None
+            assert job.get("error_message") is not None
 
 
 @pytest.mark.integration
@@ -69,11 +70,11 @@ def test_concurrent_ingestion_requests():
     
     # Given: 5개의 서로 다른 URL
     urls = [
-        "https://example.com/page1",
-        "https://example.com/page2",
-        "https://example.com/page3",
-        "https://example.com/page4",
-        "https://example.com/page5",
+        "https://httpbin.org/status/200",
+        "https://httpbin.org/delay/0",
+        "https://httpbin.org/base64/SFRUUEJJTiBpcyBhd2Vzb21l",
+        "https://httpbin.org/headers",
+        "https://httpbin.org/user-agent",
     ]
     
     # When: 동시에 요청 (빠르게 연속 요청)
