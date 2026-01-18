@@ -53,7 +53,7 @@
   - [x] `get_entities_by_document` 구현
   - [x] `get_document_ids_by_entity` 구현
   - [x] `list_all_entities` 구현
-- [ ] 커밋 대기: `feat: implement Neo4jGraphRepository`
+- [x] 커밋: `feat: implement Neo4jGraphRepository`
 
 ---
 
@@ -63,7 +63,7 @@
   - [x] GraphRepository 생성자 파라미터 추가
   - [x] `_build_knowledge_graph` 메서드 추가
   - [x] `process_job` 메서드에서 Entity 그래프 구축 호출
-- [ ] 커밋 대기: `feat: integrate knowledge graph building in ingestion`
+- [x] 커밋: `feat: integrate knowledge graph building in ingestion`
 
 ---
 
@@ -72,7 +72,7 @@
 - [x] `app/interfaces/api/dependencies.py` 수정
   - [x] `get_graph_repository()` 함수 추가
   - [x] `get_ingestion_service()`에 GraphRepository 주입
-- [ ] 커밋 대기: `feat: add GraphRepository dependency injection`
+- [x] 커밋: `feat: add GraphRepository dependency injection`
 
 ---
 
@@ -84,7 +84,7 @@
   - [x] `GET /entities/{name}/info` - Entity 정보
 - [x] `app/interfaces/api/main.py` 수정
   - [x] entities router 추가
-- [ ] 커밋 대기: `feat: add entity API endpoints`
+- [x] 커밋: `feat: add entity API endpoints`
 
 ---
 
@@ -99,7 +99,7 @@
   - [x] `test_list_all_entities`
 - [x] 테스트 실행: `uv run pytest tests/unit/test_neo4j_graph_repository.py -v`
 - [x] 7 passed in 0.26s
-- [ ] 커밋 대기: `test: add unit tests for Neo4jGraphRepository`
+- [x] 커밋: `test: add contract and unit tests for GraphRepository`
 
 ---
 
@@ -110,7 +110,7 @@
   - [x] `test_entity_based_document_search` - Entity로 Document 검색
   - [x] `test_entity_deduplication` - Entity 중복 처리
 - [ ] 테스트 실행: `docker compose up -d && uv run pytest tests/integration/bdd/test_knowledge_graph.py -v -m integration`
-- [ ] 커밋 대기: `test: add integration tests for knowledge graph`
+- [x] 커밋: `test: add integration tests for knowledge graph`
 
 ---
 
@@ -121,7 +121,7 @@
   - [x] Neo4jGraphRepository 계약 준수 확인
 - [x] 테스트 실행: `uv run pytest tests/contracts/test_graph_repository_contract.py -v`
 - [x] 6 passed in 0.31s
-- [ ] 커밋 대기: `test: add contract tests for GraphRepository`
+- [x] 커밋: (Task 8과 함께 커밋됨)
 
 ---
 
