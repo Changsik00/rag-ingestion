@@ -151,12 +151,23 @@
 
 > **목표**: 언제 해도 상관없지만 보존할 가치가 있는 아이디어. 시간과 우선순위에 따라 Spec으로 승격될 수 있음.
 
-* **[Testing] Integration Test Scenarios 확장** (Spec 009 미구현 분)
-  * 성공 시나리오: 중복 URL 처리, 다양한 콘텐츠 타입
-  * 실패 시나리오: 타임아웃, 네트워크 오류, 잘못된 Job ID, 빈 콘텐츠
-  * Edge Cases: 매우 긴 URL, 매우 큰 HTML (10MB+), Redirect 처리
+* **[Testing] Integration Test Scenarios 확장** (Spec 009, 012)
+  * ✅ **완료 (Spec 012):** 잘못된 Job ID → 404, 중복 URL 처리
+  * ⏳ **남은 작업:**
+    - 성공 시나리오: 다양한 콘텐츠 타입
+    - 실패 시나리오: 타임아웃, 네트워크 오류, 빈 콘텐츠
+    - Edge Cases: 매우 긴 URL, 매우 큰 HTML (10MB+), Redirect 처리
   * **상세 내용**: `specs/009-testing-strategy/remaining_scenarios.md` 참조
-  * **우선순위**: High - 잘못된 Job ID → 404, 중복 URL 처리
+  * **우선순위**: Medium (High Priority 완료됨)
+
+* **[BugFix] Failed Tests 수정** (발견: 2026-01-18)
+  * **총 6개 실패:** DI 테스트 3개 + Use Case 테스트 3개
+  * **원인:**
+    - `test_dependency_injection.py` (3개): Spec 006, 011 이후 DI 설정 변경
+    - `test_usecases.py` (3개): Spec 010 이후 IngestionService 생성자 변경 (GraphRepository 추가)
+  * **해결 방안:** Mock 설정 업데이트, IngestionService 파라미터 수정
+  * **상세 내용**: `specs/012-integration-test-high-priority/failed_tests_analysis.md`
+  * **우선순위**: High (Core Test 실패)
 
 
 * **[Feature] API Input Validation & Error Handling Improvement**
