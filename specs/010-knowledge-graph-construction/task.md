@@ -90,15 +90,16 @@
 
 ## Task 8: Unit Tests - Neo4jGraphRepository
 
-- [ ] `tests/unit/test_neo4j_graph_repository.py` 생성
-  - [ ] `test_save_entity_creates_node`
-  - [ ] `test_save_entity_merge_duplicates`
-  - [ ] `test_create_mention_relationship`
-  - [ ] `test_get_entities_by_document`
-  - [ ] `test_get_document_ids_by_entity`
-  - [ ] `test_list_all_entities`
-- [ ] 테스트 실행: `uv run pytest tests/unit/test_neo4j_graph_repository.py -v`
-- [ ] 커밋: `test: add unit tests for Neo4jGraphRepository`
+- [x] `tests/unit/test_neo4j_graph_repository.py` 생성
+  - [x] `test_save_entity_creates_node`
+  - [x] `test_save_entity_merge_duplicates`
+  - [x] `test_create_mention_relationship`
+  - [x] `test_get_entities_by_document`
+  - [x] `test_get_document_ids_by_entity`
+  - [x] `test_list_all_entities`
+- [x] 테스트 실행: `uv run pytest tests/unit/test_neo4j_graph_repository.py -v`
+- [x] 7 passed in 0.26s
+- [ ] 커밋 대기: `test: add unit tests for Neo4jGraphRepository`
 
 ---
 
@@ -115,11 +116,12 @@
 
 ## Task 10: Contract Tests - GraphRepository
 
-- [ ] `tests/contracts/test_graph_repository_contract.py` 생성
-  - [ ] GraphRepository 인터페이스 검증
-  - [ ] Neo4jGraphRepository 계약 준수 확인
-- [ ] 테스트 실행: `uv run pytest tests/contracts/test_graph_repository_contract.py -v`
-- [ ] 커밋: `test: add contract tests for GraphRepository`
+- [x] `tests/contracts/test_graph_repository_contract.py` 생성
+  - [x] GraphRepository 인터페이스 검증
+  - [x] Neo4jGraphRepository 계약 준수 확인
+- [x] 테스트 실행: `uv run pytest tests/contracts/test_graph_repository_contract.py -v`
+- [x] 6 passed in 0.31s
+- [ ] 커밋 대기: `test: add contract tests for GraphRepository`
 
 ---
 
