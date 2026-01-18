@@ -113,11 +113,11 @@
   * [x] 중복 URL 처리 시나리오
   * [x] BDD 스타일 통합 테스트 추가
 
-* [ ] **Spec 013: Fix Failed Tests** (진행 중)
-  * [ ] DI 테스트 Import 경로 수정 (3개)
-  * [ ] Use Case 테스트 Mock 설정 업데이트 (3개)
-  * [ ] 전체 테스트 스위트 통과 확인
-  * **우선순위**: High (Core Test 실패)
+* [x] **Spec 013: Fix Failed Tests**
+  * [x] DI 테스트 Import 경로 수정 (3개)
+  * [x] Use Case 테스트 Mock 설정 업데이트 (3개)
+  * [x] 전체 테스트 스위트 통과 확인 (85 passed, 4 skipped)
+  * **완료**: 2026-01-18
 
 ---
 

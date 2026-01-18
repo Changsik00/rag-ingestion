@@ -2,84 +2,84 @@
 
 ## Progress
 
-- [ ] Spec 번호 확정 (013)
-- [ ] spec.md 작성
-- [ ] plan.md 작성
-- [ ] task.md 작성
-- [ ] 사용자 승인 대기
-- [ ] 브랜치 생성 및 구현 시작
+- [x] Spec 번호 확정 (013)
+- [x] spec.md 작성
+- [x] plan.md 작성
+- [x] task.md 작성
+- [x] 사용자 승인 완료
+- [x] 브랜치 생성 및 구현 시작
 
 ---
 
 ## Task 1: 브랜치 생성 및 Spec 문서 커밋
 
-- [ ] 브랜치 생성: `git checkout -b feature/013-fix-failed-tests`
-- [ ] 브랜치 확인: `git branch --show-current`
-- [ ] Spec 문서 커밋: `git add specs/013-fix-failed-tests/ && git commit -m "docs: add spec 013 - fix failed tests"`
+- [x] 브랜치 생성: `git checkout -b feature/013-fix-failed-tests`
+- [x] 브랜치 확인: `git branch --show-current`
+- [x] Spec 문서 커밋: `git add specs/013-fix-failed-tests/ && git commit -m "docs: add spec 013 - fix failed tests"`
 
 ---
 
 ## Task 2: DI 테스트 분석 및 수정 전략 결정
 
-- [ ] DI 테스트 실행하여 에러 메시지 확인
+- [x] DI 테스트 실행하여 에러 메시지 확인
   - `pytest tests/integration/tdd/test_dependency_injection.py -v`
-- [ ] `app/interfaces/api/dependencies.py` 파일 검토
-- [ ] 수정 전략 결정:
+- [x] `app/interfaces/api/dependencies.py` 파일 검토
+- [x] 수정 전략 결정:
   - Case A: Import 경로만 수정 (함수 존재 시)
-  - Case B: 테스트 재작성 (함수 없음 시)
+  - **Case B 선택**: 테스트 재작성 (함수 없음)
 
 ---
 
 ## Task 3: DI 테스트 수정
 
-- [ ] `tests/integration/tdd/test_dependency_injection.py` 수정
-  - [ ] Import 경로 수정 또는 테스트 재작성
-  - [ ] `test_get_neo4j_storage` 수정
-  - [ ] `test_get_chroma_storage` 수정
-  - [ ] `test_get_composite_storage` 수정
-- [ ] 테스트 실행: `pytest tests/integration/tdd/test_dependency_injection.py -v`
-- [ ] 결과: 3 passed 확인
-- [ ] 커밋: `test: fix dependency injection test imports`
+- [x] `tests/integration/tdd/test_dependency_injection.py` 수정
+  - [x] Import 경로 수정 (`app.core.dependencies` → `app.interfaces.api.dependencies`)
+  - [x] `test_get_neo4j_storage` → `test_get_repository_returns_composite_storage` (재작성)
+  - [x] `test_get_chroma_storage` → `test_get_neo4j_driver_initialization` (재작성)
+  - [x] `test_get_composite_storage` → `test_get_graph_repository` (재작성)
+- [x] 테스트 실행: `pytest tests/integration/tdd/test_dependency_injection.py -v`
+- [x] 결과: 3 passed, 1 skipped 확인
+- [x] 커밋: `test: fix dependency injection test imports`
 
 **커밋 메시지:**
 ```
 test: fix dependency injection test imports
 
 - Update import path from app.core.dependencies to app.interfaces.api.dependencies
-- [선택] Modify tests to match current DI structure
-- All 3 DI tests now passing
+- Rewrite tests to match current DI structure (get_repository, get_neo4j_driver, get_graph_repository)
+- All 3 DI tests now passing (3 passed, 1 skipped)
 ```
 
 ---
 
 ## Task 4: Use Case 테스트 수정
 
-- [ ] `tests/unit/test_usecases.py` 수정
-  - [ ] `test_create_job`: Mock 추가 (graph, extractor)
-  - [ ] `test_process_job_success`: Mock 추가 (graph, extractor)
-  - [ ] `test_process_job_failure`: Mock 추가 (graph, extractor)
-- [ ] 테스트 실행: `pytest tests/unit/test_usecases.py -v`
-- [ ] 결과: 3 passed 확인
-- [ ] 커밋: `test: update IngestionService test mocks`
+- [x] `tests/unit/test_usecases.py` 수정
+  - [x] `test_create_job`: Mock 추가 (graph, extractor)
+  - [x] `test_process_job_success`: Mock 추가 (graph, extractor)
+  - [x] `test_process_job_failure`: Mock 추가 (graph, extractor)
+- [x] 테스트 실행: `pytest tests/unit/test_usecases.py -v`
+- [x] 결과: 3 passed 확인
+- [x] 커밋: `test: update IngestionService test mocks`
 
 **커밋 메시지:**
 ```
 test: update IngestionService test mocks
 
 - Add graph and extractor parameters to match Spec 010 changes
-- All use case tests now passing
+- All use case tests now passing (3 passed)
 ```
 
 ---
 
 ## Task 5: 전체 테스트 검증 (회귀 방지)
 
-- [ ] Contract Tests: `pytest tests/contracts/ -v`
-- [ ] Unit Tests: `pytest tests/unit/ -v`
-- [ ] Integration Tests: `pytest tests/integration/ -v`
-- [ ] 전체 테스트: `pytest tests/ -v`
-- [ ] 모든 테스트 통과 확인
-- [ ] 기존 기능 영향 없음 확인
+- [x] Contract Tests: `pytest tests/contracts/ -v`
+- [x] Unit Tests: `pytest tests/unit/ -v`
+- [x] Integration Tests: `pytest tests/integration/ -v`
+- [x] 전체 테스트: `pytest tests/ -v`
+- [x] 모든 테스트 통과 확인 (85 passed, 4 skipped)
+- [x] 기존 기능 영향 없음 확인
 
 ---
 
