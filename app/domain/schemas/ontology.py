@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 class EntityType(str, Enum):
     """
     표준화된 Entity 타입 분류
-    
+
     LLM이 추출한 Entity를 7가지 타입으로 분류.
     자유 형식 문자열 대신 Enum을 사용하여 타입 안정성 확보.
     """
@@ -29,8 +29,8 @@ class EntityType(str, Enum):
 class RelationshipType(str, Enum):
     """
     Entity 간 관계 타입 (향후 Spec 008에서 활용)
-    
-    현재는 스키마 정의만 수행하고, 실제 관계 추출 및 
+
+    현재는 스키마 정의만 수행하고, 실제 관계 추출 및
     Neo4j 저장은 Spec 008에서 구현 예정.
     """
     # Document-Entity 관계
@@ -53,10 +53,10 @@ class RelationshipType(str, Enum):
 class TypedEntity(BaseModel):
     """
     Entity 분류 결과 (향후 확장용)
-    
+
     현재는 사용하지 않지만, 향후 Entity에 신뢰도(confidence) 등
     추가 메타데이터를 붙일 때 활용 가능.
-    
+
     Example:
         >>> entity = TypedEntity(
         ...     name="Elon Musk",

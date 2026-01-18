@@ -19,7 +19,7 @@ class ChromaStorage(DocumentRepository):
         # ChromaDB 제약사항: metadata 값으로 str, int, float, bool만 허용
         # 복잡한 타입은 JSON 문자열로 직렬화하여 저장
         flattened_metadata = {"source_url": document.source_url}
-        
+
         for key, value in document.metadata.items():
             if isinstance(value, (dict, list)):
                 # 복잡한 타입은 JSON 문자열로 직렬화
@@ -28,7 +28,7 @@ class ChromaStorage(DocumentRepository):
                 # Primitive 타입은 그대로 유지
                 flattened_metadata[key] = value
             # ChromaDB가 지원하지 않는 타입은 스킵
-        
+
         self.collection.add(
             documents=[document.content],
             metadatas=[flattened_metadata],

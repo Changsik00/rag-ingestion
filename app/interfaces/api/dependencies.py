@@ -19,7 +19,6 @@ from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphReposito
 from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
 from app.use_cases.ingestion import IngestionService
 
-
 # === Dependency Injection 컨테이너 ===
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
 # 모든 의존성은 함수로 정의되어 테스트 시 Mock으로 대체 가능합니다.

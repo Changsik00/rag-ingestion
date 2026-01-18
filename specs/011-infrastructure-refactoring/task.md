@@ -69,19 +69,19 @@
 
 ## Task 7: 테스트 실행 및 검증
 
-- [ ] Contract Tests: `uv run pytest tests/contracts/ -v`
-- [ ] Unit Tests: `uv run pytest tests/unit/ -v`
+- [x] Contract Tests: `uv run pytest tests/contracts/ -v`
+- [x] Unit Tests: `uv run pytest tests/unit/ -v`
 - [ ] Integration Tests: `docker compose up -d && uv run pytest tests/integration/ -v -m integration`
-- [ ] Linter: `ruff check app/`
-- [ ] Import 검증 스크립트 실행
-- [ ] 모든 테스트 통과 확인
+- [x] Linter: `ruff check app/`
+- [x] Import 검증 스크립트 실행
+- [x] 모든 테스트 통과 확인 (45 passed, 2 skipped)
 
 ---
 
 ## Task 8: PR 준비 및 문서화
 
-- [ ] `pr_description.md` 작성
-- [ ] 모든 변경사항 커밋
+- [x] `pr_description.md` 작성
+- [x] 모든 변경사항 커밋 (8개 커밋)
 - [ ] 푸시: `git push origin feature/011-infrastructure-refactoring`
 - [ ] PR 생성: `gh pr create --title "refactor(spec-011): infrastructure layer refactoring" --body-file specs/011-infrastructure-refactoring/pr_description.md`
 
