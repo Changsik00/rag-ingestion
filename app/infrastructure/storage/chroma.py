@@ -16,18 +16,18 @@ class ChromaStorage(DocumentRepository):
         self.collection = self.client.get_or_create_collection(name="documents")
 
     def save(self, document: AtomicDocument) -> None:
-        # Flatten metadata to comply with ChromaDB constraints
-        # ChromaDB only accepts str, int, float, bool as metadata values
+        # ChromaDB 제약사항: metadata 값으로 str, int, float, bool만 허용
+        # 복잡한 타입은 JSON 문자열로 직렬화하여 저장
         flattened_metadata = {"source_url": document.source_url}
         
         for key, value in document.metadata.items():
             if isinstance(value, (dict, list)):
-                # Serialize complex types to JSON string
+                # 복잡한 타입은 JSON 문자열로 직렬화
                 flattened_metadata[f"{key}_json"] = json.dumps(value)
             elif isinstance(value, (str, int, float, bool, type(None))):
-                # Keep primitive types as-is
+                # Primitive 타입은 그대로 유지
                 flattened_metadata[key] = value
-            # Skip other types that ChromaDB doesn't support
+            # ChromaDB가 지원하지 않는 타입은 스킵
         
         self.collection.add(
             documents=[document.content],
@@ -36,12 +36,12 @@ class ChromaStorage(DocumentRepository):
         )
 
     def get(self, doc_id: UUID) -> AtomicDocument | None:
-        # Chroma is less suitable for primary retrieval, but consistent interface requires it.
-        # Minimal implementation for now.
+        # ChromaDB는 주된 검색 용도가 아니므로 최소 구현
+        # Neo4j가 primary source
         result = self.collection.get(ids=[str(doc_id)])
         if result and result['documents']:
-             # Reconstructing object from Chroma is lossy (no full metadata usually),
-             # but we implement basic mapping.
+             # ChromaDB에서 객체 재구성은 손실이 발생함 (full metadata 없음)
+             # 하지만 기본 매핑은 구현
              return AtomicDocument(
                  id=doc_id,
                  content=result['documents'][0],
@@ -51,9 +51,9 @@ class ChromaStorage(DocumentRepository):
         return None
 
     def list_documents(self, limit: int = 10) -> list[AtomicDocument]:
-        # Chroma peek
+        # ChromaDB peek (샘플 조회)
         result = self.collection.peek(limit=limit)
-        docs = []
+        docs: list[AtomicDocument] = []
         if result and result['ids']:
             for i in range(len(result['ids'])):
                  docs.append(AtomicDocument(
