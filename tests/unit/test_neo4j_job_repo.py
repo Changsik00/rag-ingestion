@@ -5,19 +5,20 @@ from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
 
 
 def test_create_job():
+    # Given: Mock driver와 session
     driver_mock = Mock()
     session_mock = MagicMock()
     driver_mock.session.return_value = session_mock
-    # session context manager
     session_mock.__enter__.return_value = session_mock
     session_mock.__exit__.return_value = None
 
     repo = Neo4jJobRepository(driver_mock)
     job = IngestionJob(source_url="http://example.com")
 
+    # When: Job 생성
     repo.create_job(job)
 
-    # Verify run was called
+    # Then: MERGE 쿼리가 실행됨
     session_mock.run.assert_called()
     args, _ = session_mock.run.call_args
     query = args[0]
@@ -25,6 +26,7 @@ def test_create_job():
     assert "SET j.source_url = $source_url" in query
 
 def test_update_job():
+    # Given: Mock driver와 repository
     driver_mock = Mock()
     session_mock = MagicMock()
     driver_mock.session.return_value = session_mock
@@ -34,8 +36,10 @@ def test_update_job():
     repo = Neo4jJobRepository(driver_mock)
     job = IngestionJob(source_url="http://example.com", status=JobStatus.COMPLETED)
 
+    # When: Job 업데이트
     repo.update_job(job)
 
+    # Then: MATCH + SET 쿼리가 실행됨
     session_mock.run.assert_called()
     args, _ = session_mock.run.call_args
     query = args[0]
@@ -43,13 +47,13 @@ def test_update_job():
     assert "SET j.status = $status" in query
 
 def test_get_job():
+    # Given: Mock driver와 Job 데이터
     driver_mock = Mock()
     session_mock = MagicMock()
     driver_mock.session.return_value = session_mock
     session_mock.__enter__.return_value = session_mock
     session_mock.__exit__.return_value = None
 
-    # Mock result
     record_mock = MagicMock()
     node_mock = {
         "job_id": "test-id",
@@ -66,21 +70,23 @@ def test_get_job():
     result_mock.single.return_value = record_mock
     session_mock.run.return_value = result_mock
 
+    # When: Job ID로 Job 조회
     repo = Neo4jJobRepository(driver_mock)
     job = repo.get_job("test-id")
 
+    # Then: IngestionJob 엔티티 반환
     assert job is not None
     assert job.job_id == "test-id"
     assert job.status == JobStatus.COMPLETED
 
 def test_list_jobs():
+    # Given: Mock driver와 Job 리스트
     driver_mock = Mock()
     session_mock = MagicMock()
     driver_mock.session.return_value = session_mock
     session_mock.__enter__.return_value = session_mock
     session_mock.__exit__.return_value = None
 
-    # Mock result iteration
     record_mock = MagicMock()
     node_mock = {
         "job_id": "test-id",
@@ -96,8 +102,10 @@ def test_list_jobs():
     result_mock.__iter__ = Mock(return_value=iter([record_mock]))
     session_mock.run.return_value = result_mock
 
+    # When: Job 리스트 조회 (limit=10)
     repo = Neo4jJobRepository(driver_mock)
     jobs = repo.list_jobs(limit=10)
 
+    # Then: Job 리스트 반환
     assert len(jobs) == 1
     assert jobs[0].job_id == "test-id"
