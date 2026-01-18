@@ -2,14 +2,24 @@ feat(spec-016): entity-entity relationship extraction
 
 ## 📋 Summary
 
-Knowledge Graph에 Entity 간 관계 추출 및 저장 기능을 구현했습니다. LLM이 "Elon Musk가 Tesla를 FOUNDED"와 같은 Entity 간 의미적 관계를 추출하고, Neo4j에 명시적 관계 엣지로 저장합니다.
+문서에서 단어(Entity)뿐만 아니라 **단어들 사이의 관계**까지 자동으로 추출하는 기능을 추가했습니다.
+
+**Before (이전):**
+- 문서를 읽으면 "Elon Musk", "Tesla" 같은 중요한 단어만 추출
+- 이 단어들이 문서에 나왔다는 사실만 기록
+
+**After (이번 변경):**
+- 단어들 사이의 관계도 함께 추출 
+  - 예: "Elon Musk가 Tesla를 설립했다" → `Elon Musk --설립--> Tesla`
+- 이제 가능한 질문:
+  - "Elon Musk가 설립한 회사는?" → Tesla
+  - "Tesla를 설립한 사람은?" → Elon Musk
 
 **주요 성과:**
-- ✅ Entity Type 확장: 7개 → 9개 (PRODUCT, DOCUMENT 추가)
-- ✅ EntityRelationship schema 및 Neo4j 저장 구현
-- ✅ API 엔드포인트: `GET /entities/{name}/relationships`
-- ✅ 15개 신규 테스트 (모두 통과)
-- ✅ 전체 테스트: **92 passed** (회귀 없음)
+- ✅ 관계 종류: FOUNDED, WORKS_FOR, USES 등 7가지 지원
+- ✅ Entity 종류 확장: 7개 → 9개 (제품, 문서 추가)
+- ✅ API: `GET /entities/{name}/relationships` 
+- ✅ 테스트: 15개 신규 추가, 총 92개 통과
 
 ---
 
