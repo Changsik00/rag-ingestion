@@ -152,7 +152,14 @@
   * [ ] Heavy ML dependencies 제거 (onnxruntime, tokenizers)
   * [ ] Backend 컨테이너 경량화
   * [ ] Optional: Embedding worker 분리 아키텍처 고려
+  * [ ] **Issue Fix**: 4개 integration test 실패 해결
+    - test_successful_entity_graph_auto_construction
+    - test_entity_based_document_search
+    - test_entity_deduplication
+    - test_duplicate_url_sequential_ingestion
   * **현재 상태**: ChromaDB가 all-MiniLM-L6-v2 로컬 모델 사용 중 (간접 의존성으로 onnxruntime, tokenizers 필요)
+  * **문제**: Docker 환경에서 onnxruntime을 찾지 못해 embedding 실패 (Spec 016에서 발견)
+  * **우선순위**: Medium (기능 추가와 무관, 기존 테스트만 영향)
 
 ---
 
