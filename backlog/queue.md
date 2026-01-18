@@ -126,12 +126,12 @@
   * [x] 전체 테스트 통과 확인 (85 passed, 4 skipped)
   * **완료**: 2026-01-18
 
-* [ ] **Spec 015: Documentation Update & Reorganization** (진행 중)
-  * [ ] README 최신화 (Spec 010, 011, 014 반영)
-  * [ ] specs 디렉토리의 재사용 가능한 문서를 docs로 이동
-  * [ ] docs 디렉토리 구조 개선
-  * [ ] 전체 문서 일관성 검토
-  * **우선순위**: Medium (문서 품질)
+* [x] **Spec 015: Documentation Update & Reorganization** 
+  * [x] README 최신화 (Spec 010-015, Phase 4-5 반영)
+  * [x] specs 디렉토리의 재사용 가능한 문서를 docs로 이동
+  * [x] docs 디렉토리 구조 개선 (카테고리 분류)
+  * [x] 전체 문서 일관성 검토 및 cross-reference 정리
+  * **완료**: 2026-01-19
 
 ---
 
