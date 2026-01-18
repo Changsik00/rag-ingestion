@@ -248,15 +248,20 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 12-1. docs/ontology.md 업데이트
 
-- [ ] PRODUCT, DOCUMENT 타입 설명 추가
-- [ ] Entity Type 개수 7 → 9로 수정
-- [ ] Relationship 타입 활용 예시 추가
-- [ ] 커밋: `docs: update ontology.md with new entity types`
+- [x] RelationshipType enum 문서화
+- [x] EntityRelationship schema 문서화
+- [x] Implementation details (Cypher queries, API endpoints)
+- [x] 관련 Spec 링크 추가
 
-### 12-2. Backlog 업데이트
+**Commit**: docs: add Entity-Entity relationship implementation to ontology.md
 
-- [ ] Spec 016 완료 표시
-- [ ] 커밋: `docs: mark spec 016 as completed in backlog`
+### 12-2. backlog/queue.md 업데이트
+
+- [x] Spec 016을 Completed로 마킹
+- [x] 완료 일자 추가 (2026-01-19)
+- [x] Known Issues 노트 추가
+
+**Commit**: docs: mark Spec 016 as completed in backlogwith new entity types`
 
 ---
 
