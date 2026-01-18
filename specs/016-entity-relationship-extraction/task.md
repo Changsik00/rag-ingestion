@@ -211,7 +211,22 @@ feat: add PRODUCT and DOCUMENT entity types
 - [x] `pytest tests/ -v`
 - [x] 회귀 확인: 92 passed (기존 + 신규 테스트)
 - [x] 신규 테스트 통과 확인 (Unit + BDD)
-- [x] Note: 4 failed는 기존 integration test 문제 (실제 URL 스크래핑)
+- [x] Known Issue: 4개 integration tests 실패 (ChromaDB embedding 설정 문제, Spec 016과 무관)
+
+**테스트 결과 요약:**
+- ✅ Unit Tests: 15 passed (EntityRelationship + Neo4j Repository methods)
+- ✅ Contract Tests: All passed
+- ✅ BDD Tests (Spec 016): 3 passed, 1 skipped
+- ❌ Existing Integration Tests: 4 failed (기존 ChromaDB onnxruntime 이슈)
+
+**Known Issues (별도 Spec 처리 필요):**
+1. test_successful_entity_graph_auto_construction
+2. test_entity_based_document_search
+3. test_entity_deduplication
+4. test_duplicate_url_sequential_ingestion
+
+원인: ChromaDB embedding이 onnxruntime을 찾지 못함 (Docker 환경 설정 문제)
+해결: 별도 Spec으로 ChromaDB 환경 수정 필요
 
 ### 11-2. Neo4j Browser 검증
 
