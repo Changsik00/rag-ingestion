@@ -116,11 +116,11 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 6-1. Prompt 확장
 
-- [ ] `app/infrastructure/llm/langchain_adapter.py` 열기
-- [ ] Relationship 추출 지시 추가
-- [ ] Relationship 타입별 예시 추가 (FOUNDED, WORKS_FOR 등)
-- [ ] "Only EXPLICIT relationships" 강조
-- [ ] 커밋: `feat: add relationship extraction to llm prompt`
+- [x] `app/infrastructure/llm/langchain_adapter.py` 열기
+- [x] Relationship 추출 지시 추가 (section 5)
+- [x] Relationship 타입별 예시 추가 (FOUNDED, WORKS_FOR 등)
+- [x] "Only EXPLICIT relationships" 강조
+- [x] 커밋: `feat: add relationship extraction to llm prompt`
 
 ### 6-2. Pydantic 출력 스키마
 
@@ -145,16 +145,17 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ---
 
-## Task 8: API - Relationship 조회 (진행 예정)
+## Task 8: API - Relationship 조회
 
 ### 8-1. 엔드포인트 추가
 
-- [ ] `app/interfaces/api/endpoints/entities.py` 열기
-- [ ] `GET /entities/{entity_name}/relationships` 추가
-- [ ] Query parameter: relationship_type (Optional)
-- [ ] Response model 정의
-- [ ] Docstring 및 예시 작성
-- [ ] 커밋: `feat: add entity relationships api endpoint`
+- [x] `app/interfaces/api/endpoints/entities.py` 열기
+- [x] `GET /entities/{entity_name}/relationships` 추가
+- [x] Query parameter: relationship_type (Optional)
+- [x] Response model 정의
+- [x] Docstring 및 예시 작성
+- [x] RelationshipType enum validation 추가
+- [x] 커밋: `feat: add entity relationships api endpoint`
 
 ### 8-2. Swagger 문서 확인
 
