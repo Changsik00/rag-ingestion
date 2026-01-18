@@ -7,7 +7,7 @@ from app.use_cases.ingestion import IngestionService
 
 
 def test_create_job():
-    # Arrange
+    # Given: IngestionService와 mocked dependencies
     mock_scraper = Mock(spec=ScraperInterface)
     mock_doc_repo = Mock()
     mock_graph_repo = Mock()
@@ -20,16 +20,16 @@ def test_create_job():
         extractor=None
     )
 
-    # Act
+    # When: Job 생성 요청
     job = service.create_job("http://example.com")
 
-    # Assert
+    # Then: Job이 PENDING 상태로 생성됨
     assert job.source_url == "http://example.com"
     assert job.status == JobStatus.PENDING
     mock_job_repo.create_job.assert_called_once_with(job)
 
 def test_process_job_success():
-    # Arrange
+    # Given: IngestionService와 mocked dependencies
     mock_scraper = Mock(spec=ScraperInterface)
     mock_doc_repo = Mock()
     mock_graph_repo = Mock()
@@ -54,15 +54,12 @@ def test_process_job_success():
         extractor=mock_extractor
     )
 
-    # Act
+    # When: Job 처리
     service.process_job(mock_job.job_id)
 
-    # Assert
-    # 1. Scrape & Save
+    # Then: 스크래핑 및 저장 성공, Job 상태가 COMPLETED로 변경
     mock_scraper.scrape.assert_called_once_with("http://example.com")
     mock_doc_repo.save.assert_called_once()
-
-    # 2. Status Updates (RUNNING -> COMPLETED)
     assert mock_job_repo.update_job.call_count == 2
 
     # Check last update
@@ -71,7 +68,7 @@ def test_process_job_success():
     assert last_updated_job.status == JobStatus.COMPLETED
 
 def test_process_job_failure():
-    # Arrange
+    # Given: 스크래핑 실패를 발생시키는 mock scraper
     mock_scraper = Mock(spec=ScraperInterface)
     mock_scraper.scrape.side_effect = Exception("Scrape failed")
     mock_doc_repo = Mock()
@@ -89,12 +86,10 @@ def test_process_job_failure():
         extractor=None
     )
 
-    # Act
-    # process_job handles exceptions internally, so it should NOT raise
+    # When: Job 처리 (예외가 내부에서 처리됨)
     service.process_job(mock_job.job_id)
 
-    # Assert
-    # Status Updates (RUNNING -> FAILED)
+    # Then: Job 상태가 FAILED로 변경됨
     assert mock_job_repo.update_job.call_count == 2
 
     # Verify Failure Update
