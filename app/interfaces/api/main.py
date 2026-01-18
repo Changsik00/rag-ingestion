@@ -5,8 +5,8 @@ from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.interfaces.api.dependencies import get_ingestion_service, get_repository
-from app.interfaces.api.endpoints.jobs import router as jobs_router
 from app.interfaces.api.endpoints.entities import router as entities_router
+from app.interfaces.api.endpoints.jobs import router as jobs_router
 from app.schemas.ingest import AsyncIngestResponse, IngestRequest
 from app.use_cases.ingestion import IngestionService
 

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class LangChainLLMAdapter:
     """
     LangChain을 LLMInterface에 맞게 변환하는 어댑터
-    
+
     Infrastructure 레이어에 위치하여 Domain을 외부 프레임워크로부터 격리.
     기존 SemanticExtractor의 LangChain 로직을 이곳으로 이동.
     """
@@ -27,45 +27,45 @@ class LangChainLLMAdapter:
         self.prompt = PromptTemplate(
             template="""
             You are an advanced AI assistant capable of analyzing text and extracting structured metadata.
-            
+
             Please analyze the following text and extract:
             1. A suitable title (if the original is missing or unclear).
             2. A concise summary (approx. 3 sentences).
             3. A list of 5-10 relevant keywords.
             4. Key entities classified by EXACTLY one of the following standardized types:
-            
+
             **CRITICAL: Entity Classification Rules**
             You MUST classify entities into EXACTLY one of these types:
-            
+
             - PERSON: Individual people or fictional characters
               Examples: "Elon Musk", "Geoffrey Hinton", "Steve Jobs", "Harry Potter"
-            
+
             - ORGANIZATION: Companies, institutions, or groups
               Examples: "Tesla", "MIT", "World Health Organization", "Y Combinator"
-            
+
             - TECHNOLOGY: Specific tools, frameworks, languages, or technical products
               Examples: "Python", "Docker", "GPT-4", "Neo4j", "React", "PostgreSQL"
-            
+
             - CONCEPT: Abstract ideas, theories, methodologies, or academic concepts
               Examples: "Machine Learning", "Clean Architecture", "Quantum Computing", "Lean Startup"
-            
+
             - LOCATION: Geographic locations, cities, regions, or countries
               Examples: "Seoul", "Silicon Valley", "United States", "San Francisco"
-            
+
             - EVENT: Specific events, conferences, or historical moments
               Examples: "OpenAI DevDay 2024", "World War II", "NeurIPS 2024"
-            
+
             - ACTIVITY: Actions, tasks, processes, or work activities
               Examples: "책 쓰기", "벤치마킹", "코드 리뷰", "데이터 분석", "프로토타이핑", "A/B 테스팅"
-            
+
             **Important Guidelines**:
             - If an entity could fit multiple types, prioritize based on context.
             - Use CONCEPT as a fallback if uncertain between CONCEPT and another type.
             - For Korean activity names like "벤치마킹" or "책 쓰기", use ACTIVITY type.
-            
+
             Text to analyze:
             {text}
-            
+
             {format_instructions}
             """,
             input_variables=["text"],
@@ -76,10 +76,10 @@ class LangChainLLMAdapter:
     def extract_metadata(self, text: str) -> ExtractedMetadata | None:
         """
         LLMInterface 구현: 텍스트에서 메타데이터 추출
-        
+
         Args:
             text: 분석할 텍스트
-            
+
         Returns:
             ExtractedMetadata: 추출된 메타데이터
             None: 추출 실패 시

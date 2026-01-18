@@ -3,7 +3,7 @@
 # Entity 관련 쿼리
 MERGE_ENTITY = """
 MERGE (e:Entity {name: $name})
-ON CREATE SET 
+ON CREATE SET
     e.type = $type,
     e.normalized_name = toLower($name),
     e.created_at = datetime()
@@ -11,7 +11,7 @@ RETURN e.name as name
 """
 
 CREATE_ENTITY_INDEX = """
-CREATE CONSTRAINT entity_name_unique IF NOT EXISTS 
+CREATE CONSTRAINT entity_name_unique IF NOT EXISTS
 FOR (e:Entity) REQUIRE e.name IS UNIQUE
 """
 

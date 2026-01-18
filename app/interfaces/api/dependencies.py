@@ -14,19 +14,22 @@ from app.domain.services.semantic_extractor import SemanticExtractor
 from app.infrastructure.scrapers.basic import BasicWebScraper
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
-from app.infrastructure.storage.neo4j import Neo4jStorage
-from app.infrastructure.storage.neo4j_graph import Neo4jGraphRepository
-from app.infrastructure.storage.neo4j_job_repo import Neo4jJobRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
+from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
 from app.use_cases.ingestion import IngestionService
 
+# === Dependency Injection 컨테이너 ===
+# FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
+# 모든 의존성은 함수로 정의되어 테스트 시 Mock으로 대체 가능합니다.
 
-# Scraper dependency
+# Scraper 의존성 (웹 페이지 스크래핑)
 @lru_cache
 def get_scraper() -> ScraperInterface:
     return BasicWebScraper()
 
 
-# Neo4j driver dependency
+# Neo4j Driver 의존성 (모든 Neo4j 저장소가 공유하는 단일 Driver)
 @lru_cache
 def get_neo4j_driver() -> Driver:
     uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
@@ -35,7 +38,7 @@ def get_neo4j_driver() -> Driver:
     return GraphDatabase.driver(uri, auth=(user, password))
 
 
-# Document repository dependency
+# Document Repository 의존성 (CompositeStorage: Neo4j + ChromaDB)
 @lru_cache
 def get_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> DocumentRepository:
     neo4j_storage = Neo4jStorage(driver)
@@ -43,26 +46,26 @@ def get_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> Docu
     return CompositeStorage(neo4j_storage, chroma_storage)
 
 
-# Job repository dependency
+# Job Repository 의존성 (IngestionJob 관리)
 @lru_cache
 def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> JobRepository:
     return Neo4jJobRepository(driver)
 
 
-# Semantic extractor dependency
+# Semantic Extractor 의존성 (LLM 기반 메타데이터 추출)
 @lru_cache
 def get_semantic_extractor() -> SemanticExtractor:
-    llm_adapter = get_llm()  # LangChainLLMAdapter 반환
+    llm_adapter = get_llm()  # LangChainLLMAdapter를 반환
     return SemanticExtractor(llm=llm_adapter)
 
 
-# Graph repository dependency
+# Graph Repository 의존성 (Entity 및 관계 저장)
 @lru_cache
 def get_graph_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> GraphRepository:
     return Neo4jGraphRepository(driver)
 
 
-# Ingestion service dependency
+# Ingestion Service 의존성 (전체 수집 워크플로우)
 def get_ingestion_service(
     scraper: Annotated[ScraperInterface, Depends(get_scraper)],
     repository: Annotated[DocumentRepository, Depends(get_repository)],

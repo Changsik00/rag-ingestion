@@ -95,7 +95,7 @@ class IngestionService:
     ) -> None:
         """
         Entity 노드 및 MENTIONS 관계 생성
-        
+
         Args:
             doc_id: Document ID
             entities: LLM이 추출한 Entity (EntityType별 분류)

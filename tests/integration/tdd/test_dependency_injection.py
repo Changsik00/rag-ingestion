@@ -13,7 +13,7 @@ def test_get_neo4j_storage():
     Verify that get_neo4j_storage() creates a valid Neo4jStorage instance
     """
     from app.core.dependencies import get_neo4j_storage
-    from app.infrastructure.storage.neo4j import Neo4jStorage
+    from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
     
     # When: DI container provides Neo4jStorage
     storage = get_neo4j_storage()

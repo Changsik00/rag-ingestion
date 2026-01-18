@@ -87,11 +87,29 @@
 
 ### Phase 3: Progressive Intelligence (계속)
 
-* [ ] **Spec ???: Knowledge Graph Construction** (TBD)
-  * [ ] Entity를 Neo4j 노드로 매핑
-  * [ ] Entity 간 관계 생성 및 그래프 구축
-  * [ ] Graph 탐색 API 개발
-  * **Note**: 현재는 metadata의 entities를 JSON 문자열로 직렬화하여 저장 중. 향후 Entity를 별도 노드로 분리하여 관계 기반 쿼리 가능하게 개선 필요
+* [x] **Spec 010: Knowledge Graph Construction**
+  * [x] Entity를 Neo4j 노드로 매핑
+  * [x] Document-Entity MENTIONS 관계 생성
+  * [x] Entity 조회 API 엔드포인트 추가
+  * **완료**: PR #12 머지 완료 (2026-01-18)
+
+---
+
+## 🛠 Unplanned (리팩토링 및 품질 개선)
+
+> **목표**: 코드 품질, 일관성, 가독성 개선을 위한 리팩토링 작업.
+
+* [ ] **Spec 011: Infrastructure Layer Refactoring** (진행 예정)
+  * [ ] Repository 파일명 표준화 (neo4j.py → neo4j_document_repository.py)
+  * [ ] 주석 한글 통일 (영어/한글 혼용 → 한글)
+  * [ ] Type hints 및 Clean Architecture 개선
+  * **우선순위**: Medium
+
+---
+
+## 🗺️ Roadmap (계획된 작업)
+
+### Phase 3: Progressive Intelligence (계속)
 
 * [ ] **Spec ???: Embedding Strategy Refactoring** (TBD)
   * [ ] ChromaDB default local embedding → API 기반 embedding 전환 (Gemini/OpenAI)

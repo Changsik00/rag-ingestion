@@ -13,7 +13,7 @@ class BasicWebScraper(ScraperInterface):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
 
-        # Convert HTML to Markdown
+        # HTML을 Markdown으로 변환
         markdown_content = md(response.text)
 
         return IngestResponse(
