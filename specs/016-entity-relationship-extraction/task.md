@@ -122,12 +122,7 @@ feat: add PRODUCT and DOCUMENT entity types
 - [x] "Only EXPLICIT relationships" 강조
 - [x] 커밋: `feat: add relationship extraction to llm prompt`
 
-### 6-2. Pydantic 출력 스키마
-
-- [ ] `relationships` 필드 추가
-- [ ] LangChain structured output 설정
-- [ ] 테스트: Mock LLM으로 출력 검증
-- [ ] 커밋: `feat: update llm output schema with relationships`
+**Note:** Task 6-2 (Pydantic 출력 스키마)는 Task 3에서 이미 완료됨
 
 ---
 
