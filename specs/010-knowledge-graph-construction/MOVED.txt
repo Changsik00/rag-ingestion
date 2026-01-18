@@ -1,0 +1,10 @@
+# Documentation Moved
+
+The following documentation files have been moved to the `docs/` directory for project-wide reuse:
+
+- `neo4j-query-guide.md` → `docs/neo4j_query_guide.md`
+- `graph-schema-explained.md` → `docs/graph_schema.md`
+
+This change was made in Spec 015: Documentation Update & Reorganization.
+
+Refer to the docs directory for the latest versions.

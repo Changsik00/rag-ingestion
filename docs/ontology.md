@@ -248,32 +248,50 @@ class EntityType(str, Enum):
 
 ## 🔮 향후 계획
 
-### Spec 008: Knowledge Graph Construction
-현재 Spec 007은 **"설계도 작성"** 단계입니다. 
-다음 Spec에서 실제 구현이 진행됩니다:
+### Spec 010: Knowledge Graph Construction (✅ 완료)
+Spec 007의 설계를 기반으로 실제 구현이 완료되었습니다:
 
-1. **LLM이 Entity-Entity 관계 추출**
+1. **✅ Entity Graph 자동 구축**
+   - Document 수집 시 Entity를 Neo4j 노드로 자동 생성
+   - MENTIONS 관계 자동 연결
+
+2. **✅ Neo4j Repository 구현**
+   - `Neo4jGraphRepository`로 Entity 저장 및 조회
+   - Cypher Query Templates를 사용한 효율적 쿼리
+
+3. **✅ Entity API 개발**
+   - `GET /entities` - 전체 Entity 목록
+   - `GET /entities/{name}/documents` - Entity별 Document 조회
+   
+### 향후 확장 (Future Specs)
+4. **LLM Entity-Entity 관계 추출**
    - Prompt에 관계 추출 지시 추가
-   - 예: "Elon Musk founded Tesla" → `(:Person {name: "Elon Musk"})-[:FOUNDED]->(:Organization {name: "Tesla"})`
+   - 예: "Elon Musk founded Tesla" → `(:Person)-[:FOUNDED]->(:Organization)`
 
-2. **Neo4j에 노드 및 관계 생성**
-   - Infrastructure 레이어에서 Neo4j Driver 활용
-   - `CREATE` 쿼리 자동 생성
-
-3. **Graph 탐색 API 개발**
-   - `GET /graph/entity/{entity_name}` → Entity 중심 서브그래프 반환
-   - `GET /graph/relationships/{type}` → 특정 관계 타입 조회
+5. **고급 Graph 탐색 API**
+   - Graph 기반 복잡한 탐색 쿼리
+   - Knowledge Path 분석
 
 ---
 
 ## 📚 참고 자료
 
+### External Resources
 - [Pydantic Enums](https://docs.pydantic.dev/latest/concepts/fields/#enums)
 - [Neo4j Graph Data Modeling](https://neo4j.com/docs/getting-started/data-modeling/)
 - [Ontology Design 101](https://protege.stanford.edu/publications/ontology_development/ontology101.pdf)
 
+### Related Documentation
+- [Graph Schema Guide](./graph_schema.md) - Neo4j graph schema implementation details (Spec 010)
+- [Neo4j Query Guide](./neo4j_query_guide.md) - Practical Cypher queries for knowledge graph exploration
+- [Architecture Guide](./architecture.md) - Clean Architecture principles
+
 ---
 
 **문서 작성일**: 2026-01-16  
-**관련 Spec**: [Spec 007: Ontology Design](file:///Users/ck/Project/doit/rag-ingestion/specs/007-ontology-design/spec.md)  
+**최종 업데이트**: 2026-01-19 (Spec 015: Documentation Update)  
+**관련 Spec**: 
+- [Spec 007: Ontology Design](file:///Users/ck/Project/doit/rag-ingestion/specs/007-ontology-design/spec.md)  
+- [Spec 010: Knowledge Graph Construction](file:///Users/ck/Project/doit/rag-ingestion/specs/010-knowledge-graph-construction/spec.md)  
 **구현 코드**: [`ontology.py`](file:///Users/ck/Project/doit/rag-ingestion/app/domain/schemas/ontology.py)
+
