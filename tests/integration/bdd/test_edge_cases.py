@@ -1,7 +1,7 @@
 """
-Edge case integration tests.
+Edge Case Integration Tests
 
-These tests verify system behavior under unusual or extreme conditions.
+비정상적이거나 극한 상황에서의 시스템 동작을 검증하는 통합 테스트입니다.
 """
 import pytest
 import asyncio

@@ -1,3 +1,10 @@
+"""
+Integration Tests for Async Ingestion API
+
+비동기 웹 수집 API 엔드포인트의 통합 테스트를 수행합니다.
+Job 생성 및 백그라운드 처리 워크플로우를 검증합니다.
+"""
+
 from unittest.mock import Mock
 
 from fastapi.testclient import TestClient

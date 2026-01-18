@@ -1,3 +1,10 @@
+"""
+Unit Tests for IngestionService
+
+IngestionService의 주요 기능(Job 생성, Job 처리)을 검증합니다.
+Mock을 사용하여 의존성을 격리하고 비즈니스 로직만 테스트합니다.
+"""
+
 from unittest.mock import Mock
 
 from app.domain.entities.job import IngestionJob, JobStatus

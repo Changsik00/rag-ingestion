@@ -1,3 +1,10 @@
+"""
+Unit Tests for CompositeStorage
+
+CompositeStorage의 Document 저장 및 조회 기능을 검증합니다.
+Neo4j와 ChromaDB 저장소를 조합하여 사용하는 패턴을 테스트합니다.
+"""
+
 from unittest.mock import Mock
 from uuid import uuid4
 

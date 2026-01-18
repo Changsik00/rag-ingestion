@@ -1,3 +1,10 @@
+"""
+Integration Tests for Document API
+
+Document 관련 API 엔드포인트의 통합 테스트를 수행합니다.
+FastAPI TestClient를 사용하여 실제 HTTP 요청을 시뮬레이션합니다.
+"""
+
 from unittest.mock import Mock
 from uuid import uuid4
 

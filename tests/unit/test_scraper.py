@@ -1,3 +1,9 @@
+"""
+Unit Tests for BasicWebScraper
+
+BasicWebScraper의 웹 페이지 스크래핑 기능을 검증합니다.
+"""
+
 from unittest.mock import Mock, patch
 
 from app.infrastructure.scrapers.basic import BasicWebScraper

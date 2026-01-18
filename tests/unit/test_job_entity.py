@@ -1,3 +1,9 @@
+"""
+Unit Tests for IngestionJob Entity
+
+IngestionJob 엔티티의 생성 및 상태 관리 기능을 검증합니다.
+"""
+
 from datetime import datetime
 
 from app.domain.entities.job import IngestionJob, JobStatus

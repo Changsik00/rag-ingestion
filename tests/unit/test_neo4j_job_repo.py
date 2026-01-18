@@ -1,3 +1,10 @@
+"""
+Unit Tests for Neo4jJobRepository
+
+Neo4jJobRepository의 Job CRUD 기능을 독립적으로 테스트합니다.
+Mock Neo4j driver를 사용하여 실제 DB 없이 테스트합니다.
+"""
+
 from unittest.mock import MagicMock, Mock
 
 from app.domain.entities.job import IngestionJob, JobStatus

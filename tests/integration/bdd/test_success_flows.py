@@ -1,8 +1,8 @@
 """
-Core success scenario integration tests.
+Core Success Scenario Integration Tests
 
-These tests verify that basic workflows complete successfully.
-Based on BDD (Behavior-Driven Development) approach with Given-When-Then structure.
+기본 워크플로우가 성공적으로 완료되는지 검증하는 통합 테스트입니다.
+BDD (Behavior-Driven Development) 접근 방식과 Given-When-Then 구조를 따릅니다.
 """
 import pytest
 import time

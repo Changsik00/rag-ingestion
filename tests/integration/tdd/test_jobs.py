@@ -1,3 +1,10 @@
+"""
+Integration Tests for Job API
+
+Job 관련 API 엔드포인트의 통합 테스트를 수행합니다.
+Job 조회, 리스트, 재시도 등의 기능을 검증합니다.
+"""
+
 from unittest.mock import Mock
 
 from fastapi.testclient import TestClient
