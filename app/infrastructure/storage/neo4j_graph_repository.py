@@ -77,3 +77,55 @@ class Neo4jGraphRepository:
                     type=EntityType(record["type"])
                 ))
         return entities
+
+    def create_entity_relationship(
+        self,
+        source_name: str,
+        relationship_type,  # RelationshipType from ontology
+        target_name: str
+    ) -> None:
+        """Entity-Entity 관계 생성"""
+        # Cypher에서 relationship type은 동적으로 삽입해야 함
+        query = cq.CREATE_ENTITY_RELATIONSHIP.replace(
+            "{relationship_type}",
+            relationship_type.value
+        )
+        
+        with self.driver.session() as session:
+            session.run(
+                query,
+                source_name=source_name,
+                target_name=target_name
+            )
+
+    def get_entity_relationships(
+        self,
+        entity_name: str,
+        relationship_type = None  # Optional[RelationshipType]
+    ) -> list[dict]:
+        """특정 Entity의 관계 목록 조회"""
+        relationships = []
+        
+        with self.driver.session() as session:
+            if relationship_type:
+                # 특정 관계 타입만 필터링
+                query = cq.GET_ENTITY_RELATIONSHIPS_BY_TYPE.replace(
+                    "{relationship_type}",
+                    relationship_type.value
+                )
+                results = session.run(query, entity_name=entity_name)
+            else:
+                # 모든 관계 조회
+                results = session.run(
+                    cq.GET_ENTITY_RELATIONSHIPS,
+                    entity_name=entity_name
+                )
+            
+            for record in results:
+                relationships.append({
+                    "relationship_type": record["relationship_type"],
+                    "target_name": record["target_name"],
+                    "target_type": record["target_type"]
+                })
+        
+        return relationships
