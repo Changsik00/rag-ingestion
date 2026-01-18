@@ -139,8 +139,8 @@
 
 - [x] `specs/010-knowledge-graph-construction/pr_description.md` 작성
 - [x] 모든 변경사항 커밋 (10개 커밋)
-- [ ] 푸시: `git push origin feature/010-knowledge-graph-construction`
-- [ ] PR 생성: `gh pr create --title "feat(spec-010): knowledge graph construction" --body-file specs/010-knowledge-graph-construction/pr_description.md`
+- [x] 푸시: `git push origin feature/010-knowledge-graph-construction`
+- [x] PR 생성: PR #12 - https://github.com/Changsik00/rag-ingestion/pull/12
 
 ---
 
