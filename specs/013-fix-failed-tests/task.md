@@ -85,17 +85,16 @@ test: update IngestionService test mocks
 
 ## Task 6: PR 준비 및 생성
 
-- [ ] `specs/013-fix-failed-tests/walkthrough.md` 작성
-- [ ] `specs/013-fix-failed-tests/pr_description.md` 작성
-- [ ] 백로그 업데이트: `backlog/queue.md` (Spec 013 Icebox → 완료로 이동)
-- [ ] Push: `git push origin feature/013-fix-failed-tests`
-- [ ] PR 생성:
+- [x] `specs/013-fix-failed-tests/walkthrough.md` 작성
+- [x] `specs/013-fix-failed-tests/pr_description.md` 작성
+- [x] 백로그 업데이트: `backlog/queue.md` (Spec 013 완료로 표시)
+- [x] Push: `git push origin feature/013-fix-failed-tests`
+- [x] PR #15 생성: https://github.com/Changsik00/rag-ingestion/pull/15
 ```bash
 gh pr create --base main --head feature/013-fix-failed-tests \
-  --title "✅ Spec 013: Fix Failed Tests" \
+  --title "test(spec-013): fix failed tests after refactoring" \
   --body-file specs/013-fix-failed-tests/pr_description.md
 ```
-- [ ] CI 파이프라인 통과 확인
 
 ---
 
