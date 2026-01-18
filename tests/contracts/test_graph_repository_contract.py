@@ -10,7 +10,7 @@ from typing import get_type_hints
 
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.schemas.ontology import EntityType, TypedEntity
-from app.infrastructure.storage.neo4j_graph import Neo4jGraphRepository
+from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 
 
 def test_graph_repository_protocol_exists():

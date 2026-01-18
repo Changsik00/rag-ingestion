@@ -7,7 +7,7 @@ the constructor parameter mismatch found in Spec 008.
 """
 import pytest
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.infrastructure.storage.neo4j import Neo4jStorage
+from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.chroma import ChromaStorage
 
 

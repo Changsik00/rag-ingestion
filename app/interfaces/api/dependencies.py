@@ -14,9 +14,9 @@ from app.domain.services.semantic_extractor import SemanticExtractor
 from app.infrastructure.scrapers.basic import BasicWebScraper
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
-from app.infrastructure.storage.neo4j import Neo4jStorage
-from app.infrastructure.storage.neo4j_graph import Neo4jGraphRepository
-from app.infrastructure.storage.neo4j_job_repo import Neo4jJobRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
+from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
 from app.use_cases.ingestion import IngestionService
 
 

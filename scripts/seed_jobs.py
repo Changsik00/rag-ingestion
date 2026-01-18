@@ -10,7 +10,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 from app.domain.entities.job import IngestionJob, JobStatus
-from app.infrastructure.storage.neo4j_job_repo import Neo4jJobRepository
+from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
 
 # Configuration matching docker-compose defaults
 NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
