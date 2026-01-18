@@ -138,7 +138,7 @@ def test_duplicate_url_sequential_ingestion():
     docs = docs_response.json()
     
     # 동일 URL을 가진 Document 필터링
-    matching_docs = [d for d in docs if d["source"]["url"] == url]
+    matching_docs = [d for d in docs if d.get("source_url") == url]
     
     # 최소 2개 이상 (이전 테스트 실행으로 더 있을 수 있음)
     assert len(matching_docs) >= 2, \
