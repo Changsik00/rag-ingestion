@@ -83,9 +83,7 @@
 
 ---
 
-## 🗺️ Roadmap (계획된 작업)
-
-### Phase 3: Progressive Intelligence (계속)
+## Phase 3: Progressive Intelligence (계속)
 
 * [x] **Spec 010: Knowledge Graph Construction**
   * [x] Entity를 Neo4j 노드로 매핑
@@ -99,10 +97,10 @@
 
 > **목표**: 코드 품질, 일관성, 가독성 개선을 위한 리팩토링 작업.
 
-* [ ] **Spec 011: Infrastructure Layer Refactoring** (진행 예정)
-  * [ ] Repository 파일명 표준화 (neo4j.py → neo4j_document_repository.py)
-  * [ ] 주석 한글 통일 (영어/한글 혼용 → 한글)
-  * [ ] Type hints 및 Clean Architecture 개선
+* [x] **Spec 011: Infrastructure Layer Refactoring** (진행 예정)
+  * [x] Repository 파일명 표준화 (neo4j.py → neo4j_document_repository.py)
+  * [x] 주석 한글 통일 (영어/한글 혼용 → 한글)
+  * [x] Type hints 및 Clean Architecture 개선
   * **우선순위**: Medium
 
 ---
