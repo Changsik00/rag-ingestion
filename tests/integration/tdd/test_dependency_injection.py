@@ -8,61 +8,61 @@ import pytest
 import os
 
 
-def test_get_neo4j_storage():
+def test_get_repository_returns_composite_storage():
     """
-    Verify that get_neo4j_storage() creates a valid Neo4jStorage instance
+    Verify that get_repository() creates a valid CompositeStorage instance
+    with both Neo4j and Chroma storages.
     """
-    from app.core.dependencies import get_neo4j_storage
-    from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
-    
-    # When: DI container provides Neo4jStorage
-    storage = get_neo4j_storage()
-    
-    # Then: Instance is created
-    assert storage is not None
-    assert isinstance(storage, Neo4jStorage)
-    
-    # Then: Driver is initialized
-    assert hasattr(storage, 'driver')
-    assert storage.driver is not None
-
-
-def test_get_chroma_storage():
-    """
-    Verify that get_chroma_storage() creates a valid ChromaStorage instance
-    """
-    from app.core.dependencies import get_chroma_storage
-    from app.infrastructure.storage.chroma import ChromaStorage
-    
-    # When: DI container provides ChromaStorage
-    storage = get_chroma_storage()
-    
-    # Then: Instance is created
-    assert storage is not None
-    assert isinstance(storage, ChromaStorage)
-    
-    # Then: Client is initialized
-    assert hasattr(storage, 'client')
-    assert storage.client is not None
-
-
-def test_get_composite_storage():
-    """
-    Verify that get_composite_storage() creates CompositeStorage with both storages
-    """
-    from app.core.dependencies import get_composite_storage
+    # Given: DI container with repository
+    from app.interfaces.api.dependencies import get_repository, get_neo4j_driver
     from app.infrastructure.storage.composite import CompositeStorage
     
-    # When: DI container provides CompositeStorage
-    storage = get_composite_storage()
+    # When: DI container provides repository
+    driver = get_neo4j_driver()
+    repository = get_repository(driver)
     
-    # Then: Instance is created
-    assert storage is not None
-    assert isinstance(storage, CompositeStorage)
+    # Then: Instance is CompositeStorage
+    assert repository is not None
+    assert isinstance(repository, CompositeStorage)
     
     # Then: Both underlying storages are initialized
-    assert hasattr(storage, 'storages')
-    assert len(storage.storages) == 2
+    assert hasattr(repository, 'neo4j')
+    assert hasattr(repository, 'chroma')
+    assert repository.neo4j is not None
+    assert repository.chroma is not None
+
+
+def test_get_neo4j_driver_initialization():
+    """
+    Verify that get_neo4j_driver() creates a valid Neo4j Driver instance
+    """
+    # Given: DI container
+    from app.interfaces.api.dependencies import get_neo4j_driver
+    from neo4j import Driver
+    
+    # When: DI container provides Neo4j driver
+    driver = get_neo4j_driver()
+    
+    # Then: Driver is created
+    assert driver is not None
+    assert isinstance(driver, Driver)
+
+
+def test_get_graph_repository():
+    """
+    Verify that get_graph_repository() creates a valid Neo4jGraphRepository instance
+    """
+    # Given: DI container
+    from app.interfaces.api.dependencies import get_graph_repository, get_neo4j_driver
+    from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
+    
+    # When: DI container provides GraphRepository
+    driver = get_neo4j_driver()
+    graph_repo = get_graph_repository(driver)
+    
+    # Then: Instance is created
+    assert graph_repo is not None
+    assert isinstance(graph_repo, Neo4jGraphRepository)
 
 
 @pytest.mark.skipif(
@@ -73,21 +73,21 @@ def test_environment_variable_based_initialization():
     """
     Verify that storage instances are initialized using environment variables
     """
-    from app.core.dependencies import get_neo4j_storage, get_chroma_storage
-    
     # Given: Environment variables are set
+    from app.interfaces.api.dependencies import get_neo4j_driver, get_repository
+    
     neo4j_uri = os.getenv("NEO4J_URI")
     chroma_host = os.getenv("CHROMA_HOST")
     
     assert neo4j_uri is not None
     assert chroma_host is not None
     
-    # When: Storages are initialized
-    neo4j_storage = get_neo4j_storage()
-    chroma_storage = get_chroma_storage()
+    # When: Dependencies are initialized
+    driver = get_neo4j_driver()
+    repository = get_repository()
     
     # Then: They use the environment variables
     # (We can't easily verify this without accessing internals,
     #  but we verify they don't crash during initialization)
-    assert neo4j_storage is not None
-    assert chroma_storage is not None
+    assert driver is not None
+    assert repository is not None
