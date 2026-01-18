@@ -91,6 +91,14 @@
   * [x] Entity 조회 API 엔드포인트 추가
   * **완료**: PR #12 머지 완료 (2026-01-18)
 
+* [ ] **Spec 016: Entity-Entity Relationship Extraction** (진행 중)
+  * [ ] LLM Prompt에 Entity 간 관계 추출 지시 추가
+  * [ ] 추출된 관계를 Neo4j에 저장 (FOUNDED, WORKS_FOR, USES 등)
+  * [ ] Relationship 기반 Graph 탐색 API 개발
+  * [ ] Entity Type 확장 검토 (현재 7개 → 9개?)
+  * **우선순위**: High (진정한 Knowledge Graph 완성)
+  * **예상 소요**: 4-6시간
+
 ---
 
 ## 🛠 Unplanned (리팩토링 및 품질 개선)
