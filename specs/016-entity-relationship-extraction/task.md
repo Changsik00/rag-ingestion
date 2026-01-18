@@ -8,16 +8,16 @@
 - [x] task.md 작성
 - [x] Entity Type 확장 결정 (7개 → 9개, PRODUCT + DOCUMENT 추가)
 - [x] 백로그 업데이트
-- [ ] 사용자 Plan Accept 대기
-- [ ] 브랜치 생성 및 구현 시작
+- [x] 사용자 Plan Accept 완료
+- [x] 브랜치 생성 및 구현 시작 → **9개 커밋 완료 (Task 1-7)**
 
 ---
 
 ## Task 1: 브랜치 생성 및 Spec 문서 커밋
 
-- [ ] 브랜치 생성: `git checkout -b feature/016-entity-relationship-extraction`
-- [ ] 브랜치 확인: `git branch --show-current`
-- [ ] Spec 문서 커밋: `git add specs/016-entity-relationship-extraction/ && git commit -m "docs: add spec 016 - entity relationship extraction"`
+- [x] 브랜치 생성: `git checkout -b feature/016-entity-relationship-extraction`
+- [x] 브랜치 확인: `git branch --show-current`
+- [x] Spec 문서 커밋: `git add specs/016-entity-relationship-extraction/ backlog/queue.md && git commit -m "docs: add spec 016 - entity relationship extraction"`
 
 ---
 
@@ -25,12 +25,12 @@
 
 ### 2-1. EntityType Enum 업데이트
 
-- [ ] `app/domain/schemas/ontology.py` 열기
-- [ ] `PRODUCT = "PRODUCT"` 추가
-- [ ] `DOCUMENT = "DOCUMENT"` 추가
-- [ ] Docstring 업데이트 (7개 → 9개)
-- [ ] 테스트: `pytest tests/contracts/test_storage_contract.py -v`
-- [ ] 커밋: `feat: add PRODUCT and DOCUMENT entity types`
+- [x] `app/domain/schemas/ontology.py` 열기
+- [x] `PRODUCT = "PRODUCT"` 추가
+- [x] `DOCUMENT = "DOCUMENT"` 추가
+- [x] Docstring 업데이트 (7개 → 9개)
+- [x] 테스트: `pytest tests/contracts/test_storage_contract.py -v` (16 passed, 2 skipped)
+- [x] 커밋: `feat: add PRODUCT and DOCUMENT entity types`
 
 **커밋 메시지:**
 ```
@@ -44,11 +44,11 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 2-2. LLM Prompt 업데이트
 
-- [ ] `app/infrastructure/llm/langchain_adapter.py` 열기
-- [ ] Prompt에 PRODUCT, DOCUMENT 설명 추가
-- [ ] "If uncertain → CONCEPT" fallback 규칙 추가
-- [ ] 테스트: `pytest tests/unit/test_usecases.py -v`
-- [ ] 커밋: `feat: update llm prompt with new entity types`
+- [x] `app/infrastructure/llm/langchain_adapter.py` 열기
+- [x] Prompt에 PRODUCT, DOCUMENT 설명 추가
+- [x] "If uncertain → CONCEPT" fallback 규칙 추가
+- [x] 테스트: `pytest tests/unit/test_usecases.py -v` (3 passed)
+- [x] 커밋: `feat: update llm prompt with new entity types`
 
 ---
 
@@ -56,18 +56,18 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 3-1. EntityRelationship 모델 정의
 
-- [ ] `app/domain/schemas/extraction.py` 열기
-- [ ] `EntityRelationship` 클래스 추가
-- [ ] Fields: source, source_type, relationship, target, target_type, confidence
-- [ ] 테스트: `pytest tests/unit/domain/ -v`
-- [ ] 커밋: `feat: add EntityRelationship domain schema`
+- [x] `app/domain/schemas/extraction.py` 열기
+- [x] `EntityRelationship` 클래스 추가
+- [x] Fields: source, source_type, relationship, target, target_type, confidence
+- [x] 테스트: `pytest tests/unit/domain/ -v` (8 passed)
+- [x] 커밋: `feat: add EntityRelationship domain schema`
 
 ### 3-2. ExtractedMetadata 확장
 
-- [ ] `ExtractedMetadata`에 `relationships: List[EntityRelationship]` 필드 추가
-- [ ] default_factory=list 설정
-- [ ] 테스트: `pytest tests/unit/test_usecases.py -v`
-- [ ] 커밋: `feat: add relationships field to ExtractedMetadata`
+- [x] `ExtractedMetadata`에 `relationships: List[EntityRelationship]` 필드 추가
+- [x] default_factory=list 설정
+- [x] 테스트: 위와 동일
+- [x] 커밋: 위와 통합
 
 ---
 
@@ -75,19 +75,19 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 4-1. Protocol 메서드 추가
 
-- [ ] `app/domain/interfaces/graph_repository.py` 열기
-- [ ] `create_entity_relationship` 메서드 시그니처 추가
-- [ ] `get_entity_relationships` 메서드 시그니처 추가
-- [ ] Docstring 작성
-- [ ] 커밋: `feat: add relationship methods to GraphRepository protocol`
+- [x] `app/domain/interfaces/graph_repository.py` 열기
+- [x] `create_entity_relationship` 메서드 시그니처 추가
+- [x] `get_entity_relationships` 메서드 시그니처 추가
+- [x] Docstring 작성
+- [x] 커밋: `feat: add relationship methods to GraphRepository protocol`
 
 ### 4-2. Contract Test 업데이트
 
-- [ ] `tests/contracts/test_graph_repository_contract.py` 열기
-- [ ] `test_has_create_entity_relationship` 추가
-- [ ] `test_has_get_entity_relationships` 추가
-- [ ] 테스트: `pytest tests/contracts/test_graph_repository_contract.py -v`
-- [ ] 커밋: `test: add contract tests for relationship methods`
+- [x] `tests/contracts/test_graph_repository_contract.py` 열기
+- [x] `test_has_create_entity_relationship` 추가
+- [x] `test_has_get_entity_relationships` 추가
+- [x] 테스트: `pytest tests/contracts/test_graph_repository_contract.py -v`
+- [x] 커밋: `test: add contract tests for relationship methods`
 
 ---
 
@@ -95,20 +95,20 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 5-1. Cypher Query Templates
 
-- [ ] `app/infrastructure/storage/cypher_queries.py` 열기
-- [ ] `CREATE_ENTITY_RELATIONSHIP` 쿼리 추가
-- [ ] `GET_ENTITY_RELATIONSHIPS` 쿼리 추가
-- [ ] `GET_ENTITY_RELATIONSHIPS_BY_TYPE` 쿼리 추가
-- [ ] 커밋: `feat: add cypher queries for entity relationships`
+- [x] `app/infrastructure/storage/cypher_queries.py` 열기
+- [x] `CREATE_ENTITY_RELATIONSHIP` 쿼리 추가
+- [x] `GET_ENTITY_RELATIONSHIPS` 쿼리 추가
+- [x] `GET_ENTITY_RELATIONSHIPS_BY_TYPE` 쿼리 추가
+- [x] 커밋: `feat: add cypher queries for entity relationships`
 
 ### 5-2. Neo4jGraphRepository 구현
 
-- [ ] `app/infrastructure/storage/neo4j_graph.py` 열기
-- [ ] `create_entity_relationship` 메서드 구현
-- [ ] `get_entity_relationships` 메서드 구현
-- [ ] Relationship type 동적 처리 (f-string 사용)
-- [ ] 테스트: `pytest tests/unit/test_neo4j_graph_repository.py -v`
-- [ ] 커밋: `feat: implement entity relationship methods in Neo4jGraphRepository`
+- [x] `app/infrastructure/storage/neo4j_graph.py` 열기
+- [x] `create_entity_relationship` 메서드 구현
+- [x] `get_entity_relationships` 메서드 구현
+- [x] Relationship type 동적 처리 (f-string 사용)
+- [x] 테스트: `pytest tests/unit/test_neo4j_graph_repository.py -v`
+- [x] 커밋: `feat: implement entity relationship methods in Neo4jGraphRepository`
 
 ---
 
@@ -135,17 +135,17 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 7-1. _build_knowledge_graph 확장
 
-- [ ] `app/use_cases/ingestion.py` 열기
-- [ ] Entity-Entity Relationship 처리 로직 추가
-- [ ] Source/Target Entity 존재 확인 및 생성
-- [ ] `create_entity_relationship` 호출
-- [ ] Low confidence 관계 로깅 추가
-- [ ] 테스트: `pytest tests/unit/test_usecases.py -v`
-- [ ] 커밋: `feat: integrate entity relationships in ingestion service`
+- [x] `app/use_cases/ingestion.py` 열기
+- [x] Entity-Entity Relationship 처리 로직 추가
+- [x] Source/Target Entity 존재 확인 및 생성
+- [x] `create_entity_relationship` 호출
+- [x] Low confidence 관계 로깅 추가
+- [x] 메서드 시그니처 변경 (entities → semantic_data)
+- [x] 커밋: `feat: integrate entity relationships in ingestion service`
 
 ---
 
-## Task 8: API - Relationship 조회
+## Task 8: API - Relationship 조회 (진행 예정)
 
 ### 8-1. 엔드포인트 추가
 
