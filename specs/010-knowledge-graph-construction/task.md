@@ -105,12 +105,12 @@
 
 ## Task 9: Integration Tests (BDD) - Knowledge Graph
 
-- [ ] `tests/integration/bdd/test_knowledge_graph.py` 생성
-  - [ ] `test_successful_entity_graph_auto_construction` - Entity 자동 구축
-  - [ ] `test_entity_based_document_search` - Entity로 Document 검색
-  - [ ] `test_entity_deduplication` - Entity 중복 처리
+- [x] `tests/integration/bdd/test_knowledge_graph.py` 생성
+  - [x] `test_successful_entity_graph_auto_construction` - Entity 자동 구축
+  - [x] `test_entity_based_document_search` - Entity로 Document 검색
+  - [x] `test_entity_deduplication` - Entity 중복 처리
 - [ ] 테스트 실행: `docker compose up -d && uv run pytest tests/integration/bdd/test_knowledge_graph.py -v -m integration`
-- [ ] 커밋: `test: add integration tests for knowledge graph`
+- [ ] 커밋 대기: `test: add integration tests for knowledge graph`
 
 ---
 
