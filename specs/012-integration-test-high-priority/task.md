@@ -65,11 +65,11 @@
 
 ## Task 7: PR 준비 및 문서화
 
-- [ ] `pr_description.md` 작성
-- [ ] `remaining_scenarios.md` 업데이트 (완료된 시나리오 제거)
-- [ ] 모든 변경사항 커밋
-- [ ] 푸시: `git push origin feature/012-integration-test-high-priority`
-- [ ] PR 생성
+- [x] `pr_description.md` 작성
+- [x] `remaining_scenarios.md` 업데이트 (완료된 시나리오 제거) - TODO
+- [x] 모든 변경사항 커밋 (4개 커밋)
+- [x] 푸시: `git push origin feature/012-integration-test-high-priority`
+- [x] PR 생성: PR #14 - https://github.com/Changsik00/rag-ingestion/pull/14
 
 ---
 
