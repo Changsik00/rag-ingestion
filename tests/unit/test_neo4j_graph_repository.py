@@ -8,7 +8,7 @@ Mock Neo4j driver를 사용하여 실제 DB 없이 테스트합니다.
 import pytest
 from unittest.mock import Mock, MagicMock
 
-from app.domain.schemas.ontology import EntityType, TypedEntity
+from app.domain.schemas.ontology import EntityType, RelationshipType, TypedEntity
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 
 
@@ -162,3 +162,87 @@ def test_list_all_entities_respects_limit(mock_driver):
     assert last_call_args is not None
     if len(last_call_args) > 1:
         assert last_call_args[1].get('limit') == 50 or last_call_args.kwargs.get('limit') == 50
+
+
+# ===== Task 9-2: Relationship Method Tests =====
+
+def test_create_entity_relationship(mock_driver):
+    """Entity-Entity 관계 생성 테스트"""
+    # Given: Mock driver와 relationship 정보
+    driver, session = mock_driver
+    
+    mock_result = Mock()
+    mock_result.single.return_value = {"relationship_type": "FOUNDED"}
+    session.run.return_value = mock_result
+    
+    # When: Entity 관계 생성
+    repo = Neo4jGraphRepository(driver)
+    repo.create_entity_relationship(
+        source_name="Elon Musk",
+        relationship_type=RelationshipType.FOUNDED,
+        target_name="Tesla"
+    )
+    
+    # Then: Cypher 쿼리가 실행됨
+    assert session.run.called
+    call_args = session.run.call_args
+    # Query에 FOUNDED가 포함되어야 함 (동적 쿼리 생성)
+    query_str = str(call_args[0][0])
+    assert "FOUNDED" in query_str
+
+
+def test_get_entity_relationships_all(mock_driver):
+    """Entity의 모든 관계 조회 테스트"""
+    # Given: Mock relationships
+    driver, session = mock_driver
+    
+    mock_records = [
+        {
+            "relationship_type": "FOUNDED",
+            "target_name": "Tesla",
+            "target_type": "ORGANIZATION"
+        },
+        {
+            "relationship_type": "FOUNDED",
+            "target_name": "SpaceX",
+            "target_type": "ORGANIZATION"
+        }
+    ]
+    session.run.return_value = mock_records
+    
+    # When: 모든 관계 조회 (type 필터 없음)
+    repo = Neo4jGraphRepository(driver)
+    relationships = repo.get_entity_relationships("Elon Musk")
+    
+    # Then: 관계 리스트 반환
+    assert len(relationships) == 2
+    assert relationships[0]["relationship_type"] == "FOUNDED"
+    assert relationships[0]["target_name"] == "Tesla"
+    assert relationships[1]["target_name"] == "SpaceX"
+
+
+def test_get_entity_relationships_filtered(mock_driver):
+    """특정 타입의 관계만 조회 테스트"""
+    # Given: Mock filtered relationships
+    driver, session = mock_driver
+    
+    mock_records = [
+        {
+            "relationship_type": "USES",
+            "target_name": "Python",
+            "target_type": "TECHNOLOGY"
+        }
+    ]
+    session.run.return_value = mock_records
+    
+    # When: USES 타입만 필터링
+    repo = Neo4jGraphRepository(driver)
+    relationships = repo.get_entity_relationships(
+        "Tesla",
+        relationship_type=RelationshipType.USES
+    )
+    
+    # Then: USES 관계만 반환
+    assert len(relationships) == 1
+    assert relationships[0]["relationship_type"] == "USES"
+    assert session.run.called
