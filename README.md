@@ -16,14 +16,34 @@
 - **Spec 003**: Streamlit Admin Dashboard (Job 모니터링 & 재시도)
 - **Spec 004**: 비동기 백그라운드 작업 처리 (Async Ingestion)
 
-### ✅ Phase 3: Progressive Intelligence (진행 중)
+### ✅ Phase 3: Progressive Intelligence (완료)
 - **Spec 005**: ✅ **Semantic Extraction** - Gemini 2.0 Flash를 활용한 메타데이터 추출
   - Title, Summary, Keywords, Entities 구조화
   - LangChain 기반 Extraction Pipeline
 - **Spec 006**: ✅ **Clean Architecture Refactoring** - Domain 격리 및 확장성 개선
   - Python Protocol을 활용한 LLM 인터페이스 추상화
   - Infrastructure Adapter 패턴 적용
-- **Spec 007-008**: 🚧 **Ontology & Knowledge Graph** (예정)
+- **Spec 007**: ✅ **Ontology Design** - Entity/Relationship 타입 정의
+  - 7가지 Entity Type (PERSON, ORGANIZATION, TECHNOLOGY, CONCEPT, LOCATION, EVENT, ACTIVITY)
+  - 8가지 Relationship Type (MENTIONS, WORKS_FOR, FOUNDED 등)
+
+### ✅ Phase 4: Knowledge Graph & Testing (완료)
+- **Spec 008**: ✅ **Docker Integration Bugfix** - Neo4j Storage 생성자 수정 및 안정화
+- **Spec 009**: ✅ **Testing Strategy** - Contract/Unit/Integration 테스트 전략 수립
+  - TDD/BDD 통합 접근법
+  - 예외 상황 집중 검증
+- **Spec 010**: ✅ **Knowledge Graph Construction** - Entity 자동 추출 및 그래프 구축
+  - Document-Entity MENTIONS 관계 자동 생성
+  - Entity 조회 API 개발 (`GET /entities`)
+- **Spec 011**: ✅ **Infrastructure Refactoring** - Repository 파일명 표준화
+  - Neo4j/Chroma 저장소 명명 일관성 개선
+  - 코드베이스 주석 한글화
+
+### ✅ Phase 5: Code Quality & Documentation (완료)
+- **Spec 012**: ✅ **Integration Test High Priority** - Critical BDD 시나리오 추가
+- **Spec 013**: ✅ **Fix Failed Tests** - 리팩토링 후 테스트 회귀 수정
+- **Spec 014**: ✅ **Code Quality Improvement** - Bug fix + GWT 표준화
+- **Spec 015**: ✅ **Documentation Update** - 문서 최신화 및 재구성 (현재)
 
 ---
 
@@ -142,16 +162,11 @@ docker compose down
 
 ## 🗺 향후 로드맵 (Future Plans)
 
-### Phase 3: Progressive Intelligence (진행 중)
-- ✅ Spec 005: Basic Semantic Extraction (완료)
-- ✅ Spec 006: Clean Architecture Refactoring (완료)
-- 🚧 Spec 007: Ontology Design
-- 🚧 Spec 008: Knowledge Graph Construction
-
-### Phase 4: Workflow & Ecosystem
-- **Spec 009**: Logic Resolver - 지식 간 모순 탐지
-- **Spec 010**: n8n Workflow Integration - 자동 수집 트리거
-- **Spec 011**: MCP Server - Claude/Obsidian 연동
+### Phase 6: Workflow & Ecosystem (예정)
+- **Logic Resolver**: 지식 간 모순 탐지 및 검증
+- **Entity-Entity Relationship Extraction**: LLM 기반 관계 추출
+- **n8n Workflow Integration**: 자동 수집 트리거 및 워크플로우
+- **MCP Server Integration**: Claude/Obsidian 연동
 
 상세 로드맵: [backlog/queue.md](backlog/queue.md)
 
@@ -179,12 +194,21 @@ docker compose down
 
 ## 📚 Documentation
 
+### Core Guides
 - **[Architecture](docs/architecture.md)**: Clean Architecture 설계 원칙 및 패턴
 - **[Tech Stack](docs/tech_stack.md)**: 기술 선정 이유 및 장단점
+- **[Ontology](docs/ontology.md)**: Entity/Relationship 타입 정의 및 설계
+- **[Graph Schema](docs/graph_schema.md)**: Neo4j 그래프 스키마 구조 상세 설명
+- **[Neo4j Query Guide](docs/neo4j_query_guide.md)**: Knowledge Graph 탐색을 위한 Cypher 쿼리 패턴
+
+### Operation & Development
 - **[Async Guide](docs/async_guide.md)**: 비동기 처리 및 백그라운드 작업
 - **[Admin Guide](docs/admin_guide.md)**: 서비스 실행 및 관리
+- **[Testing Strategy](docs/testing_strategy.md)**: TDD/BDD 테스트 전략 및 철학
+
+### Project Management
 - **[Backlog](backlog/queue.md)**: 프로젝트 로드맵 및 우선순위
 
 ---
 
-> **Note for AI Agents**: 이 문서는 프로젝트의 **현재 상태와 비전**을 담고 있습니다. 코드를 구현할 때는 `agent.md`의 세부 지침을 따르되, 데이터 저장 시 **3-Layer 아키텍처** 원칙을 준수해야 합니다. Spec 005-006까지 구현이 완료되었으며, 다음 단계는 **Ontology Design (Spec 007)**입니다.
+> **Note for AI Agents**: 이 문서는 프로젝트의 **현재 상태와 비전**을 담고 있습니다. 코드를 구현할 때는 `agent.md`의 세부 지침을 따르되, 데이터 저장 시 **3-Layer 아키텍처** 원칙을 준수해야 합니다. Spec 001-015가 완료되었으며, Phase 1-5가 모두 구현되었습니다. 다음 단계는 **Entity-Entity Relationship Extraction** 및 **Workflow Integration**입니다.
