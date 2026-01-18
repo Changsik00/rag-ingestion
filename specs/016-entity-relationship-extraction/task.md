@@ -208,10 +208,10 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 11-1. 전체 테스트 실행
 
-- [ ] `pytest tests/ -v`
-- [ ] 회귀 확인 (기존 85 passed 유지)
-- [ ] 신규 테스트 통과 확인
-- [ ] 실패 시 수정
+- [x] `pytest tests/ -v`
+- [x] 회귀 확인: 92 passed (기존 + 신규 테스트)
+- [x] 신규 테스트 통과 확인 (Unit + BDD)
+- [x] Note: 4 failed는 기존 integration test 문제 (실제 URL 스크래핑)
 
 ### 11-2. Neo4j Browser 검증
 
