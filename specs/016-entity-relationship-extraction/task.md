@@ -154,10 +154,11 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 8-2. Swagger 문서 확인
 
-- [ ] 서버 실행: `docker compose up`
-- [ ] Swagger 확인: http://localhost:8000/docs
-- [ ] 새 엔드포인트 표시 확인
-- [ ] Example response 확인
+- [x] 서버 실행: `docker compose up`
+- [x] Swagger 확인: http://localhost:8000/docs
+- [x] 새 엔드포인트 표시 확인 (`/entities/{name}/relationships`)
+- [x] Example response 확인
+- [x] Parameter 확인 (relationship_type optional)
 
 ---
 
