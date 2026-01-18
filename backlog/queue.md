@@ -119,6 +119,12 @@
   * [x] 전체 테스트 스위트 통과 확인 (85 passed, 4 skipped)
   * **완료**: 2026-01-18
 
+* [ ] **Spec 014: Code Quality Improvement** (진행 예정)
+  * [ ] Bug Fix: semantic_data NameError 수정
+  * [ ] Test Standardization: TDD 테스트 GWT 형식 통일 (9개 파일)
+  * [ ] 전체 테스트 통과 확인
+  * **우선순위**: High (프로덕션 버그 + 테스트 품질)
+
 ---
 
 ## 🗺️ Roadmap (계획된 작업)

@@ -1,7 +1,7 @@
 """
 Integration Tests: High Priority Scenarios
 
-이 모듈은 Spec 009에서 미구현된 High Priority Integration Test를 구현합니다:
+Spec 009에서 미구현된 High Priority Integration Test를 구현합니다:
 1. Invalid Job ID → 404
 2. Duplicate URL 처리 (멱등성)
 """

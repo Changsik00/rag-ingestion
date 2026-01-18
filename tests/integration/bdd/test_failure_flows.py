@@ -1,8 +1,8 @@
 """
-Core failure scenario integration tests.
+Core Failure Scenario Integration Tests
 
-These tests verify that the system handles failures appropriately.
-Focus on clear error messages and proper error states (BDD approach).
+시스템이 실패 상황을 적절히 처리하는지 검증하는 통합 테스트입니다.
+명확한 에러 메시지와 적절한 에러 상태에 초점을 맞춥니다 (BDD 접근 방식).
 """
 import pytest
 from fastapi.testclient import TestClient
