@@ -13,6 +13,12 @@ from app.domain.schemas.ontology import EntityType, TypedEntity
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 
 
+@pytest.fixture(params=[GraphRepository, Neo4jGraphRepository])
+def graph_repository_class(request):
+    """GraphRepository 프로토콜과 구현체를 번갈아 가며 테스트하기 위한 픽스처"""
+    return request.param
+
+
 def test_graph_repository_protocol_exists():
     """GraphRepository Protocol이 정의되어 있는지 확인"""
     assert GraphRepository is not None
