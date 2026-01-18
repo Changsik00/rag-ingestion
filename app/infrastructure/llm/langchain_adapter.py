@@ -35,7 +35,7 @@ class LangChainLLMAdapter:
             4. Key entities classified by EXACTLY one of the following standardized types:
 
             **CRITICAL: Entity Classification Rules**
-            You MUST classify entities into EXACTLY one of these types:
+            You MUST classify entities into EXACTLY one of these 9 types:
 
             - PERSON: Individual people or fictional characters
               Examples: "Elon Musk", "Geoffrey Hinton", "Steve Jobs", "Harry Potter"
@@ -44,10 +44,11 @@ class LangChainLLMAdapter:
               Examples: "Tesla", "MIT", "World Health Organization", "Y Combinator"
 
             - TECHNOLOGY: Specific tools, frameworks, languages, or technical products
-              Examples: "Python", "Docker", "GPT-4", "Neo4j", "React", "PostgreSQL"
+              Examples: "Python", "Docker", "Neo4j", "React", "PostgreSQL"
 
             - CONCEPT: Abstract ideas, theories, methodologies, or academic concepts
               Examples: "Machine Learning", "Clean Architecture", "Quantum Computing", "Lean Startup"
+              **IMPORTANT**: Use CONCEPT as a fallback if uncertain about the entity type.
 
             - LOCATION: Geographic locations, cities, regions, or countries
               Examples: "Seoul", "Silicon Valley", "United States", "San Francisco"
@@ -58,10 +59,18 @@ class LangChainLLMAdapter:
             - ACTIVITY: Actions, tasks, processes, or work activities
               Examples: "책 쓰기", "벤치마킹", "코드 리뷰", "데이터 분석", "프로토타이핑", "A/B 테스팅"
 
+            - PRODUCT: Physical or digital products, commercial goods
+              Examples: "iPhone", "Tesla Model 3", "GPT-4", "Microsoft Office", "PlayStation 5"
+
+            - DOCUMENT: Papers, books, reports, or written works
+              Examples: "Clean Code", "Attention Is All You Need", "The Lean Startup", "research paper"
+
             **Important Guidelines**:
             - If an entity could fit multiple types, prioritize based on context.
-            - Use CONCEPT as a fallback if uncertain between CONCEPT and another type.
+            - **If uncertain, use CONCEPT as the default fallback type.**
             - For Korean activity names like "벤치마킹" or "책 쓰기", use ACTIVITY type.
+            - GPT-4 is a PRODUCT (commercial AI product), not TECHNOLOGY.
+            - Book titles should use DOCUMENT type.
 
             Text to analyze:
             {text}
