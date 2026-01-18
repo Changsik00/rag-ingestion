@@ -3,8 +3,8 @@ from app.domain.schemas.ontology import EntityType, RelationshipType
 
 
 def test_entity_type_enum_values():
-    """EntityType Enum이 7개 타입을 포함하는지 검증"""
-    assert len(EntityType) == 7
+    """EntityType Enum이 9개 타입을 포함하는지 검증 (PRODUCT, DOCUMENT 추가)"""
+    assert len(EntityType) == 9
     assert EntityType.PERSON.value == "PERSON"
     assert EntityType.ORGANIZATION.value == "ORGANIZATION"
     assert EntityType.TECHNOLOGY.value == "TECHNOLOGY"
