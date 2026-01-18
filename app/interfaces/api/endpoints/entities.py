@@ -67,8 +67,8 @@ async def get_entity_info(
 @router.get("/{name}/relationships")
 async def get_entity_relationships(
     name: str,
-    relationship_type: str | None = None,
-    graph: Annotated[GraphRepository, Depends(get_graph_repository)]
+    graph: Annotated[GraphRepository, Depends(get_graph_repository)],
+    relationship_type: str | None = None
 ):
     """
     Entity의 관계 목록 조회

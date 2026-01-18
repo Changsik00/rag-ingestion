@@ -165,20 +165,20 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 9-1. Domain Schema Tests
 
-- [ ] `tests/unit/domain/test_entity_relationship.py` 생성
-- [ ] EntityRelationship 검증 테스트
-- [ ] Confidence 범위 테스트 (0.0 ~ 1.0)
-- [ ] 테스트: `pytest tests/unit/domain/ -v`
-- [ ] 커밋: `test: add unit tests for EntityRelationship schema`
+- [x] `tests/unit/domain/test_entity_relationship.py` 생성
+- [x] EntityRelationship 검증 테스트
+- [x] Confidence 범위 테스트 (0.0 ~ 1.0)
+- [x] 테스트: `pytest tests/unit/domain/test_entity_relationship.py -v` (5 passed)
+- [x] 커밋: `test: add unit tests for EntityRelationship schema`
 
 ### 9-2. Repository Tests
 
-- [ ] `tests/unit/test_neo4j_graph_repository.py` 업데이트
-- [ ] `test_create_entity_relationship` 추가
-- [ ] `test_get_entity_relationships` 추가
-- [ ] Mock driver 검증
-- [ ] 테스트: `pytest tests/unit/test_neo4j_graph_repository.py -v`
-- [ ] 커밋: `test: add unit tests for relationship methods`
+- [x] `tests/unit/test_neo4j_graph_repository.py` 업데이트
+- [x] `test_create_entity_relationship` 추가
+- [x] `test_get_entity_relationships` 추가
+- [x] Mock driver 검증
+- [x] 테스트: `pytest tests/unit/test_neo4j_graph_repository.py -v` (10 passed)
+- [x] 커밋: `test: add unit tests for relationship repository methods`
 
 ---
 
