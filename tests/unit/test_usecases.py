@@ -10,8 +10,15 @@ def test_create_job():
     # Arrange
     mock_scraper = Mock(spec=ScraperInterface)
     mock_doc_repo = Mock()
+    mock_graph_repo = Mock()
     mock_job_repo = Mock()
-    service = IngestionService(scraper=mock_scraper, repository=mock_doc_repo, job_repository=mock_job_repo)
+    service = IngestionService(
+        scraper=mock_scraper,
+        repository=mock_doc_repo,
+        graph=mock_graph_repo,
+        job_repository=mock_job_repo,
+        extractor=None
+    )
 
     # Act
     job = service.create_job("http://example.com")
@@ -25,7 +32,9 @@ def test_process_job_success():
     # Arrange
     mock_scraper = Mock(spec=ScraperInterface)
     mock_doc_repo = Mock()
+    mock_graph_repo = Mock()
     mock_job_repo = Mock()
+    mock_extractor = Mock()
 
     # Mock Job Retrieval
     mock_job = IngestionJob(source_url="http://example.com", status=JobStatus.PENDING)
@@ -33,8 +42,17 @@ def test_process_job_success():
 
     expected_response = IngestResponse(url="http://example.com/", markdown="# Example", metadata={})
     mock_scraper.scrape.return_value = expected_response
+    
+    # Mock extractor to return None (no semantic data)
+    mock_extractor.extract.return_value = None
 
-    service = IngestionService(scraper=mock_scraper, repository=mock_doc_repo, job_repository=mock_job_repo)
+    service = IngestionService(
+        scraper=mock_scraper,
+        repository=mock_doc_repo,
+        graph=mock_graph_repo,
+        job_repository=mock_job_repo,
+        extractor=mock_extractor
+    )
 
     # Act
     service.process_job(mock_job.job_id)
@@ -57,12 +75,19 @@ def test_process_job_failure():
     mock_scraper = Mock(spec=ScraperInterface)
     mock_scraper.scrape.side_effect = Exception("Scrape failed")
     mock_doc_repo = Mock()
+    mock_graph_repo = Mock()
     mock_job_repo = Mock()
 
     mock_job = IngestionJob(source_url="http://example.com", status=JobStatus.PENDING)
     mock_job_repo.get_job.return_value = mock_job
 
-    service = IngestionService(scraper=mock_scraper, repository=mock_doc_repo, job_repository=mock_job_repo)
+    service = IngestionService(
+        scraper=mock_scraper,
+        repository=mock_doc_repo,
+        graph=mock_graph_repo,
+        job_repository=mock_job_repo,
+        extractor=None
+    )
 
     # Act
     # process_job handles exceptions internally, so it should NOT raise

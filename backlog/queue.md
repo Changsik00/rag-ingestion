@@ -97,11 +97,27 @@
 
 > **목표**: 코드 품질, 일관성, 가독성 개선을 위한 리팩토링 작업.
 
-* [x] **Spec 011: Infrastructure Layer Refactoring** (진행 예정)
+* [x] **Spec 011: Infrastructure Layer Refactoring**
   * [x] Repository 파일명 표준화 (neo4j.py → neo4j_document_repository.py)
   * [x] 주석 한글 통일 (영어/한글 혼용 → 한글)
   * [x] Type hints 및 Clean Architecture 개선
-  * **우선순위**: Medium
+
+---
+
+## 🧪 Unplanned (테스트 회귀 수정)
+
+> **목표**: Spec 006, 010, 011 이후 발생한 테스트 실패 수정.
+
+* [x] **Spec 012: Integration Test High Priority Scenarios**
+  * [x] 잘못된 Job ID → 404 에러 시나리오
+  * [x] 중복 URL 처리 시나리오
+  * [x] BDD 스타일 통합 테스트 추가
+
+* [x] **Spec 013: Fix Failed Tests**
+  * [x] DI 테스트 Import 경로 수정 (3개)
+  * [x] Use Case 테스트 Mock 설정 업데이트 (3개)
+  * [x] 전체 테스트 스위트 통과 확인 (85 passed, 4 skipped)
+  * **완료**: 2026-01-18
 
 ---
 
@@ -159,15 +175,6 @@
     - Edge Cases: 매우 긴 URL, 매우 큰 HTML (10MB+), Redirect 처리
   * **상세 내용**: `specs/009-testing-strategy/remaining_scenarios.md` 참조
   * **우선순위**: Medium (High Priority 완료됨)
-
-* **[BugFix] Failed Tests 수정** (발견: 2026-01-18)
-  * **총 6개 실패:** DI 테스트 3개 + Use Case 테스트 3개
-  * **원인:**
-    - `test_dependency_injection.py` (3개): Spec 006, 011 이후 DI 설정 변경
-    - `test_usecases.py` (3개): Spec 010 이후 IngestionService 생성자 변경 (GraphRepository 추가)
-  * **해결 방안:** Mock 설정 업데이트, IngestionService 파라미터 수정
-  * **상세 내용**: `specs/012-integration-test-high-priority/failed_tests_analysis.md`
-  * **우선순위**: High (Core Test 실패)
 
 
 * **[Feature] API Input Validation & Error Handling Improvement**
