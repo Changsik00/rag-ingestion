@@ -68,20 +68,53 @@ For **EVERY** Task in the approved Plan, the Agent MUST:
 3. **Implement:** Write minimal code to satisfy the task.
 4. **Verify:** Run the specified tests and confirm they pass.
 5. **Commit:** Commit the change (One Task = One logical commit).
-6. **Stop & Report:** Report the completion of the task and **WAIT** for the user's signal to proceed. **Batching tasks without reporting is a CRITICAL VIOLATION.**
+6. **Update task.md:** Mark the task status in `task.md` (see Task Status Management below).
+7. **Stop & Report:** Report the completion of the task and **WAIT** for the user's signal to proceed. **Batching tasks without reporting is a CRITICAL VIOLATION.**
 
-### 6.2 Tooling Enforcement
+### 6.2 Task Status Management (task.md)
+The Agent MUST update `task.md` after EVERY commit to maintain progress visibility.
+
+**Checkbox States:**
+- `[ ]` - **Pending:** Task not yet started.
+- `[x]` - **Complete:** Task successfully completed and committed.
+- `[-]` - **Passed:** Task intentionally skipped. Valid reasons include:
+    - Low priority or non-critical.
+    - Will be removed/replaced in a future task.
+    - More efficient to implement in a later Spec.
+    - No longer relevant due to implementation changes.
+
+**Pass Protocol:**
+- When passing a task with `[-]`, the Agent MUST:
+    1. Document the reason in the task item (inline comment).
+    2. Add the passed task to `backlog/queue.md` if it requires future work.
+    3. Inform the User of the pass decision and reasoning.
+
+### 6.3 Tooling Enforcement
 - **GitHub CLI:** The Agent MUST use `gh pr create` to initiate Pull Requests.
 - **Pre-PR Check:** Run full test suites before creating a PR to prevent CI failures.
+- **PR Title Format (Mandatory):**
+    - Format: `<type>(<scope>): <description>` (all lowercase)
+    - Type: `feat`, `fix`, `refactor`, `test`, `docs`, etc.
+    - Scope: Usually `spec-XXX` (e.g., `spec-010`)
+    - Example: `feat(spec-010): knowledge graph construction`
+    - **Reference:** Check `git log --oneline` for project-specific patterns.
 - **PR Protocol (Mandatory):**
     1. **Rich Description:** Create `pr_description.md` in the spec directory (e.g., `specs/001-.../pr_description.md`).
-    2. **Required Sections:**
-        - **Summary:** High-level overview.
-        - **Key Review Points:** What the user should focus on.
-        - **Verification Plan:** Exact steps to verify (Automated & Manual) with commands.
-        - **Tech Stack:** Tools and libraries used.
-    3. **Archive Strategy:** `walkthrough.md` and `pr_description.md` MUST be committed to the `specs/` directory before pushing.
-    4. **Visuals:** Use emojis and clear formatting to enhance readability.
+    2. **First Line:** MUST match the PR title (for consistency with commit messages).
+    3. **Required Sections (use emojis for visual clarity):**
+        - **📋 Summary:** High-level overview of changes and outcomes.
+        - **🎯 Key Review Points:** What the user should focus on during review.
+        - **🧪 Verification** (or **Verification Plan**): Exact steps with commands to verify.
+        - **📦 Files Changed:** Summary of modified/added/deleted files.
+        - **🚨 Breaking Changes:** List any breaking changes, or state "없음" if none.
+        - **📚 Related:** Links to related specs, documentation, or issues.
+        - **✅ Definition of Done:** Checklist of completed tasks.
+    4. **Optional Sections (context-dependent):**
+        - **🏗️ Architecture Changes:** For structural changes.
+        - **🔍 Root Cause:** For bug fixes.
+        - **🔮 Future Work:** For planned follow-ups.
+    5. **Archive Strategy:** `walkthrough.md` and `pr_description.md` MUST be committed to the `specs/` directory before pushing.
+    6. **Visuals:** Use emojis, code blocks, and clear formatting to enhance readability.
 
 ## 7. Deviation & Hard Stop
 

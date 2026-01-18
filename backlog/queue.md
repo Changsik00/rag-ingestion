@@ -119,11 +119,19 @@
   * [x] 전체 테스트 스위트 통과 확인 (85 passed, 4 skipped)
   * **완료**: 2026-01-18
 
-* [ ] **Spec 014: Code Quality Improvement** (진행 예정)
-  * [ ] Bug Fix: semantic_data NameError 수정
-  * [ ] Test Standardization: TDD 테스트 GWT 형식 통일 (9개 파일)
-  * [ ] 전체 테스트 통과 확인
-  * **우선순위**: High (프로덕션 버그 + 테스트 품질)
+* [x] **Spec 014: Code Quality Improvement**
+  * [x] Bug Fix: semantic_data NameError 수정
+  * [x] Test Standardization: TDD 테스트 GWT 형식 통일 (9개 파일)
+  * [x] Module Docstring 한국어화 (12개 파일)
+  * [x] 전체 테스트 통과 확인 (85 passed, 4 skipped)
+  * **완료**: 2026-01-18
+
+* [ ] **Spec 015: Documentation Update & Reorganization** (진행 중)
+  * [ ] README 최신화 (Spec 010, 011, 014 반영)
+  * [ ] specs 디렉토리의 재사용 가능한 문서를 docs로 이동
+  * [ ] docs 디렉토리 구조 개선
+  * [ ] 전체 문서 일관성 검토
+  * **우선순위**: Medium (문서 품질)
 
 ---
 

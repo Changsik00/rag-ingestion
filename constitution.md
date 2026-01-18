@@ -76,6 +76,7 @@ Once a Plan is explicitly accepted (Plan Accept), the Agent is authorized to:
 ### 9.2 GitHub CLI (`gh`) Protocol
 - **Mandatory Tooling**: All Pull Requests MUST be created using the `gh` CLI.
 - **Pre-PR Validation**: The Agent MUST execute all local tests and confirm they pass before running the `gh pr create` command.
+- **PR Title Format**: MUST follow `<type>(<scope>): <description>` (lowercase). Reference `git log --oneline` for project patterns.
 
 ## 10. Backlog Law
 
