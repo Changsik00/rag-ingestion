@@ -10,6 +10,7 @@ from app.use_cases.ingestion import IngestionService
 client = TestClient(app)
 
 def test_list_jobs_endpoint():
+    # Given: Mock JobRepository와 테스트 Job 데이터
     mock_job_repo = Mock()
     job1 = IngestionJob(source_url="http://test.com/1", status=JobStatus.COMPLETED)
     job2 = IngestionJob(source_url="http://test.com/2", status=JobStatus.PENDING)
@@ -18,8 +19,10 @@ def test_list_jobs_endpoint():
 
     app.dependency_overrides[get_job_repository] = lambda: mock_job_repo
 
+    # When: GET /jobs 요청
     response = client.get("/jobs?limit=10")
 
+    # Then: 200 응답 및 Job 리스트 반환
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 2
@@ -31,6 +34,7 @@ def test_list_jobs_endpoint():
     app.dependency_overrides.clear()
 
 def test_get_job_endpoint():
+    # Given: Mock JobRepository와 테스트 Job
     mock_job_repo = Mock()
     job = IngestionJob(job_id="test-id", source_url="http://test.com", status=JobStatus.COMPLETED)
 
@@ -38,8 +42,10 @@ def test_get_job_endpoint():
 
     app.dependency_overrides[get_job_repository] = lambda: mock_job_repo
 
+    # When: GET /jobs/{job_id} 요청
     response = client.get("/jobs/test-id")
 
+    # Then: 200 응답 및 Job 세부 정보 반환
     assert response.status_code == 200
     data = response.json()
     assert data["job_id"] == "test-id"
@@ -50,6 +56,7 @@ def test_get_job_endpoint():
     app.dependency_overrides.clear()
 
 def test_retry_job_endpoint():
+    # Given: Mock JobRepository와 IngestionService
     mock_job_repo = Mock()
     job = IngestionJob(job_id="test-id", source_url="http://test.com", status=JobStatus.FAILED)
     mock_job_repo.get_job.return_value = job
@@ -66,8 +73,10 @@ def test_retry_job_endpoint():
     app.dependency_overrides[get_job_repository] = lambda: mock_job_repo
     app.dependency_overrides[get_ingestion_service] = lambda: mock_service
 
+    # When: POST /jobs/{job_id}/retry 요청
     response = client.post("/jobs/test-id/retry")
 
+    # Then: 202 응답 및 새로운 Job 생성
     assert response.status_code == 202
     data = response.json()
     assert data["job_id"] == "new-job-id"

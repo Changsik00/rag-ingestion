@@ -12,7 +12,7 @@ client = TestClient(app)
 # test_ingest_web_endpoint is superseded by tests/integration/test_async_ingest.py
 
 def test_list_documents_endpoint():
-    # Mock Repository
+    # Given: Mock Repository와 테스트 데이터
     mock_repo = Mock()
     doc_id = uuid4()
     mock_docs = [
@@ -23,10 +23,10 @@ def test_list_documents_endpoint():
 
     app.dependency_overrides[get_repository] = lambda: mock_repo
 
-    # Act
+    # When: GET /documents 요청
     response = client.get("/documents?limit=5")
 
-    # Assert
+    # Then: 200 응답 및 Document 리스트 반환
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 2
