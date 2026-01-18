@@ -267,8 +267,8 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ## Task 13: PR 준비 및 생성
 
-- [ ] `specs/016-entity-relationship-extraction/walkthrough.md` 작성
-- [ ] `specs/016-entity-relationship-extraction/pr_description.md` 작성
+- [x] `specs/016-entity-relationship-extraction/walkthrough.md` 작성 (한글)
+- [x] `specs/016-entity-relationship-extraction/pr_description.md` 작성 (한글)
 - [ ] Push: `git push origin feature/016-entity-relationship-extraction`
 - [ ] PR 생성:
 ```bash
@@ -276,6 +276,8 @@ gh pr create --base main --head feature/016-entity-relationship-extraction \
   --title "feat(spec-016): entity-entity relationship extraction" \
   --body-file specs/016-entity-relationship-extraction/pr_description.md
 ```
+
+**Commit**: docs: add walkthrough and pr description in Korean (per agent.md)
 
 ---
 
