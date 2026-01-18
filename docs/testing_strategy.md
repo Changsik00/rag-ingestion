@@ -454,11 +454,15 @@ jobs:
 
 ## 📚 참고 자료
 
+### External Resources
 - [Testing Pyramid - Martin Fowler](https://martinfowler.com/articles/practical-test-pyramid.html)
 - [Contract Testing - Pact](https://docs.pact.io/)
 - [Python Protocol (PEP 544)](https://peps.python.org/pep-0544/)
 - [Pytest Documentation](https://docs.pytest.org/)
 - [FastAPI Testing](https://fastapi.tiangolo.com/tutorial/testing/)
+
+### Related Documentation
+- [Architecture Guide](./architecture.md) - Clean Architecture layer separation principles
 
 ---
 
@@ -466,4 +470,6 @@ jobs:
 
 이 문서는 프로젝트가 진화함에 따라 지속적으로 업데이트됩니다.
 
-**마지막 업데이트:** 2026-01-17 (Spec 009)
+**마지막 업데이트:** 2026-01-19 (Spec 015: Documentation Update)  
+**작성일:** 2026-01-17 (Spec 009: Testing Strategy)
+
