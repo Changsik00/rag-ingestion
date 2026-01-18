@@ -101,6 +101,10 @@ class IngestionService:
             doc_id: Document ID
             semantic_data: ExtractedMetadata (entities + relationships)
         """
+        # Early return if no entities to process
+        if not semantic_data.entities:
+            return
+        
         # 1. Entity 저장 및 MENTIONS 관계
         all_entity_names = set()
         for entity_type, names in semantic_data.entities.items():
