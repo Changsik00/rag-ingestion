@@ -49,6 +49,7 @@ class IngestionService:
             result = self.scraper.scrape(job.source_url)
 
             # 3. Semantic Extraction (Spec 005)
+            semantic_data = None  # Initialize to prevent NameError when extractor=None
             if self.extractor:
                 try:
                     semantic_data = self.extractor.extract(result.markdown)
