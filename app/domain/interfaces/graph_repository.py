@@ -5,38 +5,78 @@ Domain Layer에서 Knowledge Graph 저장소의 계약을 정의합니다.
 Infrastructure Layer의 구현체(Neo4jGraphRepository)는 이 Protocol을 준수해야 합니다.
 """
 
-from typing import Protocol
+from typing import Any, Dict, List, Optional, Protocol
 
-from app.domain.schemas.ontology import EntityType, TypedEntity
+from app.domain.schemas.ontology import EntityType, RelationshipType, TypedEntity
 
 
 class GraphRepository(Protocol):
-    """Knowledge Graph 저장소 인터페이스"""
-
+    """
+    Graph DB 저장소 인터페이스 (Protocol)
+    
+    Document-Entity 및 Entity-Entity 관계를 관리하는 저장소의 계약.
+    """
+    
     def save_entity(self, name: str, entity_type: EntityType) -> str:
         """
-        Entity 노드 생성/조회 (MERGE)
-
+        Entity 노드를 Graph DB에 저장
+        
         Args:
-            name: Entity 이름 (예: "Elon Musk")
-            entity_type: Entity 타입 (EntityType enum)
-
+            name: Entity 이름
+            entity_type: Entity 타입 (Enum)
+            
         Returns:
-            저장된 Entity의 name
+            str: 저장된 Entity ID
         """
         ...
-
-    def create_mention_relationship(
+    
+    def create_mention_relationship(self, document_id: str, entity_name: str) -> None:
+        """
+        Document -[:MENTIONS]-> Entity 관계 생성
+        
+        Args:
+            document_id: 문서 ID
+            entity_name: Entity 이름
+        """
+        ...
+    
+    def create_entity_relationship(
         self,
-        doc_id: str,
-        entity_name: str
+        source_name: str,
+        relationship_type: RelationshipType,
+        target_name: str
     ) -> None:
         """
-        Document-Entity MENTIONS 관계 생성
-
+        Entity -[relationship]-> Entity 관계 생성
+        
         Args:
-            doc_id: Document ID (UUID 문자열)
-            entity_name: Entity 이름
+            source_name: Source entity 이름
+            relationship_type: 관계 타입 (FOUNDED, WORKS_FOR 등)
+            target_name: Target entity 이름
+        """
+        ...
+    
+    def get_entity_relationships(
+        self,
+        entity_name: str,
+        relationship_type: Optional[RelationshipType] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        특정 Entity의 모든 관계 조회
+        
+        Args:
+            entity_name: 조회할 Entity 이름
+            relationship_type: 필터링할 관계 타입 (Optional)
+            
+        Returns:
+            List[Dict]: 관계 목록
+            [
+                {
+                    "relationship_type": "FOUNDED",
+                    "target_name": "Tesla",
+                    "target_type": "ORGANIZATION"
+                }
+            ]
         """
         ...
 
