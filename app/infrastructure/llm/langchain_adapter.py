@@ -72,6 +72,20 @@ class LangChainLLMAdapter:
             - GPT-4 is a PRODUCT (commercial AI product), not TECHNOLOGY.
             - Book titles should use DOCUMENT type.
 
+            5. **Relationships between entities:**
+            Extract relationships that are **EXPLICITLY stated** in the text. Do NOT infer.
+            
+            **Relationship Types:**
+            - FOUNDED: Person founded Organization (e.g., "Elon Musk founded Tesla")
+            - WORKS_FOR: Person works for Organization (e.g., "Jane works at Google")
+            - USES: Organization uses Technology (e.g., "Netflix uses Python")
+            - RELATED_TO: Concept related to Concept (e.g., "ML is related to AI")
+            - SUPPORTS: Technology supports Activity (e.g., "Docker supports deployment")
+            - PERFORMED: Person performed Activity (e.g., "Steve Jobs gave presentations")
+            - PART_OF: Activity is part of Activity (e.g., "Testing is part of development")
+
+            **CRITICAL: Only extract relationships EXPLICITLY mentioned. If not clear, skip it.**
+
             Text to analyze:
             {text}
 
