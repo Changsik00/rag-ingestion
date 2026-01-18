@@ -14,9 +14,9 @@
 
 ## Task 1: 브랜치 생성 및 Spec 문서 커밋
 
-- [ ] 브랜치 생성: `git checkout -b feature/015-documentation-update`
-- [ ] 브랜치 확인: `git branch --show-current`
-- [ ] Spec 문서 커밋: `git add specs/015-documentation-update/ backlog/queue.md && git commit -m "docs: add spec 015 - documentation update"`
+- [x] 브랜치 생성: `git checkout -b feature/015-documentation-update`
+- [x] 브랜치 확인: `git branch --show-current`
+- [-] Spec 문서 커밋 (이미 main에서 커밋됨)
 
 **커밋 메시지:**
 ```
@@ -30,27 +30,28 @@ docs: add spec 015 - documentation update
 
 ## Task 2: specs → docs 문서 이동
 
-### 2-1. cypher_patterns.md 이동
+### 2-1. Neo4j 문서 이동
 
-- [ ] 파일 복사: `specs/010-knowledge-graph-construction/cypher_patterns.md` → `docs/cypher_patterns.md`
-- [ ] 상대경로 링크 수정 (있으면)
-- [ ] 원본 위치에 moved 표시: `specs/010-knowledge-graph-construction/cypher_patterns_moved.txt` 생성
-- [ ] 커밋: `docs: move cypher_patterns to docs directory`
+- [x] 파일 복사: `neo4j-query-guide.md` → `docs/neo4j_query_guide.md`
+- [x] 파일 복사: `graph-schema-explained.md` → `docs/graph_schema.md`
+- [x] 원본 위치에 moved 표시: `MOVED.txt` 생성
+- [x] 커밋: `docs: move neo4j documentation from spec 010 to docs directory`
 
 **커밋 메시지:**
 ```
-docs: move cypher_patterns to docs directory
+docs: move neo4j documentation from spec 010 to docs directory
 
-- Copy cypher_patterns.md from Spec 010 to docs/
+- Copy neo4j-query-guide.md to docs/neo4j_query_guide.md
+- Copy graph-schema-explained.md to docs/graph_schema.md
 - Add reference marker in original location
-- Make it reusable across projects
+- Make Neo4j documentation reusable across projects
 ```
 
 ### 2-2. ontology.md 업데이트
 
-- [ ] `docs/ontology.md`와 `specs/007-ontology-design/ontology.md` 비교
-- [ ] 최신 내용으로 `docs/ontology.md` 업데이트 (Spec 007, 010 내용 반영)
-- [ ] 커밋: `docs: update ontology.md with latest entity types`
+- [x] `docs/ontology.md`와 `specs/007-ontology-design/ontology.md` 비교
+- [x] 최신 내용으로 `docs/ontology.md` 업데이트 (Spec 007, 010 내용 반영)
+- [x] 커밋: `docs: update ontology.md with knowledge graph references`
 
 **커밋 메시지:**
 ```
@@ -63,9 +64,9 @@ docs: update ontology.md with latest entity types
 
 ### 2-3. testing_strategy.md 업데이트
 
-- [ ] `docs/testing_strategy.md`와 `specs/009-testing-strategy/testing_philosophy.md` 비교
-- [ ] TDD/BDD 내용으로 `docs/testing_strategy.md` 업데이트
-- [ ] 커밋: `docs: update testing_strategy.md with TDD/BDD approach`
+- [x] `docs/testing_strategy.md`와 `specs/009-testing-strategy/testing_philosophy.md` 비교
+- [x] TDD/BDD 내용으로 `docs/testing_strategy.md` 업데이트
+- [x] 커밋: `docs: update testing_strategy.md with latest metadata`
 
 **커밋 메시지:**
 ```
@@ -82,14 +83,14 @@ docs: update testing_strategy.md with TDD/BDD approach
 
 ### 3-1. Phase 구분 재정리
 
-- [ ] Phase 3-5 추가
-- [ ] Spec 001-015 상태 업데이트
-- [ ] 완료/진행중 표시 정확화
--[ ] 커밋: `docs: update README with latest Spec status (010-015)`
+- [x] Phase 3-5 추가
+- [x] Spec 001-015 상태 업데이트
+- [x] 완료/진행중 표시 정확화
+- [x] 커밋: `docs: update readme with spec 010-015 status and phase 4-5`
 
 **커밋 메시지:**
 ```
-docs: update README with latest Spec status (010-015)
+docs: update readme with spec 010-015 status and phase 4-5
 
 - Add Phase 4: Knowledge Graph & Testing
 - Add Phase 5: Code Quality & Documentation
@@ -99,10 +100,10 @@ docs: update README with latest Spec status (010-015)
 
 ### 3-2. Documentation 섹션 개선
 
-- [ ] docs 디렉토리 새 문서 추가 (cypher_patterns.md)
-- [ ] 문서를 카테고리별로 그룹화 (Core Guides, Operation, Project Management)
-- [ ] 모든 링크 검증
-- [ ] 커밋: `docs: improve Documentation section in README`
+- [x] docs 디렉토리 새 문서 추가 (ontology.md, graph_schema.md, neo4j_query_guide.md)
+- [x] 문서를 카테고리별로 그룹화 (Core Guides, Operation, Project Management)
+- [x] 모든 링크 검증
+- [x] 커밋에 포함됨
 
 **커밋 메시지:**
 ```
@@ -119,10 +120,10 @@ docs: improve Documentation section in README
 
 ### 4-1. docs 내부 상호 참조 추가
 
-- [ ] `docs/ontology.md`에 관련 문서 링크 추가
-- [ ] `docs/cypher_patterns.md`에 관련 문서 링크 추가
-- [ ] `docs/architecture.md` 업데이트 (필요시)
-- [ ] 커밋: `docs: add cross-references in docs directory`
+- [x] `docs/ontology.md`에 관련 문서 링크 추가 (Task 2-2에서 완료)
+- [x] `docs/graph_schema.md`, `docs/neo4j_query_guide.md` 추가 (Task 2-1에서 완료)
+- [-] `docs/architecture.md` 업데이트 (필요 없음 - 이미 최신 상태)
+- [-] 별도 커밋 (Task 2에서 이미 포함됨)
 
 **커밋 메시지:**
 ```
@@ -139,20 +140,20 @@ docs: add cross-references in docs directory
 
 ### 5-1. 링크 검증
 
-- [ ] README의 모든 docs 링크 클릭 확인
-- [ ] docs 문서들의 상호 링크 확인
-- [ ] 상대경로 정확성 검증
+- [x] README의 모든 docs 링크 클릭 확인
+- [x] docs 문서들의 상호 링크 확인
+- [x] 상대경로 정확성 검증
 
 ### 5-2. 문서 일관성 확인
 
-- [ ] 완료 Spec (001-015) 모두 README에 표시
-- [ ] docs 디렉토리의 모든 파일 README에서 언급
-- [ ] 용어 일관성 (한영 혼용 최소화)
+- [x] 완료 Spec (001-015) 모두 README에 표시
+- [x] docs 디렉토리의 모든 파일 README에서 언급
+- [x] 용어 일관성 (한영 혼용 최소화)
 
 ### 5-3. Backlog 최종 업데이트
 
-- [ ] Spec 015 완료로 표시 (작업 완료 시)
-- [ ] 커밋: `docs: mark spec 015 as completed in backlog`
+- [x] Spec 015 완료로 표시
+- [x] 커밋: `docs: mark spec 015 as completed in backlog`
 
 **커밋 메시지:**
 ```
