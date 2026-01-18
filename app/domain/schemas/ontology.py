@@ -14,16 +14,20 @@ class EntityType(str, Enum):
     """
     표준화된 Entity 타입 분류
 
-    LLM이 추출한 Entity를 7가지 타입으로 분류.
+    LLM이 추출한 Entity를 9가지 타입으로 분류.
     자유 형식 문자열 대신 Enum을 사용하여 타입 안정성 확보.
+    
+    분류가 불확실한 경우 CONCEPT을 기본값(Fallback)으로 사용.
     """
     PERSON = "PERSON"
     ORGANIZATION = "ORGANIZATION"
     TECHNOLOGY = "TECHNOLOGY"
-    CONCEPT = "CONCEPT"
+    CONCEPT = "CONCEPT"              # Fallback for uncertain cases
     LOCATION = "LOCATION"
     EVENT = "EVENT"
     ACTIVITY = "ACTIVITY"
+    PRODUCT = "PRODUCT"              # 제품 (iPhone, Tesla Model 3, GPT-4)
+    DOCUMENT = "DOCUMENT"            # 문서 (논문, 책, 보고서)
 
 
 class RelationshipType(str, Enum):
