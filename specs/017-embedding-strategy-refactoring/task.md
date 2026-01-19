@@ -11,7 +11,8 @@
 - [x] Task 1 완료: 브랜치 생성 및 테스트 상태 확인
 - [x] Task 2 완료: ChromaDB Embedding 설정 변경 (Unit tests 통과)
 - [x] Task 3 완료: 의존성 제거 (직접 의존성에서 제거)
-- [/] Task 4 진행 중: Integration Test 실행 및 수정
+- [x] Task 4 완료: Integration Test 통과 (4 passed) ✅
+- [ ] Task 5: 전체 테스트 스위트 실행
 
 ---
 
