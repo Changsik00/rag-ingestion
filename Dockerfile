@@ -18,5 +18,5 @@ RUN uv sync --frozen --no-dev
 # 소스 코드 복사
 COPY . .
 
-# FastAPI 실행 (원래 방식으로 복원)
+# FastAPI 실행
 CMD ["uv", "run", "uvicorn", "app.interfaces.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
