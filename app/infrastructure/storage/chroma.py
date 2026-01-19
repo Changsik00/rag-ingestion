@@ -1,11 +1,11 @@
 import json
-import os
 from uuid import UUID
 
 import chromadb
 from chromadb.utils import embedding_functions
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
+from app.core.config import get_settings
 from app.core.exceptions import InfrastructureException
 from app.core.logging_config import setup_logger
 from app.domain.entities.chunk import Chunk
@@ -17,12 +17,14 @@ logger = setup_logger(__name__)
 
 class ChromaStorage(DocumentRepository):
     def __init__(self):
-        host = os.getenv("CHROMA_HOST", "localhost")
-        port = os.getenv("CHROMA_PORT", "8001")
-        self.client = chromadb.HttpClient(host=host, port=int(port))
+        settings = get_settings()
+
+        host = settings.CHROMA_HOST
+        port = settings.CHROMA_PORT
+        self.client = chromadb.HttpClient(host=host, port=port)
 
         # Gemini Embedding API 설정
-        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        gemini_api_key = settings.GEMINI_API_KEY
         if not gemini_api_key:
             raise ValueError("GEMINI_API_KEY environment variable is required for ChromaDB embedding")
 

@@ -1,10 +1,10 @@
-import os
 from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
 from neo4j import Driver, GraphDatabase
 
+from app.core.config import get_settings
 from app.core.llm import get_llm
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
@@ -35,10 +35,8 @@ def get_scraper() -> ScraperInterface:
 # Neo4j Driver 의존성 (모든 Neo4j 저장소가 공유하는 단일 Driver)
 @lru_cache
 def get_neo4j_driver() -> Driver:
-    uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-    user = os.getenv("NEO4J_USER", "neo4j")
-    password = os.getenv("NEO4J_PASSWORD", "password")
-    return GraphDatabase.driver(uri, auth=(user, password))
+    settings = get_settings()
+    return GraphDatabase.driver(settings.NEO4J_URI, auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD))
 
 
 # Document Repository 의존성 (CompositeStorage: Neo4j + ChromaDB)
