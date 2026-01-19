@@ -5,6 +5,8 @@ BasicWebScraper의 웹 페이지 스크래핑 기능을 검증합니다.
 """
 
 from unittest.mock import Mock, patch
+import pytest
+import requests
 
 from app.infrastructure.scrapers.basic import BasicWebScraper
 from app.schemas.ingest import IngestResponse
@@ -43,9 +45,11 @@ def test_scrape_failure(mock_get):
     mock_get.return_value = mock_response
 
     scraper = BasicWebScraper()
-
-    # When/Then: 스크래핑 실패 시 예외 발생
-    try:
+    
+    # When/Then: 스크래핑 실패 시 ScrapingError 발생 확인
+    # Broad 'except Exception' anti-pattern removed.
+    # We expect requests.exceptions.HTTPError which BasicWebScraper raises via raise_for_status()
+    # Or if we wrap it, we expect that wrapper. 
+    # Current BasicWebScraper uses response.raise_for_status(), which raises requests.exceptions.HTTPError
+    with pytest.raises(requests.exceptions.HTTPError):
         scraper.scrape("https://error.com")
-    except Exception as e:
-        assert str(e) == "HTTP Error"
