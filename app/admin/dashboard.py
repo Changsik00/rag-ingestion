@@ -11,6 +11,7 @@ st.set_page_config(page_title="Ingestion Admin", layout="wide")
 
 st.title("Ingestion Admin Dashboard")
 
+
 # --- API Client ---
 def fetch_jobs(limit=50):
     try:
@@ -20,6 +21,7 @@ def fetch_jobs(limit=50):
     except Exception as e:
         st.error(f"Failed to fetch jobs: {e}")
         return []
+
 
 def retry_job(job_id):
     try:
@@ -31,6 +33,7 @@ def retry_job(job_id):
         st.error(f"Failed to retry job {job_id}: {e}")
         return None
 
+
 # --- Sidebar ---
 st.sidebar.header("Controls")
 refresh = st.sidebar.button("Refresh")
@@ -38,7 +41,7 @@ auto_refresh = st.sidebar.checkbox("Auto Refresh", value=False)
 limit = st.sidebar.number_input("Limit", min_value=10, max_value=200, value=50)
 
 if auto_refresh:
-    st.empty() # Placeholder for potential auto-rerun logic via query params or usage of st.rerun (if available)
+    st.empty()  # Placeholder for potential auto-rerun logic via query params or usage of st.rerun (if available)
     # Streamlit doesn't natively support timer-based rerun without loops or components
     # Just leave checkbox for now implies manual intent or future enhancement
 
@@ -70,23 +73,25 @@ if jobs_data:
 
     # Style status
     def color_status(val):
-        color = 'grey'
-        if val == 'COMPLETED':
-            color = 'green'
-        elif val == 'FAILED':
-            color = 'red'
-        elif val == 'RUNNING':
-            color = 'orange'
-        return f'color: {color}'
+        color = "grey"
+        if val == "COMPLETED":
+            color = "green"
+        elif val == "FAILED":
+            color = "red"
+        elif val == "RUNNING":
+            color = "orange"
+        return f"color: {color}"
 
     if "status" in df.columns:
-        st.dataframe(df.style.applymap(color_status, subset=['status']), use_container_width=True)
+        st.dataframe(df.style.applymap(color_status, subset=["status"]), use_container_width=True)
     else:
         st.dataframe(df, use_container_width=True)
 
     # Detail & Actions
     st.subheader("Actions")
-    selected_job_id = st.selectbox("Select Job to View/Retry", options=df["job_id"].tolist() if "job_id" in df.columns else [])
+    selected_job_id = st.selectbox(
+        "Select Job to View/Retry", options=df["job_id"].tolist() if "job_id" in df.columns else []
+    )
 
     if selected_job_id:
         job_details = next((item for item in jobs_data if item["job_id"] == selected_job_id), None)

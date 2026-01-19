@@ -18,19 +18,16 @@ router = APIRouter(prefix="/entities", tags=["entities"])
 
 
 @router.get("")
-async def list_entities(
-    graph: Annotated[GraphRepository, Depends(get_graph_repository)],
-    limit: int = 100
-):
+async def list_entities(graph: Annotated[GraphRepository, Depends(get_graph_repository)], limit: int = 100):
     """전체 Entity 목록 조회 (type별 정렬)"""
     return graph.list_all_entities(limit=limit)
 
 
-@router.get("/{name}/documents")
+@router.get("/{name:path}/documents")
 async def get_documents_by_entity(
     name: str,
     graph: Annotated[GraphRepository, Depends(get_graph_repository)],
-    storage: Annotated[DocumentRepository, Depends(get_repository)]
+    storage: Annotated[DocumentRepository, Depends(get_repository)],
 ):
     """특정 Entity가 언급된 Document 목록"""
     doc_ids = graph.get_document_ids_by_entity(name)
@@ -49,38 +46,29 @@ async def get_documents_by_entity(
     return docs
 
 
-@router.get("/{name}/info")
-async def get_entity_info(
-    name: str,
-    graph: Annotated[GraphRepository, Depends(get_graph_repository)]
-):
+@router.get("/{name:path}/info")
+async def get_entity_info(name: str, graph: Annotated[GraphRepository, Depends(get_graph_repository)]):
     """Entity 정보 및 관련 통계"""
     doc_ids = graph.get_document_ids_by_entity(name)
 
-    return {
-        "name": name,
-        "mention_count": len(doc_ids),
-        "document_ids": doc_ids
-    }
+    return {"name": name, "mention_count": len(doc_ids), "document_ids": doc_ids}
 
 
-@router.get("/{name}/relationships")
+@router.get("/{name:path}/relationships")
 async def get_entity_relationships(
-    name: str,
-    graph: Annotated[GraphRepository, Depends(get_graph_repository)],
-    relationship_type: str | None = None
+    name: str, graph: Annotated[GraphRepository, Depends(get_graph_repository)], relationship_type: str | None = None
 ):
     """
     Entity의 관계 목록 조회
-    
+
     Args:
         name: Entity 이름 (예: "Elon Musk")
         relationship_type: 필터링할 관계 타입 (optional)
             - FOUNDED, WORKS_FOR, USES, RELATED_TO, SUPPORTS, PERFORMED, PART_OF
-    
+
     Returns:
         List of relationships with target entity info
-    
+
     Example:
         GET /entities/Elon%20Musk/relationships
         GET /entities/Tesla/relationships?relationship_type=USES
@@ -94,7 +82,7 @@ async def get_entity_relationships(
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid relationship_type: {relationship_type}. "
-                       f"Valid types: FOUNDED, WORKS_FOR, USES, RELATED_TO, SUPPORTS, PERFORMED, PART_OF"
+                f"Valid types: FOUNDED, WORKS_FOR, USES, RELATED_TO, SUPPORTS, PERFORMED, PART_OF",
             )
-    
+
     return graph.get_entity_relationships(name, rel_type)

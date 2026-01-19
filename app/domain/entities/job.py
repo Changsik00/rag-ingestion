@@ -11,6 +11,7 @@ class JobStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
 
+
 class IngestionJob(BaseModel):
     job_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     source_url: str

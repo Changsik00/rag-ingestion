@@ -9,6 +9,9 @@ WORKDIR /app
 # 의존성 파일 복사
 COPY pyproject.toml uv.lock ./
 
+# UV 설정: hardlink 실패 방지 (Docker 환경)
+ENV UV_LINK_MODE=copy
+
 # 의존성 설치 (uv 사용)
 RUN uv sync --frozen --no-dev
 

@@ -16,18 +16,19 @@ class EntityType(str, Enum):
 
     LLM이 추출한 Entity를 9가지 타입으로 분류.
     자유 형식 문자열 대신 Enum을 사용하여 타입 안정성 확보.
-    
+
     분류가 불확실한 경우 CONCEPT을 기본값(Fallback)으로 사용.
     """
+
     PERSON = "PERSON"
     ORGANIZATION = "ORGANIZATION"
     TECHNOLOGY = "TECHNOLOGY"
-    CONCEPT = "CONCEPT"              # Fallback for uncertain cases
+    CONCEPT = "CONCEPT"  # Fallback for uncertain cases
     LOCATION = "LOCATION"
     EVENT = "EVENT"
     ACTIVITY = "ACTIVITY"
-    PRODUCT = "PRODUCT"              # 제품 (iPhone, Tesla Model 3, GPT-4)
-    DOCUMENT = "DOCUMENT"            # 문서 (논문, 책, 보고서)
+    PRODUCT = "PRODUCT"  # 제품 (iPhone, Tesla Model 3, GPT-4)
+    DOCUMENT = "DOCUMENT"  # 문서 (논문, 책, 보고서)
 
 
 class RelationshipType(str, Enum):
@@ -37,21 +38,22 @@ class RelationshipType(str, Enum):
     현재는 스키마 정의만 수행하고, 실제 관계 추출 및
     Neo4j 저장은 Spec 008에서 구현 예정.
     """
+
     # Document-Entity 관계
-    MENTIONS = "MENTIONS"              # Document -> Entity
+    MENTIONS = "MENTIONS"  # Document -> Entity
 
     # Person 관계
-    WORKS_FOR = "WORKS_FOR"            # Person -> Organization
-    FOUNDED = "FOUNDED"                # Person -> Organization
-    PERFORMED = "PERFORMED"            # Person -> Activity
+    WORKS_FOR = "WORKS_FOR"  # Person -> Organization
+    FOUNDED = "FOUNDED"  # Person -> Organization
+    PERFORMED = "PERFORMED"  # Person -> Activity
 
     # Technology/Concept 관계
-    USES = "USES"                      # Organization -> Technology
-    SUPPORTS = "SUPPORTS"              # Technology -> Activity
-    RELATED_TO = "RELATED_TO"          # Concept -> Concept
+    USES = "USES"  # Organization -> Technology
+    SUPPORTS = "SUPPORTS"  # Technology -> Activity
+    RELATED_TO = "RELATED_TO"  # Concept -> Concept
 
     # Activity 관계
-    PART_OF = "PART_OF"                # Activity -> Activity
+    PART_OF = "PART_OF"  # Activity -> Activity
 
 
 class TypedEntity(BaseModel):
@@ -68,11 +70,7 @@ class TypedEntity(BaseModel):
         ...     confidence=0.95
         ... )
     """
+
     name: str = Field(description="Entity 이름")
     type: EntityType = Field(description="Entity 타입")
-    confidence: float = Field(
-        default=1.0,
-        ge=0.0,
-        le=1.0,
-        description="분류 신뢰도 (0.0 ~ 1.0)"
-    )
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="분류 신뢰도 (0.0 ~ 1.0)")

@@ -15,17 +15,14 @@ from app.interfaces.api.main import app
 
 client = TestClient(app)
 
+
 def test_async_ingest_web_endpoint():
     # Given: Mock IngestionService
     mock_service = Mock()
 
     def create_job_side_effect(url, retry_of=None):
         print(f"DEBUG: create_job called with {url}")
-        return IngestionJob(
-            source_url=url,
-            status=JobStatus.PENDING,
-            job_id="test-job-id"
-        )
+        return IngestionJob(source_url=url, status=JobStatus.PENDING, job_id="test-job-id")
 
     mock_service.create_job.side_effect = create_job_side_effect
 
@@ -38,13 +35,10 @@ def test_async_ingest_web_endpoint():
 
     # When: POST /ingest/web 요청
     with TestClient(app) as client:
-        response = client.post(
-            "/ingest/web",
-            json={"url": "http://example.com"}
-        )
+        response = client.post("/ingest/web", json={"url": "http://example.com"})
 
     # Then: 202 응답 및 Job 생성 확인
-    assert response.status_code ==  202
+    assert response.status_code == 202
     data = response.json()
     assert data["job_id"] == "test-job-id"
     assert data["status"] == "PENDING"

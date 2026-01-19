@@ -21,8 +21,8 @@ def test_extract_success():
             EntityType.CONCEPT: ["Deep Learning", "Neural Networks"],
             EntityType.LOCATION: ["Silicon Valley", "Montreal"],
             EntityType.EVENT: ["NeurIPS 2024"],
-            EntityType.ACTIVITY: ["벤치마킹", "모델 학습", "데이터 전처리"]
-        }
+            EntityType.ACTIVITY: ["벤치마킹", "모델 학습", "데이터 전처리"],
+        },
     )
     mock_llm.extract_metadata.return_value = expected_metadata
 

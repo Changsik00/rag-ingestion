@@ -16,6 +16,7 @@ from app.use_cases.ingestion import IngestionService
 
 client = TestClient(app)
 
+
 def test_list_jobs_endpoint():
     # Given: Mock JobRepository와 테스트 Job 데이터
     mock_job_repo = Mock()
@@ -40,6 +41,7 @@ def test_list_jobs_endpoint():
 
     app.dependency_overrides.clear()
 
+
 def test_get_job_endpoint():
     # Given: Mock JobRepository와 테스트 Job
     mock_job_repo = Mock()
@@ -62,6 +64,7 @@ def test_get_job_endpoint():
 
     app.dependency_overrides.clear()
 
+
 def test_retry_job_endpoint():
     # Given: Mock JobRepository와 IngestionService
     mock_job_repo = Mock()
@@ -70,10 +73,7 @@ def test_retry_job_endpoint():
 
     mock_service = Mock(spec=IngestionService)
     new_job = IngestionJob(
-        job_id="new-job-id",
-        source_url="http://test.com",
-        status=JobStatus.PENDING,
-        retry_of="test-id"
+        job_id="new-job-id", source_url="http://test.com", status=JobStatus.PENDING, retry_of="test-id"
     )
     mock_service.create_job.return_value = new_job
 

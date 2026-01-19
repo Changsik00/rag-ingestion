@@ -24,7 +24,7 @@ def test_create_job():
         repository=mock_doc_repo,
         graph=mock_graph_repo,
         job_repository=mock_job_repo,
-        extractor=None
+        extractor=None,
     )
 
     # When: Job 생성 요청
@@ -34,6 +34,7 @@ def test_create_job():
     assert job.source_url == "http://example.com"
     assert job.status == JobStatus.PENDING
     mock_job_repo.create_job.assert_called_once_with(job)
+
 
 def test_process_job_success():
     # Given: IngestionService와 mocked dependencies
@@ -49,7 +50,7 @@ def test_process_job_success():
 
     expected_response = IngestResponse(url="http://example.com/", markdown="# Example", metadata={})
     mock_scraper.scrape.return_value = expected_response
-    
+
     # Mock extractor to return None (no semantic data)
     mock_extractor.extract.return_value = None
 
@@ -58,7 +59,7 @@ def test_process_job_success():
         repository=mock_doc_repo,
         graph=mock_graph_repo,
         job_repository=mock_job_repo,
-        extractor=mock_extractor
+        extractor=mock_extractor,
     )
 
     # When: Job 처리
@@ -73,6 +74,7 @@ def test_process_job_success():
     args, _ = mock_job_repo.update_job.call_args_list[-1]
     last_updated_job = args[0]
     assert last_updated_job.status == JobStatus.COMPLETED
+
 
 def test_process_job_failure():
     # Given: 스크래핑 실패를 발생시키는 mock scraper
@@ -90,7 +92,7 @@ def test_process_job_failure():
         repository=mock_doc_repo,
         graph=mock_graph_repo,
         job_repository=mock_job_repo,
-        extractor=None
+        extractor=None,
     )
 
     # When: Job 처리 (예외가 내부에서 처리됨)

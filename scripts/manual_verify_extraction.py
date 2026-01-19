@@ -14,9 +14,9 @@ def test_extraction():
     # Load .env manually to ensure the key is available
     load_dotenv()
 
-    api_key = os.getenv("GOOGLE_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        print("❌ GOOGLE_API_KEY not found in environment.")
+        print("❌ GEMINI_API_KEY not found in environment.")
         return
 
     print(f"🔑 API Key found: {api_key[:5]}...{api_key[-5:]}")
@@ -26,12 +26,12 @@ def test_extraction():
     extractor = SemanticExtractor(llm=llm_adapter)
 
     text = """
-    LangChain is a framework for developing applications powered by language models. 
+    LangChain is a framework for developing applications powered by language models.
     It enables applications that:
     - Are context-aware: connect a language model to sources of context (prompt instructions, few shot examples, content to ground its response in, etc.)
     - Reason: rely on a language model to reason (about how to answer based on provided context, what actions to take, etc.)
-    
-    SpaceX is an American spacecraft manufacturer, launch service provider and satellite communications company headquartered in Hawthorne, California. 
+
+    SpaceX is an American spacecraft manufacturer, launch service provider and satellite communications company headquartered in Hawthorne, California.
     It was founded in 2002 by Elon Musk with the goal of reducing space transportation costs to enable the colonization of Mars.
     """
 
@@ -50,6 +50,7 @@ def test_extraction():
 
     except Exception as e:
         print(f"\n❌ Error during extraction: {e}")
+
 
 if __name__ == "__main__":
     test_extraction()

@@ -99,6 +99,20 @@
   * **완료**: 2026-01-19 (28 commits)
   * **Note**: ChromaDB embedding 이슈 4개는 별도 Spec으로 처리 필요
 
+* [x] **Spec 017: Embedding Strategy Refactoring**
+  * [x] ChromaDB embedding을 Gemini Embedding API로 전환
+  * [x] Heavy ML dependencies 제거 (onnxruntime, tokenizers)
+  * [x] 4개 실패 integration test 수정
+    - test_successful_entity_graph_auto_construction
+    - test_entity_based_document_search
+    - test_entity_deduplication
+    - test_duplicate_url_sequential_ingestion
+  * [x] Docker 컨테이너 경량화 (862MB)
+  * [x] Entity Endpoint URL Encoding 버그 수정
+  * [x] API Key Clean up (`GOOGLE_API_KEY` 제거)
+  * **완료**: 2026-01-19
+  * **우선순위**: High (테스트 실패 해결)
+
 ---
 
 ## 🛠 Unplanned (리팩토링 및 품질 개선)
@@ -147,25 +161,18 @@
 
 ### Phase 3: Progressive Intelligence (계속)
 
-* [ ] **Spec ???: Embedding Strategy Refactoring** (TBD)
-  * [ ] ChromaDB default local embedding → API 기반 embedding 전환 (Gemini/OpenAI)
-  * [ ] Heavy ML dependencies 제거 (onnxruntime, tokenizers)
-  * [ ] Backend 컨테이너 경량화
-  * [ ] Optional: Embedding worker 분리 아키텍처 고려
-  * [ ] **Issue Fix**: 4개 integration test 실패 해결
-    - test_successful_entity_graph_auto_construction
-    - test_entity_based_document_search
-    - test_entity_deduplication
-    - test_duplicate_url_sequential_ingestion
-  * **현재 상태**: ChromaDB가 all-MiniLM-L6-v2 로컬 모델 사용 중 (간접 의존성으로 onnxruntime, tokenizers 필요)
-  * **문제**: Docker 환경에서 onnxruntime을 찾지 못해 embedding 실패 (Spec 016에서 발견)
-  * **우선순위**: Medium (기능 추가와 무관, 기존 테스트만 영향)
-
 ---
+
 
 ### Phase 4: Workflow & Ecosystem (Automation)
 
-> **목표**: 외부 도구와 연동하여 자동화된 지식 생산 생태계를 완성한다.
+> **목표**: 검색 품질(RAG)을 극대화하고, 외부 도구와 연동하여 자동화된 지식 생산 생태계를 완성한다.
+
+* [ ] **Spec 018: Advanced Chunking Strategy**
+  * [ ] LangChain `RecursiveCharacterTextSplitter` 도입
+  * [ ] 문서(Document) -> 청크(Chunk) 1:N 구조 설계 및 저장
+  * [ ] Chunk 별 임베딩 및 Parent Document 참조 구현
+  * **목표**: 긴 문서를 의미 단위로 쪼개어 검색 정확도(Semantic Search) 대폭 향상
 
 * [ ] **Spec ???: Transition to LangGraph** (TBD)
   * [ ] 복잡한 순환 참조 및 상태 관리를 위해 LangChain → LangGraph 마이그레이션 수행
