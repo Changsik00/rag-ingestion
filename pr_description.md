@@ -1,43 +1,52 @@
 feat(spec-019): Advanced Chunking Strategy Implementation
 
-## 📝 Description
+## 📋 Summary
 **Spec 019: Advanced Chunking Strategy**를 구현하여 문서 수집 시 RAG 성능 최적화를 위한 의미 단위 분할(Chunking)을 적용했습니다.
 
-기존의 단순 문서 저장 방식에서 벗어나, 문서를 설정된 크기(`CHUNK_SIZE`)와 중복(`CHUNK_OVERLAP`)을 가진 청크(Chunk)로 분할하여 저장합니다. 이를 통해 Vector DB(ChromaDB)에서는 더 정교한 임베딩 검색이 가능해지며, Graph DB(Neo4j)에서는 문서와 청크 간의 구조적 관계를 보존합니다.
+기존의 단순 문서 저장 방식(`AtomicDocument` 전체 저장)을 변경하여, 문서를 `CHUNK_SIZE`와 `CHUNK_OVERLAP` 설정에 따라 분할하고 각 청크를 독립적으로 저장하도록 개선했습니다.
+- **Before**: 문서를 통째로 저장 및 임베딩.
+- **After**: 문서를 청크로 분할하여 Graph DB(Neo4j)와 Vector DB(ChromaDB)에 저장. Neo4j에는 `Document -[:HAS_CHUNK]-> Chunk` 관계가 생성되고, ChromaDB에는 청크 단위 임베딩이 저장됨.
 
-## 🎯 Key Changes
+## 🎯 Key Review Points
+1. **Chunk Entity & Storage**: `Document`와 `Chunk`의 분리, 그리고 Neo4j에서 관계(`[:HAS_CHUNK]`) 설정 방식이 올바른지 확인해주세요. (`app/infrastructure/storage/neo4j_document_repository.py`)
+2. **Chunker Implementation**: LangChain을 활용한 `ChunkerService` 구현 및 설정 적용 여부. (`app/infrastructure/chunker/langchain_chunker.py`)
+3. **Ingestion Pipeline**: `IngestionService`가 수집된 문서를 저장하기 전에 Chunking을 수행하고 `save_with_chunks`를 호출하는 흐름. (`app/use_cases/ingestion.py`)
 
-### 1. Configuration & Setup
-- `app/core/config.py`: `CHUNK_SIZE` (1000), `CHUNK_OVERLAP` (200), `GEMINI_API_KEY` 등 환경 설정 중앙화 (Pydantic BaseSettings).
+## 🧪 Verification
+### Automated Tests
+모든 유닛 및 통합 테스트가 통과했습니다.
+```bash
+uv run pytest tests/unit/test_chunker.py
+uv run pytest tests/unit/test_neo4j_storage.py
+uv run pytest tests/unit/test_chroma_storage.py
+uv run pytest tests/integration/bdd/test_chunking.py -m integration
+```
 
-### 2. Domain Layer
-- `Chunk` Entity 추가: `id`, `content`, `parent_id`, `index`, `metadata`.
-- `ChunkerService` Protocol 정의.
-- `Document` Entity 리팩토링: `AtomicDocument` -> `Document`, `source_url`을 메타데이터로 이동.
+### Manual Verification
+Neo4j Graph 확인 시 `(Document)` 노드와 여러 `(Chunk)` 노드가 `HAS_CHUNK` 관계로 연결된 것을 확인했습니다.
 
-### 3. Infrastructure Layer
-- **Chunker**: `LangChainChunker` 구현 (LangChain `RecursiveCharacterTextSplitter` 활용).
-- **Neo4j Storage**: `save_with_chunks` 메서드 구현 (`Document` -[:HAS_CHUNK]-> `Chunk` 관계 저장).
-- **Chroma Storage**: `save_chunks` 구현 (Chunk 단위 임베딩 저장).
-- **Composite Storage**: 두 저장소 간 저장 로직 조율.
+## 📦 Files Changed
 
-### 4. Application Layer
-- `IngestionService`: `ChunkerService` 주입 및 수집 파이프라인 내 Chunking 단계 추가.
+### 🆕 New Files
+- `app/domain/entities/chunk.py`: Chunk Dataclass 정의
+- `app/domain/services/chunker.py`: ChunkerService 프로토콜
+- `app/infrastructure/chunker/langchain_chunker.py`: LangChain 기반 Chunker 구현
+- `tests/unit/test_chroma_storage.py`: ChromaDB Chunk 저장 테스트
+- `tests/unit/test_neo4j_storage.py`: Neo4j Chunk 저장 테스트
+- `tests/integration/bdd/test_chunking.py`: Chunking 통합 테스트
 
-## ✅ Verification
-- **Unit Tests**:
-    - `test_chunker.py`: 분할 로직 및 메타데이터 검증.
-    - `test_neo4j_storage.py`: Chunk 노드 생성 Query 검증.
-    - `test_chroma_storage.py`: Chunk 임베딩 저장 로직 검증.
-    - `test_ingestion_service.py`: 서비스 파이프라인 통합 검증.
-- **Integration Tests**:
-    - `tests/integration/bdd/test_chunking.py`: 실제 API 요청 시 Chunk 저장 흐름(Spy) 검증.
+### 🛠 Modified Files
+- `app/core/config.py`: Chunk 설정 추가 (`CHUNK_SIZE`, `CHUNK_OVERLAP`)
+- `app/domain/entities/document.py`: `AtomicDocument` -> `Document` 변경, `source_url` 메타데이터화
+- `app/infrastructure/storage/neo4j_document_repository.py`: `save_with_chunks` 구현
+- `app/infrastructure/storage/chroma.py`: `save_chunks` 및 `save_with_chunks` 구현
+- `app/use_cases/ingestion.py`: Chunking 파이프라인 통합
+- `app/interfaces/api/dependencies.py`: Chunker 의존성 주입
 
-## 📸 Screenshots / Diagrams
-(Neo4j Graph Structure Concept)
-`(Document) --[:HAS_CHUNK]--> (Chunk 1)`
-`(Document) --[:HAS_CHUNK]--> (Chunk 2)`
-
-## 🔗 Related Issues
-- Resolves Spec 019
-- Updates Spec 018 (Completed)
+## ✅ Definition of Done
+- [x] Spec 019: Advanced Chunking Strategy 구현
+- [x] LangChain 기반 Recursive Chunking 적용 (Size/Overlap 설정 가능)
+- [x] Neo4j에 Chunk 노드 및 관계 저장 구현
+- [x] ChromaDB에 Chunk 단위 임베딩 저장 구현
+- [x] 모든 관련 Unit/Integration Test 통과
+- [x] PR Description 템플릿 준수 및 Walkthrough 작성 완료
