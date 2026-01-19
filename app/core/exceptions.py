@@ -1,4 +1,4 @@
-class DoitException(Exception):
+class DoitException(Exception):  # noqa: N818
     """Base exception for all application errors."""
     pass
 

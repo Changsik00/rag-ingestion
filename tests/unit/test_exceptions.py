@@ -1,12 +1,12 @@
-import pytest
 from app.core.exceptions import (
+    DatabaseError,
     DoitException,
     DomainException,
     InfrastructureException,
-    ScrapingError,
     LLMError,
-    DatabaseError
+    ScrapingError,
 )
+
 
 def test_exception_inheritance():
     """Verify exception hierarchy"""
@@ -27,10 +27,10 @@ def test_exception_with_cause():
     """Verify exception chaining"""
     try:
         raise ValueError("Original error")
-    except ValueError as e:
-        exc = DatabaseError("DB Failed")
+    except ValueError:
+        DatabaseError("DB Failed")
         # Python 3 exception chaining
         pass
-        
+
     # Just verifying instantiation works
     assert isinstance(DatabaseError("test"), DoitException)

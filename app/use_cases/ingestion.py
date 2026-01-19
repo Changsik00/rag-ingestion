@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from app.core.exceptions import DoitException, InfrastructureException
+from app.core.exceptions import DoitException
 from app.core.logging_config import setup_logger
 from app.domain.entities.document import AtomicDocument
 from app.domain.entities.job import IngestionJob, JobStatus

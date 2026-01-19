@@ -64,15 +64,15 @@ class ChromaStorage(DocumentRepository):
             # ChromaDB는 주된 검색 용도가 아니므로 최소 구현
             # Neo4j가 primary source
             result = self.collection.get(ids=[str(doc_id)])
-            
+
             # Robust Null Check
             if not result:
                 return None
-            
+
             documents = result.get("documents")
             if not documents or len(documents) == 0:
                 return None
-                
+
             metadatas = result.get("metadatas")
             if not metadatas or len(metadatas) == 0:
                 return None

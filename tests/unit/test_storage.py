@@ -1,11 +1,13 @@
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 from uuid import uuid4
+
 import pytest
+
 from app.core.exceptions import InfrastructureException
 from app.domain.entities.document import AtomicDocument
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
+from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 
 # ... existing CompositeStorage & Chroma tests ...
 
@@ -57,17 +59,17 @@ def test_chroma_storage_save_exception_handling(mock_client_cls):
     mock_collection = Mock()
     mock_client.get_or_create_collection.return_value = mock_collection
     mock_client_cls.return_value = mock_client
-    
+
     # Simulate ChromaDB failure
     mock_collection.add.side_effect = Exception("Connection Refused")
-    
+
     storage = ChromaStorage()
     doc = AtomicDocument(content="Test", source_url="http://test.com")
-    
+
     # Verify exception wrapping
     with pytest.raises(InfrastructureException) as exc_info:
         storage.save(doc)
-    
+
     assert "Failed to save document to ChromaDB" in str(exc_info.value) or "Connection Refused" in str(exc_info.value)
 
 @patch("chromadb.HttpClient")
@@ -82,18 +84,18 @@ def test_chroma_storage_get_null_safety(mock_client_cls):
     mock_collection = Mock()
     mock_client.get_or_create_collection.return_value = mock_collection
     mock_client_cls.return_value = mock_client
-    
+
     storage = ChromaStorage()
     doc_id = uuid4()
-    
+
     # Case 1: Result is None
     mock_collection.get.return_value = None
     assert storage.get(doc_id) is None
-    
+
     # Case 2: Result has empty 'documents' list
     mock_collection.get.return_value = {"ids": [], "documents": [], "metadatas": []}
     assert storage.get(doc_id) is None
-    
+
     # Case 3: Result has None in 'documents' (if possible in library)
     mock_collection.get.return_value = {"ids": ["1"], "documents": [], "metadatas": []}
     assert storage.get(doc_id) is None
@@ -101,7 +103,6 @@ def test_chroma_storage_get_null_safety(mock_client_cls):
 # --- New Tests for Neo4jStorage Hardening ---
 
     # ... imports ...
-from unittest.mock import MagicMock
 
 def test_neo4j_storage_save_exception_handling():
     """
@@ -111,24 +112,24 @@ def test_neo4j_storage_save_exception_handling():
     """
     mock_driver = Mock()
     mock_session = Mock()
-    
+
     # driver.session() returns a context manager object (session_ctx)
     # MUST be MagicMock to support __enter__ and __exit__ automatically
     session_ctx = MagicMock()
     mock_driver.session.return_value = session_ctx
-    
+
     # context manager enters and returns the actual session
     session_ctx.__enter__.return_value = mock_session
-    
+
     # Simulate Neo4j Failure
     mock_session.run.side_effect = Exception("Database is down")
-    
+
     storage = Neo4jStorage(driver=mock_driver)
     doc = AtomicDocument(content="Test", source_url="http://test.com")
-    
+
     with pytest.raises(InfrastructureException) as exc_info:
         storage.save(doc)
-    
+
     assert "Failed to save document to Neo4j" in str(exc_info.value)
     assert "Database is down" in str(exc_info.value)
 
@@ -140,18 +141,18 @@ def test_neo4j_storage_get_null_safety():
     """
     mock_driver = Mock()
     mock_session = Mock()
-    
+
     # driver.session() returns a context manager
     session_ctx = MagicMock()
     mock_driver.session.return_value = session_ctx
     session_ctx.__enter__.return_value = mock_session
-    
+
     storage = Neo4jStorage(driver=mock_driver)
     doc_id = uuid4()
-    
+
     # Case 1: result.single() returns None
     result_mock = Mock()
     result_mock.single.return_value = None
     mock_session.run.return_value = result_mock
-    
+
     assert storage.get(doc_id) is None
