@@ -43,8 +43,25 @@ def test_composite_storage_get():
     result = storage.get(doc_id)
 
     # Then: Neo4j에서 Document 반환
+    # Then: Neo4j에서 Document 반환
     assert result == expected_doc
     neo4j_mock.get.assert_called_once_with(doc_id)
+
+def test_composite_storage_save_with_chunks():
+    # Given: CompositeStorage, Document, Chunks
+    neo4j_mock = Mock()
+    chroma_mock = Mock()
+    storage = CompositeStorage(neo4j=neo4j_mock, chroma=chroma_mock)
+
+    doc = AtomicDocument(content="Test", metadata={"source_url": "http://test.com"})
+    chunks = [Mock(), Mock()]  # Mock chunks
+
+    # When: Document와 Chunk 저장
+    storage.save_with_chunks(doc, chunks)
+
+    # Then: 두 저장소 모두에 save_with_chunks가 호출됨
+    neo4j_mock.save_with_chunks.assert_called_once_with(doc, chunks)
+    chroma_mock.save_with_chunks.assert_called_once_with(doc, chunks)
 
 @patch("chromadb.HttpClient")
 @patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"})

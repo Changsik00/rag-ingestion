@@ -71,6 +71,12 @@ class ChromaStorage(DocumentRepository):
             logger.error(f"Failed to save document to ChromaDB: {e}")
             raise InfrastructureException(f"Failed to save document to ChromaDB: {e}") from e
 
+    def save_with_chunks(self, document: Document, chunks: List[Chunk]) -> None:
+        """DocumentRepository 인터페이스 구현: 문서와 청크 저장"""
+        # ChromaDB는 Chunk만 저장하면 됨 (Embedding 검색용)
+        # 문서는 필요 시 저장하거나 생략 가능. 현재 정책은 Chunk Store.
+        self.save_chunks(chunks)
+
     def save_chunks(self, chunks: List[Chunk]) -> None:
         """청크 리스트를 저장합니다 (Embedding은 chunk.content 기준)"""
         try:

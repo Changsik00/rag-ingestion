@@ -1,6 +1,8 @@
+from typing import List
 from uuid import UUID
 
-from app.domain.entities.document import AtomicDocument
+from app.domain.entities.document import Document
+from app.domain.entities.chunk import Chunk
 from app.domain.interfaces.document_repository import DocumentRepository
 
 
@@ -20,15 +22,22 @@ class CompositeStorage(DocumentRepository):
         self.neo4j = neo4j
         self.chroma = chroma
 
-    def save(self, document: AtomicDocument) -> None:
+    def save(self, document: Document) -> None:
         # Graph DB에 저장 (구조 및 메타데이터)
         self.neo4j.save(document)
         # Vector DB에 저장 (임베딩)
         self.chroma.save(document)
 
-    def get(self, doc_id: UUID) -> AtomicDocument | None:
+    def save_with_chunks(self, document: Document, chunks: List[Chunk]) -> None:
+        # Graph DB: 문서 + 청크 + 관계 저장
+        self.neo4j.save_with_chunks(document, chunks)
+        # Vector DB: 청크 임베딩 저장
+        # Interface save_with_chunks 호출 (내부적으로 save_chunks 호출)
+        self.chroma.save_with_chunks(document, chunks)
+
+    def get(self, doc_id: UUID) -> Document | None:
         # Primary 검색 소스는 Neo4j
         return self.neo4j.get(doc_id)
 
-    def list_documents(self, limit: int = 10) -> list[AtomicDocument]:
+    def list_documents(self, limit: int = 10) -> list[Document]:
         return self.neo4j.list_documents(limit)
