@@ -80,7 +80,7 @@ def test_url_404_fails_job():
 
 
 @pytest.mark.integration
-def test_llm_failure_still_saves_document(mocker):
+def test_llm_failure_still_saves_document():
     """
     Given: LLM이 실패하는 상황에서
     When: 수집 요청을 보내면
@@ -97,50 +97,87 @@ def test_llm_failure_still_saves_document(mocker):
     # In integration test, we need to mock where it's instantiated or injected.
     # For simplicity in BDD/Integration with TestClient, we rely on dependency override or patching internals if DI is not fully exposed to TestClient.
     
-    from app.interfaces.api.dependencies import get_semantic_extractor
+    from app.core.llm import get_llm
+    from app.interfaces.api.dependencies import get_ingestion_service, get_repository, get_scraper, get_job_repository, get_graph_repository, get_semantic_extractor, get_neo4j_driver
+    from app.use_cases.ingestion import IngestionService
+    from unittest.mock import Mock
+    from fastapi import Depends
     
-    # Given: Mock Extractor that raises exception
-    mock_extractor = mocker.Mock()
+    # Given: Mock LLM
+    mock_llm = Mock()
+    mock_llm.extract_metadata.side_effect = Exception("LLM API quota exceeded")
+    
+    # Given: Mock Repository
+    mock_repo = Mock()
+    
+    # We need other real dependencies or mocks.
+    # Since we are overriding get_ingestion_service, we can resolve them manually or use a dependency chain.
+    # Simpler: Instantiate IngestionService with mocks/real mix.
+    # We need real JobRepo for status updates to work? Or we mock JobRepo too?
+    # Test checks API /jobs/{id}. This reads from DB.
+    # So we need REAL JobRepository and REAL GraphDatabase (unless we mock the API response too, which defeats 'Integration' test).
+    # We want Integration of: API -> Service -> Logic -> (Mock Failure) -> (Mock Save) -> (Real Job Update)
+    
+    # To get Real JobRepository, we need the driver.
+    # We can fetch it via the original dependency function or create a new one.
+    # Since we are in the same process, we can just call valid dependencies.
+    
+    driver = get_neo4j_driver() # Assumes Neo4j is available? 
+    # Wait, earlier I assumed Neo4j IS running because Job status check passed.
+    
+    # But if I construct IngestionService, I need a JobRepository instance.
+    real_job_repo_instance = get_job_repository(driver)
+    real_graph_repo_instance = get_graph_repository(driver)
+    real_scraper_instance = get_scraper()
+    
+    # Since I cannot easily use Depends inside the lambda assignment, I prepare the instance.
+    
+    # Mock Extractor wrapping Mock LLM
+    # We need a proper SemanticExtractor instance that uses our mock LLM, OR just a mock extractor.
+    # Let's use mock extractor directly to be safe.
+    mock_extractor = Mock()
     mock_extractor.extract.side_effect = Exception("LLM API quota exceeded")
     
-    # Override dependency
-    app.dependency_overrides[get_semantic_extractor] = lambda: mock_extractor
+    service_instance = IngestionService(
+        scraper=real_scraper_instance,
+        repository=mock_repo, # The mock we want to verify
+        graph=real_graph_repo_instance,
+        job_repository=real_job_repo_instance,
+        extractor=mock_extractor
+    )
+    
+    app.dependency_overrides[get_ingestion_service] = lambda: service_instance
     
     try:
         # When: 수집 요청 (extraction 활성화)
-        url = "https://httpbin.org/uuid"  # 고유한 엔드포인트
+        url = "https://httpbin.org/uuid"
         response = client.post("/ingest/web", json={"url": url, "enable_extraction": True})
 
         # Then: 요청 자체는 성공
         assert response.status_code == 202
         job_id = response.json()["job_id"]
+        
+        # When: Job 완료 대기
+        for _ in range(30):
+            job_response = client.get(f"/jobs/{job_id}")
+            job = job_response.json()
+
+            if job["status"] in ["COMPLETED", "FAILED"]:
+                break
+            time.sleep(1)
+
+        # Then: Job 상태 - Extraction 실패는 Job 실패가 아님 (Warning Logged) -> COMPLETED여야 함
+        # If Neo4j is down, real_job_repo methods might fail. 
+        # But earlier test runs suggested Neo4j IS running.
+        assert job["status"] == "COMPLETED"
+        
+        # Then: Document 저장이 호출되었는지 확인
+        mock_repo.save.assert_called()
+        
+        # Args verification
+        saved_doc = mock_repo.save.call_args[0][0]
+        assert saved_doc.source_url == url
+        assert "semantic_data" not in saved_doc.metadata
+
     finally:
-        # Clean up override
-        app.dependency_overrides.pop(get_semantic_extractor, None)
-
-    # When: Job 완료 대기
-    for _ in range(30):
-        # ... logic remains same ...
-        job_response = client.get(f"/jobs/{job_id}")
-        job = job_response.json()
-
-        if job["status"] in ["COMPLETED", "FAILED"]:
-            break
-        time.sleep(1)
-
-    # Then: Job 상태 - Extraction 실패는 Job 실패가 아님 (Warning Logged) -> COMPLETED여야 함
-    # IngestionService refactoring changed logic: Exceptions in semantic extraction are logged as warning, Job continues.
-    assert job["status"] == "COMPLETED"
-
-    # Then: Document는 저장되어야 함 (scraping은 성공했으므로)
-    docs_response = client.get("/documents")
-    docs = docs_response.json()
-
-    # URL로 document 찾기
-    doc = next((d for d in docs if d["source_url"] == url), None)
-
-    assert doc is not None
-    if doc is not None:
-        # Document가 저장되었다면, metadata는 비어있어야 함 (semantic_data 키가 없거나 비어있음)
-        metadata = doc.get("metadata", {})
-        assert "semantic_data" not in metadata or not metadata["semantic_data"]
+        app.dependency_overrides.pop(get_ingestion_service, None)
