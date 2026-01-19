@@ -54,7 +54,10 @@ For every Spec, creating a dedicated directory `specs/<spec-name>/` is REQUIRED.
 
 ## 5. Plan & Task Strategy
 
-A Plan is a binding execution contract. It MUST follow the `plan.md` template exactly.
+A Plan is a binding execution contract. It MUST follow the `plan.md` template exactly and include:
+- **Branch Strategy:** The first task MUST be creating a feature branch (e.g., `git checkout -b feature/...)`.
+- **Task Granularity:** Each Task MUST represent one logical unit of work.
+- **TDD Integration:** Each task MUST include specific test expectations (e.g., `pytest tests/test_module.py`).
 - **Korean Requirement:** All explanatory text (Strategy, Context, Descriptions) MUST be in **Korean**.
 - **English Exception:** Code, file paths, and standard technical terms MAY remain in English.
 
