@@ -7,10 +7,11 @@ Entity 기반 조회 및 Document 검색 API
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
+from app.domain.schemas.ontology import RelationshipType
 from app.interfaces.api.dependencies import get_graph_repository, get_repository
 
 router = APIRouter(prefix="/entities", tags=["entities"])
@@ -61,3 +62,39 @@ async def get_entity_info(
         "mention_count": len(doc_ids),
         "document_ids": doc_ids
     }
+
+
+@router.get("/{name}/relationships")
+async def get_entity_relationships(
+    name: str,
+    graph: Annotated[GraphRepository, Depends(get_graph_repository)],
+    relationship_type: str | None = None
+):
+    """
+    Entity의 관계 목록 조회
+    
+    Args:
+        name: Entity 이름 (예: "Elon Musk")
+        relationship_type: 필터링할 관계 타입 (optional)
+            - FOUNDED, WORKS_FOR, USES, RELATED_TO, SUPPORTS, PERFORMED, PART_OF
+    
+    Returns:
+        List of relationships with target entity info
+    
+    Example:
+        GET /entities/Elon%20Musk/relationships
+        GET /entities/Tesla/relationships?relationship_type=USES
+    """
+    # Convert string to RelationshipType enum
+    rel_type = None
+    if relationship_type:
+        try:
+            rel_type = RelationshipType(relationship_type)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid relationship_type: {relationship_type}. "
+                       f"Valid types: FOUNDED, WORKS_FOR, USES, RELATED_TO, SUPPORTS, PERFORMED, PART_OF"
+            )
+    
+    return graph.get_entity_relationships(name, rel_type)

@@ -281,6 +281,47 @@ Spec 007의 설계를 기반으로 실제 구현이 완료되었습니다:
 - [Neo4j Graph Data Modeling](https://neo4j.com/docs/getting-started/data-modeling/)
 - [Ontology Design 101](https://protege.stanford.edu/publications/ontology_development/ontology101.pdf)
 
+### Relationship Types
+
+관계 타입은 두 Entity 간의 의미적 관계를 나타냅니다:
+
+- **FOUNDED**: 창립 관계 (예: "Elon Musk founded Tesla")
+- **WORKS_FOR**: 고용 관계 (예: "Alice works for Google")
+- **USES**: 기술/도구 사용 관계 (예: "Tesla uses Python")
+- **RELATED_TO**: 일반적 연관 관계 (예: "AI is related to Machine Learning")
+- **SUPPORTS**: 지원 관계 (예: "Framework supports async operations")
+- **PERFORMED**: 수행 관계 (예: "Company performed IPO")
+- **PART_OF**: 부분 관계 (예: "PyTorch is part of Meta's AI ecosystem")
+
+**Implementation (Spec 016):**
+
+Entity 간 관계는 Neo4j 그래프에 명시적 관계로 저장됩니다:
+
+```cypher
+// Entity-Entity Relationship 생성
+MATCH (source:Entity {name: $source_name})
+MATCH (target:Entity {name: $target_name})
+MERGE (source)-[r:RELATIONSHIP {type: $relationship_type}]->(target)
+SET r.confidence = $confidence
+RETURN r
+
+// Relationship 조회
+MATCH (e:Entity {name: $entity_name})-[r:RELATIONSHIP]->(target:Entity)
+WHERE r.type = $relationship_type OR $relationship_type IS NULL
+RETURN target.name as target_name, 
+       target.type as target_type,
+       r.type as relationship_type,
+       r.confidence as confidence
+```
+
+**API Endpoint:**
+- `GET /entities/{name}/relationships` - Entity의 모든 관계 조회
+- Query Parameter: `relationship_type` (optional) - 특정 타입으로 필터링
+
+**관련 Spec:**
+- [Spec 007: Ontology Design](../specs/007-ontology-design/spec.md)
+- [Spec 016: Entity Relationship Extraction](../specs/016-entity-relationship-extraction/spec.md)
+
 ### Related Documentation
 - [Graph Schema Guide](./graph_schema.md) - Neo4j graph schema implementation details (Spec 010)
 - [Neo4j Query Guide](./neo4j_query_guide.md) - Practical Cypher queries for knowledge graph exploration
@@ -294,4 +335,3 @@ Spec 007의 설계를 기반으로 실제 구현이 완료되었습니다:
 - [Spec 007: Ontology Design](file:///Users/ck/Project/doit/rag-ingestion/specs/007-ontology-design/spec.md)  
 - [Spec 010: Knowledge Graph Construction](file:///Users/ck/Project/doit/rag-ingestion/specs/010-knowledge-graph-construction/spec.md)  
 **구현 코드**: [`ontology.py`](file:///Users/ck/Project/doit/rag-ingestion/app/domain/schemas/ontology.py)
-

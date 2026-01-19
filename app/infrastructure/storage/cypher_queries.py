@@ -30,8 +30,32 @@ RETURN e.name as name, e.type as type
 """
 
 GET_DOCUMENT_IDS_BY_ENTITY = """
-MATCH (d:Document)-[:MENTIONS]->(e:Entity {name: $entity_name})
+MATCH (e:Entity {name: $entity_name})<-[:MENTIONS]-(d:Document)
 RETURN d.id as doc_id
+"""
+
+# ===== Entity-Entity Relationship Queries (Spec 016) =====
+
+CREATE_ENTITY_RELATIONSHIP = """
+MATCH (source:Entity {name: $source_name})
+MATCH (target:Entity {name: $target_name})
+MERGE (source)-[r:{relationship_type}]->(target)
+ON CREATE SET r.created_at = datetime()
+RETURN type(r) as relationship_type
+"""
+
+GET_ENTITY_RELATIONSHIPS = """
+MATCH (e:Entity {name: $entity_name})-[r]->(target:Entity)
+RETURN type(r) as relationship_type,
+       target.name as target_name,
+       target.type as target_type
+"""
+
+GET_ENTITY_RELATIONSHIPS_BY_TYPE = """
+MATCH (e:Entity {name: $entity_name})-[r:{relationship_type}]->(target:Entity)
+RETURN type(r) as relationship_type,
+       target.name as target_name,
+       target.type as target_type
 """
 
 LIST_ALL_ENTITIES = """

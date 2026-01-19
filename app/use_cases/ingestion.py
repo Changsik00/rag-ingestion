@@ -71,9 +71,9 @@ class IngestionService:
             # 5. Save Document
             self.repository.save(doc)
 
-            # 6. Build Knowledge Graph (Spec 010)
-            if semantic_data and semantic_data.entities:
-                self._build_knowledge_graph(doc.id, semantic_data.entities)
+            # 6. Build Knowledge Graph (Spec 010 + 016)
+            if semantic_data:
+                self._build_knowledge_graph(doc.id, semantic_data)
 
             # 7. Update Job (COMPLETED)
             job.status = JobStatus.COMPLETED
@@ -92,22 +92,45 @@ class IngestionService:
     def _build_knowledge_graph(
         self,
         doc_id: UUID,
-        entities: dict[EntityType, list[str]]
+        semantic_data
     ) -> None:
         """
-        Entity 노드 및 MENTIONS 관계 생성
+        Entity 노드, MENTIONS 관계 및 Entity-Entity 관계 생성
 
         Args:
             doc_id: Document ID
-            entities: LLM이 추출한 Entity (EntityType별 분류)
+            semantic_data: ExtractedMetadata (entities + relationships)
         """
-        for entity_type, names in entities.items():
+        # Early return if no entities to process
+        if not semantic_data.entities:
+            return
+        
+        # 1. Entity 저장 및 MENTIONS 관계
+        all_entity_names = set()
+        for entity_type, names in semantic_data.entities.items():
             for name in names:
                 try:
-                    # Entity 노드 생성/조회 (MERGE)
                     self.graph.save_entity(name, entity_type)
-                    # Document-Entity MENTIONS 관계 생성
                     self.graph.create_mention_relationship(str(doc_id), name)
+                    all_entity_names.add(name)
                 except Exception as e:
-                    # Entity 구축 실패는 전체 Job을 실패시키지 않음
                     print(f"Failed to build graph for entity {name}: {e}")
+        
+        # 2. Entity-Entity 관계 생성 (Spec 016)
+        if hasattr(semantic_data, 'relationships') and semantic_data.relationships:
+            for rel in semantic_data.relationships:
+                try:
+                    # 누락된 Entity 생성
+                    if rel.source not in all_entity_names:
+                        self.graph.save_entity(rel.source, rel.source_type)
+                    if rel.target not in all_entity_names:
+                        self.graph.save_entity(rel.target, rel.target_type)
+                    
+                    # Relationship 생성
+                    self.graph.create_entity_relationship(
+                        source_name=rel.source,
+                        relationship_type=rel.relationship,
+                        target_name=rel.target
+                    )
+                except Exception as e:
+                    print(f"Failed to create relationship {rel.source}->{rel.target}: {e}")
