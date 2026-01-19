@@ -1,7 +1,6 @@
 import json
 import os
 from uuid import UUID
-from typing import List
 
 import chromadb
 from chromadb.utils import embedding_functions
@@ -9,11 +8,12 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from app.core.exceptions import InfrastructureException
 from app.core.logging_config import setup_logger
-from app.domain.entities.document import Document
 from app.domain.entities.chunk import Chunk
+from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 
 logger = setup_logger(__name__)
+
 
 class ChromaStorage(DocumentRepository):
     def __init__(self):
@@ -57,44 +57,36 @@ class ChromaStorage(DocumentRepository):
         try:
             # Document Metadata Flattening
             flattened_metadata = self._flatten_metadata(document.metadata)
-            
+
             # source_url handling if explicit parameter is needed, but mostly it's in metadata
-            # Ensure mandatory fields or fallbacks if needed? 
+            # Ensure mandatory fields or fallbacks if needed?
             # Chroma allows arbitrary metadata.
 
-            self.collection.add(
-                documents=[document.content], 
-                metadatas=[flattened_metadata], 
-                ids=[str(document.id)]
-            )
+            self.collection.add(documents=[document.content], metadatas=[flattened_metadata], ids=[str(document.id)])
         except Exception as e:
             logger.error(f"Failed to save document to ChromaDB: {e}")
             raise InfrastructureException(f"Failed to save document to ChromaDB: {e}") from e
 
-    def save_with_chunks(self, document: Document, chunks: List[Chunk]) -> None:
+    def save_with_chunks(self, document: Document, chunks: list[Chunk]) -> None:
         """DocumentRepository 인터페이스 구현: 문서와 청크 저장"""
         # ChromaDB는 Chunk만 저장하면 됨 (Embedding 검색용)
         # 문서는 필요 시 저장하거나 생략 가능. 현재 정책은 Chunk Store.
         self.save_chunks(chunks)
 
-    def save_chunks(self, chunks: List[Chunk]) -> None:
+    def save_chunks(self, chunks: list[Chunk]) -> None:
         """청크 리스트를 저장합니다 (Embedding은 chunk.content 기준)"""
         try:
             ids = [chunk.id for chunk in chunks]
             documents = [chunk.content for chunk in chunks]
-            
+
             metadatas = []
             for chunk in chunks:
                 meta = self._flatten_metadata(chunk.metadata)
                 meta["parent_id"] = chunk.parent_id
                 meta["index"] = chunk.index
                 metadatas.append(meta)
-                
-            self.collection.add(
-                ids=ids,
-                documents=documents,
-                metadatas=metadatas
-            )
+
+            self.collection.add(ids=ids, documents=documents, metadatas=metadatas)
         except Exception as e:
             logger.error(f"Failed to save chunks to ChromaDB: {e}")
             raise InfrastructureException(f"Failed to save chunks to ChromaDB: {e}") from e
@@ -120,7 +112,7 @@ class ChromaStorage(DocumentRepository):
             # ChromaDB에서 객체 재구성은 손실이 발생함 (full metadata 없음)
             # 하지만 기본 매핑은 구현
             return Document(
-                id=str(doc_id), # str expected
+                id=str(doc_id),  # str expected
                 content=documents[0],
                 # source_url removed from constructor
                 metadata=metadatas[0],
@@ -139,7 +131,7 @@ class ChromaStorage(DocumentRepository):
                 for i in range(len(result["ids"])):
                     docs.append(
                         Document(
-                            id=result["ids"][i], # str
+                            id=result["ids"][i],  # str
                             content=result["documents"][i],
                             metadata=result["metadatas"][i],
                         )

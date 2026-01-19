@@ -11,6 +11,7 @@ from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 
 # ... existing CompositeStorage & Chroma tests ...
 
+
 def test_composite_storage_save():
     # Given: CompositeStorage와 Document
     neo4j_mock = Mock()
@@ -47,6 +48,7 @@ def test_composite_storage_get():
     assert result == expected_doc
     neo4j_mock.get.assert_called_once_with(doc_id)
 
+
 def test_composite_storage_save_with_chunks():
     # Given: CompositeStorage, Document, Chunks
     neo4j_mock = Mock()
@@ -62,6 +64,7 @@ def test_composite_storage_save_with_chunks():
     # Then: 두 저장소 모두에 save_with_chunks가 호출됨
     neo4j_mock.save_with_chunks.assert_called_once_with(doc, chunks)
     chroma_mock.save_with_chunks.assert_called_once_with(doc, chunks)
+
 
 @patch("chromadb.HttpClient")
 @patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"})
@@ -88,6 +91,7 @@ def test_chroma_storage_save_exception_handling(mock_client_cls):
         storage.save(doc)
 
     assert "Failed to save document to ChromaDB" in str(exc_info.value) or "Connection Refused" in str(exc_info.value)
+
 
 @patch("chromadb.HttpClient")
 @patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"})
@@ -117,9 +121,11 @@ def test_chroma_storage_get_null_safety(mock_client_cls):
     mock_collection.get.return_value = {"ids": ["1"], "documents": [], "metadatas": []}
     assert storage.get(doc_id) is None
 
+
 # --- New Tests for Neo4jStorage Hardening ---
 
-    # ... imports ...
+# ... imports ...
+
 
 def test_neo4j_storage_save_exception_handling():
     """
@@ -149,6 +155,7 @@ def test_neo4j_storage_save_exception_handling():
 
     assert "Failed to save document to Neo4j" in str(exc_info.value)
     assert "Database is down" in str(exc_info.value)
+
 
 def test_neo4j_storage_get_null_safety():
     """

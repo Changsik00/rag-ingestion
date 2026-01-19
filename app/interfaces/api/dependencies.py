@@ -10,7 +10,9 @@ from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
+from app.domain.services.chunker import ChunkerService
 from app.domain.services.semantic_extractor import SemanticExtractor
+from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.scrapers.basic import BasicWebScraper
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
@@ -66,13 +68,6 @@ def get_graph_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -
     return Neo4jGraphRepository(driver)
 
 
-from app.infrastructure.chunker.langchain_chunker import LangChainChunker
-from app.domain.services.chunker import ChunkerService
-from app.use_cases.ingestion import IngestionService
-
-# ... imports ...
-
-
 # Chunker Service 의존성 (Spec 019: LangChain RecursiveCharacterTextSplitter)
 @lru_cache
 def get_chunker() -> ChunkerService:
@@ -89,10 +84,10 @@ def get_ingestion_service(
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
 ) -> IngestionService:
     return IngestionService(
-        scraper=scraper, 
-        repository=repository, 
-        graph=graph, 
-        job_repository=job_repository, 
+        scraper=scraper,
+        repository=repository,
+        graph=graph,
+        job_repository=job_repository,
         chunker=chunker,
-        extractor=extractor
+        extractor=extractor,
     )

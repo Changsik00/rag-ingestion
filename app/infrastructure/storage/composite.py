@@ -1,8 +1,7 @@
-from typing import List
 from uuid import UUID
 
-from app.domain.entities.document import Document
 from app.domain.entities.chunk import Chunk
+from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 
 
@@ -28,7 +27,7 @@ class CompositeStorage(DocumentRepository):
         # Vector DB에 저장 (임베딩)
         self.chroma.save(document)
 
-    def save_with_chunks(self, document: Document, chunks: List[Chunk]) -> None:
+    def save_with_chunks(self, document: Document, chunks: list[Chunk]) -> None:
         # Graph DB: 문서 + 청크 + 관계 저장
         self.neo4j.save_with_chunks(document, chunks)
         # Vector DB: 청크 임베딩 저장

@@ -9,10 +9,11 @@ from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.services.semantic_extractor import SemanticExtractor
 from app.domain.services.chunker import ChunkerService
+from app.domain.services.semantic_extractor import SemanticExtractor
 
 logger = setup_logger(__name__)
+
 
 class IngestionService:
     def __init__(
@@ -70,11 +71,8 @@ class IngestionService:
             # Document 생성 (source_url은 metadata에 포함됨)
             doc_metadata = result.metadata.copy()
             doc_metadata["source_url"] = str(result.url)
-            
-            doc = Document(
-                content=result.markdown, 
-                metadata=doc_metadata
-            )
+
+            doc = Document(content=result.markdown, metadata=doc_metadata)
 
             # 5. Chunking & Save
             chunks = self.chunker.chunk_document(doc)

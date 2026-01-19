@@ -125,7 +125,7 @@ def test_llm_failure_still_saves_document():
     # We can fetch it via the original dependency function or create a new one.
     # Since we are in the same process, we can just call valid dependencies.
 
-    driver = get_neo4j_driver() # Assumes Neo4j is available?
+    driver = get_neo4j_driver()  # Assumes Neo4j is available?
     # Wait, earlier I assumed Neo4j IS running because Job status check passed.
 
     # But if I construct IngestionService, I need a JobRepository instance.
@@ -143,10 +143,10 @@ def test_llm_failure_still_saves_document():
 
     service_instance = IngestionService(
         scraper=real_scraper_instance,
-        repository=mock_repo, # The mock we want to verify
+        repository=mock_repo,  # The mock we want to verify
         graph=real_graph_repo_instance,
         job_repository=real_job_repo_instance,
-        extractor=mock_extractor
+        extractor=mock_extractor,
     )
 
     app.dependency_overrides[get_ingestion_service] = lambda: service_instance

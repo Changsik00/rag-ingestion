@@ -18,6 +18,7 @@ from app.schemas.ingest import IngestResponse
 
 client = TestClient(app)
 
+
 @pytest.fixture(scope="module")
 def sample_document_with_relationships():
     """관계가 포함된 샘플 문서"""
@@ -29,6 +30,7 @@ def sample_document_with_relationships():
         Musk's leadership style is related to innovation and rapid development.
         """,
     }
+
 
 @pytest.mark.integration
 def test_scenario_1_to_4_entity_relationships_flow(sample_document_with_relationships):
@@ -51,7 +53,7 @@ def test_scenario_1_to_4_entity_relationships_flow(sample_document_with_relation
     mock_content = IngestResponse(
         url=sample_document_with_relationships["url"],
         markdown=sample_document_with_relationships["content"],
-        metadata={"title": "Elon Musk Bio"}
+        metadata={"title": "Elon Musk Bio"},
     )
     mock_scraper.scrape.return_value = mock_content
 
@@ -129,9 +131,7 @@ def test_scenario_1_to_4_entity_relationships_flow(sample_document_with_relation
     # Scenario 4: 잘못된 Relationship 타입 처리
     # ----------------------------------------------------------------
 
-    response = client.get(
-        f"/entities/{entity_name}/relationships", params={"relationship_type": "INVALID_TYPE"}
-    )
+    response = client.get(f"/entities/{entity_name}/relationships", params={"relationship_type": "INVALID_TYPE"})
 
     # Then: 400 Bad Request
     assert response.status_code == 400

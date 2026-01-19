@@ -1,5 +1,5 @@
 from datetime import datetime
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
@@ -13,8 +13,9 @@ class Document(BaseModel):
 
     class Config:
         frozen = False  # To allow mutation if needed, or keep True if we want strict immutability.
-        # But previous code used frozen=True. Let's stick to Pydantic V2 ConfigDict if possible, 
-        # but to minimize changes, let's keep simple class Config. 
+        # But previous code used frozen=True. Let's stick to Pydantic V2 ConfigDict if possible,
+        # but to minimize changes, let's keep simple class Config.
+
 
 # Backward compatibility alias
 AtomicDocument = Document

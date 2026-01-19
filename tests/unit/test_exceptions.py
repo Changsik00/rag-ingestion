@@ -17,11 +17,13 @@ def test_exception_inheritance():
     assert issubclass(LLMError, InfrastructureException)
     assert issubclass(DatabaseError, InfrastructureException)
 
+
 def test_exception_messages():
     """Verify exception messages are preserved"""
     msg = "Something went wrong"
     exc = DomainException(msg)
     assert str(exc) == msg
+
 
 def test_exception_with_cause():
     """Verify exception chaining"""
