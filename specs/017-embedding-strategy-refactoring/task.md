@@ -121,30 +121,53 @@ chore(spec-017): remove heavy ml dependencies
 
 ## Task 4: Integration Test 실행 및 수정
 
-### 4-1. Docker 환경 준비
-- [ ] 실행: `docker-compose down -v`
-- [ ] 실행: `docker-compose up -d`
-- [ ] 환경변수 확인: `.env` 파일에 `GEMINI_API_KEY` 존재 확인
+### 4-1. Docker 환경 준비 및 초기 문제 발견
+- [x] 실행: `docker-compose up -d backend`
+- [x] 초기 테스트 실행 → **Connection Refused** 발견
+- [x] Backend 로그 확인 → 컨테이너 크래시 발견
 
-### 4-2. 4개 실패 테스트 재실행
-- [ ] 테스트 실행: `uv run pytest -v tests/integration/bdd/ -k "test_successful_entity_graph_auto_construction or test_entity_based_document_search or test_entity_deduplication or test_duplicate_url_sequential_ingestion"`
+### 4-2. Docker 빌드 문제 해결
+**문제**: Backend 컨테이너가 시작 직후 크래시
+- [x] 로그 분석: `FileNotFoundError: pygments/lexer.py` (hardlink 실패)
+- [x] **해결 1**: `ENV UV_LINK_MODE=copy` 추가 (Dockerfile)
+- [x] **해결 2**: `.dockerignore` 생성 (로컬 .venv가 Docker 빌드를 덮어쓰는 문제 방지)
+- [x] **해결 3**: CMD를 원래 `uv run` 방식으로 복원
+- [x] Docker 재빌드 및 재시작 → **uvicorn 정상 실행 확인**
 
-**시나리오**:
-1. **성공**: 모든 테스트 통과 → Task 5로 진행
-2. **실패**: 에러 분석 및 디버깅
+### 4-3. 환경변수 문제 해결
+**문제**: API 500 에러 - `ValueError: GEMINI_API_KEY environment variable is required`
+- [x] 원인 분석: docker-compose.yml에 GEMINI_API_KEY 누락
+- [x] **해결**: docker-compose.yml backend 환경변수에 `GEMINI_API_KEY=${GOOGLE_API_KEY}` 추가
+- [x] Backend 재시작 → **정상 작동 확인**
 
-### 4-3. 디버깅 (필요 시)
-- [ ] 에러 로그 분석
-- [ ] 코드 수정 또는 환경설정 조정
-- [ ] 로깅 추가
-- [ ] 테스트 재실행
-
-**커밋 메시지** (필요 시):
+### 4-4. Integration Test 재실행 및 성공
+- [x] 테스트 실행: 
+```bash
+uv run pytest -v tests/integration/bdd/ \
+  -k "test_successful_entity_graph_auto_construction or \
+      test_entity_based_document_search or \
+      test_entity_deduplication or \
+      test_duplicate_url_sequential_ingestion"
 ```
-fix(spec-017): resolve gemini embedding integration issues
 
-- Add proper error handling for API calls
-- Improve logging for embedding process
+**결과**: ✅ **4 passed in 61.00s**
+- ✅ `test_successful_entity_graph_auto_construction` PASSED
+- ✅ `test_entity_based_document_search` PASSED
+- ✅ `test_entity_deduplication` PASSED
+- ✅ `test_duplicate_url_sequential_ingestion` PASSED
+
+### 4-5. 에디터 설정
+- [x] `.vscode/settings.json` 생성 (Python 3.12 인터프리터 자동 선택)
+
+**커밋**: `7a41644`
+```
+feat(spec-017): fix Docker build and add GEMINI_API_KEY support
+
+- Added .dockerignore to prevent local .venv from overwriting Docker build
+- Added ENV UV_LINK_MODE=copy to fix uv sync file system issues
+- Reverted CMD to original 'uv run' approach (working solution)
+- Added GEMINI_API_KEY environment variable to docker-compose.yml
+- All 4 integration tests now passing ✅
 ```
 
 ---

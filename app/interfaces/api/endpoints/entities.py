@@ -26,7 +26,7 @@ async def list_entities(
     return graph.list_all_entities(limit=limit)
 
 
-@router.get("/{name}/documents")
+@router.get("/{name:path}/documents")
 async def get_documents_by_entity(
     name: str,
     graph: Annotated[GraphRepository, Depends(get_graph_repository)],
@@ -49,7 +49,7 @@ async def get_documents_by_entity(
     return docs
 
 
-@router.get("/{name}/info")
+@router.get("/{name:path}/info")
 async def get_entity_info(
     name: str,
     graph: Annotated[GraphRepository, Depends(get_graph_repository)]
@@ -64,7 +64,7 @@ async def get_entity_info(
     }
 
 
-@router.get("/{name}/relationships")
+@router.get("/{name:path}/relationships")
 async def get_entity_relationships(
     name: str,
     graph: Annotated[GraphRepository, Depends(get_graph_repository)],

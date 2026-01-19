@@ -78,8 +78,9 @@ def test_entity_based_document_search():
     if not entities:
         pytest.skip("No entities found, cannot test entity-based search")
     
-    # When: 첫 번째 Entity로 Document 검색
-    entity_name = entities[0]["name"]
+    # When: 첫 번째 Entity로 Document 검색 (URL 인코딩 적용)
+    import urllib.parse
+    entity_name = urllib.parse.quote(entities[0]["name"], safe='')
     docs_response = requests.get(f"{BASE_URL}/entities/{entity_name}/documents")
     
     # Then: 성공적으로 조회됨
@@ -127,9 +128,11 @@ def test_entity_deduplication():
     assert entities_response.status_code == 200
     entities = entities_response.json()
     
-    # Entity가 있다면, 각 Entity의 mention_count 확인
+    # Entity가 있다면, 각 Entity의 mention_count 확인 (URL 인코딩 적용)
+    import urllib.parse
     for entity in entities:
-        info_response = requests.get(f"{BASE_URL}/entities/{entity['name']}/info")
+        encoded_name = urllib.parse.quote(entity['name'], safe='')
+        info_response = requests.get(f"{BASE_URL}/entities/{encoded_name}/info")
         assert info_response.status_code == 200
         info = info_response.json()
         
