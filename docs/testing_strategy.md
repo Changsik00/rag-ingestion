@@ -436,8 +436,22 @@ def test_concurrent_requests_handled_independently():
 |------------|-------|----------|-----|------|
 | Unit Tests | Mock | Mock | Mock | 빠른 피드백 |
 | Contract Tests | Mock | Mock | Mock | 인터페이스 검증만 |
-| Integration Tests | **실제** | **실제** | Mock | 런타임 검증 |
+| Integration Tests | **실제** | **실제** | **Dual Strategy** | 하단 Dual Strategy 섹션 참조 |
 | E2E Tests | 실제 | 실제 | 실제 | 전체 검증 |
+
+### LLM Dual Testing Strategy ⭐
+
+**"Mock은 시스템을 지키고, Real은 지능을 검증한다"**
+
+LLM을 사용하는 테스트는 목적에 따라 두 가지 전략으로 나뉩니다:
+
+| 테스트 구분 | LLM 사용 | 목적 | 장점 | 예시 |
+| :--- | :--- | :--- | :--- | :--- |
+| **Pipeline/Stability Tests** | **Mock** | 시스템 흐름, 에러 핸들링, 비동기 작업 검증 | 빠름, 비용 0, 결정적(Deterministic) | `test_failure_flows.py` |
+| **Quality/Logic Tests** | **Real** | 프롬프트 검증, 추출 정확도, 실제 데이터 정합성 | 실제 지능 검증, 프롬프트 변경 감지 | `test_entity_relationships.py` |
+
+> **Best Practice:** CI/CD 파이프라인에서는 비용 문제로 주로 **Mock**을 사용하고, `Quality` 테스트는 개발 단계나 특정 릴리즈 전에 선택적으로 수행하는 것을 권장합니다.
+
 
 ### Pytest Fixtures
 
