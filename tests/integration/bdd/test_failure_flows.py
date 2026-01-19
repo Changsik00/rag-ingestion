@@ -79,7 +79,6 @@ def test_url_404_fails_job():
     assert "404" in error_message or "not found" in error_message.lower()
 
 
-@pytest.mark.skip(reason="pytest-mock 필요, integration 환경에서 mocking 보다 실제 테스트 추천")
 @pytest.mark.integration
 def test_llm_failure_still_saves_document(mocker):
     """
@@ -92,29 +91,46 @@ def test_llm_failure_still_saves_document(mocker):
     import time
 
     # Given: LLM이 에러를 발생시키도록 Mock
-    mocker.patch("app.core.llm.get_llm", side_effect=Exception("LLM API quota exceeded"))
+    # patch object using exact import path used in ingestion.py
+    # Note: IngestionService imports SemanticExtractor directly effectively. 
+    # But IngestionService takes extractor as dependency.
+    # In integration test, we need to mock where it's instantiated or injected.
+    # For simplicity in BDD/Integration with TestClient, we rely on dependency override or patching internals if DI is not fully exposed to TestClient.
+    
+    from app.interfaces.api.dependencies import get_semantic_extractor
+    
+    # Given: Mock Extractor that raises exception
+    mock_extractor = mocker.Mock()
+    mock_extractor.extract.side_effect = Exception("LLM API quota exceeded")
+    
+    # Override dependency
+    app.dependency_overrides[get_semantic_extractor] = lambda: mock_extractor
+    
+    try:
+        # When: 수집 요청 (extraction 활성화)
+        url = "https://httpbin.org/uuid"  # 고유한 엔드포인트
+        response = client.post("/ingest/web", json={"url": url, "enable_extraction": True})
 
-    # When: 수집 요청 (extraction 활성화)
-    url = "https://httpbin.org/uuid"  # 고유한 엔드포인트
-    response = client.post("/ingest/web", json={"url": url, "enable_extraction": True})
-
-    # Then: 요청 자체는 성공
-    assert response.status_code == 202
-    job_id = response.json()["job_id"]
+        # Then: 요청 자체는 성공
+        assert response.status_code == 202
+        job_id = response.json()["job_id"]
+    finally:
+        # Clean up override
+        app.dependency_overrides.pop(get_semantic_extractor, None)
 
     # When: Job 완료 대기
     for _ in range(30):
+        # ... logic remains same ...
         job_response = client.get(f"/jobs/{job_id}")
         job = job_response.json()
 
         if job["status"] in ["COMPLETED", "FAILED"]:
             break
-
         time.sleep(1)
 
-    # Then: Job 상태 확인 (COMPLETED or FAILED 둘 다 허용)
-    # 정책에 따라 다를 수 있음 - 여기서는 partial success를 테스트
-    assert job["status"] in ["COMPLETED", "FAILED"]
+    # Then: Job 상태 - Extraction 실패는 Job 실패가 아님 (Warning Logged) -> COMPLETED여야 함
+    # IngestionService refactoring changed logic: Exceptions in semantic extraction are logged as warning, Job continues.
+    assert job["status"] == "COMPLETED"
 
     # Then: Document는 저장되어야 함 (scraping은 성공했으므로)
     docs_response = client.get("/documents")
@@ -123,9 +139,8 @@ def test_llm_failure_still_saves_document(mocker):
     # URL로 document 찾기
     doc = next((d for d in docs if d["source_url"] == url), None)
 
+    assert doc is not None
     if doc is not None:
-        # Document가 저장되었다면, metadata는 비어있어야 함
-        assert len(doc["content"]) > 0
+        # Document가 저장되었다면, metadata는 비어있어야 함 (semantic_data 키가 없거나 비어있음)
         metadata = doc.get("metadata", {})
-        # LLM extraction 결과가 없어야 함
-        assert metadata.get("title") is None or metadata.get("title") == ""
+        assert "semantic_data" not in metadata or not metadata["semantic_data"]
