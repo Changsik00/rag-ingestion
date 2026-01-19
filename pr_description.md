@@ -37,7 +37,9 @@ Neo4j Graph 확인 시 `(Document)` 노드와 여러 `(Chunk)` 노드가 `HAS_CH
 
 ### 🛠 Modified Files
 - `app/core/config.py`: Chunk 설정 추가 (`CHUNK_SIZE`, `CHUNK_OVERLAP`)
-- `app/domain/entities/document.py`: `AtomicDocument` -> `Document` 변경, `source_url` 메타데이터화
+- `app/domain/entities/document.py`: `AtomicDocument` -> `Document` 변경. 
+    - **Reason**: 문서가 더 이상 Atomic(불가분 최소 단위)하지 않고 Chunk로 분할되는 Container 역할을 하므로, `Document`가 더 적합한 명칭임.
+    - `source_url`을 메타데이터로 이동하여 구조 단순화.
 - `app/infrastructure/storage/neo4j_document_repository.py`: `save_with_chunks` 구현
 - `app/infrastructure/storage/chroma.py`: `save_chunks` 및 `save_with_chunks` 구현
 - `app/use_cases/ingestion.py`: Chunking 파이프라인 통합

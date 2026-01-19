@@ -17,5 +17,4 @@ class Document(BaseModel):
         # but to minimize changes, let's keep simple class Config.
 
 
-# Backward compatibility alias
-AtomicDocument = Document
+

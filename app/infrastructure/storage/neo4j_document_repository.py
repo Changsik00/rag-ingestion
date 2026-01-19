@@ -39,8 +39,7 @@ class Neo4jStorage(DocumentRepository):
                 d.created_at = $created_at,
                 d += $metadata
             """
-            # source_url is now part of metadata or handled if it exists,
-            # but legacy AtomicDocument had it explicit.
+            # source_url is now part of metadata or handled if it exists.
             # Our new Document entity removed source_url and put it in metadata?
             # Let's check Document entity definition again.
             # Document entity has `content` and `metadata`. `source_url` was removed from field list in my edit?
