@@ -239,8 +239,8 @@ docs: mark spec 017 as completed in backlog
   - [x] ✅ Verification
 
 ### 8-3. Push 및 PR 생성
-- [ ] Push: `git push origin feature/017-embedding-strategy-refactoring`
-- [ ] PR 생성: `gh pr create ...`
+- [x] Push: `git push origin feature/017-embedding-strategy-refactoring`
+- [x] PR 생성: `gh pr create ...` (PR #19)
 
 ---
 
