@@ -14,9 +14,9 @@ def test_extraction():
     # Load .env manually to ensure the key is available
     load_dotenv()
 
-    api_key = os.getenv("GOOGLE_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        print("❌ GOOGLE_API_KEY not found in environment.")
+        print("❌ GEMINI_API_KEY not found in environment.")
         return
 
     print(f"🔑 API Key found: {api_key[:5]}...{api_key[-5:]}")

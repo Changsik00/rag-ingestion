@@ -99,15 +99,18 @@
   * **완료**: 2026-01-19 (28 commits)
   * **Note**: ChromaDB embedding 이슈 4개는 별도 Spec으로 처리 필요
 
-* [ ] **Spec 017: Embedding Strategy Refactoring**
-  * [ ] ChromaDB embedding을 Gemini Embedding API로 전환
-  * [ ] Heavy ML dependencies 제거 (onnxruntime, tokenizers)
-  * [ ] 4개 실패 integration test 수정
+* [x] **Spec 017: Embedding Strategy Refactoring**
+  * [x] ChromaDB embedding을 Gemini Embedding API로 전환
+  * [x] Heavy ML dependencies 제거 (onnxruntime, tokenizers)
+  * [x] 4개 실패 integration test 수정
     - test_successful_entity_graph_auto_construction
     - test_entity_based_document_search
     - test_entity_deduplication
     - test_duplicate_url_sequential_ingestion
-  * [ ] Docker 컨테이너 경량화
+  * [x] Docker 컨테이너 경량화 (862MB)
+  * [x] Entity Endpoint URL Encoding 버그 수정
+  * [x] API Key Clean up (`GOOGLE_API_KEY` 제거)
+  * **완료**: 2026-01-19
   * **우선순위**: High (테스트 실패 해결)
 
 ---

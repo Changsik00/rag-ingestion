@@ -11,10 +11,11 @@ load_dotenv()
 class LLMFactory:
     @staticmethod
     @lru_cache
+
     def get_google_llm(model: str = "gemini-2.0-flash-exp", temperature: float = 0.0) -> ChatGoogleGenerativeAI:
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("GOOGLE_API_KEY environment variable is not set")
+            raise ValueError("GEMINI_API_KEY environment variable is not set")
 
         return ChatGoogleGenerativeAI(
             model=model,
