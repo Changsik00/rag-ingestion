@@ -1,16 +1,12 @@
-"""
-Unit Tests for CompositeStorage
-
-CompositeStorage의 Document 저장 및 조회 기능을 검증합니다.
-Neo4j와 ChromaDB 저장소를 조합하여 사용하는 패턴을 테스트합니다.
-"""
-
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from uuid import uuid4
-
+import pytest
+from app.core.exceptions import InfrastructureException
 from app.domain.entities.document import AtomicDocument
+from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
 
+# ... existing CompositeStorage tests ...
 
 def test_composite_storage_save():
     # Given: CompositeStorage와 Document
@@ -46,3 +42,59 @@ def test_composite_storage_get():
     # Then: Neo4j에서 Document 반환
     assert result == expected_doc
     neo4j_mock.get.assert_called_once_with(doc_id)
+
+# --- New Tests for ChromaStorage Hardening ---
+
+@patch("chromadb.HttpClient")
+@patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"})
+def test_chroma_storage_save_exception_handling(mock_client_cls):
+    """
+    Given: ChromaDB client raises an exception during save
+    When: save() is called
+    Then: It should be wrapped in InfrastructureException
+    """
+    # Setup
+    mock_client = Mock()
+    mock_collection = Mock()
+    mock_client.get_or_create_collection.return_value = mock_collection
+    mock_client_cls.return_value = mock_client
+    
+    # Simulate ChromaDB failure
+    mock_collection.add.side_effect = Exception("Connection Refused")
+    
+    storage = ChromaStorage()
+    doc = AtomicDocument(content="Test", source_url="http://test.com")
+    
+    # Verify exception wrapping
+    with pytest.raises(InfrastructureException) as exc_info:
+        storage.save(doc)
+    
+    assert "Failed to save document to ChromaDB" in str(exc_info.value) or "Connection Refused" in str(exc_info.value)
+
+@patch("chromadb.HttpClient")
+@patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"})
+def test_chroma_storage_get_null_safety(mock_client_cls):
+    """
+    Given: ChromaDB returns malformed result (None or empty lists)
+    When: get() is called
+    Then: It should safely return None without crashing
+    """
+    mock_client = Mock()
+    mock_collection = Mock()
+    mock_client.get_or_create_collection.return_value = mock_collection
+    mock_client_cls.return_value = mock_client
+    
+    storage = ChromaStorage()
+    doc_id = uuid4()
+    
+    # Case 1: Result is None
+    mock_collection.get.return_value = None
+    assert storage.get(doc_id) is None
+    
+    # Case 2: Result has empty 'documents' list
+    mock_collection.get.return_value = {"ids": [], "documents": [], "metadatas": []}
+    assert storage.get(doc_id) is None
+    
+    # Case 3: Result has None in 'documents' (if possible in library)
+    mock_collection.get.return_value = {"ids": ["1"], "documents": [], "metadatas": []}
+    assert storage.get(doc_id) is None
