@@ -49,8 +49,9 @@ For every Spec, creating a dedicated directory `specs/<spec-name>/` is REQUIRED.
     1. **Spec:** Read `docs/protocols/templates/spec.md` -> Write `spec.md` (Korean Context).
     2. **Plan:** Read `docs/protocols/templates/plan.md` -> Write `plan.md` (Korean Strategy).
     3. **Task:** Read `docs/protocols/templates/task.md` -> Write `task.md` (Korean Checklist).
-    4. **Review Request (Hard Stop):** You MUST call `notify_user` to request review of the spec/plan/task.
-    5. **Wait:** You are **STRICTLY PROHIBITED** from generating code or running non-read commands until the user explicitly approves the plan.
+    4. **Walkthrough:** Read `docs/protocols/templates/walkthrough.md` -> Update `walkthrough.md` (Evidence Log) as you work.
+    5. **Review Request (Hard Stop):** You MUST call `notify_user` to request review of the spec/plan/task.
+    6. **Wait:** You are **STRICTLY PROHIBITED** from generating code or running non-read commands until the user explicitly approves the plan.
 
 ## 5. Plan & Task Strategy
 
@@ -108,7 +109,7 @@ The Agent MUST update `task.md` after EVERY commit to maintain progress visibili
     2. **COPY Template:** Copy the structure exactly (do not omit Emojis).
     3. **WRITE in Korean:** Fill in all sections (Summary, Key Review Points, etc.) in **Korean**.
     4. **First Line:** Match PR Title.
-    5. **Archive:** Commit `walkthrough.md` and `pr_description.md` to `specs/` before pushing.
+    5. **Archive:** Commit `walkthrough.md` (filled with evidence) and `pr_description.md` to `specs/` before pushing.
 
 ## 7. Deviation & Hard Stop
 

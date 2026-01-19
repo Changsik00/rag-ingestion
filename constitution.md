@@ -45,7 +45,7 @@ Before any Spec, Plan, or execution:
 - **Planning Mode:** Until approval is given, the Agent MUST remain in PLANNING mode and only edit documentation.
 
 ### 4.4 Artifact Integrity (Critical)
-- **Template Enforcement:** Generating `spec`, `plan`, `task`, or `pr_description` WITHOUT reading and following the official templates in `docs/protocols/templates/` is a **CRITICAL VIOLATION**.
+- **Template Enforcement:** Generating `spec`, `plan`, `task`, `walkthrough`, or `pr_description` WITHOUT reading and following the official templates in `docs/protocols/templates/` is a **CRITICAL VIOLATION**.
 - **Language Requirement:** All artifacts MUST be written in **Korean** (except for technical terms/code) to ensure clear communication.
 
 ## 5. Execution Delegation
