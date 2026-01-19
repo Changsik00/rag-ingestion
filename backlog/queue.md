@@ -176,11 +176,12 @@
 
 > **목표**: 검색 품질(RAG)을 극대화하고, 외부 도구와 연동하여 자동화된 지식 생산 생태계를 완성한다.
 
-* [ ] **Spec 019: Advanced Chunking Strategy**
-  * [ ] LangChain `RecursiveCharacterTextSplitter` 도입 (Context Overlap 적용)
-  * [ ] 문서(Document) -> 청크(Chunk) 1:N 구조 설계 및 저장
-  * [ ] Chunk 별 임베딩 및 Parent Document 참조 구현
+* [x] **Spec 019: Advanced Chunking Strategy**
+  * [x] LangChain `RecursiveCharacterTextSplitter` 도입 (Context Overlap 적용)
+  * [x] 문서(Document) -> 청크(Chunk) 1:N 구조 설계 및 저장
+  * [x] Chunk 별 임베딩 및 Parent Document 참조 구현
   * **목표**: 긴 문서를 의미 단위로 쪼개어 검색 정확도(Semantic Search) 대폭 향상
+  * **완료**: 2026-01-20 (PR #22)
 
 * [ ] **Spec ???: Transition to LangGraph** (TBD)
   * [ ] 복잡한 순환 참조 및 상태 관리를 위해 LangChain → LangGraph 마이그레이션 수행

@@ -88,7 +88,7 @@
 - [x] Commit: `test(spec-019): add bdd tests for chunking flow`
 
 ### 5-2. PR Creation
-- [ ] PR 생성: `gh pr create ...` (User Action Required)
+- [x] PR 생성: `gh pr create ...` (User Action Required)
 - [x] 문서 보관: `pr_description.md`, `walkthrough.md` 업데이트
 
 ## Summary
