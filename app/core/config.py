@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     # App
     APP_NAME: str = "RAG Ingestion Service"
     APP_VERSION: str = "0.1.0"
+    API_URL: str = "http://localhost:8000"
 
     # LLM & Embedding
     GEMINI_API_KEY: str
