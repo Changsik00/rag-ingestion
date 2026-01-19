@@ -1,4 +1,4 @@
-feat(spec-019): Advanced Chunking Strategy Implementation
+feat(spec-019): advanced chunking strategy implementation
 
 ## 📋 Summary
 **Spec 019: Advanced Chunking Strategy**를 구현하여 문서 수집 시 RAG 성능 최적화를 위한 의미 단위 분할(Chunking)을 적용했습니다.
