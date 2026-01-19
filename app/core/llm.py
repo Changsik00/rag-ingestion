@@ -1,19 +1,17 @@
-import os
 from functools import lru_cache
 
-from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from app.core.config import get_settings
 from app.infrastructure.llm import LangChainLLMAdapter
-
-load_dotenv()
 
 
 class LLMFactory:
     @staticmethod
     @lru_cache
     def get_google_llm(model: str = "gemini-2.0-flash-exp", temperature: float = 0.0) -> ChatGoogleGenerativeAI:
-        api_key = os.getenv("GEMINI_API_KEY")
+        settings = get_settings()
+        api_key = settings.GEMINI_API_KEY
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
 

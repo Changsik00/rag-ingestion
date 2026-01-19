@@ -1,11 +1,12 @@
-import os
-
 import pandas as pd
 import requests
 import streamlit as st
 
+from app.core.config import get_settings
+
 # Configuration
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+settings = get_settings()
+API_URL = settings.API_URL
 
 st.set_page_config(page_title="Ingestion Admin", layout="wide")
 

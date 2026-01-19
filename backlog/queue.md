@@ -155,11 +155,12 @@
   * [x] 전체 문서 일관성 검토 및 cross-reference 정리
   * **완료**: 2026-01-19
 
-* [ ] **Spec 018: System Stability & Test Refactoring**
-  * [ ] **Refactor Exception Handling**: 명시적 예외 처리 및 커스텀 예외 계층 정의
-  * [ ] **Harden Repositories**: Null Safety 강화 및 Transaction 적용
-  * [ ] **Fix & Enable Tests**: Skipped Test(4개) 복구 및 `unit/test_scraper.py` 수정
-  * [ ] **Remove Anti-patterns**: `print()` -> `logging` 전환
+* [x] **Spec 018: System Stability & Test Refactoring**
+  * [x] **Refactor Exception Handling**: 명시적 예외 처리 및 커스텀 예외 계층 정의
+  * [x] **Harden Repositories**: Null Safety 강화 및 Transaction 적용
+  * [x] **Fix & Enable Tests**: Skipped Test(4개) 복구 및 `unit/test_scraper.py` 수정
+  * [x] **Remove Anti-patterns**: `print()` -> `logging` 전환
+  * **완료**: 2026-01-20
   * **우선순위**: Critical (Phase 4 진입 전 필수 작업)
 
 ---
@@ -175,11 +176,12 @@
 
 > **목표**: 검색 품질(RAG)을 극대화하고, 외부 도구와 연동하여 자동화된 지식 생산 생태계를 완성한다.
 
-* [ ] **Spec 019: Advanced Chunking Strategy**
-  * [ ] LangChain `RecursiveCharacterTextSplitter` 도입
-  * [ ] 문서(Document) -> 청크(Chunk) 1:N 구조 설계 및 저장
-  * [ ] Chunk 별 임베딩 및 Parent Document 참조 구현
+* [x] **Spec 019: Advanced Chunking Strategy**
+  * [x] LangChain `RecursiveCharacterTextSplitter` 도입 (Context Overlap 적용)
+  * [x] 문서(Document) -> 청크(Chunk) 1:N 구조 설계 및 저장
+  * [x] Chunk 별 임베딩 및 Parent Document 참조 구현
   * **목표**: 긴 문서를 의미 단위로 쪼개어 검색 정확도(Semantic Search) 대폭 향상
+  * **완료**: 2026-01-20 (PR #22)
 
 * [ ] **Spec ???: Transition to LangGraph** (TBD)
   * [ ] 복잡한 순환 참조 및 상태 관리를 위해 LangChain → LangGraph 마이그레이션 수행
@@ -241,3 +243,8 @@
   * API 엔드포인트 통합 테스트
   * Admin Dashboard (Streamlit) UI 테스트
   * 전체 워크플로우 검증 (Ingest → Store → Retrieve)
+
+* **[Tech] Google Semantic Chunking Upgrade**
+  * 현재 Recursive 방식 대신 Google의 AI 기반 Semantic Chunking 도입 검토
+  * 문맥 보존 성능과 비용/속도 트레이드오프 분석 필요
+  * Spec 019 이후 검색 품질 개선이 추가로 필요할 때 진행

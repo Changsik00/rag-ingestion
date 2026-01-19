@@ -48,7 +48,7 @@ class TestDocumentRepositoryContract:
         assert callable(getattr(storage_class, "list_documents"))
 
     def test_save_method_signature(self, storage_class):
-        """save method should accept AtomicDocument and return None"""
+        """save method should accept Document and return None"""
         import inspect
 
         sig = inspect.signature(storage_class.save)
@@ -63,7 +63,7 @@ class TestDocumentRepositoryContract:
         assert "document" in param_names
 
     def test_get_method_signature(self, storage_class):
-        """get method should accept UUID and return AtomicDocument | None"""
+        """get method should accept UUID and return Document | None"""
         import inspect
 
         sig = inspect.signature(storage_class.get)

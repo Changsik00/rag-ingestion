@@ -3,15 +3,17 @@ from uuid import UUID
 
 from app.core.exceptions import DoitException
 from app.core.logging_config import setup_logger
-from app.domain.entities.document import AtomicDocument
+from app.domain.entities.document import Document
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
+from app.domain.services.chunker import ChunkerService
 from app.domain.services.semantic_extractor import SemanticExtractor
 
 logger = setup_logger(__name__)
+
 
 class IngestionService:
     def __init__(
@@ -20,12 +22,14 @@ class IngestionService:
         repository: DocumentRepository,
         graph: GraphRepository,
         job_repository: JobRepository,
+        chunker: ChunkerService,
         extractor: SemanticExtractor | None = None,
     ):
         self.scraper = scraper
         self.repository = repository
         self.graph = graph
         self.job_repository = job_repository
+        self.chunker = chunker
         self.extractor = extractor
 
     def create_job(self, url: str, retry_of: str | None = None) -> IngestionJob:
@@ -64,14 +68,19 @@ class IngestionService:
                     logger.warning(f"Semantic extraction failed for job {job_id}: {e}")
 
             # 4. Map to Domain Entity
-            doc = AtomicDocument(content=result.markdown, source_url=str(result.url), metadata=result.metadata)
+            # Document 생성 (source_url은 metadata에 포함됨)
+            doc_metadata = result.metadata.copy()
+            doc_metadata["source_url"] = str(result.url)
 
-            # 5. Save Document
-            self.repository.save(doc)
+            doc = Document(content=result.markdown, metadata=doc_metadata)
+
+            # 5. Chunking & Save
+            chunks = self.chunker.chunk_document(doc)
+            self.repository.save_with_chunks(doc, chunks)
 
             # 6. Build Knowledge Graph (Spec 010 + 016)
             if semantic_data:
-                self._build_knowledge_graph(doc.id, semantic_data)
+                self._build_knowledge_graph(UUID(doc.id), semantic_data)
 
             # 7. Update Job (COMPLETED)
             job.status = JobStatus.COMPLETED

@@ -125,7 +125,7 @@ def test_llm_failure_still_saves_document():
     # We can fetch it via the original dependency function or create a new one.
     # Since we are in the same process, we can just call valid dependencies.
 
-    driver = get_neo4j_driver() # Assumes Neo4j is available?
+    driver = get_neo4j_driver()  # Assumes Neo4j is available?
     # Wait, earlier I assumed Neo4j IS running because Job status check passed.
 
     # But if I construct IngestionService, I need a JobRepository instance.
@@ -141,12 +141,17 @@ def test_llm_failure_still_saves_document():
     mock_extractor = Mock()
     mock_extractor.extract.side_effect = Exception("LLM API quota exceeded")
 
+    # Mock Chunker
+    mock_chunker = Mock()
+    mock_chunker.chunk.return_value = [] # Return empty chunks as fallback
+
     service_instance = IngestionService(
         scraper=real_scraper_instance,
-        repository=mock_repo, # The mock we want to verify
+        repository=mock_repo,  # The mock we want to verify
         graph=real_graph_repo_instance,
         job_repository=real_job_repo_instance,
-        extractor=mock_extractor
+        chunker=mock_chunker,
+        extractor=mock_extractor,
     )
 
     app.dependency_overrides[get_ingestion_service] = lambda: service_instance
@@ -175,11 +180,12 @@ def test_llm_failure_still_saves_document():
         assert job["status"] == "COMPLETED"
 
         # Then: Document 저장이 호출되었는지 확인
-        mock_repo.save.assert_called()
+        mock_repo.save_with_chunks.assert_called()
 
         # Args verification
-        saved_doc = mock_repo.save.call_args[0][0]
-        assert saved_doc.source_url == url
+        saved_doc = mock_repo.save_with_chunks.call_args[0][0]
+        # source_url is now in metadata
+        assert saved_doc.metadata["source_url"] == url
         assert "semantic_data" not in saved_doc.metadata
 
     finally:

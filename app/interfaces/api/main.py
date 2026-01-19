@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
 
-from app.domain.entities.document import AtomicDocument
+from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.interfaces.api.dependencies import get_ingestion_service, get_repository
 from app.interfaces.api.endpoints.entities import router as entities_router
@@ -34,7 +34,7 @@ async def ingest_web_page(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/documents", response_model=list[AtomicDocument])
+@app.get("/documents", response_model=list[Document])
 async def list_documents(repository: Annotated[DocumentRepository, Depends(get_repository)], limit: int = 10):
     try:
         return repository.list_documents(limit=limit)
