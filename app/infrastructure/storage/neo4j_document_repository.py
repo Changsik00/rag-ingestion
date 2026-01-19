@@ -1,11 +1,13 @@
 import json
 from uuid import UUID
+from typing import List
 
 from neo4j import Driver
 
 from app.core.exceptions import InfrastructureException
 from app.core.logging_config import setup_logger
-from app.domain.entities.document import AtomicDocument
+from app.domain.entities.document import Document
+from app.domain.entities.chunk import Chunk
 from app.domain.interfaces.document_repository import DocumentRepository
 
 logger = setup_logger(__name__)
@@ -17,33 +19,39 @@ class Neo4jStorage(DocumentRepository):
     def close(self):
         self.driver.close()
 
-    def save(self, document: AtomicDocument) -> None:
-        try:
-            # Neo4j는 중첩된 map을 지원하지 않으므로 metadata를 평탄화
-            # 속성 값으로 primitive 타입(str, int, float, bool)과 배열만 허용됨
-            flattened_metadata = {}
+    def _flatten_metadata(self, metadata: dict) -> dict:
+        """Neo4j 호환을 위해 메타데이터 평탄화"""
+        flattened = {}
+        for key, value in metadata.items():
+            if isinstance(value, (dict, list)):
+                flattened[f"{key}_json"] = json.dumps(value)
+            else:
+                flattened[key] = value
+        return flattened
 
-            for key, value in document.metadata.items():
-                if isinstance(value, (dict, list)):
-                    # 복잡한 타입은 JSON 문자열로 직렬화
-                    flattened_metadata[f"{key}_json"] = json.dumps(value)
-                else:
-                    # Primitive 타입은 그대로 유지
-                    flattened_metadata[key] = value
+    def save(self, document: Document) -> None:
+        try:
+            flattened_metadata = self._flatten_metadata(document.metadata)
 
             query = """
             MERGE (d:Document {id: $id})
             SET d.content = $content,
-                d.source_url = $source_url,
                 d.created_at = $created_at,
                 d += $metadata
             """
+            # source_url is now part of metadata or handled if it exists, 
+            # but legacy AtomicDocument had it explicit. 
+            # Our new Document entity removed source_url and put it in metadata?
+            # Let's check Document entity definition again.
+            # Document entity has `content` and `metadata`. `source_url` was removed from field list in my edit?
+            # Yes, I removed explicit `source_url` field in Step 181. 
+            # I must ensure it is saved in metadata if present.
+            
             with self.driver.session() as session:
                 session.run(
                     query,
                     id=str(document.id),
                     content=document.content,
-                    source_url=document.source_url,
                     created_at=document.created_at.isoformat(),
                     metadata=flattened_metadata,
                 )
@@ -51,25 +59,62 @@ class Neo4jStorage(DocumentRepository):
             logger.error(f"Failed to save document to Neo4j: {e}")
             raise InfrastructureException(f"Failed to save document to Neo4j: {e}") from e
 
-    def get(self, doc_id: UUID) -> AtomicDocument | None:
+    def save_with_chunks(self, document: Document, chunks: List[Chunk]) -> None:
+        """문서와 청크를 함께 저장하고 관계를 형성합니다."""
+        try:
+            # 1. 문서 저장 (기존 로직 재사용 가능하거나 통합)
+            self.save(document)
+            
+            # 2. 청크 저장 및 관계 생성
+            query = """
+            MATCH (d:Document {id: $doc_id})
+            UNWIND $chunks AS chunk_data
+            MERGE (c:Chunk {id: chunk_data.id})
+            SET c.content = chunk_data.content,
+                c.index = chunk_data.index,
+                c.parent_id = $doc_id,
+                c += chunk_data.metadata
+            MERGE (d)-[:HAS_CHUNK]->(c)
+            """
+            
+            # Prepare chunks data
+            chunks_data = []
+            for chunk in chunks:
+                chunk_dict = {
+                    "id": chunk.id,
+                    "content": chunk.content,
+                    "index": chunk.index,
+                    "metadata": self._flatten_metadata(chunk.metadata)
+                }
+                chunks_data.append(chunk_dict)
+                
+            with self.driver.session() as session:
+                session.run(query, doc_id=document.id, chunks=chunks_data)
+                
+        except Exception as e:
+            logger.error(f"Failed to save chunks to Neo4j: {e}")
+            raise InfrastructureException(f"Failed to save chunks to Neo4j: {e}") from e
+
+    def get(self, doc_id: UUID) -> Document | None:
         try:
             query = "MATCH (d:Document {id: $id}) RETURN d"
             with self.driver.session() as session:
                 result = session.run(query, id=str(doc_id)).single()
                 if result:
                     node = result["d"]
-                    return AtomicDocument(
-                        id=UUID(node["id"]),
+                    return Document(
+                        id=UUID(node["id"]) if isinstance(node["id"], str) else node["id"], # Handle ID type safely
                         content=node.get("content", ""),
-                        source_url=node.get("source_url", ""),
-                        metadata={k: v for k, v in node.items() if k not in ["id", "content", "source_url", "created_at"]},
+                        # source_url removal handled by not mapping it explicitly
+                        metadata={k: v for k, v in node.items() if k not in ["id", "content", "created_at"]},
+                        created_at=node.get("created_at") # Pydantic will handle parsing if isoformat string
                     )
             return None
         except Exception as e:
             logger.error(f"Failed to get document from Neo4j (id={doc_id}): {e}")
             raise InfrastructureException(f"Failed to get document from Neo4j: {e}") from e
 
-    def list_documents(self, limit: int = 10) -> list[AtomicDocument]:
+    def list_documents(self, limit: int = 10) -> list[Document]:
         try:
             query = "MATCH (d:Document) RETURN d LIMIT $limit"
             docs = []
@@ -78,12 +123,11 @@ class Neo4jStorage(DocumentRepository):
                 for record in results:
                     node = record["d"]
                     docs.append(
-                        AtomicDocument(
-                            id=UUID(node["id"]),
+                        Document(
+                            id=node["id"], # Pydantic handles str->str
                             content=node.get("content", ""),
-                            source_url=node.get("source_url", ""),
                             metadata={
-                                k: v for k, v in node.items() if k not in ["id", "content", "source_url", "created_at"]
+                                k: v for k, v in node.items() if k not in ["id", "content", "created_at"]
                             },
                         )
                     )

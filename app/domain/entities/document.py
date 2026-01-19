@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class Document(BaseModel):
-    id: str  # UUID를 str로 직렬화하여 사용 (Neo4j/Chroma 호환성)
+    id: str = Field(default_factory=lambda: str(uuid4()))  # UUID를 str로 직렬화하여 사용 (Neo4j/Chroma 호환성)
     content: str
     metadata: dict = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=datetime.now)

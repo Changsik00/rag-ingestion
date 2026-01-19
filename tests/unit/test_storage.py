@@ -17,7 +17,7 @@ def test_composite_storage_save():
     chroma_mock = Mock()
     storage = CompositeStorage(neo4j=neo4j_mock, chroma=chroma_mock)
 
-    doc = AtomicDocument(content="Test", source_url="http://test.com")
+    doc = AtomicDocument(content="Test", metadata={"source_url": "http://test.com"})
 
     # When: Document 저장
     storage.save(doc)
@@ -32,7 +32,7 @@ def test_composite_storage_get():
     neo4j_mock = Mock()
     chroma_mock = Mock()
     doc_id = uuid4()
-    expected_doc = AtomicDocument(id=doc_id, content="Test", source_url="http://test.com")
+    expected_doc = AtomicDocument(id=str(doc_id), content="Test", metadata={"source_url": "http://test.com"})
 
     # Neo4j is the source of truth for metadata/structure
     neo4j_mock.get.return_value = expected_doc
@@ -64,7 +64,7 @@ def test_chroma_storage_save_exception_handling(mock_client_cls):
     mock_collection.add.side_effect = Exception("Connection Refused")
 
     storage = ChromaStorage()
-    doc = AtomicDocument(content="Test", source_url="http://test.com")
+    doc = AtomicDocument(content="Test", metadata={"source_url": "http://test.com"})
 
     # Verify exception wrapping
     with pytest.raises(InfrastructureException) as exc_info:
@@ -125,7 +125,7 @@ def test_neo4j_storage_save_exception_handling():
     mock_session.run.side_effect = Exception("Database is down")
 
     storage = Neo4jStorage(driver=mock_driver)
-    doc = AtomicDocument(content="Test", source_url="http://test.com")
+    doc = AtomicDocument(content="Test", metadata={"source_url": "http://test.com"})
 
     with pytest.raises(InfrastructureException) as exc_info:
         storage.save(doc)
