@@ -3,6 +3,8 @@ import os
 from uuid import UUID
 
 import chromadb
+from chromadb.utils import embedding_functions
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
@@ -13,7 +15,30 @@ class ChromaStorage(DocumentRepository):
         host = os.getenv("CHROMA_HOST", "localhost")
         port = os.getenv("CHROMA_PORT", "8001")
         self.client = chromadb.HttpClient(host=host, port=int(port))
-        self.collection = self.client.get_or_create_collection(name="documents")
+        
+        # Gemini Embedding API 설정
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_api_key:
+            raise ValueError("GEMINI_API_KEY environment variable is required for ChromaDB embedding")
+        
+        # LangChain GoogleGenerativeAIEmbeddings를 ChromaDB embedding function wrapper로 변환
+        langchain_embeddings = GoogleGenerativeAIEmbeddings(
+            model="models/text-embedding-004",
+            google_api_key=gemini_api_key
+        )
+        
+        # ChromaDB가 요구하는 embedding function 형식으로 래핑
+        class GeminiEmbeddingFunction(embedding_functions.EmbeddingFunction):
+            def __call__(self, input: list[str]) -> list[list[float]]:
+                # LangChain의 embed_documents 메서드 사용
+                return langchain_embeddings.embed_documents(input)
+        
+        gemini_ef = GeminiEmbeddingFunction()
+        
+        self.collection = self.client.get_or_create_collection(
+            name="documents",
+            embedding_function=gemini_ef
+        )
 
     def save(self, document: AtomicDocument) -> None:
         # ChromaDB 제약사항: metadata 값으로 str, int, float, bool만 허용
