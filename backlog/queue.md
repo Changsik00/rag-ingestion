@@ -155,6 +155,13 @@
   * [x] 전체 문서 일관성 검토 및 cross-reference 정리
   * **완료**: 2026-01-19
 
+* [ ] **Spec 018: System Stability & Test Refactoring**
+  * [ ] **Refactor Exception Handling**: 명시적 예외 처리 및 커스텀 예외 계층 정의
+  * [ ] **Harden Repositories**: Null Safety 강화 및 Transaction 적용
+  * [ ] **Fix & Enable Tests**: Skipped Test(4개) 복구 및 `unit/test_scraper.py` 수정
+  * [ ] **Remove Anti-patterns**: `print()` -> `logging` 전환
+  * **우선순위**: Critical (Phase 4 진입 전 필수 작업)
+
 ---
 
 ## 🗺️ Roadmap (계획된 작업)
@@ -168,7 +175,7 @@
 
 > **목표**: 검색 품질(RAG)을 극대화하고, 외부 도구와 연동하여 자동화된 지식 생산 생태계를 완성한다.
 
-* [ ] **Spec 018: Advanced Chunking Strategy**
+* [ ] **Spec 019: Advanced Chunking Strategy**
   * [ ] LangChain `RecursiveCharacterTextSplitter` 도입
   * [ ] 문서(Document) -> 청크(Chunk) 1:N 구조 설계 및 저장
   * [ ] Chunk 별 임베딩 및 Parent Document 참조 구현

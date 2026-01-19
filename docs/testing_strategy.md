@@ -249,6 +249,51 @@ def test_successful_web_ingestion_stores_document():
 
 ---
 
+### Hybrid Integration Testing (TestClient + Mock + Real DB) ⭐
+
+**개념:**
+외부 세상과의 접점(Boundary)은 **Mocking**하여 통제하고, 내부 시스템(Application + DB)의 흐름은 **실제(Real)**로 검증하는 전략입니다.
+
+**구성:**
+- **Client:** `TestClient` (FastAPI 앱 호출)
+- **External API:** `Mock` (Scraper, LLM 등 통제 불가능하거나 비용/속도 문제가 있는 외부 요소)
+- **Database:** `Real` (Neo4j, Chroma 등 실제 인프라)
+
+**장점:**
+1. **Determinism (결정성):** 외부 웹사이트 변경이나 네트워크 문제로 인한 Flakiness 제거.
+2. **Speed (속도):** 실제 웹 스크래핑/LLM 호출 시간을 제거하여 빠른 피드백 가능.
+3. **Consistency (정합성):** 내부 로직과 데이터베이스 저장은 실제로 수행하므로 신뢰성 확보.
+
+**예시 (`test_entity_relationships.py`):**
+```python
+@pytest.mark.integration
+def test_hybrid_flow(client):
+    """
+    Mock Scraper로 고정된 데이터를 주입하고,
+    실제 Service와 DB가 이를 어떻게 처리하는지 검증
+    """
+    # 1. External Boundary Mocking
+    mock_scraper = Mock()
+    mock_scraper.scrape.return_value = IngestResponse(
+        url="https://example.com",
+        markdown="Fixed Content for Testing..."
+    )
+    app.dependency_overrides[get_scraper] = lambda: mock_scraper
+    
+    try:
+        # 2. Internal Logic Execution (Real)
+        response = client.post("/ingest/web", ...)
+        
+        # 3. DB Verification (Real)
+        # 실제 Neo4j에 데이터가 들어갔는지 확인
+        stored_doc = neo4j_session.run("MATCH ...").single()
+        assert stored_doc is not None
+    finally:
+        app.dependency_overrides = {}
+```
+
+---
+
 ### 예외 시나리오 (Failure Cases) ⭐
 
 **목적:** 시스템이 예외 상황을 어떻게 처리하는지 검증

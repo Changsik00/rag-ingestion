@@ -3,20 +3,20 @@ BDD Integration Tests for Entity-Entity Relationships
 
 Task 10-1: BDD Scenario 작성
 
-Given-When-Then 구조로 실제 Docker 환경에서 테스트
+Given-When-Then 구조로 실제 App 로직 테스트 (TestClient 사용)
 """
 
 from time import sleep
+from unittest.mock import Mock
 
 import pytest
-import requests
+from fastapi.testclient import TestClient
 
+from app.interfaces.api.dependencies import get_scraper
+from app.interfaces.api.main import app
+from app.schemas.ingest import IngestResponse
 
-@pytest.fixture(scope="module")
-def base_url():
-    """API Base URL"""
-    return "http://localhost:8000"
-
+client = TestClient(app)
 
 @pytest.fixture(scope="module")
 def sample_document_with_relationships():
@@ -30,108 +30,109 @@ def sample_document_with_relationships():
         """,
     }
 
-
-@pytest.mark.skip(reason="Requires valid URL - test API functionality in scenarios 2-4")
-def test_scenario_1_relationship_extraction_and_storage(base_url, sample_document_with_relationships):
+@pytest.mark.integration
+def test_scenario_1_to_4_entity_relationships_flow(sample_document_with_relationships):
     """
-    Scenario 1: Relationship 추출 및 저장
 
-    Given: 관계 정보가 포함된 문서
-    When: POST /ingest/web 로 문서 수집 요청
-    Then: LLM이 관계를 추출하고 Neo4j에 저장됨
+    Unified BDD Scenario for Entity Relationships
+
+    Test Flow:
+    1. Ingest document (Mock Scraper) -> Verify Job Completion
+    2. Verify Extraction & Storage (Neo4j/Graph) matches 'Elon Musk'
+    3. Test API retrieval of relationships
+    4. Test filtering
     """
-    # Given: 관계 정보가 포함된 문서
-    url = sample_document_with_relationships["url"]
+    # ----------------------------------------------------------------
+    # Scenario 1: Relationship 추출 및 저장
+    # ----------------------------------------------------------------
 
-    # When: 문서 수집 요청
-    response = requests.post(f"{base_url}/ingest/web", json={"url": url})
+    # Given: Mock Scraper that returns the sample text
+    mock_scraper = Mock()
+    mock_content = IngestResponse(
+        url=sample_document_with_relationships["url"],
+        markdown=sample_document_with_relationships["content"],
+        metadata={"title": "Elon Musk Bio"}
+    )
+    mock_scraper.scrape.return_value = mock_content
 
-    # Then: 202 Accepted 응답
-    assert response.status_code == 202
-    job_data = response.json()
-    assert "job_id" in job_data
-    job_id = job_data["job_id"]
+    # Apply Override
+    app.dependency_overrides[get_scraper] = lambda: mock_scraper
 
-    # Wait for job to complete (with LLM extraction)
-    max_retries = 30
-    for _ in range(max_retries):
-        sleep(2)
-        status_response = requests.get(f"{base_url}/jobs/{job_id}")
-        if status_response.status_code == 200:
-            job_status = status_response.json()
-            if job_status["status"] == "COMPLETED":
-                break
+    try:
+        # When: 문서 수집 요청
+        response = client.post("/ingest/web", json={"url": sample_document_with_relationships["url"]})
 
-    # Verify job completed
-    assert job_status["status"] == "COMPLETED", f"Job failed or timed out: {job_status}"
+        # Then: 202 Accepted 응답
+        assert response.status_code == 202, f"Ingestion failed: {response.text}"
+        job_data = response.json()
+        job_id = job_data["job_id"]
 
+        # Wait for job to complete
+        # Note: In TestClient, BackgroundTasks run synchronously after the response (in Starlette/FastAPI < 0.100)
+        # OR we might need to poll if it's truly async in the app design using thread pool.
+        # process_job uses background_tasks.add_task, which TestClient usually executes nicely.
+        # But if process_job calls other async stuff or if we want to be sure, we poll.
 
-def test_scenario_2_relationship_api_retrieval(base_url):
-    """
-    Scenario 2: Relationship API 조회
+        max_retries = 30
+        job_status = None
+        for _ in range(max_retries):
+            # Polling
+            status_response = client.get(f"/jobs/{job_id}")
+            if status_response.status_code == 200:
+                job_status = status_response.json()
+                if job_status["status"] in ["COMPLETED", "FAILED"]:
+                    break
+            sleep(0.5)
 
-    Given: Neo4j에 저장된 관계 데이터
-    When: GET /entities/{name}/relationships 요청
-    Then: 해당 Entity의 모든 관계가 반환됨
-    """
-    # Given: "Elon Musk" entity가 존재한다고 가정 (Scenario 1에서 생성됨)
+        assert job_status["status"] == "COMPLETED", f"Job failed: {job_status.get('error_message')}"
+
+    finally:
+        app.dependency_overrides.pop(get_scraper, None)
+
+    # ----------------------------------------------------------------
+    # Scenario 2: Relationship API 조회
+    # ----------------------------------------------------------------
+
+    # Given: "Elon Musk" entity (extracted from text)
     entity_name = "Elon Musk"
 
     # When: 관계 조회 요청
-    response = requests.get(f"{base_url}/entities/{entity_name}/relationships")
+    # Note: Using URL encoding for spaces if needed, but TestClient handles paths well
+    response = client.get(f"/entities/{entity_name}/relationships")
 
-    # Then: 200 OK 및 관계 리스트 반환
+    # Then: 200 OK or 404 (if extraction failed). We expect success if LLM works.
+    # Note: If real LLM is used and fails to extract, this might fail.
+    # We assume Integration Environment has working LLM (Gemini).
+    if response.status_code == 200:
+        relationships = response.json()
+        assert isinstance(relationships, list)
+    else:
+        # If 404, maybe name is "Elon_Musk" or partial.
+        # Or maybe LLM didn't extract it.
+        # For stability, if LLM is flaky, we might need to mock Extractor too.
+        # But for now let's assert 200 to catch regressions.
+        assert response.status_code == 200, f"Entity not found: {response.text}"
+
+    # ----------------------------------------------------------------
+    # Scenario 3: Relationship 타입별 필터링
+    # ----------------------------------------------------------------
+
+    # When: FOUNDED 타입만 필터링 (Assuming 'founded' relation was extracted)
+    response = client.get(f"/entities/{entity_name}/relationships", params={"relationship_type": "FOUNDED"})
+
     assert response.status_code == 200
     relationships = response.json()
-
-    # 최소 1개 이상의 관계 존재
-    assert isinstance(relationships, list)
-    # Note: LLM 추출 결과에 따라 관계 개수가 다를 수 있음
-    # 이 테스트는 API 동작 확인이 목적
-
-
-def test_scenario_3_relationship_type_filtering(base_url):
-    """
-    Scenario 3: Relationship 타입별 필터링
-
-    Given: 여러 타입의 관계가 저장됨
-    When: GET /entities/{name}/relationships?relationship_type=FOUNDED
-    Then: FOUNDED 타입의 관계만 반환됨
-    """
-    # Given: "Elon Musk"의 관계 데이터 존재
-    entity_name = "Elon Musk"
-
-    # When: FOUNDED 타입만 필터링하여 조회
-    response = requests.get(f"{base_url}/entities/{entity_name}/relationships", params={"relationship_type": "FOUNDED"})
-
-    # Then: 200 OK
-    assert response.status_code == 200
-    relationships = response.json()
-
-    # 반환된 관계는 모두 FOUNDED 타입이어야 함
-    assert isinstance(relationships, list)
     for rel in relationships:
-        if rel:  # 비어있지 않은 경우
-            assert rel.get("relationship_type") == "FOUNDED"
+        assert rel.get("relationship_type") == "FOUNDED"
 
+    # ----------------------------------------------------------------
+    # Scenario 4: 잘못된 Relationship 타입 처리
+    # ----------------------------------------------------------------
 
-def test_scenario_4_invalid_relationship_type(base_url):
-    """
-    Scenario 4: 잘못된 Relationship 타입 처리
-
-    Given: 유효하지 않은 relationship_type
-    When: GET /entities/{name}/relationships?relationship_type=INVALID
-    Then: 400 Bad Request 반환
-    """
-    # Given: 임의의 entity name
-    entity_name = "Tesla"
-
-    # When: 잘못된 타입으로 요청
-    response = requests.get(
-        f"{base_url}/entities/{entity_name}/relationships", params={"relationship_type": "INVALID_TYPE"}
+    response = client.get(
+        f"/entities/{entity_name}/relationships", params={"relationship_type": "INVALID_TYPE"}
     )
 
     # Then: 400 Bad Request
     assert response.status_code == 400
-    error = response.json()
-    assert "Invalid relationship_type" in error["detail"]
+    assert "Invalid relationship_type" in response.json()["detail"]
