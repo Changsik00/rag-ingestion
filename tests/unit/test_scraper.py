@@ -41,7 +41,7 @@ def test_scrape_basic_html(mock_get):
 def test_scrape_failure(mock_get):
     # Given: HTTP 에러를 발생시키는 Mock response
     mock_response = Mock()
-    mock_response.raise_for_status.side_effect = Exception("HTTP Error")
+    mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError("HTTP Error")
     mock_get.return_value = mock_response
 
     scraper = BasicWebScraper()
