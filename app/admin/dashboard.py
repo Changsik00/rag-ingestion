@@ -6,7 +6,7 @@ from app.core.config import get_settings
 
 # Configuration
 settings = get_settings()
-API_URL = getattr(settings, "API_URL", "http://localhost:8000")  # Fallback if not yet in Settings, but I will add it.
+API_URL = settings.API_URL
 
 st.set_page_config(page_title="Ingestion Admin", layout="wide")
 
