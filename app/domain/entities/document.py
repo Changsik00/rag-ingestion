@@ -4,12 +4,17 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
 
-class AtomicDocument(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
+class Document(BaseModel):
+    id: str  # UUID를 str로 직렬화하여 사용 (Neo4j/Chroma 호환성)
     content: str
-    source_url: str
     metadata: dict = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     class Config:
-        frozen = True  # Entities should be treated carefully, but Pydantic's frozen makes it immutable-ish which is good for safety.
+        frozen = False  # To allow mutation if needed, or keep True if we want strict immutability.
+        # But previous code used frozen=True. Let's stick to Pydantic V2 ConfigDict if possible, 
+        # but to minimize changes, let's keep simple class Config. 
+
+# Backward compatibility alias
+AtomicDocument = Document
