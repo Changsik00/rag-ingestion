@@ -42,24 +42,30 @@ Once SDD is selected:
 - **Documentation:** All Agent-generated documentation (Specs, Plans) MUST be written in **Korean** for user clarity.
 - **No Early Execution:** NO code changes or commits until a Plan is explicitly accepted.
 
-### 4.1 Spec Folder Structure (Mandatory)
+### 4.1 Spec Folder & Templates (Mandatory)
 For every Spec, creating a dedicated directory `specs/<spec-name>/` is REQUIRED.
-- **Directory Name:** MUST match the feature branch name (excluding prefix). E.g., `feature/001-auth` -> `specs/001-auth/`.
-- **File Composition:**
-    - `spec.md`: The requirement specification.
-    - `plan.md`: The implementation plan.
-    - `task.md`: The execution checklist for this specific spec.
+- **Directory Name:** `specs/001-feature-name/`
+- **Template Enforcement:** The Agent MUST read `docs/protocols/templates/` before writing any artifact.
+    1. **Spec:** Read `docs/protocols/templates/spec.md` -> Write `spec.md` (Korean Context).
+    2. **Plan:** Read `docs/protocols/templates/plan.md` -> Write `plan.md` (Korean Strategy).
+    3. **Task:** Read `docs/protocols/templates/task.md` -> Write `task.md` (Korean Checklist).
+    4. **Walkthrough:** Read `docs/protocols/templates/walkthrough.md` -> Update `walkthrough.md` (Evidence Log) as you work.
+    5. **Review Request (Hard Stop):** You MUST call `notify_user` to request review of the spec/plan/task.
+    6. **Wait:** You are **STRICTLY PROHIBITED** from generating code or running non-read commands until the user explicitly approves the plan.
 
 ## 5. Plan & Task Strategy
 
-A Plan is a binding execution contract. It MUST include:
+A Plan is a binding execution contract. It MUST follow the `plan.md` template exactly and include:
 - **Branch Strategy:** The first task MUST be creating a feature branch (e.g., `git checkout -b feature/...)`.
 - **Task Granularity:** Each Task MUST represent one logical unit of work.
 - **TDD Integration:** Each task MUST include specific test expectations (e.g., `pytest tests/test_module.py`).
+- **Korean Requirement:** All explanatory text (Strategy, Context, Descriptions) MUST be in **Korean**.
+- **English Exception:** Code, file paths, and standard technical terms MAY remain in English.
 
 ## 6. Execution Phase (Delegated Authority)
 
-Execution begins ONLY after the User provides a **"Plan Accept"**.
+Execution begins **ONLY** after the User provides a clear **"Plan Accept"** or **"Approved"** message.
+**If the user has not explicitly approved the Plan, you are in PLANNING mode. DO NOT WRITE CODE.**
 
 ### 6.1 The "Strict Loop" Rule
 For **EVERY** Task in the approved Plan, the Agent MUST:
@@ -99,22 +105,11 @@ The Agent MUST update `task.md` after EVERY commit to maintain progress visibili
     - Example: `feat(spec-010): knowledge graph construction`
     - **Reference:** Check `git log --oneline` for project-specific patterns.
 - **PR Protocol (Mandatory):**
-    1. **Rich Description:** Create `pr_description.md` in the spec directory (e.g., `specs/001-.../pr_description.md`).
-    2. **First Line:** MUST match the PR title (for consistency with commit messages).
-    3. **Required Sections (use emojis for visual clarity):**
-        - **📋 Summary:** High-level overview of changes and outcomes.
-        - **🎯 Key Review Points:** What the user should focus on during review.
-        - **🧪 Verification** (or **Verification Plan**): Exact steps with commands to verify.
-        - **📦 Files Changed:** Summary of modified/added/deleted files.
-        - **🚨 Breaking Changes:** List any breaking changes, or state "없음" if none.
-        - **📚 Related:** Links to related specs, documentation, or issues.
-        - **✅ Definition of Done:** Checklist of completed tasks.
-    4. **Optional Sections (context-dependent):**
-        - **🏗️ Architecture Changes:** For structural changes.
-        - **🔍 Root Cause:** For bug fixes.
-        - **🔮 Future Work:** For planned follow-ups.
-    5. **Archive Strategy:** `walkthrough.md` and `pr_description.md` MUST be committed to the `specs/` directory before pushing.
-    6. **Visuals:** Use emojis, code blocks, and clear formatting to enhance readability.
+    1. **READ Template:** `docs/protocols/templates/pr_description.md`
+    2. **COPY Template:** Copy the structure exactly (do not omit Emojis).
+    3. **WRITE in Korean:** Fill in all sections (Summary, Key Review Points, etc.) in **Korean**.
+    4. **First Line:** Match PR Title.
+    5. **Archive:** Commit `walkthrough.md` (filled with evidence) and `pr_description.md` to `specs/` before pushing.
 
 ## 7. Deviation & Hard Stop
 

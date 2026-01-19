@@ -40,6 +40,14 @@ Before any Spec, Plan, or execution:
 - A Plan is an execution contract. No execution is allowed without an approved Plan.
 - The Plan MUST include branch creation and test execution tasks.
 
+### 4.3 Premature Execution (Critical)
+- **Zero Tolerance:** Writing production code or changing project state BEFORE the user has explicitly approved the `plan.md` is a **CRITICAL VIOLATION**.
+- **Planning Mode:** Until approval is given, the Agent MUST remain in PLANNING mode and only edit documentation.
+
+### 4.4 Artifact Integrity (Critical)
+- **Template Enforcement:** Generating `spec`, `plan`, `task`, `walkthrough`, or `pr_description` WITHOUT reading and following the official templates in `docs/protocols/templates/` is a **CRITICAL VIOLATION**.
+- **Language Requirement:** All artifacts MUST be written in **Korean** (except for technical terms/code) to ensure clear communication.
+
 ## 5. Execution Delegation
 
 ### 5.1 Delegation Rule
