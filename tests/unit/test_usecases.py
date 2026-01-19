@@ -19,11 +19,13 @@ def test_create_job():
     mock_doc_repo = Mock()
     mock_graph_repo = Mock()
     mock_job_repo = Mock()
+    mock_chunker = Mock()
     service = IngestionService(
         scraper=mock_scraper,
         repository=mock_doc_repo,
         graph=mock_graph_repo,
         job_repository=mock_job_repo,
+        chunker=mock_chunker,
         extractor=None,
     )
 
@@ -54,11 +56,13 @@ def test_process_job_success():
     # Mock extractor to return None (no semantic data)
     mock_extractor.extract.return_value = None
 
+    mock_chunker = Mock()
     service = IngestionService(
         scraper=mock_scraper,
         repository=mock_doc_repo,
         graph=mock_graph_repo,
         job_repository=mock_job_repo,
+        chunker=mock_chunker,
         extractor=mock_extractor,
     )
 
@@ -67,7 +71,7 @@ def test_process_job_success():
 
     # Then: 스크래핑 및 저장 성공, Job 상태가 COMPLETED로 변경
     mock_scraper.scrape.assert_called_once_with("http://example.com")
-    mock_doc_repo.save.assert_called_once()
+    mock_doc_repo.save_with_chunks.assert_called_once()
     assert mock_job_repo.update_job.call_count == 2
 
     # Check last update
@@ -87,11 +91,13 @@ def test_process_job_failure():
     mock_job = IngestionJob(source_url="http://example.com", status=JobStatus.PENDING)
     mock_job_repo.get_job.return_value = mock_job
 
+    mock_chunker = Mock()
     service = IngestionService(
         scraper=mock_scraper,
         repository=mock_doc_repo,
         graph=mock_graph_repo,
         job_repository=mock_job_repo,
+        chunker=mock_chunker,
         extractor=None,
     )
 

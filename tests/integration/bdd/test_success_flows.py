@@ -69,7 +69,7 @@ def test_successful_web_ingestion_basic_flow():
     assert len(docs) > 0
 
     # 해당 URL의 document가 있는지 확인
-    doc = next((d for d in docs if d["source_url"] == url), None)
+    doc = next((d for d in docs if d["metadata"]["source_url"] == url), None)
     assert doc is not None
     assert len(doc["content"]) > 0
 
@@ -104,7 +104,7 @@ def test_successful_ingestion_without_extraction():
     docs_response = client.get("/documents")
     docs = docs_response.json()
 
-    doc = next((d for d in docs if d["source_url"] == url), None)
+    doc = next((d for d in docs if d["metadata"]["source_url"] == url), None)
 
     # Note: Integration 환경에서는 Document 저장이 비동기로 처리될 수 있음
     # 최소한 Job은 COMPLETED 상태여야 함

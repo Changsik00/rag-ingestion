@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # ChromaDB
     CHROMA_HOST: str = "localhost"
-    CHROMA_PORT: int = 8000
+    CHROMA_PORT: int = 8001
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

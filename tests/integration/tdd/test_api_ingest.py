@@ -38,7 +38,7 @@ def test_list_documents_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 2
-    assert data[0]["source_url"] == "http://test.com/1"
+    assert data[0]["metadata"]["source_url"] == "http://test.com/1"
 
     mock_repo.list_documents.assert_called_once_with(limit=5)
 
