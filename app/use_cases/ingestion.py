@@ -7,7 +7,6 @@ from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.schemas.ontology import EntityType
 from app.domain.services.semantic_extractor import SemanticExtractor
 
 
@@ -18,7 +17,7 @@ class IngestionService:
         repository: DocumentRepository,
         graph: GraphRepository,
         job_repository: JobRepository,
-        extractor: SemanticExtractor | None = None
+        extractor: SemanticExtractor | None = None,
     ):
         self.scraper = scraper
         self.repository = repository
@@ -62,11 +61,7 @@ class IngestionService:
                     print(f"Semantic extraction failed for job {job_id}: {e}")
 
             # 4. Map to Domain Entity
-            doc = AtomicDocument(
-                content=result.markdown,
-                source_url=str(result.url),
-                metadata=result.metadata
-            )
+            doc = AtomicDocument(content=result.markdown, source_url=str(result.url), metadata=result.metadata)
 
             # 5. Save Document
             self.repository.save(doc)
@@ -89,11 +84,7 @@ class IngestionService:
             # We do NOT raise the exception here to ensure the background task completes gracefully
             # and the status is persisted. Log could be added here.
 
-    def _build_knowledge_graph(
-        self,
-        doc_id: UUID,
-        semantic_data
-    ) -> None:
+    def _build_knowledge_graph(self, doc_id: UUID, semantic_data) -> None:
         """
         Entity 노드, MENTIONS 관계 및 Entity-Entity 관계 생성
 
@@ -104,7 +95,7 @@ class IngestionService:
         # Early return if no entities to process
         if not semantic_data.entities:
             return
-        
+
         # 1. Entity 저장 및 MENTIONS 관계
         all_entity_names = set()
         for entity_type, names in semantic_data.entities.items():
@@ -115,9 +106,9 @@ class IngestionService:
                     all_entity_names.add(name)
                 except Exception as e:
                     print(f"Failed to build graph for entity {name}: {e}")
-        
+
         # 2. Entity-Entity 관계 생성 (Spec 016)
-        if hasattr(semantic_data, 'relationships') and semantic_data.relationships:
+        if hasattr(semantic_data, "relationships") and semantic_data.relationships:
             for rel in semantic_data.relationships:
                 try:
                     # 누락된 Entity 생성
@@ -125,12 +116,10 @@ class IngestionService:
                         self.graph.save_entity(rel.source, rel.source_type)
                     if rel.target not in all_entity_names:
                         self.graph.save_entity(rel.target, rel.target_type)
-                    
+
                     # Relationship 생성
                     self.graph.create_entity_relationship(
-                        source_name=rel.source,
-                        relationship_type=rel.relationship,
-                        target_name=rel.target
+                        source_name=rel.source, relationship_type=rel.relationship, target_name=rel.target
                     )
                 except Exception as e:
                     print(f"Failed to create relationship {rel.source}->{rel.target}: {e}")

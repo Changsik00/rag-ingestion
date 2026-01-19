@@ -74,7 +74,6 @@ class LangChainLLMAdapter:
 
             5. **Relationships between entities:**
             Extract relationships that are **EXPLICITLY stated** in the text. Do NOT infer.
-            
             **Relationship Types:**
             - FOUNDED: Person founded Organization (e.g., "Elon Musk founded Tesla")
             - WORKS_FOR: Person works for Organization (e.g., "Jane works at Google")
@@ -92,7 +91,7 @@ class LangChainLLMAdapter:
             {format_instructions}
             """,
             input_variables=["text"],
-            partial_variables={"format_instructions": self.parser.get_format_instructions()}
+            partial_variables={"format_instructions": self.parser.get_format_instructions()},
         )
         self.chain = self.prompt | self.llm | self.parser
 

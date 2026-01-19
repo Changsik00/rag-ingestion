@@ -21,18 +21,19 @@ def test_scrape_basic_html(mock_get):
 
     scraper = BasicWebScraper()
     url = "https://example.com"
-    
+
     # When: URL 스크래핑
     result = scraper.scrape(url)
 
     # Then: IngestResponse 반환 및 HTML이 Markdown으로 변환됨
     assert isinstance(result, IngestResponse)
-    assert str(result.url).rstrip('/') == url.rstrip('/')
+    assert str(result.url).rstrip("/") == url.rstrip("/")
     assert "Hello World" in result.markdown
     assert "This is a test" in result.markdown
     mock_get.assert_called_once()
     assert mock_get.call_args[0][0] == url
     assert "User-Agent" in mock_get.call_args[1]["headers"]
+
 
 @patch("requests.get")
 def test_scrape_failure(mock_get):
@@ -42,7 +43,7 @@ def test_scrape_failure(mock_get):
     mock_get.return_value = mock_response
 
     scraper = BasicWebScraper()
-    
+
     # When/Then: 스크래핑 실패 시 예외 발생
     try:
         scraper.scrape("https://error.com")

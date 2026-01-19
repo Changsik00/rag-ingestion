@@ -40,8 +40,8 @@ def test_extracted_metadata_with_diverse_entities():
             EntityType.CONCEPT: ["Lean Startup", "Product-Market Fit"],
             EntityType.LOCATION: ["San Francisco", "Seoul"],
             EntityType.EVENT: ["TechCrunch Disrupt 2024"],
-            EntityType.ACTIVITY: ["고객 인터뷰", "MVP 개발", "피벗팅"]
-        }
+            EntityType.ACTIVITY: ["고객 인터뷰", "MVP 개발", "피벗팅"],
+        },
     )
     assert EntityType.ACTIVITY in metadata.entities
     assert "고객 인터뷰" in metadata.entities[EntityType.ACTIVITY]
@@ -55,11 +55,8 @@ def test_extracted_metadata_with_korean_activities():
         summary="현대적인 개발 방법론",
         keywords=["개발", "프로세스"],
         entities={
-            EntityType.ACTIVITY: [
-                "책 쓰기", "벤치마킹", "코드 리뷰",
-                "페어 프로그래밍", "회고", "스프린트 계획"
-            ]
-        }
+            EntityType.ACTIVITY: ["책 쓰기", "벤치마킹", "코드 리뷰", "페어 프로그래밍", "회고", "스프린트 계획"]
+        },
     )
     assert len(metadata.entities[EntityType.ACTIVITY]) == 6
     assert "책 쓰기" in metadata.entities[EntityType.ACTIVITY]

@@ -15,6 +15,7 @@ class CompositeStorage(DocumentRepository):
         neo4j: 구조화된 데이터 저장용 DocumentRepository (Neo4j)
         chroma: 벡터 임베딩 저장용 DocumentRepository (ChromaDB)
     """
+
     def __init__(self, neo4j: DocumentRepository, chroma: DocumentRepository):
         self.neo4j = neo4j
         self.chroma = chroma

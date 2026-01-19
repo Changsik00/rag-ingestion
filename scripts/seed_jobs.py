@@ -7,15 +7,16 @@ from neo4j import GraphDatabase
 
 # Add project root to path to allow imports from app
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_root)
+sys.path.append(project_root)  # noqa: E402
 
-from app.domain.entities.job import IngestionJob, JobStatus
-from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
+from app.domain.entities.job import IngestionJob, JobStatus  # noqa: E402
+from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository  # noqa: E402
 
 # Configuration matching docker-compose defaults
 NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
+
 
 def seed_data():
     print(f"Connecting to Neo4j at {NEO4J_URI}...")
@@ -38,7 +39,7 @@ def seed_data():
         source_url="https://example.com/success",
         status=JobStatus.COMPLETED,
         created_at=now - timedelta(hours=2),
-        updated_at=now - timedelta(hours=2, minutes=5)
+        updated_at=now - timedelta(hours=2, minutes=5),
     )
     repo.create_job(job1)
     print(f"Created COMPLETED job: {job1.job_id}")
@@ -48,7 +49,7 @@ def seed_data():
         source_url="https://example.com/pending",
         status=JobStatus.PENDING,
         created_at=now - timedelta(minutes=30),
-        updated_at=now - timedelta(minutes=30)
+        updated_at=now - timedelta(minutes=30),
     )
     repo.create_job(job2)
     print(f"Created PENDING job: {job2.job_id}")
@@ -58,7 +59,7 @@ def seed_data():
         source_url="https://example.com/running",
         status=JobStatus.RUNNING,
         created_at=now - timedelta(minutes=5),
-        updated_at=now - timedelta(minutes=5)
+        updated_at=now - timedelta(minutes=5),
     )
     repo.create_job(job3)
     print(f"Created RUNNING job: {job3.job_id}")
@@ -71,7 +72,7 @@ def seed_data():
         status=JobStatus.FAILED,
         created_at=now - timedelta(hours=1),
         updated_at=now - timedelta(hours=1),
-        error_message="403 Forbidden: Cloudflare blocked the request"
+        error_message="403 Forbidden: Cloudflare blocked the request",
     )
     repo.create_job(job4)
     print(f"Created FAILED job: {job4.job_id}")
@@ -82,13 +83,14 @@ def seed_data():
         status=JobStatus.COMPLETED,
         created_at=now - timedelta(minutes=10),
         updated_at=now - timedelta(minutes=8),
-        retry_of=job_fail_id
+        retry_of=job_fail_id,
     )
     repo.create_job(job5)
     print(f"Created RETRIED job (linked to {job_fail_id}): {job5.job_id}")
 
     driver.close()
     print("Done!")
+
 
 if __name__ == "__main__":
     seed_data()

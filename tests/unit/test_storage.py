@@ -27,6 +27,7 @@ def test_composite_storage_save():
     neo4j_mock.save.assert_called_once_with(doc)
     chroma_mock.save.assert_called_once_with(doc)
 
+
 def test_composite_storage_get():
     # Given: CompositeStorage와 Mock data
     neo4j_mock = Mock()

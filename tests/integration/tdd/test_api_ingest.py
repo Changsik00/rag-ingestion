@@ -18,13 +18,14 @@ client = TestClient(app)
 
 # test_ingest_web_endpoint is superseded by tests/integration/test_async_ingest.py
 
+
 def test_list_documents_endpoint():
     # Given: Mock Repository와 테스트 데이터
     mock_repo = Mock()
     doc_id = uuid4()
     mock_docs = [
         AtomicDocument(id=doc_id, content="Doc 1", source_url="http://test.com/1"),
-        AtomicDocument(content="Doc 2", source_url="http://test.com/2")
+        AtomicDocument(content="Doc 2", source_url="http://test.com/2"),
     ]
     mock_repo.list_documents.return_value = mock_docs
 

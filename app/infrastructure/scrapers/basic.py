@@ -19,8 +19,5 @@ class BasicWebScraper(ScraperInterface):
         return IngestResponse(
             url=url,
             markdown=markdown_content,
-            metadata={
-                "status_code": response.status_code,
-                "content_type": response.headers.get("Content-Type")
-            }
+            metadata={"status_code": response.status_code, "content_type": response.headers.get("Content-Type")},
         )

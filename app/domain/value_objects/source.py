@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, HttpUrl
 
 
@@ -7,4 +6,4 @@ class Source(BaseModel):
     title: str | None = None
 
     class Config:
-        frozen = True # Value Objects must be immutable
+        frozen = True  # Value Objects must be immutable

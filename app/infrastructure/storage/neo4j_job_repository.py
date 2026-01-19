@@ -27,7 +27,7 @@ class Neo4jJobRepository(JobRepository):
             "created_at": job.created_at.isoformat(),
             "updated_at": job.updated_at.isoformat(),
             "error_message": job.error_message,
-            "retry_of": job.retry_of
+            "retry_of": job.retry_of,
         }
         with self.driver.session() as session:
             session.run(query, params)
@@ -43,7 +43,7 @@ class Neo4jJobRepository(JobRepository):
             "job_id": job.job_id,
             "status": job.status.value,
             "updated_at": job.updated_at.isoformat(),
-            "error_message": job.error_message
+            "error_message": job.error_message,
         }
         with self.driver.session() as session:
             session.run(query, params)
@@ -67,7 +67,7 @@ class Neo4jJobRepository(JobRepository):
                 created_at=datetime.fromisoformat(node["created_at"]),
                 updated_at=datetime.fromisoformat(node["updated_at"]),
                 error_message=node.get("error_message"),
-                retry_of=node.get("retry_of")
+                retry_of=node.get("retry_of"),
             )
 
     def list_jobs(self, limit: int = 50) -> list[IngestionJob]:
@@ -82,13 +82,15 @@ class Neo4jJobRepository(JobRepository):
             result = session.run(query, limit=limit)
             for record in result:
                 node = record["j"]
-                jobs.append(IngestionJob(
-                    job_id=node["job_id"],
-                    source_url=node["source_url"],
-                    status=JobStatus(node["status"]),
-                    created_at=datetime.fromisoformat(node["created_at"]),
-                    updated_at=datetime.fromisoformat(node["updated_at"]),
-                    error_message=node.get("error_message"),
-                    retry_of=node.get("retry_of")
-                ))
+                jobs.append(
+                    IngestionJob(
+                        job_id=node["job_id"],
+                        source_url=node["source_url"],
+                        status=JobStatus(node["status"]),
+                        created_at=datetime.fromisoformat(node["created_at"]),
+                        updated_at=datetime.fromisoformat(node["updated_at"]),
+                        error_message=node.get("error_message"),
+                        retry_of=node.get("retry_of"),
+                    )
+                )
         return jobs

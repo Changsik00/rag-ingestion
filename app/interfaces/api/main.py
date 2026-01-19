@@ -13,17 +13,18 @@ from app.use_cases.ingestion import IngestionService
 app = FastAPI(
     title="RAG Ingestion API",
     description="API for ingesting web content into Markdown and storing it in Atomic Layer",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 app.include_router(jobs_router)
 app.include_router(entities_router)
 
+
 @app.post("/ingest/web", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
 async def ingest_web_page(
     request: IngestRequest,
     background_tasks: BackgroundTasks,
-    service: Annotated[IngestionService, Depends(get_ingestion_service)]
+    service: Annotated[IngestionService, Depends(get_ingestion_service)],
 ):
     try:
         job = service.create_job(str(request.url))
@@ -32,15 +33,14 @@ async def ingest_web_page(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/documents", response_model=list[AtomicDocument])
-async def list_documents(
-    repository: Annotated[DocumentRepository, Depends(get_repository)],
-    limit: int = 10
-):
+async def list_documents(repository: Annotated[DocumentRepository, Depends(get_repository)], limit: int = 10):
     try:
         return repository.list_documents(limit=limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/health")
 async def health_check():

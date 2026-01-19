@@ -1,9 +1,11 @@
-
 import os
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from app.core.llm import LLMFactory
 from langchain_google_genai import ChatGoogleGenerativeAI
+
+from app.core.llm import LLMFactory
+
 
 class TestLLMFactory:
     def setup_method(self):

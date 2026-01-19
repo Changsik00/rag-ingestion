@@ -18,9 +18,9 @@ def test_entity_relationship_creation():
         source_type=EntityType.PERSON,
         relationship=RelationshipType.FOUNDED,
         target="Tesla",
-        target_type=EntityType.ORGANIZATION
+        target_type=EntityType.ORGANIZATION,
     )
-    
+
     assert rel.source == "Elon Musk"
     assert rel.source_type == EntityType.PERSON
     assert rel.relationship == RelationshipType.FOUNDED
@@ -37,9 +37,9 @@ def test_entity_relationship_with_confidence():
         relationship=RelationshipType.WORKS_FOR,
         target="Google",
         target_type=EntityType.ORGANIZATION,
-        confidence=0.85
+        confidence=0.85,
     )
-    
+
     assert rel.confidence == 0.85
 
 
@@ -52,10 +52,10 @@ def test_confidence_range_validation():
         relationship=RelationshipType.FOUNDED,
         target="B",
         target_type=EntityType.ORGANIZATION,
-        confidence=0.0
+        confidence=0.0,
     )
     assert rel1.confidence == 0.0
-    
+
     # Valid: 1.0
     rel2 = EntityRelationship(
         source="A",
@@ -63,10 +63,10 @@ def test_confidence_range_validation():
         relationship=RelationshipType.FOUNDED,
         target="B",
         target_type=EntityType.ORGANIZATION,
-        confidence=1.0
+        confidence=1.0,
     )
     assert rel2.confidence == 1.0
-    
+
     # Invalid: > 1.0
     with pytest.raises(ValidationError) as exc_info:
         EntityRelationship(
@@ -75,10 +75,10 @@ def test_confidence_range_validation():
             relationship=RelationshipType.FOUNDED,
             target="B",
             target_type=EntityType.ORGANIZATION,
-            confidence=1.5
+            confidence=1.5,
         )
     assert "less than or equal to 1" in str(exc_info.value)
-    
+
     # Invalid: < 0.0
     with pytest.raises(ValidationError) as exc_info:
         EntityRelationship(
@@ -87,7 +87,7 @@ def test_confidence_range_validation():
             relationship=RelationshipType.FOUNDED,
             target="B",
             target_type=EntityType.ORGANIZATION,
-            confidence=-0.1
+            confidence=-0.1,
         )
     assert "greater than or equal to 0" in str(exc_info.value)
 
@@ -101,16 +101,16 @@ def test_all_relationship_types():
         RelationshipType.RELATED_TO,
         RelationshipType.SUPPORTS,
         RelationshipType.PERFORMED,
-        RelationshipType.PART_OF
+        RelationshipType.PART_OF,
     ]
-    
+
     for rel_type in relationship_types:
         rel = EntityRelationship(
             source="Source",
             source_type=EntityType.PERSON,
             relationship=rel_type,
             target="Target",
-            target_type=EntityType.ORGANIZATION
+            target_type=EntityType.ORGANIZATION,
         )
         assert rel.relationship == rel_type
 
@@ -123,11 +123,11 @@ def test_entity_relationship_serialization():
         relationship=RelationshipType.USES,
         target="Python",
         target_type=EntityType.TECHNOLOGY,
-        confidence=0.95
+        confidence=0.95,
     )
-    
+
     data = rel.model_dump()
-    
+
     assert data["source"] == "Netflix"
     assert data["source_type"] == "ORGANIZATION"
     assert data["relationship"] == "USES"

@@ -32,6 +32,7 @@ def test_create_job():
     assert "MERGE (j:IngestionJob {job_id: $job_id})" in query
     assert "SET j.source_url = $source_url" in query
 
+
 def test_update_job():
     # Given: Mock driver와 repository
     driver_mock = Mock()
@@ -53,6 +54,7 @@ def test_update_job():
     assert "MATCH (j:IngestionJob {job_id: $job_id})" in query
     assert "SET j.status = $status" in query
 
+
 def test_get_job():
     # Given: Mock driver와 Job 데이터
     driver_mock = Mock()
@@ -69,7 +71,7 @@ def test_get_job():
         "created_at": "2023-01-01T12:00:00+00:00",
         "updated_at": "2023-01-01T13:00:00+00:00",
         "error_message": None,
-        "retry_of": None
+        "retry_of": None,
     }
     record_mock.__getitem__.side_effect = lambda k: node_mock if k == "j" else None
 
@@ -86,6 +88,7 @@ def test_get_job():
     assert job.job_id == "test-id"
     assert job.status == JobStatus.COMPLETED
 
+
 def test_list_jobs():
     # Given: Mock driver와 Job 리스트
     driver_mock = Mock()
@@ -101,7 +104,7 @@ def test_list_jobs():
         "status": "PENDING",
         "created_at": "2023-01-01T12:00:00+00:00",
         "updated_at": "2023-01-01T12:00:00+00:00",
-        "error_message": None
+        "error_message": None,
     }
     record_mock.__getitem__.side_effect = lambda k: node_mock if k == "j" else None
 

@@ -8,20 +8,16 @@ from app.infrastructure.llm import LangChainLLMAdapter
 
 load_dotenv()
 
+
 class LLMFactory:
     @staticmethod
     @lru_cache
-
     def get_google_llm(model: str = "gemini-2.0-flash-exp", temperature: float = 0.0) -> ChatGoogleGenerativeAI:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
 
-        return ChatGoogleGenerativeAI(
-            model=model,
-            temperature=temperature,
-            google_api_key=api_key
-        )
+        return ChatGoogleGenerativeAI(model=model, temperature=temperature, google_api_key=api_key)
 
     @staticmethod
     @lru_cache
@@ -29,6 +25,7 @@ class LLMFactory:
         """LangChain Adapter 반환 (LLMInterface 구현체)"""
         llm = LLMFactory.get_google_llm(model, temperature)
         return LangChainLLMAdapter(llm)
+
 
 def get_llm() -> LangChainLLMAdapter:
     """Adapter 반환 (DI용)"""

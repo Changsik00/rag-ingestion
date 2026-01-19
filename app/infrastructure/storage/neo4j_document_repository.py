@@ -35,12 +35,13 @@ class Neo4jStorage(DocumentRepository):
             d += $metadata
         """
         with self.driver.session() as session:
-            session.run(query,
+            session.run(
+                query,
                 id=str(document.id),
                 content=document.content,
                 source_url=document.source_url,
                 created_at=document.created_at.isoformat(),
-                metadata=flattened_metadata
+                metadata=flattened_metadata,
             )
 
     def get(self, doc_id: UUID) -> AtomicDocument | None:
@@ -53,7 +54,7 @@ class Neo4jStorage(DocumentRepository):
                     id=UUID(node["id"]),
                     content=node.get("content", ""),
                     source_url=node.get("source_url", ""),
-                    metadata={k:v for k,v in node.items() if k not in ["id", "content", "source_url", "created_at"]}
+                    metadata={k: v for k, v in node.items() if k not in ["id", "content", "source_url", "created_at"]},
                 )
         return None
 
@@ -64,10 +65,14 @@ class Neo4jStorage(DocumentRepository):
             results = session.run(query, limit=limit)
             for record in results:
                 node = record["d"]
-                docs.append(AtomicDocument(
-                    id=UUID(node["id"]),
-                    content=node.get("content", ""),
-                    source_url=node.get("source_url", ""),
-                    metadata={k:v for k,v in node.items() if k not in ["id", "content", "source_url", "created_at"]}
-                ))
+                docs.append(
+                    AtomicDocument(
+                        id=UUID(node["id"]),
+                        content=node.get("content", ""),
+                        source_url=node.get("source_url", ""),
+                        metadata={
+                            k: v for k, v in node.items() if k not in ["id", "content", "source_url", "created_at"]
+                        },
+                    )
+                )
         return docs
