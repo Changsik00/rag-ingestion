@@ -10,7 +10,8 @@
 - [x] 사용자 승인 완료
 - [x] Task 1 완료: 브랜치 생성 및 테스트 상태 확인
 - [x] Task 2 완료: ChromaDB Embedding 설정 변경 (Unit tests 통과)
-- [/] Task 3 진행 중: 의존성 제거
+- [x] Task 3 완료: 의존성 제거 (직접 의존성에서 제거)
+- [/] Task 4 진행 중: Integration Test 실행 및 수정
 
 ---
 
@@ -94,12 +95,12 @@ refactor(spec-017): integrate gemini embedding api with chromadb
 ## Task 3: 의존성 제거
 
 ### 3-1. pyproject.toml 수정
-- [ ] `onnxruntime>=1.16.0` 제거
-- [ ] `tokenizers>=0.15.0` 제거
+- [x] `onnxruntime>=1.16.0` 제거
+- [x] `tokenizers>=0.15.0` 제거
 
 ### 3-2. 의존성 업데이트
-- [ ] 실행: `uv lock`
-- [ ] 실행: `uv sync`
+- [x] 실행: `uv lock`
+- [/] 실행: `uv sync`
 
 ### 3-3. 의존성 검증
 - [ ] 실행: `uv tree | grep -E "(onnxruntime|tokenizers)"`
