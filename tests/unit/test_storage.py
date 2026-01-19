@@ -1,12 +1,13 @@
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, MagicMock, patch
 from uuid import uuid4
 import pytest
 from app.core.exceptions import InfrastructureException
 from app.domain.entities.document import AtomicDocument
+from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
 
-# ... existing CompositeStorage tests ...
+# ... existing CompositeStorage & Chroma tests ...
 
 def test_composite_storage_save():
     # Given: CompositeStorage와 Document
@@ -42,8 +43,6 @@ def test_composite_storage_get():
     # Then: Neo4j에서 Document 반환
     assert result == expected_doc
     neo4j_mock.get.assert_called_once_with(doc_id)
-
-# --- New Tests for ChromaStorage Hardening ---
 
 @patch("chromadb.HttpClient")
 @patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"})
@@ -97,4 +96,62 @@ def test_chroma_storage_get_null_safety(mock_client_cls):
     
     # Case 3: Result has None in 'documents' (if possible in library)
     mock_collection.get.return_value = {"ids": ["1"], "documents": [], "metadatas": []}
+    assert storage.get(doc_id) is None
+
+# --- New Tests for Neo4jStorage Hardening ---
+
+    # ... imports ...
+from unittest.mock import MagicMock
+
+def test_neo4j_storage_save_exception_handling():
+    """
+    Given: Neo4j driver raises an exception
+    When: save() is called
+    Then: It should be wrapped in InfrastructureException
+    """
+    mock_driver = Mock()
+    mock_session = Mock()
+    
+    # driver.session() returns a context manager object (session_ctx)
+    # MUST be MagicMock to support __enter__ and __exit__ automatically
+    session_ctx = MagicMock()
+    mock_driver.session.return_value = session_ctx
+    
+    # context manager enters and returns the actual session
+    session_ctx.__enter__.return_value = mock_session
+    
+    # Simulate Neo4j Failure
+    mock_session.run.side_effect = Exception("Database is down")
+    
+    storage = Neo4jStorage(driver=mock_driver)
+    doc = AtomicDocument(content="Test", source_url="http://test.com")
+    
+    with pytest.raises(InfrastructureException) as exc_info:
+        storage.save(doc)
+    
+    assert "Failed to save document to Neo4j" in str(exc_info.value)
+    assert "Database is down" in str(exc_info.value)
+
+def test_neo4j_storage_get_null_safety():
+    """
+    Given: Neo4j query returns None (no record found) or unexpected structure
+    When: get() is called
+    Then: It should safely return None
+    """
+    mock_driver = Mock()
+    mock_session = Mock()
+    
+    # driver.session() returns a context manager
+    session_ctx = MagicMock()
+    mock_driver.session.return_value = session_ctx
+    session_ctx.__enter__.return_value = mock_session
+    
+    storage = Neo4jStorage(driver=mock_driver)
+    doc_id = uuid4()
+    
+    # Case 1: result.single() returns None
+    result_mock = Mock()
+    result_mock.single.return_value = None
+    mock_session.run.return_value = result_mock
+    
     assert storage.get(doc_id) is None
