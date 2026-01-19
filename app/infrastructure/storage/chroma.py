@@ -6,9 +6,12 @@ import chromadb
 from chromadb.utils import embedding_functions
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
+from app.core.exceptions import InfrastructureException
+from app.core.logging_config import setup_logger
 from app.domain.entities.document import AtomicDocument
 from app.domain.interfaces.document_repository import DocumentRepository
 
+logger = setup_logger(__name__)
 
 class ChromaStorage(DocumentRepository):
     def __init__(self):
@@ -37,48 +40,72 @@ class ChromaStorage(DocumentRepository):
         self.collection = self.client.get_or_create_collection(name="documents", embedding_function=gemini_ef)
 
     def save(self, document: AtomicDocument) -> None:
-        # ChromaDB 제약사항: metadata 값으로 str, int, float, bool만 허용
-        # 복잡한 타입은 JSON 문자열로 직렬화하여 저장
-        flattened_metadata = {"source_url": document.source_url}
+        try:
+            # ChromaDB 제약사항: metadata 값으로 str, int, float, bool만 허용
+            # 복잡한 타입은 JSON 문자열로 직렬화하여 저장
+            flattened_metadata = {"source_url": document.source_url}
 
-        for key, value in document.metadata.items():
-            if isinstance(value, (dict, list)):
-                # 복잡한 타입은 JSON 문자열로 직렬화
-                flattened_metadata[f"{key}_json"] = json.dumps(value)
-            elif isinstance(value, (str, int, float, bool, type(None))):
-                # Primitive 타입은 그대로 유지
-                flattened_metadata[key] = value
-            # ChromaDB가 지원하지 않는 타입은 스킵
+            for key, value in document.metadata.items():
+                if isinstance(value, (dict, list)):
+                    # 복잡한 타입은 JSON 문자열로 직렬화
+                    flattened_metadata[f"{key}_json"] = json.dumps(value)
+                elif isinstance(value, (str, int, float, bool, type(None))):
+                    # Primitive 타입은 그대로 유지
+                    flattened_metadata[key] = value
+                # ChromaDB가 지원하지 않는 타입은 스킵
 
-        self.collection.add(documents=[document.content], metadatas=[flattened_metadata], ids=[str(document.id)])
+            self.collection.add(documents=[document.content], metadatas=[flattened_metadata], ids=[str(document.id)])
+        except Exception as e:
+            logger.error(f"Failed to save document to ChromaDB: {e}")
+            raise InfrastructureException(f"Failed to save document to ChromaDB: {e}") from e
 
     def get(self, doc_id: UUID) -> AtomicDocument | None:
-        # ChromaDB는 주된 검색 용도가 아니므로 최소 구현
-        # Neo4j가 primary source
-        result = self.collection.get(ids=[str(doc_id)])
-        if result and result["documents"]:
+        try:
+            # ChromaDB는 주된 검색 용도가 아니므로 최소 구현
+            # Neo4j가 primary source
+            result = self.collection.get(ids=[str(doc_id)])
+            
+            # Robust Null Check
+            if not result:
+                return None
+            
+            documents = result.get("documents")
+            if not documents or len(documents) == 0:
+                return None
+                
+            metadatas = result.get("metadatas")
+            if not metadatas or len(metadatas) == 0:
+                return None
+
             # ChromaDB에서 객체 재구성은 손실이 발생함 (full metadata 없음)
             # 하지만 기본 매핑은 구현
             return AtomicDocument(
                 id=doc_id,
-                content=result["documents"][0],
-                source_url=result["metadatas"][0].get("source_url", ""),
-                metadata=result["metadatas"][0],
+                content=documents[0],
+                source_url=metadatas[0].get("source_url", ""),
+                metadata=metadatas[0],
             )
-        return None
+        except Exception as e:
+            # 조회 실패는 Logging 후 None 반환 (서비스 중단 방지)
+            logger.warning(f"Failed to get document from ChromaDB (id={doc_id}): {e}")
+            return None
 
     def list_documents(self, limit: int = 10) -> list[AtomicDocument]:
-        # ChromaDB peek (샘플 조회)
-        result = self.collection.peek(limit=limit)
-        docs: list[AtomicDocument] = []
-        if result and result["ids"]:
-            for i in range(len(result["ids"])):
-                docs.append(
-                    AtomicDocument(
-                        id=UUID(result["ids"][i]),
-                        content=result["documents"][i],
-                        source_url=result["metadatas"][i].get("source_url", ""),
-                        metadata=result["metadatas"][i],
+        try:
+            # ChromaDB peek (샘플 조회)
+            result = self.collection.peek(limit=limit)
+            docs: list[AtomicDocument] = []
+            if result and result["ids"]:
+                for i in range(len(result["ids"])):
+                    docs.append(
+                        AtomicDocument(
+                            id=UUID(result["ids"][i]),
+                            content=result["documents"][i],
+                            source_url=result["metadatas"][i].get("source_url", ""),
+                            metadata=result["metadatas"][i],
+                        )
                     )
-                )
-        return docs
+            return docs
+        except Exception as e:
+            logger.error(f"Failed to list documents from ChromaDB: {e}")
+            raise InfrastructureException(f"Failed to list documents from ChromaDB: {e}") from e
