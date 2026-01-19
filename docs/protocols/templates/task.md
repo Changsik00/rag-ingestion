@@ -9,16 +9,24 @@
 - [ ] User Plan Accept
 
 ## Task 1: <Korean Title>
-- [ ] <Korean Subtask 1>
-- [ ] <Korean Subtask 2>
-- [ ] Test: `pytest ...`
-- [ ] Commit: `type: message`
+### 1-1. TDD Warming up
+- [ ] Test Case 작성: `tests/unit/test_xxx.py`
+- [ ] Test 실행 (Fail): `uv run pytest ...`
+- [ ] Commit: `test(spec-xxx): add test case for ...`
+
+### 1-2. Implementation
+- [ ] 코드 구현: `app/path/to/file.py`
+- [ ] Test 실행 (Pass): `uv run pytest ...`
+- [ ] Commit: `feat(spec-xxx): implement ...`
 
 ## Task 2: <Korean Title>
-- [ ] <Korean Subtask 1>
-- [ ] Commit: `type: message`
+- [ ] ...
 
 ...
+
+## Task N: PR Creation
+- [ ] Run Full Tests: `uv run pytest`
+- [ ] Create PR: `gh pr create ...`
 
 ## Summary
 **총 Task**: X개
