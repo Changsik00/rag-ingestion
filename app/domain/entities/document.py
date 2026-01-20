@@ -15,6 +15,3 @@ class Document(BaseModel):
         frozen = False  # To allow mutation if needed, or keep True if we want strict immutability.
         # But previous code used frozen=True. Let's stick to Pydantic V2 ConfigDict if possible,
         # but to minimize changes, let's keep simple class Config.
-
-
-

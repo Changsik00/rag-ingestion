@@ -1,12 +1,12 @@
 # Task List: Spec 020 Transition to LangGraph
 
 ## Progress
-- [ ] Spec 번호 확정 (Completed: 020)
-- [ ] spec.md 작성
-- [ ] plan.md 작성
-- [ ] task.md 작성
-- [ ] 백로그 업데이트 (Note 추가)
-- [ ] User Plan Accept
+- [x] Spec 번호 확정 (Completed: 020)
+- [x] spec.md 작성
+- [x] plan.md 작성
+- [x] task.md 작성
+- [x] 백로그 업데이트 (Note 추가)
+- [x] User Plan Accept
 
 ## Task 0: Architecture Documentation (ADR)
 ### 0-1. Decision Record

@@ -143,7 +143,7 @@ def test_llm_failure_still_saves_document():
 
     # Mock Chunker
     mock_chunker = Mock()
-    mock_chunker.chunk.return_value = [] # Return empty chunks as fallback
+    mock_chunker.chunk.return_value = []  # Return empty chunks as fallback
 
     service_instance = IngestionService(
         scraper=real_scraper_instance,

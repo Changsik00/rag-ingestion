@@ -12,6 +12,7 @@ from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.services.chunker import ChunkerService
 from app.domain.services.semantic_extractor import SemanticExtractor
+from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.scrapers.basic import BasicWebScraper
 from app.infrastructure.storage.chroma import ChromaStorage
@@ -52,8 +53,6 @@ def get_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> Docu
 def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> JobRepository:
     return Neo4jJobRepository(driver)
 
-
-from app.infrastructure.brain.adapter import LangGraphAdapter
 
 # Semantic Extractor 의존성 (LLM 기반 메타데이터 추출)
 @lru_cache
