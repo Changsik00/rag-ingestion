@@ -28,7 +28,7 @@ async def test_extract_metadata_node():
         title="Test Title",
         summary="Test Summary",
         keywords=["test"],
-        entities=[],
+        entities={},
         language="en"
     )
     mock_llm.extract_metadata.side_effect = lambda x: mock_metadata # Async if needed? Protocol is sync def but implementation might differ.
