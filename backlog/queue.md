@@ -200,6 +200,13 @@
   * [ ] 신뢰도 낮은 결과에 대한 `interrupt` 및 사용자 승인 대기
   * [ ] 수정된 상태로 그래프 실행 재개 (`resume`)
 
+* [ ] **Spec 023: Reasoning Context & Failure Analysis**
+  * **Design Guide**: [`docs/design_guides/reasoning_context.md`](docs/design_guides/reasoning_context.md)
+  * [ ] **Backtracking Context**: `FailureHypothesis`, `DecisionTrace` 등 사고 기록 State 추가
+  * [ ] **Failure Analyzer Node**: LLM/Rule 기반 실패 원인 분석 (Reasoning Log)
+  * [ ] **Intelligent Prompting**: 단순히 결과를 알려주는 게 아니라 "왜 실패했는지" 원인을 포함하여 재시도 요청
+  * [ ] **Reasoning Visualization**: Trace Log에 사고 과정을 명확히 남김
+
 * [ ] **Spec ???: n8n Workflow Integration** (TBD)
   * [ ] 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템
 
