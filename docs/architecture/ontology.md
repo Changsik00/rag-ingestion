@@ -113,6 +113,50 @@ Ontology는 그 여정의 핵심 청사진입니다:
 
 ## 🔗 Relationship 타입 정의
 
+```mermaid
+erDiagram
+    Document {
+        string id PK
+        string content
+        string url
+    }
+    Person {
+        string name PK
+        string role
+    }
+    Organization {
+        string name PK
+        string type
+    }
+    Technology {
+        string name PK
+        string category
+    }
+    Concept {
+        string name PK
+        string definition
+    }
+    Activity {
+        string name PK
+        string goal
+    }
+
+    Document ||--|{ Person : MENTIONS
+    Document ||--|{ Organization : MENTIONS
+    
+    Person }|--|| Organization : WORKS_FOR
+    Person }|--|{ Organization : FOUNDED
+    Person }|--|{ Activity : PERFORMED
+    
+    Organization }|--|{ Technology : USES
+    
+    Technology }|--|{ Activity : SUPPORTS
+    
+    Activity }|--|{ Activity : PART_OF
+    Concept }|--|{ Concept : RELATED_TO
+```
+
+
 ### Document-Entity 관계
 
 #### MENTIONS

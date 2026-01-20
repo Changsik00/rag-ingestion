@@ -23,6 +23,26 @@ LangGraph에서의 백트래킹(Backtracking)은 단순한 재시도가 아니�
 - **상황**: 반복된 교정에도 실패, 문서 성격이 초기 가정과 다름.
 - **전략**: 문제 정의 자체를 변경 (Re-framing).
 
+```mermaid
+stateDiagram-v2
+    [*] --> StrategySelector
+    
+    state StrategySelector {
+        [*] --> Standard
+        Standard --> Validating
+        Validating --> Successful : Pass
+        Validating --> Correction : Fail (Minor)
+        Validating --> Relaxation : Fail (Constraint)
+        Validating --> Ambiguity : Fail (Schema)
+    }
+    
+    Correction --> Validating : Retry (Reflexion)
+    Relaxation --> Validating : Retry (Loosen Rules)
+    Ambiguity --> StrategySelector : Retry (Switch Schema)
+    
+    Successful --> [*]
+```
+
 ---
 
 ## 🔁 4 Core Patterns of Question Backtracking

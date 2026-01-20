@@ -9,37 +9,61 @@
 
 ## 📂 Directory Structure (Updated)
 
+```mermaid
+graph TD
+    User([User / Client]) --> API[FastAPI Interface]
+    API --> UseCase[UseCase Layer]
+    
+    subgraph Domain ["Domain Layer (Core Business Logic)"]
+        UseCase --> Service[Domain Services]
+        Service --> Entity[Entities & Value Objects]
+        Service --> Interface[Interfaces & Protocols]
+    end
+    
+    subgraph Infrasturcture ["Infrastructure Layer (Adapters)"]
+        RepoImpl[Repository Impl] -.-> Interface
+        LLMImpl[LLM Adapter] -.-> Interface
+        ScraperImpl[Scraper Adapter] -.-> Interface
+    end
+    
+    RepoImpl --> Neo4j[(Neo4j: Graph DB)]
+    RepoImpl --> Chroma[(ChromaDB: Vector DB)]
+    LLMImpl --> ExternalLLM[Gemini / OpenAI]
+```
+
 ```plaintext
 rag-ingestion/
 ├── app/
-│   ├── core/               # 설정 및 공통 Utilities (LLM Factory 등)
+│   ├── core/               # 설정 및 공통 Utilities
+│   │   ├── config.py
+│   │   ├── llm.py          # LLM Factory 패턴 구현
+│   │   └── logging_config.py
 │   │
-│   ├── domain/             # [Core] 순수 비즈니스 로직, 외부 의존성 0%
-│   │   ├── entities/       # 식별자(ID)가 있고 생명주기를 가지는 객체 (e.g., Document, Job)
-│   │   ├── value_objects/  # 식별자가 없고 값 그 자체로 의미를 가지는 객체 (e.g., Source)
-│   │   ├── schemas/        # 도메인 데이터 구조 (e.g., ExtractedMetadata)
-│   │   ├── services/       # 도메인 서비스 (e.g., SemanticExtractor)
-│   │   └── interfaces/     # Repository 및 외부 서비스에 대한 추상체 (Port)
-│   │       ├── llm.py          # ← NEW! LLM Protocol 인터페이스
-│   │       ├── document_repository.py
-│   │       ├── job_repository.py
-│   │       └── scraper.py
+│   ├── domain/             # [Core] 순수 비즈니스 로직 (외부 의존성 없음)
+│   │   ├── entities/       # 식별자(ID)가 있는 객체 (Document, Job, Chunk)
+│   │   ├── value_objects/  # 값 객체 (Source - 불변성)
+│   │   ├── schemas/        # 데이터 전송/검증 스키마 (ExtractedMetadata, Ontology)
+│   │   ├── services/       # 도메인 서비스 (SemanticExtractor, ChunkerService)
+│   │   ├── ingestion/      # LangGraph 상태 관리 (IngestionState)
+│   │   └── interfaces/     # 포트 (Repository, Scraper, LLM Protocol 인터페이스)
 │   │
-│   ├── use_cases/          # [Application] 도메인 객체를 오케스트레이션
-│   │   └── ingestion.py    # "수집하여 저장한다"와 같은 유스케이스 흐름 제어
+│   ├── use_cases/          # [Application] 유스케이스 (도메인 오케스트레이션)
+│   │   └── ingestion.py    # 데이터 파이프라인 제어
 │   │
-│   ├── infrastructure/     # [Adapter] 도메인 인터페이스의 실제 구현체
-│   │   ├── storage/        # DB 구현체 (Neo4j, Chroma, LocalFile 등)
-│   │   ├── scrapers/       # 웹 스크래핑 구현체 (BeautifulSoup, Firecrawl)
-│   │   └── llm/            # ← NEW! LLM Adapter 구현체
-│   │       └── langchain_adapter.py  # LangChain을 LLMInterface로 변환
+│   ├── infrastructure/     # [Adapters] 인터페이스 구현체
+│   │   ├── storage/        # 저장소 구현 (Neo4j, Chroma, Composite Repositories)
+│   │   ├── scrapers/       # 웹 스크래퍼 (BeautifulSoup, Firecrawl)
+│   │   ├── llm/            # LLM 어댑터 (LangChainAdapter)
+│   │   ├── chunker/        # 텍스트 청킹 (LangChainChunker)
+│   │   └── brain/          # LangGraph 노드 및 로직 (Spec 021 - Logic Resolver)
 │   │
-│   └── interfaces/         # [Presentation/Driver] 시스템 진입점
-│       ├── api/            # FastAPI 라우터 및 스키마
-│       │   ├── dependencies.py  # DI 컨테이너
-│       │   └── main.py
-│       └── cli/            # CLI 커맨드
+│   ├── interfaces/         # [Presentation] 외부 진입점
+│   │   ├── api/            # FastAPI (라우터, 의존성 주입)
+│   │   └── cli/            # 커맨드 라인 인터페이스
+│   │
+│   └── admin/              # [Presentation] Streamlit 관리자 대시보드
 ```
+
 
 ## 🏗 Design Decisions & Rationale
 
