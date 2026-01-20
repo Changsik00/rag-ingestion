@@ -114,6 +114,9 @@ class LangChainLLMAdapter:
 3.  **Graph RAG**
     -   단순 벡터 검색(Vector Search)의 한계를 넘어, 그래프 관계를 활용한 복합 추론(Reasoning)이 가능한 RAG 시스템으로 고도화합니다.
 
+### 4. Architecture Decisions (ADR)
+- **[ADR 001] From Linear DAG to Stateful Graph**: [Link](architecture_decisions/001_dag_to_graph_transition.md) - LangChain Chain에서 LangGraph로의 전환 결정 배경과 구조 비교.
+
 ---
 
 ## 🎓 학습 자료
