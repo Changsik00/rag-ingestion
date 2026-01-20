@@ -19,7 +19,6 @@ class IngestionGraphBuilder:
         self.llm = llm
         self.nodes = IngestionNodes(llm)
 
-
     def build(self, checkpointer: Any = None) -> CompiledStateGraph:
         """
         Ingestion Workflow 그래프를 생성하고 컴파일하여 반환합니다.
@@ -71,8 +70,8 @@ class IngestionGraphBuilder:
                 "resolve_logic": "resolve_logic",  # This might not be needed in map if not returned
                 "analyze_failure": "analyze_failure",
                 "human_review": "human_review",
-                END: END
-            }
+                END: END,
+            },
         )
 
         # Logic Resolver always loops back to Extraction (Backtracking)
@@ -85,9 +84,6 @@ class IngestionGraphBuilder:
         # 4. Compile
         # interrupt_before=["human_review"] 설정을 통해 해당 노드 진입 전 멈춤
         if checkpointer:
-            return workflow.compile(
-                checkpointer=checkpointer,
-                interrupt_before=["human_review"]
-            )
+            return workflow.compile(checkpointer=checkpointer, interrupt_before=["human_review"])
 
         return workflow.compile()

@@ -1,4 +1,3 @@
-
 from app.domain.ingestion.state import StrategyType, ValidationConstraints, ValidationFeedback
 from app.infrastructure.brain.logic import select_strategy
 from app.infrastructure.brain.nodes import construct_extraction_prompt
@@ -7,8 +6,8 @@ from app.infrastructure.brain.nodes import construct_extraction_prompt
 # NOTE: Complete Graph integration with Mock LLM is complex,
 # so we simulate the "Loop Logic" here to verify the Architectural Flow.
 
-class TestLogicResolverScenarios:
 
+class TestLogicResolverScenarios:
     def test_should_trigger_correction_strategy_on_partial_failure(self):
         """
         Scenario 1: Partial Retry (Level 2 Reasoning Retry)
@@ -20,22 +19,18 @@ class TestLogicResolverScenarios:
         """
         # Given
         retry_count = 0
-        feedbacks = [
-            ValidationFeedback(source="validator", message="Title is missing", target_fields=["title"])
-        ]
+        feedbacks = [ValidationFeedback(source="validator", message="Title is missing", target_fields=["title"])]
 
         # When
         next_strategy = select_strategy(retry_count, feedbacks)
         prompt = construct_extraction_prompt(
-            strategy=next_strategy,
-            feedback=feedbacks[-1],
-            constraints=ValidationConstraints()
+            strategy=next_strategy, feedback=feedbacks[-1], constraints=ValidationConstraints()
         )
 
         # Then
         assert next_strategy == StrategyType.CORRECTION
         assert "CRITICAL FEEDBACK" in prompt
-        assert "TARGET FIELDS: ['title']" in prompt # Partial Retry Trigger
+        assert "TARGET FIELDS: ['title']" in prompt  # Partial Retry Trigger
 
     def test_should_trigger_relaxation_strategy_on_repeated_failure(self):
         """
@@ -50,15 +45,13 @@ class TestLogicResolverScenarios:
         retry_count = 2
         feedbacks = [
             ValidationFeedback(source="validator", message="Too many entities"),
-            ValidationFeedback(source="validator", message="Too many entities")
+            ValidationFeedback(source="validator", message="Too many entities"),
         ]
 
         # When
         next_strategy = select_strategy(retry_count, feedbacks)
         prompt = construct_extraction_prompt(
-            strategy=next_strategy,
-            feedback=feedbacks[-1],
-            constraints=ValidationConstraints()
+            strategy=next_strategy, feedback=feedbacks[-1], constraints=ValidationConstraints()
         )
 
         # Then
@@ -89,7 +82,7 @@ class TestLogicResolverScenarios:
         Given: Retry count reached Max (3)
         When: Logic Router is called
         Then: Strategy is RELAXATION (Logic layer logic)
-        Note: Actual Graph loop termination is handled by Conditional Edge, 
+        Note: Actual Graph loop termination is handled by Conditional Edge,
         but Logic Resolver should still provide valid strategy.
         """
         # Given

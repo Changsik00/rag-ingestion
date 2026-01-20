@@ -15,12 +15,13 @@ def test_ingestion_state_initialization():
         "active_constraints": ValidationConstraints(),  # Updated
         "attempt_history": [],
         "last_feedback": None,
-        "predicted_category": None
+        "predicted_category": None,
     }
 
     assert state["retry_count"] == 0
     assert state["current_strategy"] == StrategyType.STANDARD
     assert len(state["attempt_history"]) == 0
+
 
 def test_validation_feedback_model():
     """ValidationFeedback 모델 생성 및 유효성 검사"""
@@ -28,6 +29,7 @@ def test_validation_feedback_model():
     assert feedback.source == "validator"
     assert feedback.message == "Missing title"
     assert feedback.timestamp is not None
+
 
 def test_attempt_tracking():
     """Attempt 모델을 이용한 히스토리 추적 시나리오 테스트"""
