@@ -7,7 +7,8 @@ from app.domain.interfaces.llm import LLMInterface
 def construct_extraction_prompt(
     strategy: StrategyType,
     feedback: ValidationFeedback | None,
-    constraints: ValidationConstraints | None
+    constraints: ValidationConstraints | None,
+    failure_hypothesis: dict | None = None
 ) -> str:
     """
     Builds the system prompt dynamically based on the current strategy.
@@ -21,6 +22,21 @@ def construct_extraction_prompt(
         "You are an expert knowledge extractor. "
         "Your goal is to extract structured metadata from the provided content."
     )
+
+    if failure_hypothesis:
+        # Spec 023: Reasoning Context Injection
+        reasoning_instruction = (
+            f"\n\nFAILURE ANALYSIS:\n"
+            f"Previous attempt failed. Why failed:\n"
+            f"- Cause: {failure_hypothesis['cause']}\n"
+            f"- Description: {failure_hypothesis['description']}\n"
+        )
+        if failure_hypothesis.get("invalid_assumptions"):
+            assumptions_str = ", ".join(failure_hypothesis["invalid_assumptions"])
+            reasoning_instruction += f"- Invalid Assumptions: {assumptions_str}\n"
+
+        reasoning_instruction += "\nPlease adjust your extraction strategy based on this analysis."
+        return base_prompt + reasoning_instruction
 
     if strategy == StrategyType.CORRECTION and feedback:
         # Reflexion Pattern: Feed back the error
@@ -71,10 +87,14 @@ class IngestionNodes:
         raw_content = state["raw_content"]
 
         # 1. Construct Dynamic Prompt based on Strategy & Feedback
+        backtracking_context = state.get("backtracking_context")
+        failure_hypothesis = backtracking_context.get("failure_hypothesis") if backtracking_context else None
+
         system_prompt = construct_extraction_prompt(
             strategy=state.get("current_strategy", StrategyType.STANDARD),
             feedback=state.get("last_feedback"),
-            constraints=state.get("active_constraints")
+            constraints=state.get("active_constraints"),
+            failure_hypothesis=failure_hypothesis
         )
 
         # 2. LLM 호출 (Prompt Injection)
