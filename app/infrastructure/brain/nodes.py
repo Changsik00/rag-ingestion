@@ -166,3 +166,61 @@ class IngestionNodes:
         이 노드가 실행되고(pass), 그 다음 노드(resolve_logic)로 넘어갑니다.
         """
         return {"steps_history": state.get("steps_history", []) + ["human_review"]}
+
+    def analyze_failure(self, state: IngestionState) -> dict[str, Any]:
+        """
+        [Failure Analysis Node] (Spec 023)
+        검증 실패 원인을 분석하여 FailureHypothesis를 생성합니다.
+        
+        Logic:
+        1. If feedback exists, map feedback to hypothesis.
+        2. If error exists, map error to hypothesis.
+        3. Else, unknown error.
+        """
+        from app.domain.ingestion.state import FailureHypothesis, BacktrackingContext
+
+        error = state.get("error")
+        feedback = state.get("last_feedback")
+        
+        cause = "unknown_error"
+        description = "Unknown error occurred"
+        invalid_assumptions = []
+
+        if feedback:
+            # Rule 1: Missing Fields
+            if feedback.target_fields:
+                cause = "missing_info"
+                fields_str = ", ".join(feedback.target_fields)
+                description = f"Required field '{fields_str}' is missing or invalid."
+                invalid_assumptions.append(f"Document has explicit {fields_str}")
+            else:
+                cause = "validation_error"
+                description = feedback.message
+        elif error:
+            cause = "system_error"
+            description = str(error)
+
+        hypothesis: FailureHypothesis = {
+            "cause": cause,
+            "description": description,
+            "invalid_assumptions": invalid_assumptions
+        }
+
+        # Update Backtracking Context
+        current_context = state.get("backtracking_context") or {
+            "failure_hypothesis": None,
+            "interpretation_history": [],
+            "decision_trace": []
+        }
+        
+        # Ensure TypedDict structure (shallow copy update)
+        new_context: BacktrackingContext = {
+            "failure_hypothesis": hypothesis,
+            "interpretation_history": current_context.get("interpretation_history", []),
+            "decision_trace": current_context.get("decision_trace", [])
+        }
+
+        return {
+            "backtracking_context": new_context,
+            "steps_history": state.get("steps_history", []) + ["analyze_failure"]
+        }
