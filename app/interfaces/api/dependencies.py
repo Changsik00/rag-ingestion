@@ -53,11 +53,15 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
     return Neo4jJobRepository(driver)
 
 
+from app.infrastructure.brain.adapter import LangGraphAdapter
+
 # Semantic Extractor 의존성 (LLM 기반 메타데이터 추출)
 @lru_cache
 def get_semantic_extractor() -> SemanticExtractor:
     llm_adapter = get_llm()  # LangChainLLMAdapter를 반환
-    return SemanticExtractor(llm=llm_adapter)
+    # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
+    langgraph_adapter = LangGraphAdapter(llm=llm_adapter)
+    return SemanticExtractor(llm=langgraph_adapter)
 
 
 # Graph Repository 의존성 (Entity 및 관계 저장)
