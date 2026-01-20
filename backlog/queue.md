@@ -187,11 +187,13 @@
   * [x] 복잡한 순환 참조 및 상태 관리를 위해 LangChain → LangGraph 마이그레이션 수행
   * **완료**: 2026-01-20 (PR #23)
 
-* [ ] **Spec 021: Logic Resolver (Conditional & Retry)**
-  * [ ] `validate_content` 결과에 따른 조건부 분기(Conditional Edges) 구현
-  * [ ] `IngestionState`에 `validation_feedback` 및 `previous_attempts` 추가 (Reflexion)
-  * [ ] LLM 재시도 루프(Retry Loop) 및 `retry_count` 제어 로직 추가
-  * [ ] 지식 간 모순(`Contradicts`) 및 보완 관계 자동 탐지 (Optional)
+* [x] **Spec 021: Logic Resolver (Conditional & Retry)**
+  * [x] `validate_content` 결과에 따른 조건부 분기(Conditional Edges) 구현
+  * [x] `IngestionState`에 `validation_feedback` 및 `previous_attempts` 추가 (Reflexion)
+  * [x] LLM 재시도 루프(Retry Loop) 및 `retry_count` 제어 로직 추가
+  * [x] 지식 간 모순(`Contradicts`) 및 보완 관계 자동 탐지 (Optional)
+  * **완료**: 2026-01-20
+  * **Note**: Polymorphic Backtracking (Correction, Relaxation) 적용됨.
 
 * [ ] **Spec 022: Human-in-the-loop (Checkpointer)**
   * [ ] LangGraph Checkpointer 도입 (Memory/DB) (ADR 020 Phase 3)
