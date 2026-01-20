@@ -183,7 +183,7 @@
   * **목표**: 긴 문서를 의미 단위로 쪼개어 검색 정확도(Semantic Search) 대폭 향상
   * **완료**: 2026-01-20 (PR #22)
 
-* [ ] **Spec ???: Transition to LangGraph** (TBD)
+* [/] **Spec 020: Transition to LangGraph**
   * [ ] 복잡한 순환 참조 및 상태 관리를 위해 LangChain → LangGraph 마이그레이션 수행
 
 * [ ] **Spec ???: Logic Resolver (Deep Insight)** (TBD)

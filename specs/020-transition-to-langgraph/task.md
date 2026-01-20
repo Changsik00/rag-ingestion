@@ -10,16 +10,10 @@
 
 ## Task 0: Architecture Documentation (ADR)
 ### 0-1. Decision Record
-- [x] Create Directory: `docs/architecture_decisions`
-- [x] Write ADR: `docs/architecture_decisions/001_dag_to_graph_transition.md`
-    - Context: Why DAG is limited (No cycles, Stateless)
-    - Decision: Adopt State Graph (LangGraph)
-    - Visuals: Mermaid Diagrams (Linear DAG vs State Machine)
-- [x] Update `docs/architecture.md`: Link to new ADR
-
-### 0-2. History Archiving
-- [x] Create Directory: `docs/history`
-- [x] Move `spec.md` history section to `docs/history/020-decision-record.md`
+### 0-1. Architecture Documentation
+- [x] ADR 작성: `docs/architecture_decisions.md` (DAG to Graph 전환 결정, Mermaid 포함)
+- [x] Spec Update: `specs/020-transition-to-langgraph/spec.md` (History 복원)
+- [x] Docs Link: `docs/architecture.md`에 Link 추가
 
 ## Task 1: LangGraph Setup & State Definition
 ### 1-1. Dependency & TDD Setup
