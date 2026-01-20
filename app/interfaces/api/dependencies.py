@@ -12,6 +12,7 @@ from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.services.chunker import ChunkerService
 from app.domain.services.semantic_extractor import SemanticExtractor
+from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.scrapers.basic import BasicWebScraper
 from app.infrastructure.storage.chroma import ChromaStorage
@@ -57,7 +58,9 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 @lru_cache
 def get_semantic_extractor() -> SemanticExtractor:
     llm_adapter = get_llm()  # LangChainLLMAdapter를 반환
-    return SemanticExtractor(llm=llm_adapter)
+    # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
+    langgraph_adapter = LangGraphAdapter(llm=llm_adapter)
+    return SemanticExtractor(llm=langgraph_adapter)
 
 
 # Graph Repository 의존성 (Entity 및 관계 저장)

@@ -37,7 +37,7 @@ class TestLLMFactory:
     @patch("app.core.llm.get_settings")
     def test_get_google_llm_ignores_google_key(self, mock_get_settings):
         """Should raise ValueError even if GOOGLE_API_KEY is present (strict mode)"""
-        # Scenario: GOOGLE_API_KEY is in env (settings ignored it or mapped to legacy), 
+        # Scenario: GOOGLE_API_KEY is in env (settings ignored it or mapped to legacy),
         # but GEMINI_API_KEY is empty in Settings object.
         mock_settings = Mock(spec=Settings)
         mock_settings.GEMINI_API_KEY = None

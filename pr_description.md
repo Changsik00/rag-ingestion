@@ -1,54 +1,59 @@
-feat(spec-019): advanced chunking strategy implementation
+feat(spec-020): transition to langgraph for ingestion pipeline
 
 ## 📋 Summary
-**Spec 019: Advanced Chunking Strategy**를 구현하여 문서 수집 시 RAG 성능 최적화를 위한 의미 단위 분할(Chunking)을 적용했습니다.
+<!-- Korean: High-level summary of changes. Use "Before/After" if applicable. -->
+Ingestion Pipeline의 오케스트레이션 엔진을 LangChain `RunnableSequence`에서 **LangGraph `StateGraph`**로 전면 교체했습니다.
 
-기존의 단순 문서 저장 방식(`AtomicDocument` 전체 저장)을 변경하여, 문서를 `CHUNK_SIZE`와 `CHUNK_OVERLAP` 설정에 따라 분할하고 각 청크를 독립적으로 저장하도록 개선했습니다.
-- **Before**: 문서를 통째로 저장 및 임베딩.
-- **After**: 문서를 청크로 분할하여 Graph DB(Neo4j)와 Vector DB(ChromaDB)에 저장. Neo4j에는 `Document -[:HAS_CHUNK]-> Chunk` 관계가 생성되고, ChromaDB에는 청크 단위 임베딩이 저장됨.
+- **Before**: 선형적인 DAG 구조 (Input -> Extract -> Save). 순환이나 상태 관리가 불가능했습니다.
+- **After**: 상태 머신(State Machine) 기반의 Graph 구조. `IngestionState`를 모든 노드가 공유하며, 향후 루프나 조건부 분기를 지원할 수 있는 토대를 마련했습니다.
+
+> 자세한 내용은 [docs/architecture_decisions.md](docs/architecture_decisions.md)를 참고하세요.
 
 ## 🎯 Key Review Points
-1. **Chunk Entity & Storage**: `Document`와 `Chunk`의 분리, 그리고 Neo4j에서 관계(`[:HAS_CHUNK]`) 설정 방식이 올바른지 확인해주세요. (`app/infrastructure/storage/neo4j_document_repository.py`)
-2. **Chunker Implementation**: LangChain을 활용한 `ChunkerService` 구현 및 설정 적용 여부. (`app/infrastructure/chunker/langchain_chunker.py`)
-3. **Ingestion Pipeline**: `IngestionService`가 수집된 문서를 저장하기 전에 Chunking을 수행하고 `save_with_chunks`를 호출하는 흐름. (`app/use_cases/ingestion.py`)
+<!-- Korean: Specific areas requiring user attention. -->
+1. **IngestionState**: `app/domain/ingestion/state.py`의 구조가 적절한지 확인 부탁드립니다.
+2. **Graph Construction**: `app/infrastructure/brain/graph.py`에서 그래프 노드 연결 흐름(`Extract` -> `Validate`)이 의도대로 구현되었는지 검토해 주세요.
+3. **Synchronous Node**: 현재 `LLMInterface`가 동기식이라 Node들도 동기(`def`)로 구현되었습니다. 추후 비동기 전환 시 변경 범위가 제한적인지 확인해 주세요.
 
 ## 🧪 Verification
 ### Automated Tests
-모든 유닛 및 통합 테스트가 통과했습니다.
 ```bash
-uv run pytest tests/unit/test_chunker.py
-uv run pytest tests/unit/test_neo4j_storage.py
-uv run pytest tests/unit/test_chroma_storage.py
-uv run pytest tests/integration/bdd/test_chunking.py -m integration
+# Unit Tests
+uv run pytest tests/unit/test_ingestion_state.py
+uv run pytest tests/unit/test_graph_nodes.py
+uv run pytest tests/unit/test_ingestion_graph.py
+
+# Integration Tests (Success Flow Regression)
+uv run pytest tests/integration/bdd/test_success_flows.py
 ```
 
 ### Manual Verification
-Neo4j Graph 확인 시 `(Document)` 노드와 여러 `(Chunk)` 노드가 `HAS_CHUNK` 관계로 연결된 것을 확인했습니다.
+- 로컬 서버 실행 후 `POST /ingest/web`으로 기사 수집 테스트 완료.
+- 로그에서 `extract_metadata` -> `validate_content` 순서로 실행됨을 확인.
 
 ## 📦 Files Changed
 
 ### 🆕 New Files
-- `app/domain/entities/chunk.py`: Chunk Dataclass 정의
-- `app/domain/services/chunker.py`: ChunkerService 프로토콜
-- `app/infrastructure/chunker/langchain_chunker.py`: LangChain 기반 Chunker 구현
-- `tests/unit/test_chroma_storage.py`: ChromaDB Chunk 저장 테스트
-- `tests/unit/test_neo4j_storage.py`: Neo4j Chunk 저장 테스트
-- `tests/integration/bdd/test_chunking.py`: Chunking 통합 테스트
+- `app/domain/ingestion/state.py`: 파이프라인 상태 정의 (TypedDict)
+- `app/infrastructure/brain/nodes.py`: 각 처리 단계(Node) 로직 구현
+- `app/infrastructure/brain/graph.py`: StateGraph 구성 및 컴파일 빌더
+- `app/infrastructure/brain/adapter.py`: Service Layer와 Graph를 연결하는 어댑터 (`LangGraphAdapter`)
+- `docs/architecture_decisions.md`: 아키텍처 결정 기록 (ADR)
 
 ### 🛠 Modified Files
-- `app/core/config.py`: Chunk 설정 추가 (`CHUNK_SIZE`, `CHUNK_OVERLAP`)
-- `app/domain/entities/document.py`: `AtomicDocument` -> `Document` 변경. 
-    - **Reason**: 문서가 더 이상 Atomic(불가분 최소 단위)하지 않고 Chunk로 분할되는 Container 역할을 하므로, `Document`가 더 적합한 명칭임.
-    - `source_url`을 메타데이터로 이동하여 구조 단순화.
-- `app/infrastructure/storage/neo4j_document_repository.py`: `save_with_chunks` 구현
-- `app/infrastructure/storage/chroma.py`: `save_chunks` 및 `save_with_chunks` 구현
-- `app/use_cases/ingestion.py`: Chunking 파이프라인 통합
-- `app/interfaces/api/dependencies.py`: Chunker 의존성 주입
+- `app/interfaces/api/dependencies.py`: `LangGraphAdapter`를 주입하도록 의존성 설정 변경
+- `docs/architecture.md`: ADR 링크 업데이트
+- `pyproject.toml`: `langgraph` 의존성 추가
+
+### 🗑 Deleted Files
+<!-- Remove section if none -->
+- `docs/history/020-decision-record.md`: (Revert) Spec 파일로 내용 복원됨
+- `docs/architecture_decisions/001_dag_to_graph_transition.md`: 통합된 파일로 대체됨
+
+**Total:** 8 files changed
 
 ## ✅ Definition of Done
-- [x] Spec 019: Advanced Chunking Strategy 구현
-- [x] LangChain 기반 Recursive Chunking 적용 (Size/Overlap 설정 가능)
-- [x] Neo4j에 Chunk 노드 및 관계 저장 구현
-- [x] ChromaDB에 Chunk 단위 임베딩 저장 구현
-- [x] 모든 관련 Unit/Integration Test 통과
-- [x] PR Description 템플릿 준수 및 Walkthrough 작성 완료
+- [x] IngestionState TypedDict 정의 및 검증 테스트 통과.
+- [x] LangGraph 기반의 IngestionGraph 구현 및 단위 테스트 통과.
+- [x] 기존 Integration Test(test_success_flows.py)가 수정 없이(또는 최소 수정으로) 통과.
+- [x] 문서화: docs/architecture_decisions.md 및 Spec Update 완료.

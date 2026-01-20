@@ -183,11 +183,20 @@
   * **목표**: 긴 문서를 의미 단위로 쪼개어 검색 정확도(Semantic Search) 대폭 향상
   * **완료**: 2026-01-20 (PR #22)
 
-* [ ] **Spec ???: Transition to LangGraph** (TBD)
-  * [ ] 복잡한 순환 참조 및 상태 관리를 위해 LangChain → LangGraph 마이그레이션 수행
+* [x] **Spec 020: Transition to LangGraph**
+  * [x] 복잡한 순환 참조 및 상태 관리를 위해 LangChain → LangGraph 마이그레이션 수행
+  * **완료**: 2026-01-20 (PR #23)
 
-* [ ] **Spec ???: Logic Resolver (Deep Insight)** (TBD)
-  * [ ] 지식 간 모순(`Contradicts`) 및 보완 관계 자동 탐지
+* [ ] **Spec 021: Logic Resolver (Conditional & Retry)**
+  * [ ] `validate_content` 결과에 따른 조건부 분기(Conditional Edges) 구현
+  * [ ] `IngestionState`에 `validation_feedback` 및 `previous_attempts` 추가 (Reflexion)
+  * [ ] LLM 재시도 루프(Retry Loop) 및 `retry_count` 제어 로직 추가
+  * [ ] 지식 간 모순(`Contradicts`) 및 보완 관계 자동 탐지 (Optional)
+
+* [ ] **Spec 022: Human-in-the-loop (Checkpointer)**
+  * [ ] LangGraph Checkpointer 도입 (Memory/DB) (ADR 020 Phase 3)
+  * [ ] 신뢰도 낮은 결과에 대한 `interrupt` 및 사용자 승인 대기
+  * [ ] 수정된 상태로 그래프 실행 재개 (`resume`)
 
 * [ ] **Spec ???: n8n Workflow Integration** (TBD)
   * [ ] 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템
