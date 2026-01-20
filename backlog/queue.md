@@ -273,3 +273,8 @@
   * **Persistence**: `PostgresSaver` 등을 도입하여 서버 재시작 시에도 결재 대기 상태 유지
   * **Notification**: `humne_review` 진입 시 Slack/Email 알림 발송
   * **Priority**: Spec 022 완료 후 운영 단계에서 필요 시 진행
+
+* **[Tooling] Real-World HITL Verification Script**
+  * **Goal**: Mock이 아닌 실제 LLM과 상호작용하며 HITL 흐름을 검증하는 스크립트 작성 (`scripts/verify_hitl_real.py`).
+  * **Scenario**: 실제 Gemini LLM 사용 -> 강제 오류 주입 -> Interrupt 확인 -> 수동 Resume -> 최종 결과 확인.
+  * **Priority**: 품질 검증 단계에서 수행 권장.
