@@ -34,7 +34,8 @@ class IngestionGraphBuilder:
         workflow.add_node("extract_metadata", self.nodes.extract_metadata)
         workflow.add_node("validate_content", self.nodes.validate_content)
         workflow.add_node("resolve_logic", self.nodes.resolve_logic)
-        workflow.add_node("human_review", self.nodes.human_review)  # New Node
+        workflow.add_node("analyze_failure", self.nodes.analyze_failure)  # Spec 023
+        workflow.add_node("human_review", self.nodes.human_review)
 
         # 3. Edge 연결
         # Flow: Extract -> Validate -> Logic (Conditional) or Human Review -> Extract or End
@@ -54,12 +55,12 @@ class IngestionGraphBuilder:
                     # 여기서는 중요 에러나 한계 도달 시 Human Review로 보낸다고 가정
                     return "human_review"
 
-                # 일반적인 에러는 Logic Resolver로
+                # 일반적인 에러는 Logic Resolver로 가기 전에 Failure Analysis를 거침
                 # 단, 'Critical Error' 메시지가 있으면 바로 Human Review로 보낼 수도 있음
                 if "Critical" in str(state.get("error", "")):
                     return "human_review"
 
-                return "resolve_logic"
+                return "analyze_failure"
 
             return END
 
@@ -67,13 +68,15 @@ class IngestionGraphBuilder:
             "validate_content",
             route_after_validation,
             {
-                "resolve_logic": "resolve_logic",
+                "resolve_logic": "resolve_logic",  # This might not be needed in map if not returned
+                "analyze_failure": "analyze_failure",
                 "human_review": "human_review",
                 END: END
             }
         )
 
         # Logic Resolver always loops back to Extraction (Backtracking)
+        workflow.add_edge("analyze_failure", "resolve_logic")
         workflow.add_edge("resolve_logic", "extract_metadata")
 
         # Human Review -> Logic Resolver (수정 사항 반영 후 전략 재수립)
