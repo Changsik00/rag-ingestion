@@ -17,8 +17,7 @@ def test_nodes_initialization():
     nodes = IngestionNodes(llm=mock_llm)
     assert nodes.llm == mock_llm
 
-@pytest.mark.asyncio
-async def test_extract_metadata_node():
+def test_extract_metadata_node():
     """extract_metadata 노드가 LLM을 호출하고 State를 갱신하는지 검증"""
     from app.infrastructure.brain.nodes import IngestionNodes
     
@@ -31,10 +30,7 @@ async def test_extract_metadata_node():
         entities={},
         language="en"
     )
-    mock_llm.extract_metadata.side_effect = lambda x: mock_metadata # Async if needed? Protocol is sync def but implementation might differ.
-    # Wait, the protocol `extract_metadata` is synchronous in `llm.py`: `def extract_metadata(self, text: str)`
-    # So side_effect=lambda.. is fine. But if logic is async...
-    # `IngestionNodes.extract_metadata` will be async because it is a graph node.
+    mock_llm.extract_metadata.side_effect = lambda x: mock_metadata 
     
     nodes = IngestionNodes(llm=mock_llm)
     
@@ -48,8 +44,8 @@ async def test_extract_metadata_node():
         "retry_count": 0
     }
     
-    # Execute Node
-    result = await nodes.extract_metadata(state)
+    # Execute Node (Sync)
+    result = nodes.extract_metadata(state)
     
     # Verify State Update
     assert "metadata" in result

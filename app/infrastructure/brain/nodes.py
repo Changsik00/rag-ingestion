@@ -12,7 +12,7 @@ class IngestionNodes:
     def __init__(self, llm: LLMInterface):
         self.llm = llm
 
-    async def extract_metadata(self, state: IngestionState) -> Dict[str, Any]:
+    def extract_metadata(self, state: IngestionState) -> Dict[str, Any]:
         """
         Raw Content에서 메타데이터(Title, Summary, Entities 등)를 추출합니다.
         
