@@ -123,7 +123,7 @@ class IngestionNodes:
         """
         [Logic Resolver Node]
         검증 결과(Feedback)와 에러 상태를 기반으로 다음 전략(Strategy)을 결정합니다.
-        
+
         Returns:
             dict: Updates current_strategy, attempts, retry_count
         """
@@ -153,3 +153,16 @@ class IngestionNodes:
             "attempt_history": current_attempts,
             "steps_history": state.get("steps_history", []) + ["resolve_logic"]
         }
+
+    def human_review(self, state: IngestionState) -> dict[str, Any]:
+        """
+        [Human Review Node]
+        사용자 개입을 위한 일시 정지 지점 (Passthrough).
+        graph.compile(interrupt_before=["human_review"]) 설정을 통해
+        이 노드 실행 직전에 멈추게 됩니다.
+        
+        실제로는 아무 작업도 하지 않고 상태를 유지한 채 반환합니다.
+        사용자가 update_state를 통해 상태를 수정한 후 resume하면
+        이 노드가 실행되고(pass), 그 다음 노드(resolve_logic)로 넘어갑니다.
+        """
+        return {"steps_history": state.get("steps_history", []) + ["human_review"]}

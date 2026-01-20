@@ -7,6 +7,7 @@ Spec 009에서 미구현된 High Priority Integration Test를 구현합니다:
 """
 
 import time
+
 import pytest
 import requests
 
@@ -51,13 +52,13 @@ class TestHighPriorityScenarios:
         """
         # Given
         non_existent_job_id = "non-existent-job-id-12345"
-        
+
         # When
         response = requests.get(f"{BASE_URL}/jobs/{non_existent_job_id}")
-        
+
         # Then
         assert response.status_code == 404, f"Expected 404 but got {response.status_code}"
-        
+
         error_detail = response.json().get("detail", "")
         # Note: API might return "Job {job_id} not found" or similar.
         # Checking for "not found" is generally safe.
@@ -76,39 +77,39 @@ class TestHighPriorityScenarios:
         """
         # Given
         url = "https://httpbin.org/html"
-        
+
         # When 1: 첫 번째 수집
         response1 = requests.post(f"{BASE_URL}/ingest/web", json={"url": url})
         assert response1.status_code == 202, f"Expected 202 but got {response1.status_code}"
         job_id_1 = response1.json()["job_id"]
-        
+
         self._wait_for_job_completion(job_id_1)
-        
+
         # When 2: 두 번째 수집 (동일 URL)
         response2 = requests.post(f"{BASE_URL}/ingest/web", json={"url": url})
         assert response2.status_code == 202, f"Expected 202 but got {response2.status_code}"
         job_id_2 = response2.json()["job_id"]
-        
+
         self._wait_for_job_completion(job_id_2)
-        
+
         # Then: 두 Job 모두 COMPLETED
         job1 = self._get_job_status(job_id_1)
         job2 = self._get_job_status(job_id_2)
-        
+
         assert job1["status"] == "COMPLETED", f"Job 1 Status: {job1['status']}"
         assert job2["status"] == "COMPLETED", f"Job 2 Status: {job2['status']}"
-        
+
         # Then: 2개의 별도 Document 생성 확인
         docs_response = requests.get(f"{BASE_URL}/documents?limit=100")
         docs_response.raise_for_status()
         docs = docs_response.json()
-        
+
         matching_docs = [d for d in docs if d.get("source_url") == url]
-        
+
         # 최소 2개 이상
         assert len(matching_docs) >= 2, \
             f"Expected at least 2 documents with URL {url}, but got {len(matching_docs)}"
-        
+
         # ID 유니크 확인
         doc_ids = [d["id"] for d in matching_docs]
         assert len(set(doc_ids)) == len(doc_ids), "All document IDs should be unique"

@@ -1,5 +1,5 @@
 
-from app.domain.ingestion.state import Attempt, IngestionState, StrategyType, ValidationConstraints, ValidationFeedback
+from app.domain.ingestion.state import StrategyType, ValidationConstraints, ValidationFeedback
 from app.infrastructure.brain.logic import select_strategy
 from app.infrastructure.brain.nodes import construct_extraction_prompt
 
@@ -23,7 +23,7 @@ class TestLogicResolverScenarios:
         feedbacks = [
             ValidationFeedback(source="validator", message="Title is missing", target_fields=["title"])
         ]
-        
+
         # When
         next_strategy = select_strategy(retry_count, feedbacks)
         prompt = construct_extraction_prompt(
@@ -31,7 +31,7 @@ class TestLogicResolverScenarios:
             feedback=feedbacks[-1],
             constraints=ValidationConstraints()
         )
-        
+
         # Then
         assert next_strategy == StrategyType.CORRECTION
         assert "CRITICAL FEEDBACK" in prompt
@@ -52,7 +52,7 @@ class TestLogicResolverScenarios:
             ValidationFeedback(source="validator", message="Too many entities"),
             ValidationFeedback(source="validator", message="Too many entities")
         ]
-        
+
         # When
         next_strategy = select_strategy(retry_count, feedbacks)
         prompt = construct_extraction_prompt(
@@ -60,7 +60,7 @@ class TestLogicResolverScenarios:
             feedback=feedbacks[-1],
             constraints=ValidationConstraints()
         )
-        
+
         # Then
         assert next_strategy == StrategyType.RELAXATION
         assert "RELAXATION MODE: Enabled" in prompt
@@ -76,10 +76,10 @@ class TestLogicResolverScenarios:
         # Given
         retry_count = 1
         feedbacks = []
-        
+
         # When
         next_strategy = select_strategy(retry_count, feedbacks)
-        
+
         # Then
         assert next_strategy == StrategyType.STANDARD
 
@@ -95,9 +95,9 @@ class TestLogicResolverScenarios:
         # Given
         retry_count = 3
         feedbacks = [ValidationFeedback(source="validator", message="Error")]
-        
+
         # When
         next_strategy = select_strategy(retry_count, feedbacks)
-        
+
         # Then
         assert next_strategy == StrategyType.RELAXATION
