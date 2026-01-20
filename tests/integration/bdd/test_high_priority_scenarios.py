@@ -14,10 +14,11 @@ import requests
 # Base URL for the API
 BASE_URL = "http://localhost:8000"
 
+
 class TestHighPriorityScenarios:
     """
     High Priority Integration Scenarios
-    
+
     Verifies critical failure paths and idempotency logic.
     """
 
@@ -45,7 +46,7 @@ class TestHighPriorityScenarios:
     def test_should_return_404_for_invalid_job_id(self):
         """
         Scenario: 존재하지 않는 Job ID 조회
-        
+
         Given: 존재하지 않는 Job ID "non-existent-job-id-12345"
         When: GET /jobs/{job_id} 요청
         Then: 404 Not Found 및 명확한 에러 메시지 반환
@@ -68,7 +69,7 @@ class TestHighPriorityScenarios:
     def test_should_handle_duplicate_url_sequentially(self):
         """
         Scenario: 동일한 URL을 두 번 순차적으로 수집 (Idempotency check / Standard behavior)
-        
+
         Given: 동일한 URL로 두 번 순차적으로 수집 요청
         When: 두 Job이 완료되면
         Then:
@@ -107,8 +108,7 @@ class TestHighPriorityScenarios:
         matching_docs = [d for d in docs if d.get("source_url") == url]
 
         # 최소 2개 이상
-        assert len(matching_docs) >= 2, \
-            f"Expected at least 2 documents with URL {url}, but got {len(matching_docs)}"
+        assert len(matching_docs) >= 2, f"Expected at least 2 documents with URL {url}, but got {len(matching_docs)}"
 
         # ID 유니크 확인
         doc_ids = [d["id"] for d in matching_docs]

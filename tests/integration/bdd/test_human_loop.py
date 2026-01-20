@@ -16,8 +16,9 @@ class MockLLM:
             "keywords": ["test"],
             "entities": [],
             "language": "en",
-            "category": "test"
+            "category": "test",
         }
+
 
 @pytest.mark.asyncio
 async def test_human_in_the_loop_workflow():
@@ -30,7 +31,7 @@ async def test_human_in_the_loop_workflow():
     builder = IngestionGraphBuilder(mock_llm)
 
     # Mocking validate_content to return error on first run
-    
+
     call_count = {"validate": 0}
 
     def mock_validate(state: IngestionState):
@@ -39,13 +40,10 @@ async def test_human_in_the_loop_workflow():
             # Simulate Critical Error
             return {
                 "error": "Critical Error: Something bad happened",
-                "steps_history": state.get("steps_history", []) + ["validate_content"]
+                "steps_history": state.get("steps_history", []) + ["validate_content"],
             }
         # Second time pass
-        return {
-            "error": None,
-            "steps_history": state.get("steps_history", []) + ["validate_content"]
-        }
+        return {"error": None, "steps_history": state.get("steps_history", []) + ["validate_content"]}
 
     builder.nodes.validate_content = mock_validate
 
@@ -63,7 +61,7 @@ async def test_human_in_the_loop_workflow():
         active_constraints={"strict_mode": True, "max_retries": 3, "retry_depth": 0},
         attempt_history=[],
         last_feedback=None,
-        predicted_category=None
+        predicted_category=None,
     )
 
     thread_config = {"configurable": {"thread_id": "test_thread_1"}}
@@ -93,9 +91,9 @@ async def test_human_in_the_loop_workflow():
         {
             "error": None,
             "last_feedback": None,
-            "steps_history": current_history + ["human_review"]
-        }, # Clear error AND record that human review happened
-        as_node="human_review"
+            "steps_history": current_history + ["human_review"],
+        },  # Clear error AND record that human review happened
+        as_node="human_review",
     )
 
     # 5. Resume

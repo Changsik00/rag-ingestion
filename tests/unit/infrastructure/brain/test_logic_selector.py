@@ -11,6 +11,7 @@ def test_select_correction_strategy_on_first_error():
 
     assert strategy == StrategyType.CORRECTION
 
+
 def test_select_relaxation_strategy_on_repeated_error():
     """반복된 에러(2회 이상) 발생 시 RELAXATION 전략 선택"""
     retry_count = 2
@@ -23,11 +24,13 @@ def test_select_relaxation_strategy_on_repeated_error():
 
     assert strategy == StrategyType.RELAXATION
 
+
 def test_fallback_to_standard():
     """예외적인 상황에서는 기본 전략 유지 보수적 접근"""
     # 에러는 없는데 재시도 카운트만 있는 모순적 상황 (방어 로직)
     strategy = select_strategy(retry_count=1, feedbacks=[])
     assert strategy == StrategyType.STANDARD
+
 
 def test_select_reinterpretation_on_schema_error():
     """스키마 불일치 에러 시 REINTERPRETATION 선택 (Future Mock)"""
