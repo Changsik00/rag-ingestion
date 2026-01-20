@@ -39,6 +39,35 @@ class Attempt(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
+
+class FailureHypothesis(TypedDict):
+    """실패 가설: 왜 실패했는지에 대한 분석 결과"""
+    cause: str  # e.g., "missing_info", "ambiguous_schema"
+    description: str  # Human readable explanation
+    invalid_assumptions: list[str]  # e.g., ["The document has explicit titles"]
+
+
+class QuestionInterpretation(TypedDict):
+    """질문(요구사항)에 대한 해석 이력"""
+    version: int
+    interpretation: str  # e.g., "Extract as a Technical Blog Post"
+    reason_for_change: str  # e.g., "Detected job posting keywords"
+
+
+class DecisionTrace(TypedDict):
+    """의사결정 추적: 왜 이 전략을 선택했는지"""
+    retry_count: int
+    selected_strategy: StrategyType
+    reason: str  # e.g., "Repeated validation failure on 'summary' field"
+
+
+class BacktrackingContext(TypedDict):
+    """Backtracking 관련 모든 사고 맥락을 담는 컨테이너"""
+    failure_hypothesis: FailureHypothesis | None
+    interpretation_history: list[QuestionInterpretation]
+    decision_trace: list[DecisionTrace]
+
+
 class IngestionState(TypedDict):
     """
     Ingestion Pipeline의 전체 상태를 관리하는 TypedDict.
@@ -61,4 +90,8 @@ class IngestionState(TypedDict):
     attempt_history: list[Attempt]
     last_feedback: ValidationFeedback | None
     predicted_category: str | None  # For Predictive Strategy
+
+    # Reasoning Context (Spec 023)
+    backtracking_context: BacktrackingContext | None
+
 
