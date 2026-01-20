@@ -1,4 +1,6 @@
 # Spec 023 Design Guide: Reasoning Context & Failure Analysis
+> **Status**: Partially Implemented (Spec 023)
+> **Relevant PR**: `feature/023-reasoning-context`
 
 > **User Feedback Summary**: "State is currently just a 'Status', not a 'Continuity of Thought'."
 
@@ -17,18 +19,20 @@
 
 ## 🏗️ Required Data Structures (State)
 
-### 1. Failure Hypothesis (실패 가설)
+### 1. Failure Hypothesis (실패 가설) `[Implemented]`
 > "우리는 왜 실패했는가?"
 
 ```python
+# app/domain/ingestion/state.py
 class FailureHypothesis(TypedDict):
     cause: str                 # e.g., "missing_info", "ambiguous_schema", "strict_constraints"
     description: str           # Human-readable explanation
     invalid_assumptions: list[str]  # e.g., ["The document has explicit titles"]
 ```
 
-### 2. Interpretation History (질문 해석 이력)
+### 2. Interpretation History (질문 해석 이력) `[Future Work]`
 > "이 질문을 우리는 어떻게 해석해왔는가?"
+> *Spec 023에서는 구조체만 정의하고 실제 로직은 미구현*
 
 ```python
 class QuestionInterpretation(TypedDict):
@@ -59,10 +63,10 @@ class DecisionTrace(TypedDict):
 **Proposed**:
 1.  **Extract**: (Prompt includes `Interpretation`)
 2.  **Validate**: (Fails)
-3.  **Analyze Failure** (New Node): 
-    - Rule/LLM based classification
+3.  **Analyze Failure** (New Node) `[Implemented]`:
+    - Rule/LLM based classification (Spec 023: Rule-based Implemented)
     - Generates `FailureHypothesis`
-4.  **Reinterpret Question** (New Node):
+4.  **Reinterpret Question** (New Node) `[Future Work]`:
     - Uses `FailureHypothesis` to update `Assumption`
     - Generates new `QuestionInterpretation`
 5.  **Resolve Strategy**:
