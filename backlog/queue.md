@@ -192,6 +192,11 @@
   * [ ] LLM 재시도 루프(Retry Loop) 및 `retry_count` 제어 로직 추가
   * [ ] 지식 간 모순(`Contradicts`) 및 보완 관계 자동 탐지 (Optional)
 
+* [ ] **Spec 022: Human-in-the-loop (Checkpointer)**
+  * [ ] LangGraph Checkpointer 도입 (Memory/DB) (ADR 020 Phase 3)
+  * [ ] 신뢰도 낮은 결과에 대한 `interrupt` 및 사용자 승인 대기
+  * [ ] 수정된 상태로 그래프 실행 재개 (`resume`)
+
 * [ ] **Spec ???: n8n Workflow Integration** (TBD)
   * [ ] 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템
 
