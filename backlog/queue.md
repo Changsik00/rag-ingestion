@@ -195,10 +195,12 @@
   * **완료**: 2026-01-20
   * **Note**: Polymorphic Backtracking (Correction, Relaxation) 적용됨.
 
-* [ ] **Spec 022: Human-in-the-loop (Checkpointer)**
-  * [ ] LangGraph Checkpointer 도입 (Memory/DB) (ADR 020 Phase 3)
-  * [ ] 신뢰도 낮은 결과에 대한 `interrupt` 및 사용자 승인 대기
-  * [ ] 수정된 상태로 그래프 실행 재개 (`resume`)
+* [x] **Spec 022: Human-in-the-loop (Checkpointer)**
+  * [x] LangGraph Checkpointer 도입 (Memory/DB) (ADR 020 Phase 3)
+  * [x] 신뢰도 낮은 결과에 대한 `interrupt` 및 사용자 승인 대기
+  * [x] 수정된 상태로 그래프 실행 재개 (`resume`)
+  * **완료**: 2026-01-20 (PR #25)
+  * **Note**: In-Memory Checkpointer (MemorySaver) 사용. Persistence는 Icebox에 추가됨.
 
 * [ ] **Spec 023: Reasoning Context & Failure Analysis**
   * **Design Guide**: [`docs/design_guides/reasoning_context.md`](docs/design_guides/reasoning_context.md)
