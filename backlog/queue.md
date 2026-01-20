@@ -189,6 +189,7 @@
 
 * [ ] **Spec 021: Logic Resolver (Conditional & Retry)**
   * [ ] `validate_content` 결과에 따른 조건부 분기(Conditional Edges) 구현
+  * [ ] `IngestionState`에 `validation_feedback` 및 `previous_attempts` 추가 (Reflexion)
   * [ ] LLM 재시도 루프(Retry Loop) 및 `retry_count` 제어 로직 추가
   * [ ] 지식 간 모순(`Contradicts`) 및 보완 관계 자동 탐지 (Optional)
 
