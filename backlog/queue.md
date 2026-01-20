@@ -266,3 +266,8 @@
   * 현재 Recursive 방식 대신 Google의 AI 기반 Semantic Chunking 도입 검토
   * 문맥 보존 성능과 비용/속도 트레이드오프 분석 필요
   * Spec 019 이후 검색 품질 개선이 추가로 필요할 때 진행
+    
+* **[Feature] HITL Persistence & Notification**
+  * **Persistence**: `PostgresSaver` 등을 도입하여 서버 재시작 시에도 결재 대기 상태 유지
+  * **Notification**: `humne_review` 진입 시 Slack/Email 알림 발송
+  * **Priority**: Spec 022 완료 후 운영 단계에서 필요 시 진행
