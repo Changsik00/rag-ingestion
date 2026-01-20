@@ -1,4 +1,6 @@
-from typing import Any, TypedDict
+from typing import TypedDict
+
+from app.domain.schemas.extraction import ExtractedMetadata
 
 
 class IngestionState(TypedDict):
@@ -9,8 +11,7 @@ class IngestionState(TypedDict):
 
     original_url: str
     raw_content: str
-    metadata: dict[str, Any]
-    extracted_entities: list[dict[str, Any]]
+    metadata: ExtractedMetadata | None  # Pydantic Model 직접 사용
     steps_history: list[str]  # 실행된 단계 기록 (debugging/audit)
 
     # Optional fields for error handling or branching

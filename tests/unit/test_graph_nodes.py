@@ -44,8 +44,7 @@ def test_extract_metadata_node():
     state: IngestionState = {
         "original_url": "http://test.com",
         "raw_content": "test content",
-        "metadata": {},
-        "extracted_entities": [],
+        "metadata": None,
         "steps_history": [],
         "error": None,
         "retry_count": 0,
@@ -56,8 +55,9 @@ def test_extract_metadata_node():
 
     # Verify State Update
     assert "metadata" in result
-    # Pydantic model dump check
-    assert result["metadata"]["title"] == "Test Title"
+    # Pydantic model object check
+    assert isinstance(result["metadata"], ExtractedMetadata)
+    assert result["metadata"].title == "Test Title"
 
     # Determine if steps_history is updated
     assert "steps_history" in result

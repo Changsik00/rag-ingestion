@@ -30,14 +30,12 @@ class IngestionNodes:
         # NOTE: LLMInterface가 현재 동기식이므로, 추후 비동기 전환 시 await loop.run_in_executor() 등 고려 필요
         extracted = self.llm.extract_metadata(raw_content)
 
-        # ExtractedMetadata -> Dict 변환
-        metadata_dict = extracted.model_dump() if extracted else {}
-
         # History 업데이트
         current_history = state.get("steps_history", [])
         new_history = current_history + ["extract_metadata"]
 
-        return {"metadata": metadata_dict, "steps_history": new_history}
+        # Note: Pydantic 모델 객체 자체를 State에 저장합니다.
+        return {"metadata": extracted, "steps_history": new_history}
 
     def validate_content(self, state: IngestionState) -> dict[str, Any]:
         """

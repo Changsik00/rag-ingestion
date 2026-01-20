@@ -36,8 +36,7 @@ class LangGraphAdapter:
         initial_state = {
             "original_url": "",  # Optional, not used in extraction logic yet
             "raw_content": text,
-            "metadata": {},
-            "extracted_entities": [],
+            "metadata": None,
             "steps_history": [],
             "error": None,
             "retry_count": 0,
@@ -52,15 +51,10 @@ class LangGraphAdapter:
             final_state = self.graph.invoke(initial_state)
 
             # 3. Extract Result from State
-            metadata_dict = final_state.get("metadata")
-            if not metadata_dict:
-                logger.warning("Graph completed but no metadata found in state.")
-                return None
+            metadata = final_state.get("metadata")
 
-            # 4. Convert back to Pydantic
-            # Validation happens here. If metadata_dict is incomplete, it might raise ValidationError.
-            # Ideally IngestionNodes ensures valid structure.
-            return ExtractedMetadata(**metadata_dict)
+            # Since we store Pydantic model directly now, we just return it
+            return metadata
 
         except Exception as e:
             logger.error(f"Graph execution failed: {e}")

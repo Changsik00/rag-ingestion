@@ -23,8 +23,7 @@ def test_ingestion_state_structure():
     state: IngestionState = {
         "original_url": "http://example.com",
         "raw_content": "dummy content",
-        "metadata": {},
-        "extracted_entities": [],
+        "metadata": None,
         "steps_history": [],
         "error": None,
         "retry_count": 0,
