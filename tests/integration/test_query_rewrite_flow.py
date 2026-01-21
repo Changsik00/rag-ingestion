@@ -68,3 +68,43 @@ class TestQueryRewriteFlow:
         assert "성" not in rewrite3 # Should not be about Tesla 'Castle'(?) - ensuring no hallucination
         assert "일론" in rewrite3 or "Musk" in rewrite3
         assert "학교" in rewrite3 or "School" in rewrite3
+
+    def test_rewriter_value_add_verification(self, rewriter):
+        """
+        검증: 'Rewriter가 없으면 정말 못 맞추나?'
+        """
+        # Scenario: Context is about Elon Musk
+        query = "Where is his school?"
+        
+        # 1. Raw LLM (No Context) - "Rewriter 없이 질문만 던졌을 때"
+        base_llm = rewriter.llm.llm 
+        raw_prompt = f"Rewrite this query to be standalone: {query}"
+        raw_result = base_llm.invoke(raw_prompt).content
+        
+        print(f"\n[Case 1: No Rewriter (Raw)] Input: '{query}' -> Output: '{raw_result}'")
+        
+        # 2. Raw LLM (With Manual History) - "Rewriter 흉내내서 히스토리를 줬을 때"
+        manual_context_prompt = f"""
+        Chat History:
+        User: Tell me about Elon Musk.
+        Assistant: He is the CEO of Tesla.
+        
+        Follow Up Input: {query}
+        Standalone Question:
+        """
+        manual_result = base_llm.invoke(manual_context_prompt).content
+        print(f"\n[Case 2: Manual Context] Input: (History + '{query}') -> Output: '{manual_result}'")
+
+        # 3. QueryRewriter Service - "우리가 만든 서비스 사용"
+        # (This automates Case 2)
+        history = [
+            {"role": "user", "content": "Tell me about Elon Musk."},
+            {"role": "assistant", "content": "He is the CEO of Tesla."}
+        ]
+        service_result = rewriter.rewrite(query, history)
+        print(f"\n[Case 3: QueryRewriter Service] -> Output: '{service_result}'")
+        
+        # Assertions
+        assert "Elon" not in raw_result, "Case 1 should fail to know Elon"
+        assert "Elon" in manual_result, "Case 2 should work (proving context is key)"
+        assert "Elon" in service_result, "Case 3 should work (service automation)"
