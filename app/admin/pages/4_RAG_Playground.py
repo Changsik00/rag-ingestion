@@ -58,8 +58,12 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                 # Prepare Prompt
                 context_text = "\n\n".join([c.content for c in chunks])
                 llm_prompt = f"""
-                You are a helpful assistant. Use the following context to answer the user's question.
-                If the answer is not in the context, say you don't know.
+                You are a helpful assistant. Use the provided context to answer the user's question.
+                
+                **Rules:**
+                1. If the answer is found in the context, primarily use that information.
+                2. If the answer is NOT in the context, you may answer using your general knowledge, BUT you must start the answer with: "[General Knowledge] ".
+                3. Do not make up facts if you are unsure.
                 
                 Context:
                 {context_text}
