@@ -42,18 +42,18 @@ services:
       - chromadb
 
   streamlit:
-    image: python:3.9-slim
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: rag-admin
     ports:
       - "8501:8501"
     volumes:
       - .:/app
-    working_dir: /app
     environment:
       - API_URL=http://backend:8000
       - PYTHONPATH=/app
-    command: >
-      sh -c "pip install streamlit requests pandas streamlit-agraph plotly && streamlit run app/admin/dashboard.py"
+    command: ["uv", "run", "streamlit", "run", "app/admin/dashboard.py"]
     depends_on:
       - backend
 
