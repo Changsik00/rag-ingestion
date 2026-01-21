@@ -37,6 +37,11 @@ for message in st.session_state.messages:
         
         if message.get("debug_prompt"):
             with st.expander("🛠️ Debug: Prompt & Logic"):
+                if message.get("debug_rewrite"):
+                    st.caption("Query Transformation")
+                    st.code(f"Original:  {message['debug_rewrite']['original']}\nRewritten: {message['debug_rewrite']['rewritten']}", language="text")
+                    st.divider()
+                st.caption("Final LLM Prompt")
                 st.code(message["debug_prompt"], language="text")
 
 # Input
@@ -47,10 +52,32 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
         st.markdown(prompt)
 
     # Bot Response
+    # Bot Response
     with st.chat_message("assistant"):
-        with st.spinner("Retrieving & Thinking..."):
-            # 1. Retrieval
-            chunks = repo.search(prompt, limit=5)
+        # 0. Query Rewriting
+        with st.spinner("Refining query..."):
+            from app.domain.services.query_rewriter import QueryRewriter
+            from app.core.llm import get_llm
+            
+            llm = get_llm()
+            rewriter = QueryRewriter(llm)
+            
+            # Pass history (excluding current user message which is already appended? 
+            # Wait, st.session_state.messages ALREADY has the current prompt appended at line 45.
+            # So passing st.session_state.messages[-10:] includes the current prompt.
+            # QueryRewriter.rewrite logic expects "history" to be the CONTEXT, and "query" to be the current input.
+            # If I pass the whole history including the current query, the rewriter might get confused if it treats the last msg as history.
+            # My logic in QueryRewriter was:
+            # history_text loop over history.
+            # prompt: "Chat History:\n{history_text}\nFollow Up Input: {query}"
+            # If history contains the query, it appears twice.
+            # So I should pass history WITHOUT the current message.
+            history_context = st.session_state.messages[:-1] 
+            rewritten_query = rewriter.rewrite(prompt, history_context)
+
+        with st.spinner(f"Retrieving '{rewritten_query}'..."):
+            # 1. Retrieval using Rewritten Query
+            chunks = repo.search(rewritten_query, limit=5)
 
             # Real RAG Generation
         with st.spinner("Generating answer..."):
@@ -69,13 +96,11 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                 {context_text}
                 
                 Question:
-                {prompt}
+                {rewritten_query}
                 
                 Answer:
                 """
                 
-                from app.core.llm import get_llm
-                llm = get_llm()
                 answer = llm.generate(llm_prompt)
                 
             except Exception as e:
@@ -96,6 +121,10 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
 
             # Show Debug Prompt
             with st.expander("🛠️ Debug: Prompt & Logic"):
+                st.caption("Query Transformation")
+                st.code(f"Original:  {prompt}\nRewritten: {rewritten_query}", language="text")
+                st.divider()
+                st.caption("Final LLM Prompt")
                 st.code(llm_prompt, language="text")
 
         # Add Assistant Message
@@ -103,7 +132,8 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
             "role": "assistant", 
             "content": answer, 
             "retrieved": chunks,
-            "debug_prompt": llm_prompt
+            "debug_prompt": llm_prompt,
+            "debug_rewrite": {"original": prompt, "rewritten": rewritten_query}
         })
 
     st.rerun()
