@@ -217,7 +217,7 @@
   * [x] **RAG Playground**: 
     - Retrieve-Generate 흐름 통합
     - General Knowledge Fallback (Clean Prompting)
-    - Debug View (Prompt & Logic Inspection)
+    - Debug View (Prompt & Logic Inspection) (Feedback: [Design Guide 002](docs/design_guides/002-data-storage-strategy.md))
   * [x] **Reasoning Trace Viewer**: (Basic) HITL 화면에 Trace 연동
   * **완료**: 2026-01-22 (PR #27)
 
@@ -287,6 +287,7 @@
   * Spec 019 이후 검색 품질 개선이 추가로 필요할 때 진행
     
 * **[Feature] HITL Persistence & Notification**
+  * **Strategy**: [Design Guide 002](docs/design_guides/002-data-storage-strategy.md) (JSONL/SQLite vs Postgres)
   * **Persistence**: `PostgresSaver` 등을 도입하여 서버 재시작 시에도 결재 대기 상태 유지
   * **Notification**: `humne_review` 진입 시 Slack/Email 알림 발송
   * **Priority**: Spec 022 완료 후 운영 단계에서 필요 시 진행
