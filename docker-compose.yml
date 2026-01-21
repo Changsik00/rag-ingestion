@@ -51,8 +51,9 @@ services:
     working_dir: /app
     environment:
       - API_URL=http://backend:8000
+      - PYTHONPATH=/app
     command: >
-      sh -c "pip install streamlit requests pandas && streamlit run app/admin/dashboard.py"
+      sh -c "pip install streamlit requests pandas streamlit-agraph plotly && streamlit run app/admin/dashboard.py"
     depends_on:
       - backend
 
