@@ -87,7 +87,7 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                 st.warning("No relevant context found.")
 
         # Add Assistant Message
-        st.session_state.messages.append({"role": "assistant", "content": response_text, "retrieved": chunks})
+        st.session_state.messages.append({"role": "assistant", "content": answer, "retrieved": chunks})
 
     # Rerun to show feedback buttons for the new message?
     # Actually, usually feedback is for the *last* transaction.
