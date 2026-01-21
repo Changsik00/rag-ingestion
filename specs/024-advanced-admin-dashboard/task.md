@@ -10,15 +10,15 @@
 
 ## Task 1: Environment & Main Dashboard
 ### 1-1. Dependencies & Setup (TDD)
-- [ ] Test: `tests/unit/admin/test_dashboard_config.py` (Config 로딩 테스트)
-- [/] Implementation: `pyproject.toml` 업데이트 및 `app/admin/config.py` 생성
-- [ ] Implementation: `app/admin/dashboard.py` (Main Entry)
-- [ ] Verification: `streamlit run app/admin/dashboard.py` 정상 구동 확인
-- [ ] Commit: `build(spec-024): add streamlit dependencies and main dashboard`
+- [x] Test: `tests/unit/admin/test_dashboard_config.py` (Config 로딩 테스트)
+- [x] Implementation: `pyproject.toml` 업데이트 및 `app/admin/config.py` 생성
+- [x] Implementation: `app/admin/dashboard.py` (Main Entry)
+- [x] Verification: `streamlit run app/admin/dashboard.py` 정상 구동 확인
+- [x] Commit: `build(spec-024): add streamlit dependencies and main dashboard`
 
 ## Task 2: Graph Explorer (Service TDD -> UI)
 ### 2-1. Graph Service Implementation
-- [ ] Test Case: `tests/unit/admin/test_graph_service.py` (Mock Neo4jResult)
+- [/] Test Case: `tests/unit/admin/test_graph_service.py` (Mock Neo4jResult)
     - `test_execute_cypher`
     - `test_get_presets`
     - `test_build_query` (Query Builder Logic)
