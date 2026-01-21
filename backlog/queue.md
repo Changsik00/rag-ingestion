@@ -228,6 +228,7 @@
     - `QueryRewriter` 컴포넌트 (LLM 기반)
     - Playground에 Multi-turn Session 적용
     - Chat History 관리
+  * **Design Guide**: [`docs/design_guides/003-contextual-rag-cot.md`](docs/design_guides/003-contextual-rag-cot.md)
 
 * [ ] **Spec ???: MCP Server & Tree Visualization** (TBD)
   * [ ] Claude/Obsidian 연동을 위한 MCP 서버 배포
