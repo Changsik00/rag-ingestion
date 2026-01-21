@@ -37,13 +37,24 @@ class QueryRewriter:
             history_text += f"{role}: {content}\n"
             
         prompt = f"""
-Given the following conversation history and a follow-up question, rephrase the follow-up question to be a standalone question.
-Answer in the SAME LANGUAGE as the follow-up question.
+You are an expert search query refiner.
+Your task is to REWRITE the "Follow Up Input" into a standalone question that is fully self-contained and search-friendly.
 
-Chat History:
+**Analysis Steps:**
+1. Read the "Chat History" to understand the current topic, key entities (people, companies, technologies), and context.
+2. Analyze the "Follow Up Input". Identify pronouns (he, she, it, they) or implicit references (e.g., "What about the second one?", "How much is it?").
+3. REPLACE ambiguous references with specific terms from the history.
+4. APPEND missing context if the input is too short (e.g., transform "Why?" into "Why did [Entity] fail?").
+5. DO NOT change the meaning or intent of the user.
+6. Output ONLY the rewritten question. Do not output anything else.
+
+**Chat History:**
 {history_text}
-Follow Up Input: {query}
-Standalone Question:"""
+
+**Follow Up Input:**
+{query}
+
+**Standalone Question:**"""
 
         # 4. LLM 호출
         try:

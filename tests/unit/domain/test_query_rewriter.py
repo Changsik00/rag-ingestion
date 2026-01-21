@@ -53,3 +53,27 @@ def test_rewrite_with_history_calls_llm():
     prompt_sent = llm.generate.call_args[0][0]
     assert "일론 머스크에 대해 알려줘" in prompt_sent
     assert "그의 형제는?" in prompt_sent
+
+@pytest.mark.skipif(QueryRewriter is None, reason="QueryRewriter not implemented yet")
+def test_rewrite_instruction_only_maintains_context():
+    """
+    '한국어로 말해줘' 같은 명령형 질문이 들어오면 이전 질문의 맥락을 유지해야 한다.
+    """
+    # Given
+    llm = Mock(spec=LLMInterface)
+    # Expected: The previous question context is preserved but with the new instruction
+    llm.generate.return_value = "일론 머스크가 다닌 학교를 한국어로 알려줘"
+    rewriter = QueryRewriter(llm)
+    
+    query = "한국어로 대답해줘"
+    history = [
+        {"role": "user", "content": "Where did Elon Musk go to school?"},
+        {"role": "assistant", "content": "He attended Queen's University and UPenn."}
+    ]
+
+    # When
+    result = rewriter.rewrite(query, history)
+
+    # Then
+    assert "학교" in result or "school" in result
+    llm.generate.assert_called_once()

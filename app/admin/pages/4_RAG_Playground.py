@@ -89,8 +89,8 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                 
                 **Rules:**
                 1. If the answer is found in the context, primarily use that information.
-                2. If the answer is NOT in the context, you may answer using your general knowledge, BUT you must start the answer with: "[General Knowledge] ".
-                3. Do not make up facts if you are unsure.
+                2. If the answer is NOT in the context, **you MUST provide an answer using your general knowledge**. Start the answer with: "[General Knowledge] ".
+                3. **Language**: Always answer in **Korean** unless the user explicitly asks for another language.
                 
                 Context:
                 {context_text}
