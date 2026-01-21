@@ -60,8 +60,7 @@ async def test_rag_service_orchestration(mock_deps):
     ]
 
     # 5. LLM Generation
-    # Since LLM might be async or sync, let's assume invoke is used
-    deps["llm"].invoke.return_value.content = "Final Answer"
+    deps["llm"].generate.return_value = "Final Answer"
 
     # Execution
     history = []
@@ -80,7 +79,7 @@ async def test_rag_service_orchestration(mock_deps):
 
     # 3. Check Graph Context
     # Check if context passed to LLM includes Graph Facts
-    call_args = deps["llm"].invoke.call_args
+    call_args = deps["llm"].generate.call_args
     assert call_args is not None
     prompt_sent = str(call_args) # Simple check
     assert "Vector Content" in prompt_sent
