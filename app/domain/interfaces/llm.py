@@ -28,6 +28,9 @@ class LLMInterface(Protocol):
             >>> print(metadata.title)
             "Sample Title"
 
+        """
+        ...
+
     def generate(self, prompt: str) -> str:
         """
         단순 텍스트 생성
