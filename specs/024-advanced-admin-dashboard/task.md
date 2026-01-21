@@ -37,14 +37,15 @@
     - `test_list_threads`
     - `test_get_thread_status` (State Parsing -> "Thinking", "Idle")
     - `test_resume_flag`
-- [ ] Implementation: `app/admin/services/hitl_service.py`
-- [ ] Test Run: `uv run pytest tests/unit/admin/test_hitl_service.py`
-- [ ] Commit: `feat(spec-024): implement hitl service with detailed status parsing`
+- [x] Implementation: `app/admin/services/hitl_service.py`
+- [x] Test Run: `uv run pytest tests/unit/admin/test_hitl_service.py`
+- [x] Backend Refactoring: `LangGraphAdapter` w/ SqliteSaver, `jobs.py` API
+- [x] Commit: `feat(spec-024): implement hitl service with backend api and sqlite persistence`
 
 ### 3-2. HITL & Trace UI
-- [ ] Implementation: `app/admin/pages/2_HITL_Control.py` & `3_Trace_Viewer.py`
-- [ ] Manual Check: 상태 배지 표시 및 Resume 동작 확인
-- [ ] Commit: `feat(spec-024): add hitl control and trace viewer pages`
+- [x] Implementation: `app/admin/pages/2_HITL_Control.py` & `3_Trace_Viewer.py`
+- [x] Manual Check: 상태 배지 표시 및 Resume 동작 확인
+- [x] Commit: `feat(spec-024): connect hitl ui with backend api for control and tracing`
 
 ## Task 4: RAG Playground (Review Logic TDD -> UI)
 ### 4-1. Feedback Service Implementation
