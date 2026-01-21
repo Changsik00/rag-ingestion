@@ -1,5 +1,7 @@
 import pytest
+
 from app.admin.config import AdminConfig
+
 
 def test_admin_config_loading(monkeypatch):
     """Test that AdminConfig loads values from environment variables."""
@@ -8,10 +10,11 @@ def test_admin_config_loading(monkeypatch):
     monkeypatch.setenv("NEO4J_PASSWORD", "password")
 
     config = AdminConfig()
-    
+
     assert config.neo4j_uri == "bolt://localhost:7687"
     assert config.neo4j_username == "neo4j"
     assert config.neo4j_password == "password"
+
 
 def test_admin_config_defaults():
     """Test default values if environment variables are missing (if applicable)."""

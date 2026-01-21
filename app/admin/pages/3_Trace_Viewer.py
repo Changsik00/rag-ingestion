@@ -1,12 +1,15 @@
 import streamlit as st
+
 from app.admin.services.hitl_service import HitlService
 
 st.set_page_config(page_title="Trace Viewer", page_icon="🔍", layout="wide")
 st.title("🔍 Reasoning Trace Viewer")
 
+
 @st.cache_resource
 def get_service():
     return HitlService()
+
 
 service = get_service()
 
@@ -21,10 +24,10 @@ if thread_id:
                 st.error("Trace not found or empty.")
             else:
                 st.success(f"Loaded trace for {thread_id}")
-                
+
                 # Layout
                 tab1, tab2 = st.tabs(["State Snapshot", "Raw Data"])
-                
+
                 with tab1:
                     col1, col2 = st.columns(2)
                     with col1:

@@ -55,15 +55,15 @@
 - [x] Commit: `feat(spec-024): implement feedback service for rag playground`
 
 ### 4-2. Playground UI
-- [ ] Implementation: `app/admin/pages/4_RAG_Playground.py` w/ Thumbs Up/Down
-- [ ] Manual Check: 채팅 및 피드백 저장 확인
-- [ ] Commit: `feat(spec-024): add rag playground with feedback ui`
+- [x] Implementation: `app/admin/pages/4_RAG_Playground.py` w/ Thumbs Up/Down
+- [x] Manual Check: 채팅 및 피드백 저장 확인
+- [x] Commit: `feat(spec-024): add rag playground with feedback ui`
 
 ## Task 5: Final Review & PR
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
-- [ ] Manual Walkthrough: 전체 페이지 기능 점검 및 스크린샷 캡처 (`walkthrough.md`)
-- [ ] Create PR: `gh pr create --title "feat(spec-024): advanced admin dashboard" --body-file specs/024-advanced-admin-dashboard/pr_description.md`
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Run Full Tests: `uv run pytest`
+- [x] Manual Walkthrough: 전체 페이지 기능 점검 및 스크린샷 캡처 (`walkthrough.md`)
+- [x] Create PR: `gh pr create --title "feat(spec-024): advanced admin dashboard" --body-file specs/024-advanced-admin-dashboard/pr_description.md`
 
 ## Summary
 **총 Task**: 5개

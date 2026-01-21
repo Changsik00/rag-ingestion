@@ -63,8 +63,8 @@ class LangGraphAdapter:
                 snapshot = self.graph.get_state(config)
                 if snapshot.next:
                     logger.info(f"Graph execution interrupted (HITL required) for thread {thread_id}")
-                    # We return None or raise Exception. 
-                    # Returning None will cause ingestion to log warning but proceed? 
+                    # We return None or raise Exception.
+                    # Returning None will cause ingestion to log warning but proceed?
                     # We should probably let IngestionService know.
                     # For now, let's return None and let IngestionService handle "no metadata" logic.
                     return None
@@ -93,7 +93,7 @@ class LangGraphAdapter:
         # We can pass Command(resume=value) or just update state.
         # Let's assume we invoke with Command(resume=input_data) if using interrupt_before?
         # Or if we just "Resume", we might use None.
-        
+
         # Spec 022 used interrupt_before=["human_review"].
         # So we need to provide a Command or update state to satisfy the node?
         # Actually, if we just invoke(None, config), it might resume if state is ready.
@@ -106,22 +106,22 @@ class LangGraphAdapter:
         if not snapshot.values:
             return "Empty"
         if snapshot.next:
-            return "Interrupted" # or specific node name
+            return "Interrupted"  # or specific node name
         return "Completed"
 
     def list_threads(self, limit: int = 10):
         """List persistent threads."""
         if not self.graph.checkpointer:
             return []
-        
-        # Checkpointer.list returns iterator of CheckpointTuple? 
+
+        # Checkpointer.list returns iterator of CheckpointTuple?
         # Actually, BaseCheckpointSaver.list(config, before, limit)
         # We need to check langgraph documentation or source.
         # Assuming list(None, limit=limit) returns list of CheckpointTuples.
         # Each tuple has config.
-        config = {"configurable": {"thread_id": ""}} # Dummy config? 
+        # config = {"configurable": {"thread_id": ""}} # Dummy config?
         # list() signature: (config: Optional[RunnableConfig], before: Optional[RunnableConfig] = None, limit: int = None)
         # It filters by config if provided. If None, listing might depend on implementation.
-        # SqliteSaver.list(config, ...) 
+        # SqliteSaver.list(config, ...)
         # Let's try passing None.
         return list(self.graph.checkpointer.list(None, limit=limit))

@@ -1,10 +1,13 @@
-import streamlit as st
-from app.interfaces.api.dependencies import get_repository, get_neo4j_driver
-from app.admin.services.feedback_service import FeedbackService
 import time
+
+import streamlit as st
+
+from app.admin.services.feedback_service import FeedbackService
+from app.interfaces.api.dependencies import get_neo4j_driver, get_repository
 
 st.set_page_config(page_title="RAG Playground", page_icon="🎮", layout="wide")
 st.title("🎮 RAG Playground")
+
 
 @st.cache_resource
 def get_deps():
@@ -12,6 +15,7 @@ def get_deps():
     repo = get_repository(driver)
     feedback_service = FeedbackService()
     return repo, feedback_service
+
 
 repo, feedback_service = get_deps()
 
@@ -25,8 +29,8 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
         if message.get("retrieved"):
             with st.expander(f"📚 Retrieved Context ({len(message['retrieved'])} chunks)"):
-                for idx, chunk in enumerate(message['retrieved']):
-                    st.markdown(f"**Chunk {idx+1} (ID: {chunk.id})**")
+                for idx, chunk in enumerate(message["retrieved"]):
+                    st.markdown(f"**Chunk {idx + 1} (ID: {chunk.id})**")
                     st.text(chunk.content[:200] + "...")
                     st.caption(f"Metadata: {chunk.metadata}")
                     st.divider()
@@ -43,19 +47,19 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
         with st.spinner("Retrieving & Thinking..."):
             # 1. Retrieval
             chunks = repo.search(prompt, limit=5)
-            
+
             # 2. Generation (Mock)
             # In a real scenario, we would pass 'chunks' to LLM.
-            time.sleep(1) # Simulate latency
+            time.sleep(1)  # Simulate latency
             response_text = f"Based on the retrieved {len(chunks)} chunks, here is the answer: \n\n(Generated Answer Placeholder for '{prompt}')"
-            
+
             st.markdown(response_text)
-            
+
             # Show Context
             if chunks:
                 with st.expander(f"📚 Retrieved Context ({len(chunks)} chunks)"):
                     for idx, chunk in enumerate(chunks):
-                        st.markdown(f"**Chunk {idx+1} (ID: {chunk.id})**")
+                        st.markdown(f"**Chunk {idx + 1} (ID: {chunk.id})**")
                         st.text(chunk.content[:200] + "...")
                         st.caption(f"Metadata: {chunk.metadata}")
                         st.divider()
@@ -63,13 +67,9 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                 st.warning("No relevant context found.")
 
         # Add Assistant Message
-        st.session_state.messages.append({
-            "role": "assistant", 
-            "content": response_text,
-            "retrieved": chunks
-        })
+        st.session_state.messages.append({"role": "assistant", "content": response_text, "retrieved": chunks})
 
-    # Rerun to show feedback buttons for the new message? 
+    # Rerun to show feedback buttons for the new message?
     # Actually, usually feedback is for the *last* transaction.
     st.rerun()
 
@@ -77,24 +77,16 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "assistant":
     st.divider()
     st.subheader("Rate this response")
-    
+
     last_user_msg = st.session_state.messages[-2]["content"] if len(st.session_state.messages) >= 2 else "Unknown"
     last_bot_msg = st.session_state.messages[-1]["content"]
-    
+
     col1, col2, col3 = st.columns([1, 1, 5])
     with col1:
         if st.button("👍 Good"):
-            feedback_service.save_feedback({
-                "query": last_user_msg,
-                "response": last_bot_msg,
-                "feedback": "positive"
-            })
+            feedback_service.save_feedback({"query": last_user_msg, "response": last_bot_msg, "feedback": "positive"})
             st.toast("Thanks for your feedback!")
     with col2:
         if st.button("👎 Bad"):
-            feedback_service.save_feedback({
-                "query": last_user_msg,
-                "response": last_bot_msg,
-                "feedback": "negative"
-            })
+            feedback_service.save_feedback({"query": last_user_msg, "response": last_bot_msg, "feedback": "negative"})
             st.toast("Feedback recorded.")
