@@ -25,3 +25,8 @@ class DocumentRepository(ABC):
     def list_documents(self, limit: int = 10) -> list[Document]:
         """List recently stored documents."""
         pass
+
+    @abstractmethod
+    def search(self, query: str, limit: int = 5) -> list[Chunk]:
+        """Search for relevant chunks."""
+        pass

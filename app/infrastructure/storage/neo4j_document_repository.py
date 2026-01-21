@@ -132,3 +132,7 @@ class Neo4jStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to list documents from Neo4j: {e}")
             raise InfrastructureException(f"Failed to list documents from Neo4j: {e}") from e
+
+    def search(self, query: str, limit: int = 5) -> list[Document]:
+        """Neo4j handles graph/structure, not vector search. Returning empty."""
+        return []

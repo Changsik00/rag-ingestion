@@ -40,3 +40,6 @@ class CompositeStorage(DocumentRepository):
 
     def list_documents(self, limit: int = 10) -> list[Document]:
         return self.neo4j.list_documents(limit)
+
+    def search(self, query: str, limit: int = 5) -> list[Chunk]:
+        return self.chroma.search(query, limit)

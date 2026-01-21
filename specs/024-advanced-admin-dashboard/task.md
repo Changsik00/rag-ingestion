@@ -49,10 +49,10 @@
 
 ## Task 4: RAG Playground (Review Logic TDD -> UI)
 ### 4-1. Feedback Service Implementation
-- [ ] Test Case: `tests/unit/admin/test_feedback_service.py`
+- [x] Test Case: `tests/unit/admin/test_feedback_service.py`
     - `test_save_feedback`
-- [ ] Implementation: `app/admin/services/feedback_service.py` (Log/DB 저장)
-- [ ] Commit: `feat(spec-024): implement feedback service`
+- [x] Implementation: `app/admin/services/feedback_service.py` (Log/DB 저장)
+- [x] Commit: `feat(spec-024): implement feedback service for rag playground`
 
 ### 4-2. Playground UI
 - [ ] Implementation: `app/admin/pages/4_RAG_Playground.py` w/ Thumbs Up/Down
