@@ -221,14 +221,28 @@
   * [x] **Reasoning Trace Viewer**: (Basic) HITL 화면에 Trace 연동
   * **완료**: 2026-01-22 (PR #27)
 
-* [ ] **Spec 025: Contextual RAG (Query Rewriting)**
-  * [ ] **Problem**: 현재 RAG는 단발성 검색(Single-turn)만 지원하여 "그 사람은?" 같은 대명사/문맥 질문에 실패함.
-  * [ ] **Goal**: 대화 이력(Chat History)을 기억하고, 이를 바탕으로 모호한 질문을 "완전한 검색 쿼리"로 변환(Rewriting)하는 모듈 추가.
-  * [ ] **Scope**:
+* [x] **Spec 025: Contextual RAG (Query Rewriting)**
+  * [x] **Problem**: 현재 RAG는 단발성 검색(Single-turn)만 지원하여 "그 사람은?" 같은 대명사/문맥 질문에 실패함.
+  * [x] **Goal**: 대화 이력(Chat History)을 기억하고, 이를 바탕으로 모호한 질문을 "완전한 검색 쿼리"로 변환(Rewriting)하는 모듈 추가.
+  * [x] **Scope**:
     - `QueryRewriter` 컴포넌트 (LLM 기반)
     - Playground에 Multi-turn Session 적용
     - Chat History 관리
+  * **Done**: 2026-01-22 (PR #28)
   * **Design Guide**: [`docs/design_guides/003-contextual-rag-cot.md`](docs/design_guides/003-contextual-rag-cot.md)
+
+* **Phase 4: Retrieval Quality & Advanced RAG** (Current)
+  * [x] **Spec 026: Hybrid RAG & Metadata Strategy**
+    - **Strategic Flaws (In-sil-jik-go)**:
+        1.  **Metadata Underutilization**: LLM에게 `Content`만 제공하여 URL 등 출처 정보를 환각(Hallucination)하는 문제 발생. `Chunk`의 풍부한 메타데이터(Title, Source, Author)를 버리고 있음.
+        2.  **Fake Hybrid RAG**: 저장(`save`)은 Graph+Vector에 다 하지만, 정작 검색(`search`)은 **Vector DB(Chroma)만 사용**하고 있음. Graph DB(Neo4j)는 Write-Only 상태.
+    - **Goal**:
+        - `DocumentRepository.search`가 Neo4j와 Chroma를 모두 조회하도록 개선 (Hybrid Search).
+        - `Standardized Context Format`: LLM에게 제공하는 청크 포맷을 `[Source ID] Title: ... Content: ...` 형태로 표준화하여 Citation 강제.
+        - **Reranking**: 두 검색 결과를 통합(Merge)하고 점수화하는 전략 수립.
+    - **Priority**: High (System Reliability Crisis)
+    - **완료**: 2026-01-22 (Spec Implemented & Verified)
+    - **Design Guide**: [`docs/design_guides/004-graph-rag-strategy.md`](docs/design_guides/004-graph-rag-strategy.md)
 
 * [ ] **Spec ???: MCP Server & Tree Visualization** (TBD)
   * [ ] Claude/Obsidian 연동을 위한 MCP 서버 배포
