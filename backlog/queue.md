@@ -211,11 +211,23 @@
   * [x] **Reasoning Visualization**: Trace Log에 사고 과정을 명확히 남김 (State Level)
   * **완료**: 2026-01-20 (PR Created)
 
-* [ ] **Spec 024: Advanced Admin Dashboard (Observability & HITL)**
-  * [ ] **Graph Explorer**: Neo4j 지식 그래프 시각화 및 탐색 (Interactive Network View)
-  * [ ] **HITL Control Center**: `interrupt` 상태의 스레드 조회 및 승인/거절(Human Review) UI
-  * [ ] **Reasoning Trace Viewer**: 사고 과정(Reasoning Context) 및 실패 분석 로그 시각화
-  * [ ] **RAG Playground**: 쿼리 테스트, 리트리버 성능 검증, Semantic Search 결과 확인
+* [x] **Spec 024: Advanced Admin Dashboard (Observability & HITL)**
+  * [x] **Graph Explorer**: Neo4j 지식 그래프 시각화 (Interactive Network View)
+  * [x] **HITL Control Center**: `interrupt` 상태 스레드 조회 및 Resume 연동
+  * [x] **RAG Playground**: 
+    - Retrieve-Generate 흐름 통합
+    - General Knowledge Fallback (Clean Prompting)
+    - Debug View (Prompt & Logic Inspection)
+  * [x] **Reasoning Trace Viewer**: (Basic) HITL 화면에 Trace 연동
+  * **완료**: 2026-01-22 (PR #27)
+
+* [ ] **Spec 025: Contextual RAG (Query Rewriting)**
+  * [ ] **Problem**: 현재 RAG는 단발성 검색(Single-turn)만 지원하여 "그 사람은?" 같은 대명사/문맥 질문에 실패함.
+  * [ ] **Goal**: 대화 이력(Chat History)을 기억하고, 이를 바탕으로 모호한 질문을 "완전한 검색 쿼리"로 변환(Rewriting)하는 모듈 추가.
+  * [ ] **Scope**:
+    - `QueryRewriter` 컴포넌트 (LLM 기반)
+    - Playground에 Multi-turn Session 적용
+    - Chat History 관리
 
 * [ ] **Spec ???: MCP Server & Tree Visualization** (TBD)
   * [ ] Claude/Obsidian 연동을 위한 MCP 서버 배포
