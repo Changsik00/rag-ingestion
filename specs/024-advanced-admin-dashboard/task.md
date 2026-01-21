@@ -18,13 +18,13 @@
 
 ## Task 2: Graph Explorer (Service TDD -> UI)
 ### 2-1. Graph Service Implementation
-- [/] Test Case: `tests/unit/admin/test_graph_service.py` (Mock Neo4jResult)
+- [x] Test Case: `tests/unit/admin/test_graph_service.py` (Mock Neo4jResult)
     - `test_execute_cypher`
     - `test_get_presets`
     - `test_build_query` (Query Builder Logic)
-- [ ] Implementation: `app/admin/services/graph_service.py` w/ Presets
-- [ ] Test Run: `uv run pytest tests/unit/admin/test_graph_service.py`
-- [ ] Commit: `feat(spec-024): implement graph service with query builder logic`
+- [x] Implementation: `app/admin/services/graph_service.py` w/ Presets
+- [x] Test Run: `uv run pytest tests/unit/admin/test_graph_service.py`
+- [x] Commit: `feat(spec-024): implement graph service with query builder logic`
 
 ### 2-2. Graph UI Binding
 - [ ] Implementation: `app/admin/pages/1_Graph_Explorer.py` (Presets/Builder UI 연결)
