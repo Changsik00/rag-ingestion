@@ -211,8 +211,11 @@
   * [x] **Reasoning Visualization**: Trace Log에 사고 과정을 명확히 남김 (State Level)
   * **완료**: 2026-01-20 (PR Created)
 
-* [ ] **Spec ???: n8n Workflow Integration** (TBD)
-  * [ ] 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템
+* [ ] **Spec 024: Advanced Admin Dashboard (Observability & HITL)**
+  * [ ] **Graph Explorer**: Neo4j 지식 그래프 시각화 및 탐색 (Interactive Network View)
+  * [ ] **HITL Control Center**: `interrupt` 상태의 스레드 조회 및 승인/거절(Human Review) UI
+  * [ ] **Reasoning Trace Viewer**: 사고 과정(Reasoning Context) 및 실패 분석 로그 시각화
+  * [ ] **RAG Playground**: 쿼리 테스트, 리트리버 성능 검증, Semantic Search 결과 확인
 
 * [ ] **Spec ???: MCP Server & Tree Visualization** (TBD)
   * [ ] Claude/Obsidian 연동을 위한 MCP 서버 배포
@@ -280,3 +283,7 @@
   * **Goal**: Mock이 아닌 실제 LLM과 상호작용하며 HITL 흐름을 검증하는 스크립트 작성 (`scripts/verify_hitl_real.py`).
   * **Scenario**: 실제 Gemini LLM 사용 -> 강제 오류 주입 -> Interrupt 확인 -> 수동 Resume -> 최종 결과 확인.
   * **Priority**: 품질 검증 단계에서 수행 권장.
+
+* **[Integration] n8n Workflow Automation**
+  * **Goal**: 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템.
+  * **Priority**: Low (Phase 4에서 Icebox로 이동).

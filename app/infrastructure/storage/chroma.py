@@ -142,3 +142,29 @@ class ChromaStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to list documents from ChromaDB: {e}")
             raise InfrastructureException(f"Failed to list documents from ChromaDB: {e}") from e
+
+    def search(self, query: str, limit: int = 5) -> list[Chunk]:
+        """Vector search implementation."""
+        try:
+            results = self.collection.query(query_texts=[query], n_results=limit)
+
+            chunks = []
+            if results and results["ids"] and results["ids"][0]:
+                for i in range(len(results["ids"][0])):
+                    chunk_id = results["ids"][0][i]
+                    content = results["documents"][0][i]
+                    metadata = results["metadatas"][0][i]
+
+                    chunks.append(
+                        Chunk(
+                            id=UUID(chunk_id),
+                            content=content,
+                            metadata=metadata,
+                            parent_id=UUID(metadata.get("parent_id")) if metadata.get("parent_id") else None,
+                            index=int(metadata.get("index", 0)),
+                        )
+                    )
+            return chunks
+        except Exception as e:
+            logger.error(f"ChromaDB search failed: {e}")
+            return []

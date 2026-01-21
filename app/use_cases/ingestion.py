@@ -59,7 +59,7 @@ class IngestionService:
             semantic_data = None
             if self.extractor:
                 try:
-                    semantic_data = self.extractor.extract(result.markdown)
+                    semantic_data = self.extractor.extract(result.markdown, thread_id=job_id)
                     if semantic_data:
                         # Append semantic data to metadata
                         result.metadata["semantic_data"] = semantic_data.model_dump()

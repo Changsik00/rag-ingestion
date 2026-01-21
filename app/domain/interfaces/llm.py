@@ -27,5 +27,18 @@ class LLMInterface(Protocol):
             >>> metadata = llm.extract_metadata("Sample text...")
             >>> print(metadata.title)
             "Sample Title"
+
+        """
+        ...
+
+    def generate(self, prompt: str) -> str:
+        """
+        단순 텍스트 생성
+
+        Args:
+            prompt: 입력 프롬프트
+
+        Returns:
+            str: 생성된 텍스트
         """
         ...
