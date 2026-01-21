@@ -55,11 +55,23 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 
 
 # Semantic Extractor 의존성 (LLM 기반 메타데이터 추출)
+from langgraph.checkpoint.sqlite import SqliteSaver
+import sqlite3
+
+# Checkpointer 의존성 (HITL Persistence)
 @lru_cache
-def get_semantic_extractor() -> SemanticExtractor:
+def get_checkpointer() -> SqliteSaver:
+    # Use check_same_thread=False for FastAPI/Streamlit concurrency
+    conn = sqlite3.connect("checkpoints.sqlite", check_same_thread=False)
+    return SqliteSaver(conn)
+
+# Semantic Extractor 의존성 (LLM 기반 메타데이터 추출)
+@lru_cache
+def get_semantic_extractor(checkpointer: Annotated[SqliteSaver, Depends(get_checkpointer)]) -> SemanticExtractor:
     llm_adapter = get_llm()  # LangChainLLMAdapter를 반환
     # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
-    langgraph_adapter = LangGraphAdapter(llm=llm_adapter)
+    # Spec 024: Checkpointer 주입
+    langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
     return SemanticExtractor(llm=langgraph_adapter)
 
 
@@ -92,3 +104,12 @@ def get_ingestion_service(
         chunker=chunker,
         extractor=extractor,
     )
+
+# Spec 024: LangGraphAdapter 직접 접근 (HITL Control용)
+def get_langgraph_adapter(
+    extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)]
+) -> LangGraphAdapter:
+    # SemanticExtractor.llm is the LangGraphAdapter
+    if isinstance(extractor.llm, LangGraphAdapter):
+        return extractor.llm
+    raise ValueError("SemanticExtractor is not using LangGraphAdapter")

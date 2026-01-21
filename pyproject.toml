@@ -22,6 +22,7 @@ dependencies = [
     "streamlit>=1.30.0",
     "streamlit-agraph>=0.0.45",
     "plotly>=5.18.0",
+    "langgraph-checkpoint-sqlite>=1.0.0",
 ]
 
 [dependency-groups]

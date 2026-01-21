@@ -27,13 +27,13 @@
 - [x] Commit: `feat(spec-024): implement graph service with query builder logic`
 
 ### 2-2. Graph UI Binding
-- [ ] Implementation: `app/admin/pages/1_Graph_Explorer.py` (Presets/Builder UI 연결)
-- [ ] Manual Check: 버튼 클릭으로 쿼리 생성 및 그래프 렌더링 확인
-- [ ] Commit: `feat(spec-024): add graph explorer ui with visual query builder`
+- [x] Implementation: `app/admin/pages/1_Graph_Explorer.py` (Presets/Builder UI 연결)
+- [x] Manual Check: 버튼 클릭으로 쿼리 생성 및 그래프 렌더링 확인
+- [x] Commit: `feat(spec-024): add graph explorer ui with visual query builder`
 
 ## Task 3: HITL & Trace (Service TDD -> UI)
 ### 3-1. LangGraph Service Implementation
-- [ ] Test Case: `tests/unit/admin/test_hitl_service.py`
+- [/] Test Case: `tests/unit/admin/test_hitl_service.py`
     - `test_list_threads`
     - `test_get_thread_status` (State Parsing -> "Thinking", "Idle")
     - `test_resume_flag`
