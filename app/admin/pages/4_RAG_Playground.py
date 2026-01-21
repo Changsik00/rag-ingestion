@@ -34,6 +34,10 @@ for message in st.session_state.messages:
                     st.text(chunk.content[:200] + "...")
                     st.caption(f"Metadata: {chunk.metadata}")
                     st.divider()
+        
+        if message.get("debug_prompt"):
+            with st.expander("🛠️ Debug: Prompt & Logic"):
+                st.code(message["debug_prompt"], language="text")
 
 # Input
 if prompt := st.chat_input("Ask a question regarding the ingested content..."):
@@ -86,11 +90,18 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
             else:
                 st.warning("No relevant context found.")
 
-        # Add Assistant Message
-        st.session_state.messages.append({"role": "assistant", "content": answer, "retrieved": chunks})
+            # Show Debug Prompt
+            with st.expander("🛠️ Debug: Prompt & Logic"):
+                st.code(llm_prompt, language="text")
 
-    # Rerun to show feedback buttons for the new message?
-    # Actually, usually feedback is for the *last* transaction.
+        # Add Assistant Message
+        st.session_state.messages.append({
+            "role": "assistant", 
+            "content": answer, 
+            "retrieved": chunks,
+            "debug_prompt": llm_prompt
+        })
+
     st.rerun()
 
 # --- Feedback Section (Always visible for last interaction) ---
