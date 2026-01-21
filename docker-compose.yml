@@ -31,10 +31,10 @@ services:
     volumes:
       - .:/app
     environment:
-      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_URI=bolt://rag-neo4j:7687
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=password
-      - CHROMA_HOST=chromadb
+      - CHROMA_HOST=rag-chroma
       - CHROMA_PORT=8000
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
@@ -51,12 +51,12 @@ services:
     volumes:
       - .:/app
     environment:
-      - API_URL=http://backend:8000
+      - API_URL=http://rag-backend:8000
       - PYTHONPATH=/app
-      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_URI=bolt://rag-neo4j:7687
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=password
-      - CHROMA_HOST=chromadb
+      - CHROMA_HOST=rag-chroma
       - CHROMA_PORT=8000
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     command: ["uv", "run", "streamlit", "run", "app/admin/dashboard.py"]
