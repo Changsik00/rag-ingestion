@@ -19,6 +19,9 @@ dependencies = [
     "pydantic-settings>=2.12.0",
     "langchain-text-splitters>=1.1.0",
     "langgraph>=1.0.6",
+    "streamlit>=1.30.0",
+    "streamlit-agraph>=0.0.45",
+    "plotly>=5.18.0",
 ]
 
 [dependency-groups]

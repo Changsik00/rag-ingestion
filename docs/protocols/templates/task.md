@@ -25,6 +25,7 @@
 ...
 
 ## Task N: PR Creation
+- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
 - [ ] Run Full Tests: `uv run pytest`
 - [ ] Create PR: `gh pr create ...`
 
