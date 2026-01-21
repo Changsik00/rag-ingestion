@@ -48,12 +48,32 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
             # 1. Retrieval
             chunks = repo.search(prompt, limit=5)
 
-            # 2. Generation (Mock)
-            # In a real scenario, we would pass 'chunks' to LLM.
-            time.sleep(1)  # Simulate latency
-            response_text = f"Based on the retrieved {len(chunks)} chunks, here is the answer: \n\n(Generated Answer Placeholder for '{prompt}')"
+            # Real RAG Generation
+        with st.spinner("Generating answer..."):
+            try:
+                # Prepare Prompt
+                context_text = "\n\n".join([c.content for c in chunks])
+                llm_prompt = f"""
+                You are a helpful assistant. Use the following context to answer the user's question.
+                If the answer is not in the context, say you don't know.
+                
+                Context:
+                {context_text}
+                
+                Question:
+                {prompt}
+                
+                Answer:
+                """
+                
+                from app.core.llm import get_llm
+                llm = get_llm()
+                answer = llm.generate(llm_prompt)
+                
+            except Exception as e:
+                answer = f"Error generating answer: {e}"
 
-            st.markdown(response_text)
+            st.markdown(answer)
 
             # Show Context
             if chunks:
