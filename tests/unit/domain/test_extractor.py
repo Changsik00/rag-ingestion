@@ -37,7 +37,7 @@ def test_extract_success():
     assert result.keywords == ["AI", "Research", "Development"]
     assert result.entities[EntityType.PERSON] == ["Geoffrey Hinton", "Yann LeCun"]
     assert result.entities[EntityType.ACTIVITY] == ["벤치마킹", "모델 학습", "데이터 전처리"]
-    mock_llm.extract_metadata.assert_called_once_with("Dummy text")
+    mock_llm.extract_metadata.assert_called_once_with("Dummy text", thread_id=None)
 
 
 def test_extract_failure():
@@ -52,4 +52,4 @@ def test_extract_failure():
 
     # Verify
     assert result is None
-    mock_llm.extract_metadata.assert_called_once_with("Dummy text")
+    mock_llm.extract_metadata.assert_called_once_with("Dummy text", thread_id=None)
