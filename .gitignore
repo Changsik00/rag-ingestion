@@ -43,3 +43,9 @@ MANIFEST
 
 # Agent
 .agent/
+
+# Runtime Data
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.jsonl
