@@ -33,7 +33,7 @@
 
 ## Task 3: HITL & Trace (Service TDD -> UI)
 ### 3-1. LangGraph Service Implementation
-- [/] Test Case: `tests/unit/admin/test_hitl_service.py`
+- [x] Test Case: `tests/unit/admin/test_hitl_service.py`
     - `test_list_threads`
     - `test_get_thread_status` (State Parsing -> "Thinking", "Idle")
     - `test_resume_flag`
