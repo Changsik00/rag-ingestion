@@ -272,6 +272,24 @@
 
 ---
 
+* [ ] **Spec 030: Advanced Scraper (Headless & Dynamic Support)**
+  * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 동적 페이지(JS Heavy)나 복잡한 위키(나무위키 등)의 콘텐츠를 일부 누락하는 현상 발생.
+  * [ ] **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
+  * [ ] **Target**: 나무위키, 네이버 뉴스 등 동적 사이트 완벽 지원.
+  * **우선순위**: High (User Feedback)
+
+* [ ] **Spec 031: Source-Filtered RAG (Contextual Isolation)**
+  * [ ] **Problem**: RAG 검색 시 전체 지식 베이스를 조회하므로, 특정 문서를 요약해달라는 요청에도 타 관련 문서의 청크가 섞여 들어옴 (예: 위키피디아 링크를 요약 요청했는데 나무위키 내용이 나옴).
+  * [ ] **Goal**:
+    - 검색(Retrieval) 시 `source_id` 또는 `url`로 범위를 제한하는 필터링 기능 추가.
+    - Admin UI 및 API에서 "이 문서랑만 대화하기(Chat with Doc)" 모드 지원.
+  * [ ] **Action**:
+    - `RAGService.retrieve` 메소드에 필터 파라미터 추가.
+    - Vector DB 조회 시 Metadata Filter 적용.
+  * **우선순위**: Critical (Critical User Issue)
+
+---
+
 ### Phase 5+: Future Vision
 
 > **목표**: 장기적인 비전 및 확장 계획
