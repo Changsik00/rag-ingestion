@@ -29,6 +29,11 @@
 - [x] Manual Verification: URL 수집 및 검색 시나리오 검증
 - [x] Create PR: `gh pr create`
 
+## Task 4: Post-Release Stabilization
+- [x] Debugging: Fix Service Instantiation & Hybrid Search Wiring
+- [x] Reliability: Fix Neo4j/Chroma Data Validation Errors
+- [x] Tooling: Add Data Inspection Scripts & Pure Scraper API
+
 ## Summary
 **총 Task**: 3개
 **예상 커밋 수**: 4~5개
