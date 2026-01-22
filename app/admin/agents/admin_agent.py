@@ -49,7 +49,7 @@ class AdminAgent:
             }
         )
 
-        workflow.add_edge("ingest", END) # Ingest finishes and returns status
+        workflow.add_edge("ingest", "search") # Ingest finishes -> Go to Search (Summary)
         workflow.add_edge("search", END) # Search finishes and returns answer
 
         return workflow.compile()
