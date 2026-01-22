@@ -1,6 +1,9 @@
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
 from app.domain.interfaces.llm import LLMInterface
+
 # The service module does not exist yet; this import is expected to fail initially.
 try:
     from app.domain.services.query_rewriter import QueryRewriter
@@ -35,7 +38,7 @@ def test_rewrite_with_history_calls_llm():
     llm = Mock(spec=LLMInterface)
     llm.generate.return_value = "일론 머스크의 형제는 누구입니까?"
     rewriter = QueryRewriter(llm)
-    
+
     query = "그의 형제는?"
     history = [
         {"role": "user", "content": "일론 머스크에 대해 알려줘"},
@@ -48,7 +51,7 @@ def test_rewrite_with_history_calls_llm():
     # Then
     assert result == "일론 머스크의 형제는 누구입니까?"
     llm.generate.assert_called_once()
-    
+
     # Prompt verification
     prompt_sent = llm.generate.call_args[0][0]
     assert "일론 머스크에 대해 알려줘" in prompt_sent
@@ -64,7 +67,7 @@ def test_rewrite_instruction_only_maintains_context():
     # Expected: The previous question context is preserved but with the new instruction
     llm.generate.return_value = "일론 머스크가 다닌 학교를 한국어로 알려줘"
     rewriter = QueryRewriter(llm)
-    
+
     query = "한국어로 대답해줘"
     history = [
         {"role": "user", "content": "Where did Elon Musk go to school?"},

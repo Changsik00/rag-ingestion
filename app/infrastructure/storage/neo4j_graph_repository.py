@@ -97,3 +97,30 @@ class Neo4jGraphRepository:
                 )
 
         return relationships
+
+    def get_subgraph(self, entity_names: list[str]) -> list[dict]:
+        """주어진 Entity들과 연결된 1-depth Subgraph 조회 (Triples)"""
+        triples = []
+        # Query: Find all relationships connected to the given entities (undirected)
+        # But return them as directed triples (Source)-[Rel]->(Target) to preserve semantics
+        query = """
+        MATCH (n)-[r]-(m)
+        WHERE n.name IN $names
+        RETURN startNode(r).name as source, type(r) as relationship, endNode(r).name as target, labels(startNode(r)) as source_labels, labels(endNode(r)) as target_labels
+        LIMIT 100
+        """
+
+        with self.driver.session() as session:
+            results = session.run(query, names=entity_names)
+            for record in results:
+                # Deduplication logic might be needed at service layer, but here we just return what we find
+                triples.append({
+                    "source": record["source"],
+                    "relationship": record["relationship"],
+                    "target": record["target"],
+                    # Optional: Include types if needed for better context generation
+                    # "source_type": record["source_labels"][0] if record["source_labels"] else "Unknown",
+                    # "target_type": record["target_labels"][0] if record["target_labels"] else "Unknown"
+                })
+
+        return triples

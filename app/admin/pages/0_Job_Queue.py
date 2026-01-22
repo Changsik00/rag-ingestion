@@ -1,7 +1,8 @@
-import streamlit as st
 import pandas as pd
-from app.interfaces.api.dependencies import get_job_repository, get_neo4j_driver
+import streamlit as st
+
 from app.domain.entities.job import JobStatus
+from app.interfaces.api.dependencies import get_job_repository, get_neo4j_driver
 
 st.set_page_config(page_title="Job Queue", page_icon="📋", layout="wide")
 st.title("📋 Processed Job Queue")
@@ -23,13 +24,13 @@ try:
         completed = sum(1 for j in jobs if j.status == JobStatus.COMPLETED)
         failed = sum(1 for j in jobs if j.status == JobStatus.FAILED)
         pending = sum(1 for j in jobs if j.status == JobStatus.PENDING)
-        
+
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total Jobs", total)
         col2.metric("Completed", completed)
         col3.metric("Failed", failed, delta_color="inverse")
         col4.metric("Pending", pending)
-        
+
         st.divider()
 
         # Job List Table
@@ -43,21 +44,21 @@ try:
                 "Updated At": j.updated_at,
                 "Error": j.error_message if j.error_message else ""
             })
-        
+
         df = pd.DataFrame(data)
         # Sort by Created At desc
         df["Created At"] = pd.to_datetime(df["Created At"])
         df = df.sort_values(by="Created At", ascending=False)
-        
+
         st.dataframe(
-            df, 
+            df,
             use_container_width=True,
             column_config={
                 "URL": st.column_config.LinkColumn("Source URL"),
                 "Status": st.column_config.TextColumn("Status", help="Current job status"),
             }
         )
-        
+
         if st.button("Refresh"):
             st.rerun()
 

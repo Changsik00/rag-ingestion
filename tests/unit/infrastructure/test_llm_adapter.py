@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from langchain_core.messages import AIMessage
@@ -23,7 +23,7 @@ def test_generate_returns_string(mock_chat_model):
     # Verify
     assert result == "Generated response"
     mock_chat_model.invoke.assert_called_once()
-    
+
 def test_generate_handles_error(mock_chat_model):
     # Setup
     mock_chat_model.invoke.side_effect = Exception("API Error")

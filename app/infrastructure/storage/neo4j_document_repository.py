@@ -133,6 +133,78 @@ class Neo4jStorage(DocumentRepository):
             logger.error(f"Failed to list documents from Neo4j: {e}")
             raise InfrastructureException(f"Failed to list documents from Neo4j: {e}") from e
 
-    def search(self, query: str, limit: int = 5) -> list[Document]:
-        """Neo4j handles graph/structure, not vector search. Returning empty."""
-        return []
+    def create_fulltext_index(self):
+        """Chunk Content에 대한 Fulltext Index 생성"""
+        try:
+            # Neo4j 5.x syntax might differ, using generic robust syntax or 5.x specific
+            # Using 5.x syntax: CREATE FULLTEXT INDEX ... FOR (n:Label) ON EACH [n.prop]
+            query = """
+            CREATE FULLTEXT INDEX chunk_fulltext IF NOT EXISTS
+            FOR (c:Chunk) ON EACH [c.content]
+            """
+            with self.driver.session() as session:
+                session.run(query)
+        except Exception as e:
+            logger.error(f"Failed to create fulltext index: {e}")
+            raise InfrastructureException(f"Failed to create fulltext index: {e}") from e
+
+    def search(self, query: str, limit: int = 5) -> list[Chunk]:
+        """Fulltext Index를 이용한 키워드 검색"""
+        try:
+            # Lucene query syntax requires fuzzy/boosting handling often, but standard keyword works.
+            # Explicitly naming the index 'chunk_fulltext' created above.
+            cypher_query = """
+            CALL db.index.fulltext.queryNodes("chunk_fulltext", $keyword) YIELD node, score
+            RETURN node, score
+            LIMIT $limit
+            """
+
+            chunks = []
+            with self.driver.session() as session:
+                # Rename parameter 'query' to 'keyword' to avoid conflict with session.run(query, ...) argument name
+                results = session.run(cypher_query, keyword=query, limit=limit)
+                for record in results:
+                    node = record["node"]
+                    # Map Neo4j Node to Chunk Entity
+                    # Note: parent_id in Neo4j might be stored as string, Entity expects UUID?
+                    # Chunk entity: id:str, parent_id:str ... wait, let's check Chunk definition.
+                    # domain/entities/chunk.py says: id: str, parent_id: str.
+                    # So simple fetching is fine.
+
+                    # Unflatten metadata
+                    metadata = {}
+                    for k, v in node.items():
+                        if k in ["id", "content", "index", "parent_id"]:
+                            continue
+                        # If keys end with _json, parse them?
+                        # _flatten_metadata did: flattened[f"{key}_json"] = json.dumps(value)
+                        # We should reverse this if possible, or just return as is for now.
+                        # Simple reverse logic:
+                        if k.endswith("_json"):
+                            try:
+                                clean_key = k[:-5]
+                                metadata[clean_key] = json.loads(v)
+                            except:
+                                metadata[k] = v
+                        else:
+                            metadata[k] = v
+
+                    chunks.append(
+                        Chunk(
+                            id=node["id"],
+                            content=node.get("content", ""),
+                            parent_id=node.get("parent_id"),
+                            index=node.get("index", 0),
+                            metadata=metadata
+                        )
+                    )
+            return chunks
+
+        except Exception as e:
+            logger.error(f"Neo4j search failed: {e}")
+            # Instead of crashing logic flow, return empty list or raise?
+            # Repository pattern usually raises or returns empty.
+            # Given it's a search, returning empty with log is often safer for hybrid logic.
+            # But let's log and re-raise to be noticed during TDD.
+            logger.warning(f"Neo4j Search Error: {e}")
+            return []

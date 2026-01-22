@@ -168,3 +168,110 @@ class ChromaStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"ChromaDB search failed: {e}")
             return []
+
+    def search_mmr(self, query: str, limit: int = 5, diversity: float = 0.5) -> list[Chunk]:
+        """
+        Maximal Marginal Relevance (MMR) Search.
+        diversity: 0.0 (Pure Relevance) ~ 1.0 (Pure Diversity).
+        """
+        try:
+            import numpy as np
+        except ImportError:
+            logger.error("MMR search requires numpy.")
+            return self.search(query, limit)
+
+        try:
+            # 1. Fetch Candidates
+            fetch_k = min(limit * 20, 100)
+
+            results = self.collection.query(
+                query_texts=[query],
+                n_results=fetch_k,
+                include=["metadatas", "documents", "embeddings", "distances"]
+            )
+
+            if not results or not results["ids"] or len(results["ids"][0]) == 0:
+                return []
+
+            candidate_ids = results["ids"][0]
+            candidate_docs = results["documents"][0]
+            candidate_metas = results["metadatas"][0]
+            candidate_embeddings = np.array(results["embeddings"][0])
+
+            # 2. Embed Query
+            query_embedding = np.array(self.collection._embedding_function([query]))
+            if query_embedding.ndim == 1:
+                query_embedding = query_embedding.reshape(1, -1) # (1, D)
+
+            # Helper: Cosine Similarity
+            def compute_similarity(v1, v2):
+                # v1: (N, D), v2: (M, D) -> (N, M)
+                norm_v1 = np.linalg.norm(v1, axis=1, keepdims=True)
+                norm_v2 = np.linalg.norm(v2, axis=1, keepdims=True)
+
+                # Avoid division by zero
+                norm_v1[norm_v1 == 0] = 1e-10
+                norm_v2[norm_v2 == 0] = 1e-10
+
+                dot = np.dot(v1, v2.T)
+                return dot / (norm_v1 @ norm_v2.T)
+
+            # 3. Calculate Query Similarity
+            # query_embedding: (1, D), candidate_embeddings: (K, D)
+            # Returns (1, K) -> flatten to (K,)
+            query_sim_matrix = compute_similarity(query_embedding, candidate_embeddings)
+            query_similitudes = query_sim_matrix[0]
+
+            # 4. MMR Loop
+            selected_indices = []
+            candidate_indices = list(range(len(candidate_ids)))
+            lambda_mult = 1.0 - diversity
+
+            for _ in range(min(limit, len(candidate_ids))):
+                best_mmr = -float("inf")
+                best_idx = -1
+
+                for idx in candidate_indices:
+                    if idx in selected_indices:
+                        continue
+
+                    relevance = query_similitudes[idx]
+
+                    if not selected_indices:
+                        redundancy = 0.0
+                    else:
+                        current_vec = candidate_embeddings[idx].reshape(1, -1)
+                        selected_vecs = candidate_embeddings[selected_indices]
+                        # Sim(Current, Selected) -> (1, S)
+                        sim_to_selected = compute_similarity(current_vec, selected_vecs)
+                        redundancy = np.max(sim_to_selected)
+
+                    mmr_score = (lambda_mult * relevance) - ((1 - lambda_mult) * redundancy)
+
+                    if mmr_score > best_mmr:
+                        best_mmr = mmr_score
+                        best_idx = idx
+
+                if best_idx != -1:
+                    selected_indices.append(best_idx)
+
+            mmr_chunks = []
+            for idx in selected_indices:
+                meta = candidate_metas[idx]
+                chunk_id = candidate_ids[idx]
+                content = candidate_docs[idx]
+
+                mmr_chunks.append(
+                    Chunk(
+                        id=UUID(chunk_id),
+                        content=content,
+                        metadata=meta,
+                        parent_id=UUID(meta.get("parent_id")) if meta.get("parent_id") else None,
+                        index=int(meta.get("index", 0)),
+                    )
+                )
+            return mmr_chunks
+
+        except Exception as e:
+            logger.error(f"MMR search logic failed: {e}")
+            return self.search(query, limit)

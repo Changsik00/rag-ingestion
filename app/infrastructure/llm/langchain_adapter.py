@@ -120,7 +120,7 @@ class LangChainLLMAdapter:
         """
         try:
             from langchain_core.output_parsers import StrOutputParser
-            
+
             chain = self.llm | StrOutputParser()
             return chain.invoke(prompt)
         except Exception as e:
