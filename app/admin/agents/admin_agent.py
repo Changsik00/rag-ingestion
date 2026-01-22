@@ -134,7 +134,15 @@ class AdminAgent:
             updated_job = self.ingestion_service.job_repository.get_job(job.job_id)
 
             if updated_job.status == JobStatus.COMPLETED:
-                msg = f"✅ 수집 완료: {target_url}"
+                msg = f"✅ 수집 완료: {target_url}\n\n이제 내용을 요약해드릴게요..."
+                # Pass doc_id to filters for immediate searching of THIS document
+                if updated_job.docs_ids and len(updated_job.docs_ids) > 0:
+                     doc_id = str(updated_job.docs_ids[0])
+                     return {
+                         "messages": [AIMessage(content=msg)], 
+                         "tool_output": msg,
+                         "filters": {"doc_id": doc_id}
+                     }
             else:
                 msg = f"❌ 수집 실패: {updated_job.error_message}"
 

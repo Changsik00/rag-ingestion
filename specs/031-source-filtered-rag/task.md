@@ -39,6 +39,6 @@
 - [x] Commit: `feat(spec-031): add multi-select source filter`
 
 ## Task 4: Finalize
-- [ ] Code Quality Check: `uv run ruff check . --fix`
-- [ ] Full Test Suite: `uv run pytest` (In Progress - Regression Fix)
-- [ ] PR Creation: Strategy 문서 링크 포함
+- [x] Code Quality Check: `uv run ruff check . --fix`
+- [x] Full Test Suite: `uv run pytest` (In Progress - Regression Fix)
+- [x] PR Creation: Strategy 문서 링크 포함
