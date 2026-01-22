@@ -75,13 +75,13 @@ class RAGService:
             f"Answer:"
         )
 
-        
+
         # Invoke LLM
         # Use LLMInterface.generate (sync) for now
         # Ideally interface should support agenerate, but for now we follow the protocol.
         # If we need non-blocking we can use asyncio.to_thread later.
         response = self.llm.generate(prompt)
-        
+
         # Handle different response types (Adapter returns str, raw LC might return ChatResult)
         if hasattr(response, 'content'):
             answer_text = response.content

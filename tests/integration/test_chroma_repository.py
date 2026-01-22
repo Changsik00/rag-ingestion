@@ -40,7 +40,7 @@ def chroma_repo_mmr():
     # Delete if exists to clean state
     try:
         client.delete_collection("test_mmr")
-    except:
+    except Exception:
         pass
 
     mock_ef = MockEmbeddingFunction()

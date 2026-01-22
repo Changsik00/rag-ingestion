@@ -184,7 +184,7 @@ class Neo4jStorage(DocumentRepository):
                             try:
                                 clean_key = k[:-5]
                                 metadata[clean_key] = json.loads(v)
-                            except:
+                            except (ValueError, TypeError):
                                 metadata[k] = v
                         else:
                             metadata[k] = v

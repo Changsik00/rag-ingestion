@@ -24,23 +24,23 @@
 
 ## Task 2: Implementation
 ### 2-1. Trafilatura Scraper
-- [ ] 코드 구현: `app/infrastructure/scrapers/trafilatura_scraper.py`
-    - `ScraperInterface` 상속 및 `scrape` 메서드 구현
-    - Fallback 로직 추가 (AttributeError/TypeError 방어)
-- [ ] Test 실행 (Pass)
-- [ ] Commit: `feat(spec-027): implement trafilatura web scraper`
+- [x] 코드 구현: `app/infrastructure/scrapers/trafilatura_scraper.py`
+    - [x] `ScraperInterface` 상속 및 `scrape` 메서드 구현
+    - [x] Fallback 로직 추가 (AttributeError/TypeError 방어)
+- [x] Test 실행 (Pass)
+- [x] Commit: `feat(spec-027): implement trafilatura web scraper`
 
 ### 2-2. Service Wiring
-- [ ] DI 수정: `app/interfaces/api/dependencies.py`
-    - `get_scraper`가 `TrafilaturaWebScraper` 반환
-- [ ] Integration Test 실행 (기존 테스트 호환성 확인)
-- [ ] Commit: `refactor(spec-027): wire trafilatura scraper to ingestion api`
+- [x] DI 수정: `app/interfaces/api/dependencies.py`
+    - [x] `get_scraper`가 `TrafilaturaWebScraper` 반환
+- [x] Integration Test 실행 (기존 테스트 호환성 확인)
+- [x] Commit: `refactor(spec-027): wire trafilatura scraper to ingestion api`
 
 ## Task 3: PR Creation & Delivery
-- [ ] Code Quality Check: `uv run ruff check . --fix`
-- [ ] Evidence: `walkthrough.md`에 비포/애프터 비교 추가
-- [ ] Create PR: `gh pr create`
-- [ ] Summary in Task.md
+- [x] Code Quality Check: `uv run ruff check . --fix`
+- [x] Evidence: `walkthrough.md`에 비포/애프터 비교 추가
+- [x] Create PR: `gh pr create`
+- [x] Summary in Task.md
 
 ## Summary
 **총 Task**: 3개
