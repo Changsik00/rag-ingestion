@@ -40,9 +40,10 @@ def get_deps():
         neo4j_doc_repo=neo4j_doc,
         neo4j_graph_repo=neo4j_graph,
         chroma_repo=chroma,
-        query_rewriter=rewriter,
         llm=llm
     )
+    
+    feedback_service = FeedbackService()
 
     # 4. Ingestion Service (For Agent)
     # Re-using API dependencies logic might be complex due to passing args.
