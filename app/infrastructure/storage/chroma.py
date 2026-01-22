@@ -46,10 +46,14 @@ class ChromaStorage(DocumentRepository):
     def _flatten_metadata(self, metadata: dict) -> dict:
         flattened = {}
         for key, value in metadata.items():
+            if value is None:
+                # ChromaDB often issues with None, skip or use empty string
+                continue
+            
             if isinstance(value, (dict, list)):
                 # 복잡한 타입은 JSON 문자열로 직렬화
                 flattened[f"{key}_json"] = json.dumps(value)
-            elif isinstance(value, (str, int, float, bool, type(None))):
+            elif isinstance(value, (str, int, float, bool)):
                 # Primitive 타입은 그대로 유지
                 flattened[key] = value
             # ChromaDB가 지원하지 않는 타입은 스킵

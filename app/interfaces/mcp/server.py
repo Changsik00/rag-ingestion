@@ -115,15 +115,15 @@ async def ingest_url(url: str) -> str:
         # If we want to allow other tools to run in parallel, we should use run_in_executor.
         
         loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, service.process_job, job.id)
+        await loop.run_in_executor(None, service.process_job, job.job_id)
         
         # 3. Reload Job to get status/error
         # We need to fetch the updated job from repository.
         # Service doesn't hav get_job method exposed? It has job_repository.
-        updated_job = service.job_repository.get_job(job.id)
+        updated_job = service.job_repository.get_job(job.job_id)
         
         if updated_job.status == JobStatus.COMPLETED:
-            return f"Successfully ingested: {url}\nTitle: {updated_job.metadata.get('title', 'Unknown')}\nStatus: {updated_job.status}"
+            return f"Successfully ingested: {url}\nStatus: {updated_job.status}"
         else:
             return f"Ingestion failed for {url}.\nStatus: {updated_job.status}\nError: {updated_job.error_message}"
             

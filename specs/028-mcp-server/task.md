@@ -16,20 +16,20 @@
 
 ## Task 2: MCP 서버 구현
 ### 2-1. Server Setup & Tools
-- [ ] Test Case 작성: `tests/unit/interfaces/test_mcp_server.py` (Mocking Service)
-- [ ] Test 실행 (Fail)
-- [ ] 코드 구현: `app/interfaces/mcp_server.py`
-    - [ ] `FastMCP` 초기화
-    - [ ] `ingest_url` 구현 (Service 연동)
-    - [ ] `search_knowledge_base` 구현 (Service 연동)
-- [ ] Test 실행 (Pass)
-- [ ] Commit: `feat(spec-028): implement mcp server and tools`
+- [x] Test Case 작성: `tests/unit/interfaces/test_mcp_server.py` (Mocking Service)
+- [x] Test 실행 (Fail)
+- [x] 코드 구현: `app/interfaces/mcp/server.py`
+    - [x] `FastMCP` 초기화
+    - [x] `ingest_url` 구현 (Service 연동)
+    - [x] `search_knowledge_base` 구현 (Service 연동)
+- [x] Test 실행 (Pass)
+- [x] Commit: `feat(spec-028): implement mcp server and tools`
 
 ## Task 3: PR Creation & Delivery
-- [ ] Code Quality Check: `uv run ruff check . --fix`
-- [ ] Manual Verification: `mcp-inspector` 테스트 (Walkthrough에 스크린샷 포함)
-- [ ] Create PR: `gh pr create`
-- [ ] Summary in Task.md
+- [x] Code Quality Check: `uv run ruff check . --fix`
+- [x] Manual Verification: `mcp-inspector` 테스트 (Walkthrough에 스크린샷 포함)
+- [x] Create PR: `gh pr create`
+- [x] Summary in Task.md
 
 ## Summary
 **총 Task**: 3개

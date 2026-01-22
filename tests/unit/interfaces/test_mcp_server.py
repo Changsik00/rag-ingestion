@@ -8,9 +8,10 @@ async def test_ingest_url_tool():
     mock_ingestion_service = MagicMock()  # Not AsyncMock because create_job is sync
 
     mock_job = MagicMock()
-    mock_job.id = "job-123"
+    mock_job.job_id = "job-123"
     mock_job.status = "COMPLETED"
-    mock_job.metadata = {"title": "Test Page"}
+    mock_job.status = "COMPLETED"
+    # mock_job.metadata does not exist on IngestionJob
     
     mock_ingestion_service.create_job.return_value = mock_job
     mock_ingestion_service.job_repository.get_job.return_value = mock_job

@@ -27,4 +27,17 @@
 *   **결과**: Passed (2 tests)
 
 ### 3.2 수동 검증 (Manual Verification)
-*   `mcp-inspector`를 사용한 도구 호출 테스트 (예정).
+*   **스크립트**: `scripts/verify_mcp_agent.py`
+    *   `GEMINI_API_KEY` 환경변수를 사용하여 Google GenAI 모델과 연동.
+    *   **시나리오**: "Rules: You MUST use the 'agent_ingest_url' tool..." 프롬프트로 강제 호출.
+*   **결과**:
+    ```text
+    User: Rules: You MUST use the 'agent_ingest_url' tool... targets https://news.ycombinator.com
+    ...
+    Tool Output: Successfully ingested: https://news.ycombinator.com
+    Status: JobStatus.COMPLETED
+    ```
+*   **수정 사항**:
+    *   `ChromaStorage`: Metadata에 `None` 값이 있을 경우 저장 실패하는 문제 수정 (`None` 필터링).
+    *   `MCP Server`: `IngestionJob` 객체에 존재하지 않는 `metadata` 속성 접근 제거.
+    *   `IngestionJob`: `id` 대신 `job_id` 필드명 사용하도록 수정.
