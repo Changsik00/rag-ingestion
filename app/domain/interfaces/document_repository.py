@@ -32,6 +32,11 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
-    def search(self, query: str, limit: int = 5) -> list[Chunk]:
-        """Search for relevant chunks."""
+    def search(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
+        """
+        Search for relevant chunks.
+        :param query: Search query string.
+        :param limit: Maximum number of results.
+        :param filters: Metadata filters (e.g., {"doc_id": "..."} or {"doc_id": ["...", ...]}).
+        """
         pass

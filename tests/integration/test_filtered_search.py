@@ -79,7 +79,7 @@ async def test_scenario_1_homonym_isolation(mock_deps):
     # We need to ensure RAGService accepts filters and passes them down.
     
     # 1. Filter: Source A
-    await service.retrieve_and_generate("Apple Features", filters={"doc_id": doc_a_id})
+    await service.retrieve_and_generate("Apple Features", history=[], filters={"doc_id": doc_a_id})
     
     # Verify Repos were called with filters
     # Note: RAGService currently calls both neo4j and chroma

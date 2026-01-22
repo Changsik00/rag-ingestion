@@ -189,21 +189,58 @@ class Neo4jStorage(DocumentRepository):
             logger.error(f"Failed to create fulltext index: {e}")
             raise InfrastructureException(f"Failed to create fulltext index: {e}") from e
 
-    def search(self, query: str, limit: int = 5) -> list[Chunk]:
+    def search(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
         """Fulltext Index를 이용한 키워드 검색"""
         try:
-            # Lucene query syntax requires fuzzy/boosting handling often, but standard keyword works.
-            # Explicitly naming the index 'chunk_fulltext' created above.
-            cypher_query = """
+            # 기본 Cypher Query
+            # Note: 5.x Fulltext index does not support WHERE clause directly inside call queryNodes in legacy way?
+            # Actually, we can filter AFTER yielding nodes.
+            # "CALL ... YIELD node WHERE ..." is the standard pattern.
+            
+            where_clauses = []
+            params = {"keyword": query, "limit": limit}
+            
+            if filters:
+                for key, value in filters.items():
+                    # Sanitize key to prevent excessive injection (basic check)
+                    # Assuming keys are safe (e.g. doc_id, source)
+                    # We map python list -> Cypher IN, single value -> logic
+                    
+                    # Map 'doc_id' to internal 'id' or 'parent_id'? 
+                    # Chunk has 'parent_id' which links to Document ID.
+                    # DocumentRepository.search usually searches Chunks.
+                    # So filtering by 'doc_id' usually means filtering by Chunk's parent_id.
+                    # But wait, Document entity ID vs Chunk parent_id.
+                    # Let's assume 'doc_id' filter targets 'parent_id' property of Chunk.
+                    
+                    # Property name mapping:
+                    # In test we used filters={"doc_id": "..."}
+                    # In Neo4j, Chunk has `parent_id` property.
+                    
+                    target_prop = "parent_id" if key == "doc_id" else key
+                    
+                    param_key = f"filter_{key}"
+                    params[param_key] = value
+                    
+                    if isinstance(value, list):
+                         where_clauses.append(f"node.{target_prop} IN ${param_key}")
+                    else:
+                         where_clauses.append(f"node.{target_prop} = ${param_key}")
+
+            where_snippet = " AND ".join(where_clauses)
+            if where_snippet:
+                where_snippet = f"WHERE {where_snippet}"
+            
+            cypher_query = f"""
             CALL db.index.fulltext.queryNodes("chunk_fulltext", $keyword) YIELD node, score
+            {where_snippet}
             RETURN node, score
             LIMIT $limit
             """
 
             chunks = []
             with self.driver.session() as session:
-                # Rename parameter 'query' to 'keyword' to avoid conflict with session.run(query, ...) argument name
-                results = session.run(cypher_query, keyword=query, limit=limit)
+                results = session.run(cypher_query, **params)
                 for record in results:
                     node = record["node"]
                     # Map Neo4j Node to Chunk Entity
