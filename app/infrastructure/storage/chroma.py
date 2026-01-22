@@ -56,7 +56,12 @@ class ChromaStorage(DocumentRepository):
             elif isinstance(value, (str, int, float, bool)):
                 # Primitive 타입은 그대로 유지
                 flattened[key] = value
-            # ChromaDB가 지원하지 않는 타입은 스킵
+            else:
+                # ChromaDB가 지원하지 않는 타입은 문자열로 변환하여 저장 (Robustness)
+                try:
+                    flattened[key] = str(value)
+                except Exception:
+                     pass
         return flattened
 
     def save(self, document: Document) -> None:
@@ -143,9 +148,37 @@ class ChromaStorage(DocumentRepository):
                         )
                     )
             return docs
+            return docs
         except Exception as e:
             logger.error(f"Failed to list documents from ChromaDB: {e}")
             raise InfrastructureException(f"Failed to list documents from ChromaDB: {e}") from e
+
+    def get_chunks(self, doc_id: UUID) -> list[Chunk]:
+        """Retrieve all chunks for a document from Chroma."""
+        try:
+            # use where filter on metadata
+            result = self.collection.get(where={"parent_id": str(doc_id)})
+            chunks = []
+            if result and result["ids"]:
+                for i in range(len(result["ids"])):
+                    chunk_id = result["ids"][i]
+                    content = result["documents"][i]
+                    metadata = result["metadatas"][i]
+                    chunks.append(
+                        Chunk(
+                            id=UUID(chunk_id),
+                            content=content,
+                            metadata=metadata,
+                            parent_id=UUID(metadata.get("parent_id")) if metadata.get("parent_id") else str(doc_id),
+                            index=int(metadata.get("index", 0)),
+                        )
+                    )
+            # Sort by index
+            chunks.sort(key=lambda x: x.index)
+            return chunks
+        except Exception as e:
+            logger.error(f"Failed to get chunks from ChromaDB: {e}")
+            return []
 
     def search(self, query: str, limit: int = 5) -> list[Chunk]:
         """Vector search implementation."""

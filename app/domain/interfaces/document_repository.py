@@ -27,6 +27,11 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
+    def get_chunks(self, doc_id: UUID) -> list[Chunk]:
+        """Retrieve all chunks for a document."""
+        pass
+
+    @abstractmethod
     def search(self, query: str, limit: int = 5) -> list[Chunk]:
         """Search for relevant chunks."""
         pass

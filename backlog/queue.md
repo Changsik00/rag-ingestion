@@ -255,12 +255,38 @@
   * **Design Guide**: (TBD)
 
 
-* [ ] **Spec 028: Agentic MCP Server (Active Ingestion)**
-  * [ ] **Goal**: 외부 LLM(Claude, Cursor 등)이 대화 도중 주도적으로 정보를 수집하고 지식을 검색할 수 있도록 "도구(Tool)"를 제공하는 MCP(Model Context Protocol) 서버 구축.
-  * [ ] **Features**:
+* [x] **Spec 028: Agentic MCP Server (Active Ingestion)**
+  * [x] **Goal**: 외부 LLM(Claude, Cursor 등)이 대화 도중 주도적으로 정보를 수집하고 지식을 검색할 수 있도록 "도구(Tool)"를 제공하는 MCP(Model Context Protocol) 서버 구축.
+  * [x] **Features**:
     - **Active Ingestion**: `ingest_url(url)` 도구를 통해 사용자가 던져준 링크를 즉시 학습.
     - **Knowledge Search**: `search_knowledge_base(query)` 도구로 RAG 검색 수행.
     - **Stdio/SSE Support**: 다양한 클라이언트 지원을 위한 표준 프로토콜 구현.
+  * **완료**: 2026-01-22 (PR #31)
+
+* [ ] **Spec 029: Admin Agentic Workflow (LangGraph Integration)**
+  * [ ] **Goal**: Admin Dashboard(Streamlit)의 챗봇을 단순 Chain에서 "Agentic Workflow"로 업그레이드하여, 사용자의 의도(수집 vs 검색)를 파악하고 적절한 도구를 호출하게 함.
+  * [ ] **Features**:
+    - **LangGraph Integration**: `4_RAG_Playground.py`에 LangGraph 기반 Agent 도입.
+    - **Router Node**: 사용자 발화에서 URL 감지 시 수집 모드로, 질문 시 검색 모드로 분기.
+    - **Tools Integration**: Spec 028에서 만든 `IngestionService`와 `RAGService`를 도구화.
+
+---
+
+* [ ] **Spec 030: Advanced Scraper (Headless & Dynamic Support)**
+  * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 동적 페이지(JS Heavy)나 복잡한 위키(나무위키 등)의 콘텐츠를 일부 누락하는 현상 발생.
+  * [ ] **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
+  * [ ] **Target**: 나무위키, 네이버 뉴스 등 동적 사이트 완벽 지원.
+  * **우선순위**: High (User Feedback)
+
+* [ ] **Spec 031: Source-Filtered RAG (Contextual Isolation)**
+  * [ ] **Problem**: RAG 검색 시 전체 지식 베이스를 조회하므로, 특정 문서를 요약해달라는 요청에도 타 관련 문서의 청크가 섞여 들어옴 (예: 위키피디아 링크를 요약 요청했는데 나무위키 내용이 나옴).
+  * [ ] **Goal**:
+    - 검색(Retrieval) 시 `source_id` 또는 `url`로 범위를 제한하는 필터링 기능 추가.
+    - Admin UI 및 API에서 "이 문서랑만 대화하기(Chat with Doc)" 모드 지원.
+  * [ ] **Action**:
+    - `RAGService.retrieve` 메소드에 필터 파라미터 추가.
+    - Vector DB 조회 시 Metadata Filter 적용.
+  * **우선순위**: Critical (Critical User Issue)
 
 ---
 

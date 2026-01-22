@@ -102,7 +102,7 @@ class Neo4jStorage(DocumentRepository):
                 if result:
                     node = result["d"]
                     return Document(
-                        id=UUID(node["id"]) if isinstance(node["id"], str) else node["id"],  # Handle ID type safely
+                        id=str(node["id"]),  # Ensure ID is string for Pydantic
                         content=node.get("content", ""),
                         # source_url removal handled by not mapping it explicitly
                         metadata={k: v for k, v in node.items() if k not in ["id", "content", "created_at"]},
@@ -115,7 +115,7 @@ class Neo4jStorage(DocumentRepository):
 
     def list_documents(self, limit: int = 10) -> list[Document]:
         try:
-            query = "MATCH (d:Document) RETURN d LIMIT $limit"
+            query = "MATCH (d:Document) RETURN d ORDER BY d.created_at DESC LIMIT $limit"
             docs = []
             with self.driver.session() as session:
                 results = session.run(query, limit=limit)
@@ -132,6 +132,47 @@ class Neo4jStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to list documents from Neo4j: {e}")
             raise InfrastructureException(f"Failed to list documents from Neo4j: {e}") from e
+
+    def get_chunks(self, doc_id: UUID) -> list[Chunk]:
+        try:
+            query = """
+            MATCH (d:Document {id: $doc_id})-[:HAS_CHUNK]->(c:Chunk)
+            RETURN c
+            ORDER BY c.index ASC
+            """
+            chunks = []
+            with self.driver.session() as session:
+                results = session.run(query, doc_id=str(doc_id))
+                for record in results:
+                    node = record["c"]
+                    
+                    # Unflatten metadata (Reuse logic if possible, or duplicate for now due to helper method privacy)
+                    metadata = {}
+                    for k, v in node.items():
+                        if k in ["id", "content", "index", "parent_id"]:
+                            continue
+                        if k.endswith("_json"):
+                            try:
+                                clean_key = k[:-5]
+                                metadata[clean_key] = json.loads(v)
+                            except (ValueError, TypeError):
+                                metadata[k] = v
+                        else:
+                            metadata[k] = v
+
+                    chunks.append(
+                        Chunk(
+                            id=node["id"],
+                            content=node.get("content", ""),
+                            parent_id=node.get("parent_id"),
+                            index=node.get("index", 0),
+                            metadata=metadata
+                        )
+                    )
+            return chunks
+        except Exception as e:
+            logger.error(f"Failed to get chunks from Neo4j: {e}")
+            raise InfrastructureException(f"Failed to get chunks from Neo4j: {e}") from e
 
     def create_fulltext_index(self):
         """Chunk Content에 대한 Fulltext Index 생성"""

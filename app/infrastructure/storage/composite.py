@@ -41,5 +41,9 @@ class CompositeStorage(DocumentRepository):
     def list_documents(self, limit: int = 10) -> list[Document]:
         return self.neo4j.list_documents(limit)
 
+    def get_chunks(self, doc_id: UUID) -> list[Chunk]:
+        """Retrieve all chunks for a document."""
+        return self.neo4j.get_chunks(doc_id)
+
     def search(self, query: str, limit: int = 5) -> list[Chunk]:
         return self.chroma.search(query, limit)
