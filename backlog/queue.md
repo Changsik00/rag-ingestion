@@ -244,17 +244,23 @@
     - **완료**: 2026-01-22 (Spec Implemented & Verified)
     - **Design Guide**: [`docs/design_guides/004-graph-rag-strategy.md`](docs/design_guides/004-graph-rag-strategy.md)
 
-* [ ] **Spec 027: Intelligent Web Scraping (Content Cleaning)**
-  * [ ] **Problem**: 현재 `BasicWebScraper`의 단순 변환(HTML->Markdown)으로 인해 광고, 댓글, 네비게이션 등 노이즈 데이터가 RAG에 유입됨(정보 오염).
-  * [ ] **Goal**: `readability` 알고리즘 및 노이즈 필터링을 적용하여 "순수 본문"만 정밀하게 추출.
-  * [ ] **Action**:
-    - `BeautifulSoup` + `readability-lxml` 도입
-    - 광고/불필요 태그(`script`, `style`, `nav`, `footer`) 제거
+* [x] **Spec 027: Intelligent Web Scraping (Content Cleaning)**
+  * [x] **Problem**: 현재 `BasicWebScraper`의 단순 변환(HTML->Markdown)으로 인해 광고, 댓글, 네비게이션 등 노이즈 데이터가 RAG에 유입됨(정보 오염).
+  * [x] **Goal**: `readability` 알고리즘 및 노이즈 필터링을 적용하여 "순수 본문"만 정밀하게 추출.
+  * [x] **Action**:
+    - `trafilatura` 라이브러리 도입 (Readability + Fallback)
+    - 광고/불필요 태그(`script`, `style`, `nav`, `footer`) 자동 제거
     - Metadata(Title, Author) 추출 강화
+  * **완료**: 2026-01-22
+  * **Design Guide**: (TBD)
 
-* [ ] **Spec 028: MCP Server & Tree Visualization** (TBD)
-  * [ ] Claude/Obsidian 연동을 위한 MCP 서버 배포
-  * [ ] 마인드맵용 계층 구조 JSON 생성 API 개발
+
+* [ ] **Spec 028: Agentic MCP Server (Active Ingestion)**
+  * [ ] **Goal**: 외부 LLM(Claude, Cursor 등)이 대화 도중 주도적으로 정보를 수집하고 지식을 검색할 수 있도록 "도구(Tool)"를 제공하는 MCP(Model Context Protocol) 서버 구축.
+  * [ ] **Features**:
+    - **Active Ingestion**: `ingest_url(url)` 도구를 통해 사용자가 던져준 링크를 즉시 학습.
+    - **Knowledge Search**: `search_knowledge_base(query)` 도구로 RAG 검색 수행.
+    - **Stdio/SSE Support**: 다양한 클라이언트 지원을 위한 표준 프로토콜 구현.
 
 ---
 
