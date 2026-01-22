@@ -51,14 +51,17 @@ def get_deps():
     # Let's clean instantiate it.
     from app.use_cases.ingestion import IngestionService
     from app.infrastructure.chunker.langchain_chunker import LangChainChunker
-    from app.infrastructure.chunker.langchain_chunker import LangChainChunker
     from app.domain.services.semantic_extractor import SemanticExtractor
     from app.infrastructure.brain.adapter import LangGraphAdapter
     from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
+    from app.infrastructure.storage.composite import CompositeStorage
     
     # We need simpler instantiation for Streamlit or reuse dependency injection helpers if possible
     # But `get_ingestion_service` requires Depends().
     # Let's instantiate manually as we did in MCP server, but here we can reuse Repos.
+    
+    # Composite Repository (Neo4j + Chroma) for Hybrid Search support
+    composite_repo = CompositeStorage(neo4j_doc, chroma)
     
     # Using specific JobRepository? Global one?
     # Admin UI usually needs persistent job repo if we want to track across reload.
@@ -79,7 +82,7 @@ def get_deps():
     
     ingestion_service = IngestionService(
         scraper=scraper,
-        repository=neo4j_doc, # Atomic Storage
+        repository=composite_repo, # Composite Storage (Neo4j + Chroma)
         graph=neo4j_graph,
         job_repository=job_repo,
         chunker=chunker,
