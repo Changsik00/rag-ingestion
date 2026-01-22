@@ -255,12 +255,20 @@
   * **Design Guide**: (TBD)
 
 
-* [ ] **Spec 028: Agentic MCP Server (Active Ingestion)**
-  * [ ] **Goal**: 외부 LLM(Claude, Cursor 등)이 대화 도중 주도적으로 정보를 수집하고 지식을 검색할 수 있도록 "도구(Tool)"를 제공하는 MCP(Model Context Protocol) 서버 구축.
-  * [ ] **Features**:
+* [x] **Spec 028: Agentic MCP Server (Active Ingestion)**
+  * [x] **Goal**: 외부 LLM(Claude, Cursor 등)이 대화 도중 주도적으로 정보를 수집하고 지식을 검색할 수 있도록 "도구(Tool)"를 제공하는 MCP(Model Context Protocol) 서버 구축.
+  * [x] **Features**:
     - **Active Ingestion**: `ingest_url(url)` 도구를 통해 사용자가 던져준 링크를 즉시 학습.
     - **Knowledge Search**: `search_knowledge_base(query)` 도구로 RAG 검색 수행.
     - **Stdio/SSE Support**: 다양한 클라이언트 지원을 위한 표준 프로토콜 구현.
+  * **완료**: 2026-01-22 (PR #31)
+
+* [ ] **Spec 029: Admin Agentic Workflow (LangGraph Integration)**
+  * [ ] **Goal**: Admin Dashboard(Streamlit)의 챗봇을 단순 Chain에서 "Agentic Workflow"로 업그레이드하여, 사용자의 의도(수집 vs 검색)를 파악하고 적절한 도구를 호출하게 함.
+  * [ ] **Features**:
+    - **LangGraph Integration**: `4_RAG_Playground.py`에 LangGraph 기반 Agent 도입.
+    - **Router Node**: 사용자 발화에서 URL 감지 시 수집 모드로, 질문 시 검색 모드로 분기.
+    - **Tools Integration**: Spec 028에서 만든 `IngestionService`와 `RAGService`를 도구화.
 
 ---
 

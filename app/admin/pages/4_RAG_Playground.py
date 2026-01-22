@@ -14,7 +14,9 @@ from app.domain.services.rag_service import RAGService
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
-from app.interfaces.api.dependencies import get_neo4j_driver
+from app.interfaces.api.dependencies import get_neo4j_driver, get_ingestion_service, get_repository, get_graph_repository, get_job_repository, get_chunker, get_semantic_extractor
+from app.admin.agents.admin_agent import AdminAgent
+from langchain_core.messages import HumanMessage, AIMessage
 
 st.set_page_config(page_title="RAG Playground", page_icon="🎮", layout="wide")
 st.title("🎮 RAG Playground")
@@ -42,11 +44,52 @@ def get_deps():
         llm=llm
     )
 
-    feedback_service = FeedbackService()
-    return rag_service, feedback_service
+    # 4. Ingestion Service (For Agent)
+    # Re-using API dependencies logic might be complex due to passing args.
+    # Let's clean instantiate it.
+    from app.use_cases.ingestion import IngestionService
+    from app.infrastructure.chunker.langchain_chunker import LangChainChunker
+    from app.infrastructure.chunker.langchain_chunker import LangChainChunker
+    from app.domain.services.semantic_extractor import SemanticExtractor
+    from app.infrastructure.brain.adapter import LangGraphAdapter
+    from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
+    
+    # We need simpler instantiation for Streamlit or reuse dependency injection helpers if possible
+    # But `get_ingestion_service` requires Depends().
+    # Let's instantiate manually as we did in MCP server, but here we can reuse Repos.
+    
+    # Using specific JobRepository? Global one?
+    # Admin UI usually needs persistent job repo if we want to track across reload.
+    # But currently the project uses MemoryJobRepository mostly or not defined clearly.
+    # Let's use MemoryJobRepository for now as per `get_job_repository` default.
+    job_repo = Neo4jJobRepository(driver)
+    
+    # Chunker
+    chunker = LangChainChunker()
+    
+    # Extractor
+    graph_adapter = LangGraphAdapter(llm)
+    extractor = SemanticExtractor(graph_adapter)
+    
+    # Scraper
+    from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
+    scraper = TrafilaturaWebScraper()
+    
+    ingestion_service = IngestionService(
+        scraper=scraper,
+        repository=neo4j_doc, # Atomic Storage
+        graph=neo4j_graph,
+        job_repository=job_repo,
+        chunker=chunker,
+        extractor=extractor
+    )
+
+    admin_agent = AdminAgent(rag_service, ingestion_service)
+
+    return admin_agent, feedback_service
 
 
-rag_service, feedback_service = get_deps()
+admin_agent, feedback_service = get_deps()
 
 # Initialize Chat History
 if "messages" not in st.session_state:
@@ -99,55 +142,75 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
 
     # Bot Response
     with st.chat_message("assistant"):
-        with st.spinner("Thinking (Hybrid RAG)..."):
-            try:
-                # Prepare History (excluding current)
-                history_context = st.session_state.messages[:-1]
+        status_container = st.status("Thinking (Agentic Workflow)...", expanded=True)
+        try:
+            # Prepare History (LangChain Format)
+            history_interactive = [
+                HumanMessage(content=m["content"]) if m["role"] == "user" else AIMessage(content=m["content"])
+                for m in st.session_state.messages
+            ]
+            
+            # Run Agent
+            # Using asyncio.run for sync Streamlit wrapper
+            status_container.write("🤖 Detecting intent...")
+            
+            inputs = {"messages": history_interactive}
+            final_state = asyncio.run(admin_agent.workflow.ainvoke(inputs))
+            
+            # Analyze Result
+            intent = final_state.get("intent", "search")
+            tool_output = final_state.get("tool_output", "")
+            context_data = final_state.get("context_data", {})
+            
+            last_msg = final_state["messages"][-1]
+            answer = last_msg.content if last_msg else "No response generated."
+            
+            status_container.write(f"🎯 Intent: **{intent.upper()}**")
+            
+            if intent == "ingest":
+                status_container.write(f"🛠️ Tool Output: {tool_output}")
+                status_container.update(label="Ingestion Completed", state="complete", expanded=False)
+            else:
+                status_container.write("📚 Searching Knowledge Base...")
+                status_container.update(label="RAG Search Completed", state="complete", expanded=False)
 
-                # Execute RAG Service
-                # Using asyncio.run to execute async method in sync Streamlit script
-                # Note: If Streamlit runs in an event loop, this might need handling.
-                # Standard Streamlit script execution allows asyncio.run().
-                result = asyncio.run(rag_service.retrieve_and_generate(prompt, history_context))
+            # Display Answer
+            st.markdown(answer)
 
-                answer = result.answer
-
-                # Display Answer
-                st.markdown(answer)
-
-                # Display New Context Immediately
-                if result.graph_data:
-                    with st.expander(f"🕸️ Graph Facts ({len(result.graph_data)})"):
-                         for item in result.graph_data:
+            # Display Context (if any)
+            if context_data:
+                rewritten_query = context_data.get("rewritten_query")
+                graph_data = context_data.get("graph_data", [])
+                vector_chunks = context_data.get("vector_chunks", [])
+                keyword_chunks = context_data.get("keyword_chunks", [])
+                
+                if graph_data:
+                    with st.expander(f"🕸️ Graph Facts ({len(graph_data)})"):
+                         for item in graph_data:
                             st.markdown(f"- **{item.get('source')}** -[{item.get('relationship')}]-> **{item.get('target')}**")
-
-                total_docs = len(result.vector_chunks) + len(result.keyword_chunks)
+                
+                total_docs = len(vector_chunks) + len(keyword_chunks)
                 if total_docs > 0:
-                    with st.expander(f"📚 Retrieved Documents ({total_docs})"):
+                     with st.expander(f"📚 Retrieved Documents ({total_docs})"):
                         st.caption("Vector Search (MMR)")
-                        for c in result.vector_chunks:
+                        for c in vector_chunks:
                             st.text(f"---\n{c.content[:200]}...")
                         st.caption("Keyword Search")
-                        for c in result.keyword_chunks:
+                        for c in keyword_chunks:
                             st.text(f"---\n{c.content[:200]}...")
 
-                # Save to History
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": answer,
-                    "debug_info": {
-                        "rewritten_query": result.rewritten_query,
-                        "vector_chunks": result.vector_chunks,
-                        "keyword_chunks": result.keyword_chunks,
-                        "graph_data": result.graph_data
-                    },
-                    "debug_rewrite": {"original": prompt, "rewritten": result.rewritten_query},
-                    "debug_prompt": result.full_context # This is context string, serves as prompt debug
-                })
+            # Save to History
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": answer,
+                "debug_info": context_data if context_data else {},
+                "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")} if context_data else {},
+                "debug_prompt": context_data.get("full_context") if context_data else ""
+            })
 
-            except Exception as e:
-                st.error(f"Error: {e}")
-                logging.exception("RAG Execution Failed")
+        except Exception as e:
+            st.error(f"Error: {e}")
+            logging.exception("Agent Execution Failed")
 
 # --- Feedback Section ---
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "assistant":

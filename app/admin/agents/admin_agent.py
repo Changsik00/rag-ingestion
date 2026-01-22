@@ -18,6 +18,7 @@ class AdminState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
     intent: str
     tool_output: str
+    context_data: dict  # For passing RAG details (chunks, graph) to UI
 
 class AdminAgent:
     def __init__(self, rag_service: RAGService, ingestion_service: IngestionService):
@@ -133,8 +134,7 @@ class AdminAgent:
             updated_job = self.ingestion_service.job_repository.get_job(job.job_id)
             
             if updated_job.status == JobStatus.COMPLETED:
-                title = updated_job.metadata.get("title", "Unknown Title") if updated_job.metadata else "Unknown Title"
-                msg = f"✅ 수집 완료: **{title}**\n({target_url})"
+                msg = f"✅ 수집 완료: {target_url}"
             else:
                 msg = f"❌ 수집 실패: {updated_job.error_message}"
                 
@@ -157,9 +157,18 @@ class AdminAgent:
         
         result = await self.rag_service.retrieve_and_generate(last_user_msg, history)
         
+        context_data = {
+            "rewritten_query": result.rewritten_query,
+            "vector_chunks": result.vector_chunks,
+            "keyword_chunks": result.keyword_chunks,
+            "graph_data": result.graph_data,
+            "full_context": result.full_context
+        }
+        
         return {
             "messages": [AIMessage(content=result.answer)],
-            "tool_output": "Search Completed"
+            "tool_output": "Search Completed",
+            "context_data": context_data
         }
 
 # Helper to expose nodes for testing if needed
