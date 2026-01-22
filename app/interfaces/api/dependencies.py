@@ -16,7 +16,7 @@ from app.domain.services.chunker import ChunkerService
 from app.domain.services.semantic_extractor import SemanticExtractor
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
-from app.infrastructure.scrapers.basic import BasicWebScraper
+from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
@@ -28,11 +28,10 @@ from app.use_cases.ingestion import IngestionService
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
 # 모든 의존성은 함수로 정의되어 테스트 시 Mock으로 대체 가능합니다.
 
-
 # Scraper 의존성 (웹 페이지 스크래핑)
 @lru_cache
 def get_scraper() -> ScraperInterface:
-    return BasicWebScraper()
+    return TrafilaturaWebScraper()
 
 
 # Neo4j Driver 의존성 (모든 Neo4j 저장소가 공유하는 단일 Driver)
