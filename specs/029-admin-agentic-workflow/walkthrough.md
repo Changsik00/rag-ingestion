@@ -38,3 +38,16 @@ Admin Dashboard(`4_RAG_Playground.py`)에 LangGraph 기반의 `AdminAgent`를 �
 
 ## ✅ 결론
 Admin Chat이 이제 단순 봇이 아닌 "Agent"로서 동작하며, 사용자의 요청에 따라 능동적으로 수집 도구를 사용할 수 있음을 확인했습니다.
+
+### 3. Post-Deployment Stabilization (Docker & Runtime Support)
+도커 환경 및 실제 운영 상황에서의 안정성 확보를 위해 추가적인 디버깅과 수정을 진행했습니다.
+1. **Service Instantiation Fixes**:
+    - `4_RAG_Playground.py`에서 `FeedbackService`, `HitlService` 초기화 누락 및 `RAGService` 인자(`query_rewriter`) 누락 수정.
+2. **Hybrid Search Wiring**:
+    - `IngestionService`가 `CompositeStorage`를 사용하도록 변경하여, 문서 저장 시 Neo4j(Graph)와 ChromaDB(Vector)에 동시 저장되도록 수정 (Hybrid Search 지원).
+3. **Data Inspection Support**:
+    - `DocumentRepository.get_chunks()` 메소드 추가 및 구현 (Neo4j, Chroma, Composite).
+    - `dump_chunks.py`, `dump_full_doc.py` 등 검증 스크립트 추가.
+4. **Validation Fixes**:
+    - `Neo4jDocumentRepository`에서 Pydantic 모델 생성 시 `UUID` 타입을 `str`로 명시적 변환하여 Validation Error 해결.
+    - ChromaDB 메타데이터 직렬화 오류(복잡한 타입) 해결을 위한 `_flatten_metadata` 로직 강화.
