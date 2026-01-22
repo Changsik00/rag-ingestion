@@ -1,25 +1,26 @@
-from mcp.server.fastmcp import FastMCP
-from typing import Any
 import asyncio
 
-# Domain Imports
-from app.use_cases.ingestion import IngestionService
-from app.domain.services.rag_service import RAGService
+from mcp.server.fastmcp import FastMCP
+
+from app.core.llm import get_llm
 from app.domain.entities.job import JobStatus
+from app.domain.services.query_rewriter import QueryRewriter
+from app.domain.services.rag_service import RAGService
 
 # Dependency Injection Imports
 from app.interfaces.api.dependencies import (
-    get_scraper,
+    get_checkpointer,
+    get_chunker,
+    get_graph_repository,
+    get_job_repository,
     get_neo4j_driver,
     get_repository,
-    get_job_repository,
-    get_chunker,
+    get_scraper,
     get_semantic_extractor,
-    get_graph_repository,
-    get_checkpointer
 )
-from app.core.llm import get_llm
-from app.domain.services.query_rewriter import QueryRewriter
+
+# Domain Imports
+from app.use_cases.ingestion import IngestionService
 
 # Initialize FastMCP
 mcp = FastMCP("RAG Agent")
@@ -34,11 +35,11 @@ def provide_ingestion_service() -> IngestionService:
     graph = get_graph_repository(driver)
     job_repo = get_job_repository(driver)
     chunker = get_chunker()
-    
+
     # Checkpointer needed for SemanticExtractor
     checkpointer = get_checkpointer()
     extractor = get_semantic_extractor(checkpointer)
-    
+
     return IngestionService(
         scraper=scraper,
         repository=repo,
@@ -52,30 +53,30 @@ def provide_rag_service() -> RAGService:
     driver = get_neo4j_driver()
     repo = get_repository(driver)
     graph_repo = get_graph_repository(driver)
-    
+
     # We need Chroma repo separately? CompositeStorage has .chroma (private?)
     # CompositeStorage allows access to chroma_storage via `self.chroma`? No it's `self.vector`.
     # Let's verify CompositeStorage structure if we have time, but RAGService uses chroma_repo.
     # In dependencies.py get_repository returns CompositeStorage.
     # RAGService expects explicit repos.
-    
+
     # Hack: Inspect CompositeStorage to get the inner repos.
     # Or just re-instantiate them since they are lightweight or singletons.
     from app.infrastructure.storage.chroma import ChromaStorage
     chroma_repo = ChromaStorage()
-    
+
     # Neo4j Doc Repo
-    # repo is CompositeStorage. It delegates to Neo4jStorage. 
+    # repo is CompositeStorage. It delegates to Neo4jStorage.
     # But RAGService takes `neo4j_doc_repo` as Any.
     # Ideally we should pass the CompositeStorage if it implements the Interface.
     # RAGService separates `neo4j_doc_repo` and `chroma_repo` because it does hybrid search manually.
-    
+
     from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
     neo4j_doc_repo = Neo4jStorage(driver)
-    
+
     llm = get_llm()
     query_rewriter = QueryRewriter(llm)
-    
+
     return RAGService(
         neo4j_doc_repo=neo4j_doc_repo,
         neo4j_graph_repo=graph_repo,
@@ -102,10 +103,10 @@ async def ingest_url(url: str) -> str:
     """
     try:
         service = provide_ingestion_service()
-        
+
         # 1. Create Job (Pending)
         job = service.create_job(url)
-        
+
         # 2. Process Job (Synchronous/Blocking)
         # In a real async server, we might want to offload this to a thread,
         # but for this MCP tool, blocking is acceptable as the user expects a result.
@@ -113,20 +114,20 @@ async def ingest_url(url: str) -> str:
         # FastMCP runs tools in async context. Calling blocking code blocks the loop.
         # But since we are "waiting", blocking the loop is effectively what we are doing logically.
         # If we want to allow other tools to run in parallel, we should use run_in_executor.
-        
+
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, service.process_job, job.job_id)
-        
+
         # 3. Reload Job to get status/error
         # We need to fetch the updated job from repository.
         # Service doesn't hav get_job method exposed? It has job_repository.
         updated_job = service.job_repository.get_job(job.job_id)
-        
+
         if updated_job.status == JobStatus.COMPLETED:
             return f"Successfully ingested: {url}\nStatus: {updated_job.status}"
         else:
             return f"Ingestion failed for {url}.\nStatus: {updated_job.status}\nError: {updated_job.error_message}"
-            
+
     except Exception as e:
         return f"Error during ingestion: {str(e)}"
 
@@ -143,15 +144,15 @@ async def search_knowledge_base(query: str) -> str:
     """
     try:
         service = provide_rag_service()
-        
+
         # RAGService.retrieve_and_generate expects 'history' for QueryRewriting.
         # MCP tool interface is stateless mostly. We can pass empty history for now.
         # Or we can track history? The prompt implies "search".
-        
+
         history = [] # TODO: Maybe implement history tracking later
-        
+
         result = await service.retrieve_and_generate(query, history)
-        
+
         return (
             f"Answer: {result.answer}\n\n"
             f"--- Source Context ---\n"

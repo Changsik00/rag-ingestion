@@ -272,11 +272,6 @@
 
 ---
 
-* [ ] **Spec 030: Advanced Scraper (Headless & Dynamic Support)**
-  * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 동적 페이지(JS Heavy)나 복잡한 위키(나무위키 등)의 콘텐츠를 일부 누락하는 현상 발생.
-  * [ ] **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
-  * [ ] **Target**: 나무위키, 네이버 뉴스 등 동적 사이트 완벽 지원.
-  * **우선순위**: High (User Feedback)
 
 * [ ] **Spec 031: Source-Filtered RAG (Contextual Isolation)**
   * [ ] **Problem**: RAG 검색 시 전체 지식 베이스를 조회하므로, 특정 문서를 요약해달라는 요청에도 타 관련 문서의 청크가 섞여 들어옴 (예: 위키피디아 링크를 요약 요청했는데 나무위키 내용이 나옴).
@@ -287,6 +282,24 @@
     - `RAGService.retrieve` 메소드에 필터 파라미터 추가.
     - Vector DB 조회 시 Metadata Filter 적용.
   * **우선순위**: Critical (Critical User Issue)
+
+* [ ] **Spec 032: Router & Intent Classifier (Decision Layer)**
+  * [ ] **Goal**: LLM을 사용하여 사용자의 의도(Intent)를 분류하고, 데이터 검색이 필요한지 여부와 어떤 필터를 적용할지 "결정(Decision)"하는 라우터 노드 구현.
+  * [ ] **Output**: `{"intent": "compare", "targets": ["doc_A", "doc_B"]}` 형태의 구조화된 데이터.
+  * **Reference**: [Design Guide 005: LLM RAG Strategy](docs/design_guides/005-llm-rag-strategy.md)
+  * **우선순위**: High (Spec 031 이후 필수)
+
+* [ ] **Spec 033: LangGraph State Management (Nervous System)**
+  * [ ] **Goal**: Router의 결정을 `GraphState`에 저장하고, 이를 `RetrievalNode`로 정확히 전달하여 실행을 강제하는 흐름 제어 구현.
+  * [ ] **Scope**: LangGraph `State` 스키마 확장 (`filters`, `intent` 필드 추가) 및 노드 간 데이터 파이프라인 구축.
+  * **Reference**: [Design Guide 005: LLM RAG Strategy](docs/design_guides/005-llm-rag-strategy.md)
+  * **우선순위**: High (Spec 032와 연계)
+
+* [ ] **Spec 034: Advanced Scraper (Headless & Complex Layout Support)**
+  * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락하는 현상 발생.
+  * [ ] **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
+  * [ ] **Target**: 나무위키(복잡한 레이아웃), 네이버 뉴스(동적 요소) 등 완벽 지원.
+  * **우선순위**: High (User Feedback) - Spec 033 이후 진행
 
 ---
 

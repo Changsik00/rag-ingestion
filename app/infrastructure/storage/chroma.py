@@ -49,7 +49,7 @@ class ChromaStorage(DocumentRepository):
             if value is None:
                 # ChromaDB often issues with None, skip or use empty string
                 continue
-            
+
             if isinstance(value, (dict, list)):
                 # 복잡한 타입은 JSON 문자열로 직렬화
                 flattened[f"{key}_json"] = json.dumps(value)
@@ -187,38 +187,33 @@ class ChromaStorage(DocumentRepository):
         """
         if not filters:
             return None
-            
-        where = {}
-        # Simple case: if only one filter keys
-        # If multiple keys, Chroma requires $and operator? 
-        # Actually Chroma where dict implicitly supports AND for multiple keys if direct values?
-        # But if using operators like $in for one key and direct value for another?
-        # Let's handle generic case.
         
-        # Check if we have multiple filters
         conditions = []
         for key, value in filters.items():
             # Map 'doc_id' -> 'parent_id' for chunk
             target_key = "parent_id" if key == "doc_id" else key
-            
+
             if isinstance(value, list):
-                conditions.append({target_key: {"$in": value}})
+                if len(value) == 1:
+                    conditions.append({target_key: value[0]})
+                elif len(value) > 1:
+                    conditions.append({target_key: {"$in": value}})
             else:
                 conditions.append({target_key: value})
-        
+
         if not conditions:
             return None
-            
+
         if len(conditions) == 1:
             return conditions[0]
         else:
             # ChromaDB supports implicit AND structure?
-            # E.g. {"key1": "val1", "key2": "val2"}
-            # But {"key1": {"$in":...}, "key2": ...} works?
             # Yes, standard Chroma where clause is a dict.
             merged_where = {}
             for cond in conditions:
                 merged_where.update(cond)
+            # Note: If keys collide (same key used twice for AND??), this dict update overwrites.
+            # But here keys are unique (iterating filters.items).
             return merged_where
 
     def search(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
@@ -226,7 +221,7 @@ class ChromaStorage(DocumentRepository):
         try:
             where_clause = self._build_where_clause(filters)
             results = self.collection.query(
-                query_texts=[query], 
+                query_texts=[query],
                 n_results=limit,
                 where=where_clause
             )

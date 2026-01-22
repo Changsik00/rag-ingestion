@@ -1,162 +1,119 @@
 import pytest
 from uuid import uuid4
-from datetime import datetime
-from unittest.mock import MagicMock, AsyncMock
-
 from app.domain.entities.document import Document
 from app.domain.entities.chunk import Chunk
-from app.domain.services.rag_service import RAGService
 from app.infrastructure.storage.composite import CompositeStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.chroma import ChromaStorage
+from app.interfaces.api.dependencies import get_neo4j_driver
 
-@pytest.fixture
-def mock_deps():
-    neo4j_doc_repo = MagicMock(spec=Neo4jStorage)
-    neo4j_graph_repo = MagicMock()
-    chroma_repo = MagicMock(spec=ChromaStorage)
-    # CompositeStorage wraps neo4j and chroma
-    composite_storage = CompositeStorage(neo4j_doc_repo, chroma_repo)
-    
-    query_rewriter = MagicMock()
-    llm = MagicMock()
-    
-    return {
-        "neo4j_doc": neo4j_doc_repo,
-        "chroma": chroma_repo,
-        "composite": composite_storage,
-        "rewriter": query_rewriter,
-        "llm": llm,
-        "neo4j_graph": neo4j_graph_repo
-    }
+@pytest.fixture(scope="module")
+def stored_data():
+    """
+    Set up two distinct documents:
+    1. Doc A (Tech): Apple Inc. related content.
+    2. Doc B (Fruit): Apple Fruit related content.
+    """
+    driver = get_neo4j_driver()
+    neo4j_repo = Neo4jStorage(driver)
+    chroma_repo = ChromaStorage()
+    composite_repo = CompositeStorage(neo4j_repo, chroma_repo)
 
-@pytest.mark.asyncio
-async def test_scenario_1_homonym_isolation(mock_deps):
-    """
-    Scenario 1: The "Homonym" Test (Isolation)
-    - Source A: Apple Tech
-    - Source B: Apple Fruit
-    - Filter: Source A -> Should only retrieve Tech content
-    """
-    deps = mock_deps
-    service = RAGService(
-        neo4j_doc_repo=deps["neo4j_doc"],
-        neo4j_graph_repo=deps["neo4j_graph"], # Service might use composite or separate repos depending on impl
-        chroma_repo=deps["chroma"],
-        query_rewriter=deps["rewriter"],
-        llm=deps["llm"]
+    # Document A: Apple (Tech)
+    doc_a_id = str(uuid4())
+    doc_a = Document(
+        id=doc_a_id,
+        content="Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories.",
+        metadata={"title": "Apple (Tech)", "source": "tech_wiki"}
     )
-    
-    # Mock Data
-    doc_a_id = "doc-tech"
-    doc_b_id = "doc-fruit"
-    
-    chunk_tech = Chunk(id=uuid4(), content="iPhone MacBook Steve Jobs", parent_id=doc_a_id, index=0, metadata={"source": "wiki_tech"})
-    chunk_fruit = Chunk(id=uuid4(), content="Red Delicious Vitamin C", parent_id=doc_b_id, index=0, metadata={"source": "wiki_fruit"})
-
-    # Setup Mocks to simulate Filtering Behavior (This is what we expect the Repo to do)
-    # If filter is doc_a, return chunk_tech. If doc_b, return chunk_fruit.
-    
-    def search_side_effect(query, limit=5, filters=None):
-        if not filters:
-            return [chunk_tech, chunk_fruit]
-        
-        target_ids = filters.get("doc_id")
-        if isinstance(target_ids, str):
-            target_ids = [target_ids]
-            
-        results = []
-        if doc_a_id in target_ids:
-            results.append(chunk_tech)
-        if doc_b_id in target_ids:
-            results.append(chunk_fruit)
-        return results
-
-    # We are mocking the CompositeStorage behavior which delegates to Neo4j/Chroma
-    # Since RAGService uses repositories directly (currently), we check if it passes filters correctly
-    
-    # Update: RAGService likely calls search on repositories.
-    # We need to ensure RAGService accepts filters and passes them down.
-    
-    # 1. Filter: Source A
-    await service.retrieve_and_generate("Apple Features", history=[], filters={"doc_id": doc_a_id})
-    
-    # Verify Repos were called with filters
-    # Note: RAGService currently calls both neo4j and chroma
-    deps["neo4j_doc"].search.assert_called()
-    call_kwargs = deps["neo4j_doc"].search.call_args.kwargs
-    assert call_kwargs.get("filters") == {"doc_id": doc_a_id}
-    
-    deps["chroma"].search_mmr.assert_called()
-    # Check if search_mmr receives filters. Depending on impl, might be kwargs or pos arg.
-    # Let's assume interface update: search_mmr(query, filters=...)
-    chroma_kwargs = deps["chroma"].search_mmr.call_args.kwargs
-    assert chroma_kwargs.get("filters") == {"doc_id": doc_a_id}
-
-
-@pytest.mark.asyncio
-async def test_scenario_2_context_switch_priority(mock_deps):
-    """
-    Scenario 2: The "Context Switch" Test (System Priority)
-    - History: Steve Jobs (Tech)
-    - Action: Switch Filter to Fruit
-    - Query: Apple Features
-    - Expectation: System enforces Fruit filter despite Tech history
-    """
-    deps = mock_deps
-    service = RAGService(
-        neo4j_doc_repo=deps["neo4j_doc"],
-        neo4j_graph_repo=deps["neo4j_graph"],
-        chroma_repo=deps["chroma"],
-        query_rewriter=deps["rewriter"],
-        llm=deps["llm"]
-    )
-
-    doc_fruit_id = "doc-fruit"
-    
-    # History context (Tech)
-    history = [
-        {"role": "user", "content": "Who is Steve Jobs?"},
-        {"role": "assistant", "content": "He founded Apple."}
+    chunks_a = [
+        Chunk(id=str(uuid4()), content="Apple generally releases a new iPhone every September.", parent_id=doc_a_id, index=0, metadata={"source": "tech_wiki"}),
+        Chunk(id=str(uuid4()), content="macOS is the operating system for Apple's Mac computers.", parent_id=doc_a_id, index=1, metadata={"source": "tech_wiki"})
     ]
-    
-    # Switch Filter to Fruit
-    await service.retrieve_and_generate("Apple Features", history=history, filters={"doc_id": doc_fruit_id})
-    
-    # Verify Filter is passed despite history
-    deps["neo4j_doc"].search.assert_called()
-    assert deps["neo4j_doc"].search.call_args.kwargs.get("filters") == {"doc_id": doc_fruit_id}
 
-
-@pytest.mark.asyncio
-async def test_scenario_3_source_injection_purity(mock_deps):
-    """
-    Scenario 3: The "Source Injection & Purity" Test
-    - History: Tech context
-    - Action: Inject Source C (Keyboard) & Filter to C
-    - Expectation: Strict isolation to C
-    """
-    deps = mock_deps
-    service = RAGService(
-        neo4j_doc_repo=deps["neo4j_doc"],
-        neo4j_graph_repo=deps["neo4j_graph"],
-        chroma_repo=deps["chroma"],
-        query_rewriter=deps["rewriter"],
-        llm=deps["llm"]
+    # Document B: Apple (Fruit)
+    doc_b_id = str(uuid4())
+    doc_b = Document(
+        id=doc_b_id,
+        content="An apple is a round, edible fruit produced by an apple tree (Malus spp.).",
+        metadata={"title": "Apple (Fruit)", "source": "fruit_wiki"}
     )
-    
-    doc_c_id = "doc-keyboard"
-    
-    # History context (Tech)
-    history = [
-        {"role": "user", "content": "Tell me about iPhone"},
-        {"role": "assistant", "content": "It's a smartphone."}
+    chunks_b = [
+        Chunk(id=str(uuid4()), content="Apples are generally red, green, or yellow in color.", parent_id=doc_b_id, index=0, metadata={"source": "fruit_wiki"}),
+        Chunk(id=str(uuid4()), content="Apples are rich in fiber and vitamin C.", parent_id=doc_b_id, index=1, metadata={"source": "fruit_wiki"})
     ]
+
+    # Save to Composite Storage (Both Graph & Vector)
+    composite_repo.save_with_chunks(doc_a, chunks_a)
+    composite_repo.save_with_chunks(doc_b, chunks_b)
+
+    yield composite_repo, doc_a_id, doc_b_id
+
+    # Cleanup (Optional, but good practice if not using ephemeral container)
+    # Ideally, we should delete these docs.
+    pass
+
+@pytest.mark.integration
+def test_homonym_isolation(stored_data):
+    """
+    Scenario 1: The 'Homonym' Test
+    Search for 'Apple' filtering only 'Fruit' document.
+    Should NOT retrieve any 'iPhone' or 'Mac' related chunks.
+    """
+    repo, doc_tech_id, doc_fruit_id = stored_data
     
-    # New Query with new Source Filter
-    await service.retrieve_and_generate("Summarize this", history=history, filters={"doc_id": doc_c_id})
+    query = "Apple features"
     
-    # Verify Repos called ONLY with Source C filter
-    deps["neo4j_doc"].search.assert_called()
-    filter_arg = deps["neo4j_doc"].search.call_args.kwargs.get("filters")
-    assert filter_arg == {"doc_id": doc_c_id}
+    # 1. Search in Fruit Context
+    # Note: filters argument is not yet implemented in interface, so this might fail statically or run ignoring filter.
+    # We expect 'filters' to be accepted in the future implementation.
+    try:
+        results_fruit = repo.search(query, limit=5, filters={"doc_id": doc_fruit_id})
+    except TypeError:
+         pytest.fail("Repository.search does not accept 'filters' argument yet.")
+
+    # Verification
+    for chunk in results_fruit:
+        print(f"DEBUG: Chunk Parent ID: {chunk.parent_id} (Type: {type(chunk.parent_id)}) vs Target: {doc_fruit_id}")
+        assert str(chunk.parent_id) == str(doc_fruit_id), f"Found chunk from wrong document! content: {chunk.content}"
+        assert "iPhone" not in chunk.content
+        assert "Mac" not in chunk.content
+        assert "red" in chunk.content or "fiber" in chunk.content or "edible" in chunk.content or "fruit" in chunk.content
+
+@pytest.mark.integration
+def test_context_switch(stored_data):
+    """
+    Scenario 2: The 'Context Switch' Test
+    Search for 'Operating System' in Tech Context -> Found.
+    Search for 'Operating System' in Fruit Context -> Not Found (or irrelevant).
+    """
+    repo, doc_tech_id, doc_fruit_id = stored_data
+
+    query = "Operating System"
+
+    # 1. Search in Tech Context
+    results_tech = repo.search(query, limit=5, filters={"doc_id": doc_tech_id})
+    assert len(results_tech) > 0
+    assert any("macOS" in c.content for c in results_tech)
+
+    # 2. Search in Fruit Context
+    results_fruit = repo.search(query, limit=5, filters={"doc_id": doc_fruit_id})
+    # Should be empty or at least not contain macOS
+    for chunk in results_fruit:
+        assert "macOS" not in chunk.content
+
+@pytest.mark.integration
+def test_multi_filter_isolation(stored_data):
+    """
+    Scenario 3: Multi-value filtering
+    If we support lists in filters (e.g. doc_id in [A, B]), verify it works.
+    """
+    repo, doc_tech_id, doc_fruit_id = stored_data
+    
+    # Filter for BOTH docs
+    results = repo.search("Apple", limit=10, filters={"doc_id": [doc_tech_id, doc_fruit_id]})
+    
+    # Needs to find chunks from BOTH
+    found_ids = {str(c.parent_id) for c in results}
+    assert str(doc_tech_id) in found_ids
+    assert str(doc_fruit_id) in found_ids

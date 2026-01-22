@@ -145,7 +145,7 @@ class Neo4jStorage(DocumentRepository):
                 results = session.run(query, doc_id=str(doc_id))
                 for record in results:
                     node = record["c"]
-                    
+
                     # Unflatten metadata (Reuse logic if possible, or duplicate for now due to helper method privacy)
                     metadata = {}
                     for k, v in node.items():
@@ -196,27 +196,21 @@ class Neo4jStorage(DocumentRepository):
             # Note: 5.x Fulltext index does not support WHERE clause directly inside call queryNodes in legacy way?
             # Actually, we can filter AFTER yielding nodes.
             # "CALL ... YIELD node WHERE ..." is the standard pattern.
-            
+
             where_clauses = []
             params = {"keyword": query, "limit": limit}
-            
+
             if filters:
                 for key, value in filters.items():
                     # Sanitize key to prevent excessive injection (basic check)
                     # Assuming keys are safe (e.g. doc_id, source)
-                    # We map python list -> Cypher IN, single value -> logic
                     
                     # Map 'doc_id' to internal 'id' or 'parent_id'? 
                     # Chunk has 'parent_id' which links to Document ID.
                     # DocumentRepository.search usually searches Chunks.
                     # So filtering by 'doc_id' usually means filtering by Chunk's parent_id.
-                    # But wait, Document entity ID vs Chunk parent_id.
-                    # Let's assume 'doc_id' filter targets 'parent_id' property of Chunk.
                     
                     # Property name mapping:
-                    # In test we used filters={"doc_id": "..."}
-                    # In Neo4j, Chunk has `parent_id` property.
-                    
                     target_prop = "parent_id" if key == "doc_id" else key
                     
                     param_key = f"filter_{key}"
@@ -244,20 +238,12 @@ class Neo4jStorage(DocumentRepository):
                 for record in results:
                     node = record["node"]
                     # Map Neo4j Node to Chunk Entity
-                    # Note: parent_id in Neo4j might be stored as string, Entity expects UUID?
-                    # Chunk entity: id:str, parent_id:str ... wait, let's check Chunk definition.
-                    # domain/entities/chunk.py says: id: str, parent_id: str.
-                    # So simple fetching is fine.
-
+                    
                     # Unflatten metadata
                     metadata = {}
                     for k, v in node.items():
                         if k in ["id", "content", "index", "parent_id"]:
                             continue
-                        # If keys end with _json, parse them?
-                        # _flatten_metadata did: flattened[f"{key}_json"] = json.dumps(value)
-                        # We should reverse this if possible, or just return as is for now.
-                        # Simple reverse logic:
                         if k.endswith("_json"):
                             try:
                                 clean_key = k[:-5]
@@ -280,9 +266,5 @@ class Neo4jStorage(DocumentRepository):
 
         except Exception as e:
             logger.error(f"Neo4j search failed: {e}")
-            # Instead of crashing logic flow, return empty list or raise?
-            # Repository pattern usually raises or returns empty.
-            # Given it's a search, returning empty with log is often safer for hybrid logic.
-            # But let's log and re-raise to be noticed during TDD.
             logger.warning(f"Neo4j Search Error: {e}")
             return []

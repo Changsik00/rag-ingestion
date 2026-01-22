@@ -1,12 +1,15 @@
-import sys
 import os
+import sys
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 
 import asyncio
 import logging
 
 import streamlit as st
+from langchain_core.messages import AIMessage, HumanMessage
 
+from app.admin.agents.admin_agent import AdminAgent
 from app.admin.services.feedback_service import FeedbackService
 from app.core.llm import get_llm
 from app.domain.services.query_rewriter import QueryRewriter
@@ -14,9 +17,9 @@ from app.domain.services.rag_service import RAGService
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
-from app.interfaces.api.dependencies import get_neo4j_driver, get_ingestion_service, get_repository, get_graph_repository, get_job_repository, get_chunker, get_semantic_extractor
-from app.admin.agents.admin_agent import AdminAgent
-from langchain_core.messages import HumanMessage, AIMessage
+from app.interfaces.api.dependencies import (
+    get_neo4j_driver,
+)
 
 st.set_page_config(page_title="RAG Playground", page_icon="🎮", layout="wide")
 st.title("🎮 RAG Playground")
@@ -43,43 +46,43 @@ def get_deps():
         query_rewriter=rewriter,
         llm=llm
     )
-    
+
     feedback_service = FeedbackService()
 
     # 4. Ingestion Service (For Agent)
     # Re-using API dependencies logic might be complex due to passing args.
     # Let's clean instantiate it.
-    from app.use_cases.ingestion import IngestionService
-    from app.infrastructure.chunker.langchain_chunker import LangChainChunker
     from app.domain.services.semantic_extractor import SemanticExtractor
     from app.infrastructure.brain.adapter import LangGraphAdapter
-    from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
+    from app.infrastructure.chunker.langchain_chunker import LangChainChunker
     from app.infrastructure.storage.composite import CompositeStorage
-    
+    from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
+    from app.use_cases.ingestion import IngestionService
+
     # We need simpler instantiation for Streamlit or reuse dependency injection helpers if possible
     # But `get_ingestion_service` requires Depends().
     # Let's instantiate manually as we did in MCP server, but here we can reuse Repos.
-    
+
     # Composite Repository (Neo4j + Chroma) for Hybrid Search support
     composite_repo = CompositeStorage(neo4j_doc, chroma)
-    
+
     # Using specific JobRepository? Global one?
     # Admin UI usually needs persistent job repo if we want to track across reload.
     # But currently the project uses MemoryJobRepository mostly or not defined clearly.
     # Let's use MemoryJobRepository for now as per `get_job_repository` default.
     job_repo = Neo4jJobRepository(driver)
-    
+
     # Chunker
     chunker = LangChainChunker()
-    
+
     # Extractor
     graph_adapter = LangGraphAdapter(llm)
     extractor = SemanticExtractor(graph_adapter)
-    
+
     # Scraper
     from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
     scraper = TrafilaturaWebScraper()
-    
+
     ingestion_service = IngestionService(
         scraper=scraper,
         repository=composite_repo, # Composite Storage (Neo4j + Chroma)
@@ -138,6 +141,42 @@ for message in st.session_state.messages:
                      st.caption(f"Rewritten: {rewrite_info.get('rewritten')}")
                  st.code(message["debug_prompt"], language="text")
 
+# --- Sidebar: Source Filter ---
+with st.sidebar:
+    st.header("🔍 Search Settings")
+    st.markdown("---")
+
+    # Fetch Documents
+    with st.spinner("Loading Documents..."):
+        try:
+            # Access direct repo from agent's service (Not ideal check law of demeter, but fine for Playground)
+            doc_repo = admin_agent.rag_service.neo4j_doc_repo
+            # Increase limit to show more items
+            docs = doc_repo.list_documents(limit=50)
+
+            # Create options dict: "Title (ID)" -> ID
+            # Assuming metadata has title, fallback to ID
+            doc_options = {}
+            for d in docs:
+                title = d.metadata.get("title", "Untitled")
+                source = d.metadata.get("source", "")
+                label = f"{title} ({source})" if source else title
+                # Ensure unique keys for selectbox if titles duplicate?
+                # Multiselect uses values.
+                # We'll use ID as value, label as format_func.
+                doc_options[d.id] = label
+
+            selected_doc_ids = st.multiselect(
+                "Knowledge Source (Documents)",
+                options=list(doc_options.keys()),
+                format_func=lambda x: doc_options.get(x, x),
+                help="Select documents to restrict search scope."
+            )
+
+        except Exception as e:
+            st.error(f"Failed to load documents: {e}")
+            selected_doc_ids = []
+
 # Input
 if prompt := st.chat_input("Ask a question regarding the ingested content..."):
     # Add User Message
@@ -154,24 +193,27 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                 HumanMessage(content=m["content"]) if m["role"] == "user" else AIMessage(content=m["content"])
                 for m in st.session_state.messages
             ]
-            
+
             # Run Agent
             # Using asyncio.run for sync Streamlit wrapper
             status_container.write("🤖 Detecting intent...")
-            
-            inputs = {"messages": history_interactive}
+
+            # Prepare filters if selected
+            filters = {"doc_id": selected_doc_ids} if selected_doc_ids else None
+
+            inputs = {"messages": history_interactive, "filters": filters}
             final_state = asyncio.run(admin_agent.workflow.ainvoke(inputs))
-            
+
             # Analyze Result
             intent = final_state.get("intent", "search")
             tool_output = final_state.get("tool_output", "")
             context_data = final_state.get("context_data", {})
-            
+
             last_msg = final_state["messages"][-1]
             answer = last_msg.content if last_msg else "No response generated."
-            
+
             status_container.write(f"🎯 Intent: **{intent.upper()}**")
-            
+
             if intent == "ingest":
                 status_container.write(f"🛠️ Tool Output: {tool_output}")
                 status_container.update(label="Ingestion Completed", state="complete", expanded=False)
@@ -188,12 +230,12 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                 graph_data = context_data.get("graph_data", [])
                 vector_chunks = context_data.get("vector_chunks", [])
                 keyword_chunks = context_data.get("keyword_chunks", [])
-                
+
                 if graph_data:
                     with st.expander(f"🕸️ Graph Facts ({len(graph_data)})"):
                          for item in graph_data:
                             st.markdown(f"- **{item.get('source')}** -[{item.get('relationship')}]-> **{item.get('target')}**")
-                
+
                 total_docs = len(vector_chunks) + len(keyword_chunks)
                 if total_docs > 0:
                      with st.expander(f"📚 Retrieved Documents ({total_docs})"):

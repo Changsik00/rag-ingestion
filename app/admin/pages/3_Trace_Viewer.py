@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 
 import streamlit as st
@@ -9,6 +10,7 @@ st.title("🔍 Reasoning Trace Viewer")
 
 
 from app.admin.services.hitl_service import HitlService
+
 
 @st.cache_resource
 def get_service():
