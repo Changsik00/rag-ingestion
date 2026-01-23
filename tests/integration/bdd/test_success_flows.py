@@ -113,5 +113,5 @@ def test_successful_ingestion_without_extraction():
 
         # metadata가 비어있거나 최소한만 있음 (extraction 결과 없음)
         metadata = doc.get("metadata", {})
-        # LLM extraction 결과가 없어야 함 (title, summary 등)
-        assert "title" not in metadata or metadata.get("title") is None
+        # LLM extraction 결과가 없어야 함 (summary, entities 등)
+        assert "summary" not in metadata or metadata.get("summary") is None

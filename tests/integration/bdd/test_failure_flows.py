@@ -143,7 +143,7 @@ def test_llm_failure_still_saves_document():
 
     # Mock Chunker
     mock_chunker = Mock()
-    mock_chunker.chunk.return_value = []  # Return empty chunks as fallback
+    mock_chunker.chunk_document.return_value = []  # Return empty chunks as fallback
 
     service_instance = IngestionService(
         scraper=real_scraper_instance,
@@ -158,7 +158,7 @@ def test_llm_failure_still_saves_document():
 
     try:
         # When: 수집 요청 (extraction 활성화)
-        url = "https://httpbin.org/uuid"
+        url = "https://httpbin.org/html"
         response = client.post("/ingest/web", json={"url": url, "enable_extraction": True})
 
         # Then: 요청 자체는 성공

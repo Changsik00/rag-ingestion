@@ -4,7 +4,7 @@ import sys
 import requests
 
 
-def test_scraper_api(url: str):
+def run_scraper_api_test(url: str):
     """
     Test the /debug/scrape endpoint which bypasses the database.
     """
@@ -53,4 +53,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     target_url = sys.argv[1]
-    test_scraper_api(target_url)
+    run_scraper_api_test(target_url)

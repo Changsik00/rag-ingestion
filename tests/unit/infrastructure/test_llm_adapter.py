@@ -14,7 +14,12 @@ def mock_chat_model():
 
 def test_generate_returns_string(mock_chat_model):
     # Setup
-    mock_chat_model.invoke.return_value = AIMessage(content="Generated response")
+    from langchain_core.messages import AIMessage
+    # Mock for chain: llm | StrOutputParser()
+    mock_chain = MagicMock()
+    mock_chain.invoke.return_value = "Generated response"
+    mock_chat_model.__or__.return_value = mock_chain
+    
     adapter = LangChainLLMAdapter(llm=mock_chat_model)
 
     # Execute
@@ -22,17 +27,19 @@ def test_generate_returns_string(mock_chat_model):
 
     # Verify
     assert result == "Generated response"
-    mock_chat_model.invoke.assert_called_once()
+    mock_chat_model.__or__.assert_called_once()
+    mock_chain.invoke.assert_called_once_with("Test prompt")
 
 def test_generate_handles_error(mock_chat_model):
     # Setup
-    mock_chat_model.invoke.side_effect = Exception("API Error")
+    mock_chain = MagicMock()
+    mock_chain.invoke.side_effect = Exception("API Error")
+    mock_chat_model.__or__.return_value = mock_chain
+    
     adapter = LangChainLLMAdapter(llm=mock_chat_model)
 
     # Execute
     result = adapter.generate("Test prompt")
 
     # Verify
-    # Assuming implementation returns error message or empty string on failure
-    # Let's decide it should return the error message for the dashboard
-    assert "Failed" in result or result == ""
+    assert "Error" in result

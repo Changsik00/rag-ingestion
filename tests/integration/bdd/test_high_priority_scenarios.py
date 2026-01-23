@@ -105,7 +105,7 @@ class TestHighPriorityScenarios:
         docs_response.raise_for_status()
         docs = docs_response.json()
 
-        matching_docs = [d for d in docs if d.get("source_url") == url]
+        matching_docs = [d for d in docs if d.get("metadata", {}).get("source_url") == url]
 
         # 최소 2개 이상
         assert len(matching_docs) >= 2, f"Expected at least 2 documents with URL {url}, but got {len(matching_docs)}"
