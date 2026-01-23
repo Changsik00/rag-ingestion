@@ -140,46 +140,53 @@ for message in st.session_state.messages:
                     st.divider()
                     st.caption("Keyword Search (Neo4j)")
                     for c in k_chunks:
-                        st.text(f"[Keyword] {c.metadata.get('title', 'No Title')}\n{c.content[:100]}...")
+                        st.text(f"[Keyword] {c.metadata.get('title', 'No Title')}\\n{c.content[:100]}...")
 
-        # Debug: Intent & Prompt (Spec 032)
-        if message.get("debug_prompt") or message.get("debug_intent"):
-            with st.expander("🛠️ Debug: Intent & Prompt"):
-                # Intent Analysis
-                intent_info = message.get("debug_intent")
-                if intent_info:
-                    st.markdown("**🧠 Intent Classification**")
-                    intent_type = intent_info.get("intent", "N/A")
-                    targets = intent_info.get("targets", [])
-                    reasoning = intent_info.get("reasoning", "")
+        # Debug: Intent & Prompt (Spec 032) - Always show, populate if available
+        with st.expander("🛠️ Debug: Intent & Prompt"):
+            # Intent Analysis
+            intent_info = message.get("debug_intent")
+            if intent_info:
+                st.markdown("**🧠 Intent Classification**")
+                intent_type = intent_info.get("intent", "N/A")
+                targets = intent_info.get("targets", [])
+                reasoning = intent_info.get("reasoning", "")
 
-                    # Intent color coding
-                    intent_color = {
-                        "general_query": "🟢",
-                        "compare": "🔵",
-                        "summarize": "🟡",
-                        "filter_by_topic": "🟣",
-                    }.get(intent_type, "⚪")
-                    
-                    # Compact display
-                    st.markdown(f"**Intent:** {intent_color} `{intent_type.upper()}`")
-                    if targets:
-                        st.markdown(f"**Targets:** {', '.join([f'`{t}`' for t in targets])}")
-                    st.caption(f"**Reasoning:** {reasoning}")
-                    st.divider()
+                # Intent color coding
+                intent_color = {
+                    "general_query": "🟢",
+                    "compare": "🔵",
+                    "summarize": "🟡",
+                    "filter_by_topic": "🟣",
+                }.get(intent_type, "⚪")
+                
+                # Compact display
+                st.markdown(f"**Intent:** {intent_color} `{intent_type.upper()}`")
+                if targets:
+                    st.markdown(f"**Targets:** {', '.join([f'`{t}`' for t in targets])}")
+                st.caption(f"**Reasoning:** {reasoning}")
+            else:
+                st.caption("_Intent classification not available for this message_")
+            
+            st.divider()
 
-                # Query Rewriting
-                rewrite_info = message.get("debug_rewrite")
-                if rewrite_info:
-                    st.markdown("**✏️ Query Rewriting**")
-                    st.caption(f"Original: {rewrite_info.get('original')}")
-                    st.caption(f"Rewritten: {rewrite_info.get('rewritten')}")
-                    st.divider()
+            # Query Rewriting
+            rewrite_info = message.get("debug_rewrite")
+            if rewrite_info and rewrite_info.get("rewritten"):
+                st.markdown("**✏️ Query Rewriting**")
+                st.caption(f"Original: {rewrite_info.get('original')}")
+                st.caption(f"Rewritten: {rewrite_info.get('rewritten')}")
+            else:
+                st.caption("_Query rewriting not available_")
+            
+            st.divider()
 
-                # Full Prompt
-                if message.get("debug_prompt"):
-                    st.markdown("**📝 LLM Prompt**")
-                    st.code(message["debug_prompt"], language="text")
+            # Full Prompt
+            if message.get("debug_prompt"):
+                st.markdown("**📝 LLM Prompt**")
+                st.code(message["debug_prompt"], language="text")
+            else:
+                st.caption("_Full prompt not available_")
 
 # --- Sidebar: Knowledge Source ---
 with st.sidebar:
