@@ -19,6 +19,7 @@ class RAGResult:
     keyword_chunks: list[Chunk]
     graph_data: list[dict]
     full_context: str
+    user_intent: UserIntent | None = None  # Spec 032: Intent Classifier 결과
 
 
 class RAGService:
@@ -98,6 +99,7 @@ class RAGService:
             keyword_chunks=keyword_results,
             graph_data=graph_results,
             full_context=context_str,
+            user_intent=user_intent,  # Spec 032
         )
 
     def _classify_intent_with_fallback(self, query: str, history: list[dict]) -> UserIntent:

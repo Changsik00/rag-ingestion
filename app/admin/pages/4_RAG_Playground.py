@@ -38,9 +38,19 @@ def get_deps():
     llm = get_llm()
     rewriter = QueryRewriter(llm)
 
-    # 3. Domain Service
+    # 3. Intent Classifier (Spec 032)
+    from app.domain.services.intent_classifier import IntentClassifier
+
+    intent_classifier = IntentClassifier(llm)
+
+    # 4. Domain Service
     rag_service = RAGService(
-        neo4j_doc_repo=neo4j_doc, neo4j_graph_repo=neo4j_graph, chroma_repo=chroma, query_rewriter=rewriter, llm=llm
+        neo4j_doc_repo=neo4j_doc,
+        neo4j_graph_repo=neo4j_graph,
+        chroma_repo=chroma,
+        query_rewriter=rewriter,
+        intent_classifier=intent_classifier,
+        llm=llm,
     )
 
     feedback_service = FeedbackService()
