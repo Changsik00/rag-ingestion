@@ -55,9 +55,7 @@ def get_deps():
 
     feedback_service = FeedbackService()
 
-    # 4. Ingestion Service (For Agent)
-    # Re-using API dependencies logic might be complex due to passing args.
-    # Let's clean instantiate it.
+    # 5. Ingestion Service
     from app.domain.services.semantic_extractor import SemanticExtractor
     from app.infrastructure.brain.adapter import LangGraphAdapter
     from app.infrastructure.chunker.langchain_chunker import LangChainChunker
@@ -65,34 +63,19 @@ def get_deps():
     from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
     from app.use_cases.ingestion import IngestionService
 
-    # We need simpler instantiation for Streamlit or reuse dependency injection helpers if possible
-    # But `get_ingestion_service` requires Depends().
-    # Let's instantiate manually as we did in MCP server, but here we can reuse Repos.
-
-    # Composite Repository (Neo4j + Chroma) for Hybrid Search support
     composite_repo = CompositeStorage(neo4j_doc, chroma)
-
-    # Using specific JobRepository? Global one?
-    # Admin UI usually needs persistent job repo if we want to track across reload.
-    # But currently the project uses MemoryJobRepository mostly or not defined clearly.
-    # Let's use MemoryJobRepository for now as per `get_job_repository` default.
     job_repo = Neo4jJobRepository(driver)
-
-    # Chunker
     chunker = LangChainChunker()
-
-    # Extractor
     graph_adapter = LangGraphAdapter(llm)
     extractor = SemanticExtractor(graph_adapter)
 
-    # Scraper
     from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
 
     scraper = TrafilaturaWebScraper()
 
     ingestion_service = IngestionService(
         scraper=scraper,
-        repository=composite_repo,  # Composite Storage (Neo4j + Chroma)
+        repository=composite_repo,
         graph=neo4j_graph,
         job_repository=job_repo,
         chunker=chunker,
@@ -104,89 +87,84 @@ def get_deps():
     return admin_agent, feedback_service
 
 
+# --- [Spec 032] 디버그 UI 렌더링 함수 (중복 제거 및 일관성 유지) ---
+def render_debug_ui(message):
+    """메시지에 포함된 디버그 정보를 통합 UI로 출력"""
+    debug = message.get("debug_info", {})
+    intent_info = message.get("debug_intent")
+    rewrite_info = message.get("debug_rewrite")
+    prompt_info = message.get("debug_prompt")
+
+    # 1. Graph Facts
+    graph_data = debug.get("graph_data", [])
+    if graph_data:
+        with st.expander(f"🕸️ Graph Facts ({len(graph_data)})"):
+            for item in graph_data:
+                st.markdown(f"- **{item.get('source')}** -[{item.get('relationship')}]-> **{item.get('target')}**")
+
+    # 2. Retrieved Documents
+    v_chunks = debug.get("vector_chunks", [])
+    k_chunks = debug.get("keyword_chunks", [])
+    total_chunks = len(v_chunks) + len(k_chunks)
+    if total_chunks > 0:
+        with st.expander(f"📚 Retrieved Documents ({total_chunks})"):
+            if v_chunks:
+                st.caption("Vector Search (MMR)")
+                for c in v_chunks:
+                    st.text(f"[Score/Vector] {c.metadata.get('title', 'No Title')}\n{c.content[:100]}...")
+            if k_chunks:
+                st.divider()
+                st.caption("Keyword Search (Neo4j)")
+                for c in k_chunks:
+                    st.text(f"[Keyword] {c.metadata.get('title', 'No Title')}\n{c.content[:100]}...")
+
+    # 3. Intent & Prompt (통합 디버그 섹션)
+    with st.expander("🛠️ Debug: Intent & Prompt"):
+        if intent_info:
+            st.markdown("**🧠 Intent Classification**")
+            intent_type = intent_info.get("intent", "N/A")
+            targets = intent_info.get("targets", [])
+            reasoning = intent_info.get("reasoning", "")
+
+            # Intent color coding
+            intent_color = {
+                "general_query": "🟢",
+                "compare": "🔵",
+                "summarize": "🟡",
+                "filter_by_topic": "🟣",
+            }.get(intent_type, "⚪")
+
+            st.markdown(f"**Intent:** {intent_color} `{intent_type.upper()}`")
+            if targets:
+                st.markdown(f"**Targets:** {', '.join([f'`{t}`' for t in targets])}")
+            st.caption(f"**Reasoning:** {reasoning}")
+        else:
+            st.caption("_Intent classification not available_")
+
+        if rewrite_info and rewrite_info.get("rewritten"):
+            st.divider()
+            st.markdown("**✏️ Query Rewriting**")
+            st.caption(f"Original: {rewrite_info.get('original')}")
+            st.caption(f"Rewritten: {rewrite_info.get('rewritten')}")
+
+        if prompt_info:
+            st.divider()
+            st.markdown("**📝 LLM Prompt**")
+            st.code(prompt_info, language="text")
+
+
 admin_agent, feedback_service = get_deps()
 
 # Initialize Chat History
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# --- Chat Interface ---
+# --- Chat Interface (히스토리 루프) ---
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-
-        # Display Retrieved Context (Aggregated)
-        if message.get("debug_info"):
-            debug = message["debug_info"]
-
-            # Graph Facts
-            if debug.get("graph_data"):
-                with st.expander(f"🕸️ Graph Facts ({len(debug['graph_data'])})"):
-                    for item in debug["graph_data"]:
-                        st.markdown(
-                            f"- **{item.get('source')}** -[{item.get('relationship')}]-> **{item.get('target')}**"
-                        )
-
-            # Vector & Keyword Chunks
-            v_chunks = debug.get("vector_chunks", [])
-            k_chunks = debug.get("keyword_chunks", [])
-            total_chunks = len(v_chunks) + len(k_chunks)
-
-            if total_chunks > 0:
-                with st.expander(f"📚 Retrieved Documents ({total_chunks})"):
-                    st.caption("Vector Search (MMR)")
-                    for c in v_chunks:
-                        st.text(f"[Score/Vector] {c.metadata.get('title', 'No Title')}\n{c.content[:100]}...")
-                    st.divider()
-                    st.caption("Keyword Search (Neo4j)")
-                    for c in k_chunks:
-                        st.text(f"[Keyword] {c.metadata.get('title', 'No Title')}\\n{c.content[:100]}...")
-
-        # Debug: Intent & Prompt (Spec 032) - Always show, populate if available
-        with st.expander("🛠️ Debug: Intent & Prompt"):
-            # Intent Analysis
-            intent_info = message.get("debug_intent")
-            if intent_info:
-                st.markdown("**🧠 Intent Classification**")
-                intent_type = intent_info.get("intent", "N/A")
-                targets = intent_info.get("targets", [])
-                reasoning = intent_info.get("reasoning", "")
-
-                # Intent color coding
-                intent_color = {
-                    "general_query": "🟢",
-                    "compare": "🔵",
-                    "summarize": "🟡",
-                    "filter_by_topic": "🟣",
-                }.get(intent_type, "⚪")
-                
-                # Compact display
-                st.markdown(f"**Intent:** {intent_color} `{intent_type.upper()}`")
-                if targets:
-                    st.markdown(f"**Targets:** {', '.join([f'`{t}`' for t in targets])}")
-                st.caption(f"**Reasoning:** {reasoning}")
-            else:
-                st.caption("_Intent classification not available for this message_")
-            
-            st.divider()
-
-            # Query Rewriting
-            rewrite_info = message.get("debug_rewrite")
-            if rewrite_info and rewrite_info.get("rewritten"):
-                st.markdown("**✏️ Query Rewriting**")
-                st.caption(f"Original: {rewrite_info.get('original')}")
-                st.caption(f"Rewritten: {rewrite_info.get('rewritten')}")
-            else:
-                st.caption("_Query rewriting not available_")
-            
-            st.divider()
-
-            # Full Prompt
-            if message.get("debug_prompt"):
-                st.markdown("**📝 LLM Prompt**")
-                st.code(message["debug_prompt"], language="text")
-            else:
-                st.caption("_Full prompt not available_")
+        if message["role"] == "assistant":
+            render_debug_ui(message)  # 함수 호출로 통합
 
 # --- Sidebar: Knowledge Source ---
 with st.sidebar:
@@ -199,7 +177,6 @@ with st.sidebar:
     with st.spinner("Loading Documents..."):
         try:
             doc_repo = admin_agent.rag_service.neo4j_doc_repo
-            # Use the new search_term in list_documents
             docs = doc_repo.list_documents(limit=50, search_term=search_term if search_term else None)
 
             doc_options = {}
@@ -224,20 +201,22 @@ with st.sidebar:
 
     with st.expander("🛠️ Advanced Settings", expanded=False):
         st.caption("Debug & Internal Settings")
-        
+
         # Clear Chat History Button (Spec 032)
         if st.button("🗑️ Clear Chat History", use_container_width=True):
             st.session_state.messages = []
             st.rerun()
 
-# Input
+# --- Input 처리 ---
 if prompt := st.chat_input("Ask a question regarding the ingested content..."):
-    # Add User Message
+    # 사용자 메시지 추가
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    st.rerun()  # Spec 032: 사용자 메시지 즉시 반영
 
-    # Bot Response
+# --- 실제 응답 처리 (마지막 메시지가 user일 때만) ---
+if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+    prompt = st.session_state.messages[-1]["content"]
+
     with st.chat_message("assistant"):
         status_container = st.status("Thinking (Agentic Workflow)...", expanded=True)
         try:
@@ -247,8 +226,6 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                 for m in st.session_state.messages
             ]
 
-            # Run Agent
-            # Using asyncio.run for sync Streamlit wrapper
             status_container.write("🤖 Detecting intent...")
 
             # Prepare filters if selected
@@ -277,60 +254,38 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
             # Display Answer
             st.markdown(answer)
 
-            # Display Context (if any)
-            if context_data:
-                rewritten_query = context_data.get("rewritten_query")
-                graph_data = context_data.get("graph_data", [])
-                vector_chunks = context_data.get("vector_chunks", [])
-                keyword_chunks = context_data.get("keyword_chunks", [])
-
-                if graph_data:
-                    with st.expander(f"🕸️ Graph Facts ({len(graph_data)})"):
-                        for item in graph_data:
-                            st.markdown(
-                                f"- **{item.get('source')}** -[{item.get('relationship')}]-> **{item.get('target')}**"
-                            )
-
-                total_docs = len(vector_chunks) + len(keyword_chunks)
-                if total_docs > 0:
-                    with st.expander(f"📚 Retrieved Documents ({total_docs})"):
-                        st.caption("Vector Search (MMR)")
-                        for c in vector_chunks:
-                            st.text(f"---\n{c.content[:200]}...")
-                        st.caption("Keyword Search")
-                        for c in keyword_chunks:
-                            st.text(f"---\n{c.content[:200]}...")
-
-            # Save to History with Intent Info (Spec 032)
+            # 데이터 정리 (Spec 032)
             debug_intent = None
             if context_data and context_data.get("user_intent"):
                 user_intent_obj = context_data["user_intent"]
-                logging.info(f"User Intent Object: {user_intent_obj}")
                 debug_intent = {
                     "intent": user_intent_obj.intent.value if hasattr(user_intent_obj, "intent") else "N/A",
                     "targets": user_intent_obj.targets if hasattr(user_intent_obj, "targets") else [],
                     "reasoning": user_intent_obj.reasoning if hasattr(user_intent_obj, "reasoning") else "",
                 }
-                logging.info(f"Debug Intent Dict: {debug_intent}")
-            else:
-                logging.warning(f"No user_intent in context_data. Context keys: {context_data.keys() if context_data else 'None'}")
 
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": answer,
-                    "debug_info": context_data if context_data else {},
-                    "debug_intent": debug_intent,
-                    "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")}
-                    if context_data
-                    else {},
-                    "debug_prompt": context_data.get("full_context") if context_data else "",
-                }
-            )
+            # 세션 상태에 저장
+            new_message = {
+                "role": "assistant",
+                "content": answer,
+                "debug_info": context_data if context_data else {},
+                "debug_intent": debug_intent,
+                "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")}
+                if context_data
+                else {},
+                "debug_prompt": context_data.get("full_context", ""),
+            }
+            st.session_state.messages.append(new_message)
+
+            # 화면 갱신 (루프에서 다시 그리도록 함) - Spec 032
+            st.rerun()
 
         except Exception as e:
             st.error(f"Error: {e}")
             logging.exception("Agent Execution Failed")
+            # 에러 메시지도 저장
+            st.session_state.messages.append({"role": "assistant", "content": f"Error: {e}"})
+            st.rerun()
 
 # --- Feedback Section ---
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "assistant":
