@@ -58,13 +58,13 @@
 - [x] Commit: `test(spec-033): add rag graph integration tests`
 
 ### 3-2. Implementation - RAGService 전환
-- [ ] `app/domain/services/rag_service.py` 수정
-  - Constructor에 `RAGGraphBuilder` 추가
+- [x] `app/domain/services/rag_service.py` 수정
+  - Constructor에 `graph: CompiledStateGraph` 주입
   - `retrieve_and_generate()` → Graph Invocation으로 변경
   - `_state_to_result()` 헬퍼 메서드 추가
-- [ ] 기존 헬퍼 메서드를 RAGNodes로 이동 (코드 정리)
-- [ ] Test 실행 (Pass): `uv run pytest tests/integration/bdd/test_rag_graph_flow.py -v`
-- [ ] Commit: `refactor(spec-033): migrate rag service to langgraph`
+- [x] 기존 헬퍼 메서드를 RAGNodes로 이동 (코드 정리)
+- [x] Test 실행 (Pass): `uv run pytest tests/integration/bdd/test_rag_graph_flow.py -v`
+- [x] Commit: `refactor(spec-033): migrate rag service to langgraph`
 
 ---
 
