@@ -91,10 +91,11 @@ class RAGGraphState(TypedDict):
 
 **상세 원인 분석**:
 - **Intent Classifier의 동작**: `Intent: COMPARE`, `Targets: ["일론 머스크", "스티브 잡스"]`로 의도를 아주 정확하게 파악함.
-- **Strict Filtering의 함정**: 파이프라인은 추출된 타겟을 바탕으로 `source` 필드 필터링을 강제함. 
-  - 검색 명령: `source가 ["일론 머스크", "스티브 잡스"]인 문서를 찾아라.`
-  - 실제 DB 상태: 문서는 `Elon Musk Bio`라는 영어 타이틀/소스로 저장되어 있거나, `tech_wiki`와 같은 다른 소스 명칭을 가짐.
 - **결과**: 한글 대상명과 실제 DB의 소스 명칭이 **정확히 일치(Exact Match)**하지 않아 필터링 단계에서 모든 검색 결과가 차단됨.
+
+**해결 (Spec 034)**:
+- **Filter Fallback 로직 도입**: 필터링된 검색 결과가 0건일 경우, 자동으로 필터를 해제하고 **전역 검색(Global Search)**을 재수행하여 최소한의 컨텍스트를 확보함.
+- `fallback_triggered` 상태를 통해 사용자에게 전역 검색 결과임을 고지함.
 
 ---
 
@@ -105,9 +106,10 @@ class RAGGraphState(TypedDict):
 
 **상세 원인 분석**:
 - **RAG의 기본 전제**: RAG는 주어진 Context 내에서만 답을 찾아야 함.
-- **프롬프트 제어 부족**: 현재 `nodes.py`의 `generate_answer` 노드에 설정된 프롬프트가 충분히 엄격하지 않음. 
-  - "컨텍스트 기반으로 답해라"라는 지시는 있으나, **"컨텍스트에 정보가 아예 없으면 절대 지어내지 말고 모른다고 답해라"**라는 강력한 제약(Guardrail)이 부족함.
 - **결과**: LLM이 자신의 내부 지식(Internal Knowledge)을 동원하여 답변함으로써, 사용자는 시스템이 DB 정보를 사용한 것으로 오해할 수 있는 상황이 발생함.
+
+**해결 (Spec 034)**:
+- **Negative Constraints 강화**: 프롬프트에 "컨텍스트에 정보가 부족하면 명확히 모른다고 답하라"는 **CRITICAL RULES**를 추가하여 내부 지식 사용을 엄격히 제한함.
 
 ---
 

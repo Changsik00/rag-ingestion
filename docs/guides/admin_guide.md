@@ -33,6 +33,12 @@ docker compose up --build
 2.  **Job Details**: 선택한 작업의 상세 정보(JSON)가 확장 패널에 표시됩니다.
 3.  **Retry**: 작업 상태가 `FAILED`인 경우, `Retry Job {ID}` 버튼이 활성화됩니다. 클릭 시 해당 URL에 대해 새로운 Ingestion 작업을 트리거합니다.
 
+### 3.3 RAG Playground (Spec 034)
+질의응답 및 지식 검색 과정을 테스트하고 디버깅할 수 있는 환경입니다.
+- **Knowledge Source**: 사이드바에서 검색 대상을 특정 문서로 제한할 수 있습니다.
+- **HITL Control**: LangGraph의 인터럽트 기능을 통해 사고 과정 도중 개입하거나, 체크포인트에서 질문을 재개할 수 있습니다.
+- **Debug UI**: 사고 과정(Reasoning), 적용된 필터, Fallback 발생 여부를 상세히 확인할 수 있습니다.
+
 ## 4. 트러블슈팅
 
 ### 백엔드 연결 실패
