@@ -162,6 +162,7 @@ class AdminAgent:
             "keyword_chunks": result.keyword_chunks,
             "graph_data": result.graph_data,
             "full_context": result.full_context,
+            "user_intent": result.user_intent,  # Spec 032
         }
 
         return {
