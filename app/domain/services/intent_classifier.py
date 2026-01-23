@@ -2,7 +2,7 @@ import json
 import logging
 
 from app.domain.interfaces.llm import LLMInterface
-from app.domain.schemas.intent import UserIntent, IntentType
+from app.domain.schemas.intent import UserIntent
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class IntentClassifier:
     """
     사용자 쿼리의 의도(Intent)를 분석하여 검색 전략을 결정하는 Domain Service.
-    
+
     LLM을 사용하여 다음을 수행:
     1. 의도 분류 (GENERAL_QUERY, COMPARE, SUMMARIZE, FILTER_BY_TOPIC)
     2. 검색 대상(targets) 추출 (Document ID, Entity Name 등)

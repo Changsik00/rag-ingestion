@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-from langchain_core.messages import AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
@@ -14,12 +13,11 @@ def mock_chat_model():
 
 def test_generate_returns_string(mock_chat_model):
     # Setup
-    from langchain_core.messages import AIMessage
     # Mock for chain: llm | StrOutputParser()
     mock_chain = MagicMock()
     mock_chain.invoke.return_value = "Generated response"
     mock_chat_model.__or__.return_value = mock_chain
-    
+
     adapter = LangChainLLMAdapter(llm=mock_chat_model)
 
     # Execute
@@ -30,12 +28,13 @@ def test_generate_returns_string(mock_chat_model):
     mock_chat_model.__or__.assert_called_once()
     mock_chain.invoke.assert_called_once_with("Test prompt")
 
+
 def test_generate_handles_error(mock_chat_model):
     # Setup
     mock_chain = MagicMock()
     mock_chain.invoke.side_effect = Exception("API Error")
     mock_chat_model.__or__.return_value = mock_chain
-    
+
     adapter = LangChainLLMAdapter(llm=mock_chat_model)
 
     # Execute

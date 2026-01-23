@@ -1,4 +1,3 @@
-
 from uuid import uuid4
 
 import pytest
@@ -26,10 +25,11 @@ class MockEmbeddingFunction(embedding_functions.EmbeddingFunction):
             elif text == "similar":
                 embeddings.append([0.9, 0.1])
             elif text == "diverse":
-                embeddings.append([0.5, 0.8]) # Orthogonal-ish to [1,0]
+                embeddings.append([0.5, 0.8])  # Orthogonal-ish to [1,0]
             else:
                 embeddings.append([0.1, 0.1])
         return embeddings
+
 
 @pytest.fixture
 def chroma_repo_mmr():
@@ -50,6 +50,7 @@ def chroma_repo_mmr():
         client.delete_collection("test_mmr")
     except Exception:
         pass
+
 
 @pytest.mark.integration
 def test_chroma_mmr_diversity(chroma_repo_mmr):
@@ -80,7 +81,7 @@ def test_chroma_mmr_diversity(chroma_repo_mmr):
 
     # 3. MMR Search (TDD: Method not implemented yet)
     if hasattr(chroma_repo_mmr, "search_mmr"):
-        mmr_results = chroma_repo_mmr.search_mmr("query", limit=2, diversity=0.8) # High diversity penalty
+        mmr_results = chroma_repo_mmr.search_mmr("query", limit=2, diversity=0.8)  # High diversity penalty
         mmr_content = [c.content for c in mmr_results]
 
         # Expect Exact and Diverse (Similar penalized for being too close to Exact)

@@ -13,6 +13,7 @@ from app.use_cases.ingestion import IngestionService
 
 logger = logging.getLogger(__name__)
 
+
 class AdminState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
     intent: str
@@ -20,14 +21,13 @@ class AdminState(TypedDict):
     context_data: dict  # For passing RAG details (chunks, graph) to UI
     filters: dict | None  # For RAG filtering
 
+
 class AdminAgent:
     def __init__(self, rag_service: RAGService, ingestion_service: IngestionService):
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash-exp",
-            temperature=0,
-            google_api_key=get_settings().GEMINI_API_KEY
+            model="gemini-2.0-flash-exp", temperature=0, google_api_key=get_settings().GEMINI_API_KEY
         )
         self.workflow = self._build_graph()
 
@@ -40,17 +40,10 @@ class AdminAgent:
 
         workflow.set_entry_point("router")
 
-        workflow.add_conditional_edges(
-            "router",
-            self.route_logic,
-            {
-                "ingest": "ingest",
-                "search": "search"
-            }
-        )
+        workflow.add_conditional_edges("router", self.route_logic, {"ingest": "ingest", "search": "search"})
 
-        workflow.add_edge("ingest", "search") # Ingest finishes -> Go to Search (Summary)
-        workflow.add_edge("search", END) # Search finishes and returns answer
+        workflow.add_edge("ingest", "search")  # Ingest finishes -> Go to Search (Summary)
+        workflow.add_edge("search", END)  # Search finishes and returns answer
 
         return workflow.compile()
 
@@ -104,16 +97,17 @@ class AdminAgent:
         # we can assume the tool can handle it or we extract it.
         # Let's simple split for now, assuming URL is in the text.
         import re
-        url_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+
+        url_pattern = r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
         urls = re.findall(url_pattern, last_user_msg)
 
         if not urls:
             return {
                 "messages": [AIMessage(content="URL을 찾을 수 없습니다. 올바른 URL을 입력해주세요.")],
-                "tool_output": "No URL found"
+                "tool_output": "No URL found",
             }
 
-        target_url = urls[0] # Pick first one
+        target_url = urls[0]  # Pick first one
 
         # Call Service (Blocking for MVP)
         job = self.ingestion_service.create_job(target_url)
@@ -137,12 +131,8 @@ class AdminAgent:
                 msg = f"✅ 수집 완료: {target_url}\n\n이제 내용을 요약해드릴게요..."
                 # Pass doc_id to filters for immediate searching of THIS document
                 if updated_job.docs_ids and len(updated_job.docs_ids) > 0:
-                     doc_id = str(updated_job.docs_ids[0])
-                     return {
-                         "messages": [AIMessage(content=msg)], 
-                         "tool_output": msg,
-                         "filters": {"doc_id": doc_id}
-                     }
+                    doc_id = str(updated_job.docs_ids[0])
+                    return {"messages": [AIMessage(content=msg)], "tool_output": msg, "filters": {"doc_id": doc_id}}
             else:
                 msg = f"❌ 수집 실패: {updated_job.error_message}"
 
@@ -171,18 +161,18 @@ class AdminAgent:
             "vector_chunks": result.vector_chunks,
             "keyword_chunks": result.keyword_chunks,
             "graph_data": result.graph_data,
-            "full_context": result.full_context
+            "full_context": result.full_context,
         }
 
         return {
             "messages": [AIMessage(content=result.answer)],
             "tool_output": "Search Completed",
-            "context_data": context_data
+            "context_data": context_data,
         }
+
 
 # Helper to expose nodes for testing if needed
 def router_node(state: AdminState):
     # This is a bit tricky since it needs 'self'.
     # For testing, we might need to mock the agent or use the class.
     pass
-

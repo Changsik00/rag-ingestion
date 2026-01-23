@@ -1,11 +1,14 @@
-import pytest
 from uuid import uuid4
-from app.domain.entities.document import Document
+
+import pytest
+
 from app.domain.entities.chunk import Chunk
+from app.domain.entities.document import Document
+from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
-from app.infrastructure.storage.chroma import ChromaStorage
 from app.interfaces.api.dependencies import get_neo4j_driver
+
 
 @pytest.fixture(scope="module")
 def stored_data():
@@ -24,11 +27,23 @@ def stored_data():
     doc_a = Document(
         id=doc_a_id,
         content="Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories.",
-        metadata={"title": "Apple (Tech)", "source": "tech_wiki"}
+        metadata={"title": "Apple (Tech)", "source": "tech_wiki"},
     )
     chunks_a = [
-        Chunk(id=str(uuid4()), content="Apple generally releases a new iPhone every September.", parent_id=doc_a_id, index=0, metadata={"source": "tech_wiki"}),
-        Chunk(id=str(uuid4()), content="macOS is the operating system for Apple's Mac computers.", parent_id=doc_a_id, index=1, metadata={"source": "tech_wiki"})
+        Chunk(
+            id=str(uuid4()),
+            content="Apple generally releases a new iPhone every September.",
+            parent_id=doc_a_id,
+            index=0,
+            metadata={"source": "tech_wiki"},
+        ),
+        Chunk(
+            id=str(uuid4()),
+            content="macOS is the operating system for Apple's Mac computers.",
+            parent_id=doc_a_id,
+            index=1,
+            metadata={"source": "tech_wiki"},
+        ),
     ]
 
     # Document B: Apple (Fruit)
@@ -36,11 +51,23 @@ def stored_data():
     doc_b = Document(
         id=doc_b_id,
         content="An apple is a round, edible fruit produced by an apple tree (Malus spp.).",
-        metadata={"title": "Apple (Fruit)", "source": "fruit_wiki"}
+        metadata={"title": "Apple (Fruit)", "source": "fruit_wiki"},
     )
     chunks_b = [
-        Chunk(id=str(uuid4()), content="Apples are generally red, green, or yellow in color.", parent_id=doc_b_id, index=0, metadata={"source": "fruit_wiki"}),
-        Chunk(id=str(uuid4()), content="Apples are rich in fiber and vitamin C.", parent_id=doc_b_id, index=1, metadata={"source": "fruit_wiki"})
+        Chunk(
+            id=str(uuid4()),
+            content="Apples are generally red, green, or yellow in color.",
+            parent_id=doc_b_id,
+            index=0,
+            metadata={"source": "fruit_wiki"},
+        ),
+        Chunk(
+            id=str(uuid4()),
+            content="Apples are rich in fiber and vitamin C.",
+            parent_id=doc_b_id,
+            index=1,
+            metadata={"source": "fruit_wiki"},
+        ),
     ]
 
     # Save to Composite Storage (Both Graph & Vector)
@@ -53,6 +80,7 @@ def stored_data():
     # Ideally, we should delete these docs.
     pass
 
+
 @pytest.mark.integration
 def test_homonym_isolation(stored_data):
     """
@@ -61,16 +89,16 @@ def test_homonym_isolation(stored_data):
     Should NOT retrieve any 'iPhone' or 'Mac' related chunks.
     """
     repo, doc_tech_id, doc_fruit_id = stored_data
-    
+
     query = "Apple features"
-    
+
     # 1. Search in Fruit Context
     # Note: filters argument is not yet implemented in interface, so this might fail statically or run ignoring filter.
     # We expect 'filters' to be accepted in the future implementation.
     try:
         results_fruit = repo.search(query, limit=5, filters={"doc_id": doc_fruit_id})
     except TypeError:
-         pytest.fail("Repository.search does not accept 'filters' argument yet.")
+        pytest.fail("Repository.search does not accept 'filters' argument yet.")
 
     # Verification
     for chunk in results_fruit:
@@ -78,7 +106,10 @@ def test_homonym_isolation(stored_data):
         assert str(chunk.parent_id) == str(doc_fruit_id), f"Found chunk from wrong document! content: {chunk.content}"
         assert "iPhone" not in chunk.content
         assert "Mac" not in chunk.content
-        assert "red" in chunk.content or "fiber" in chunk.content or "edible" in chunk.content or "fruit" in chunk.content
+        assert (
+            "red" in chunk.content or "fiber" in chunk.content or "edible" in chunk.content or "fruit" in chunk.content
+        )
+
 
 @pytest.mark.integration
 def test_context_switch(stored_data):
@@ -102,6 +133,7 @@ def test_context_switch(stored_data):
     for chunk in results_fruit:
         assert "macOS" not in chunk.content
 
+
 @pytest.mark.integration
 def test_multi_filter_isolation(stored_data):
     """
@@ -109,10 +141,10 @@ def test_multi_filter_isolation(stored_data):
     If we support lists in filters (e.g. doc_id in [A, B]), verify it works.
     """
     repo, doc_tech_id, doc_fruit_id = stored_data
-    
+
     # Filter for BOTH docs
     results = repo.search("Apple", limit=10, filters={"doc_id": [doc_tech_id, doc_fruit_id]})
-    
+
     # Needs to find chunks from BOTH
     found_ids = {str(c.parent_id) for c in results}
     assert str(doc_tech_id) in found_ids

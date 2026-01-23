@@ -25,7 +25,7 @@ def run_scraper_api_test(url: str):
             print(f"🔗 Source: {data.get('url')}")
             print("=" * 60)
 
-            markdown = data.get('markdown', '')
+            markdown = data.get("markdown", "")
             preview_len = 500
             print(f"\n📝 Content Preview (First {preview_len} chars):\n")
             print(markdown[:preview_len])
@@ -34,7 +34,7 @@ def run_scraper_api_test(url: str):
 
             print("\n" + "=" * 60)
             print("MetaData:")
-            print(json.dumps(data.get('metadata'), indent=2, ensure_ascii=False))
+            print(json.dumps(data.get("metadata"), indent=2, ensure_ascii=False))
         else:
             print(f"\n❌ Request Failed: {resp.status_code}")
             print(resp.text)
@@ -45,6 +45,7 @@ def run_scraper_api_test(url: str):
         print("   Run: docker-compose up -d backend")
     except Exception as e:
         print(f"\n❌ Error: {e}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

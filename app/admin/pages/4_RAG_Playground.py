@@ -40,11 +40,7 @@ def get_deps():
 
     # 3. Domain Service
     rag_service = RAGService(
-        neo4j_doc_repo=neo4j_doc,
-        neo4j_graph_repo=neo4j_graph,
-        chroma_repo=chroma,
-        query_rewriter=rewriter,
-        llm=llm
+        neo4j_doc_repo=neo4j_doc, neo4j_graph_repo=neo4j_graph, chroma_repo=chroma, query_rewriter=rewriter, llm=llm
     )
 
     feedback_service = FeedbackService()
@@ -81,15 +77,16 @@ def get_deps():
 
     # Scraper
     from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
+
     scraper = TrafilaturaWebScraper()
 
     ingestion_service = IngestionService(
         scraper=scraper,
-        repository=composite_repo, # Composite Storage (Neo4j + Chroma)
+        repository=composite_repo,  # Composite Storage (Neo4j + Chroma)
         graph=neo4j_graph,
         job_repository=job_repo,
         chunker=chunker,
-        extractor=extractor
+        extractor=extractor,
     )
 
     admin_agent = AdminAgent(rag_service, ingestion_service)
@@ -116,7 +113,9 @@ for message in st.session_state.messages:
             if debug.get("graph_data"):
                 with st.expander(f"🕸️ Graph Facts ({len(debug['graph_data'])})"):
                     for item in debug["graph_data"]:
-                        st.markdown(f"- **{item.get('source')}** -[{item.get('relationship')}]-> **{item.get('target')}**")
+                        st.markdown(
+                            f"- **{item.get('source')}** -[{item.get('relationship')}]-> **{item.get('target')}**"
+                        )
 
             # Vector & Keyword Chunks
             v_chunks = debug.get("vector_chunks", [])
@@ -135,46 +134,46 @@ for message in st.session_state.messages:
 
         # Debug Prompt
         if message.get("debug_prompt"):
-             with st.expander("🛠️ Debug: Prompt & Rewriting"):
-                 rewrite_info = message.get("debug_rewrite")
-                 if rewrite_info:
-                     st.caption(f"Rewritten: {rewrite_info.get('rewritten')}")
-                 st.code(message["debug_prompt"], language="text")
+            with st.expander("🛠️ Debug: Prompt & Rewriting"):
+                rewrite_info = message.get("debug_rewrite")
+                if rewrite_info:
+                    st.caption(f"Rewritten: {rewrite_info.get('rewritten')}")
+                st.code(message["debug_prompt"], language="text")
 
 # --- Sidebar: Knowledge Source ---
 with st.sidebar:
     st.subheader("📚 Knowledge Source")
     st.caption("Restrict search scope to specific documents")
-    
+
     # Document Search Functionality
     search_term = st.text_input("🔍 Search Documents", placeholder="Enter title or URL...")
-    
+
     with st.spinner("Loading Documents..."):
         try:
             doc_repo = admin_agent.rag_service.neo4j_doc_repo
             # Use the new search_term in list_documents
             docs = doc_repo.list_documents(limit=50, search_term=search_term if search_term else None)
-            
+
             doc_options = {}
             for d in docs:
                 title = d.metadata.get("title", "Untitled")
                 source = d.metadata.get("source", "")
                 label = f"{title} ({source})" if source else title
                 doc_options[d.id] = label
-            
+
             selected_doc_ids = st.multiselect(
                 "Select Documents",
                 options=list(doc_options.keys()),
                 format_func=lambda x: doc_options.get(x, x),
-                help="Only these documents will be used for RAG context."
+                help="Only these documents will be used for RAG context.",
             )
-            
+
         except Exception as e:
             st.error(f"Failed to load documents: {e}")
             selected_doc_ids = []
 
     st.divider()
-    
+
     with st.expander("🛠️ Advanced Settings", expanded=False):
         st.caption("Debug & Internal Settings")
         # Any other settings can go here
@@ -235,12 +234,14 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
 
                 if graph_data:
                     with st.expander(f"🕸️ Graph Facts ({len(graph_data)})"):
-                         for item in graph_data:
-                            st.markdown(f"- **{item.get('source')}** -[{item.get('relationship')}]-> **{item.get('target')}**")
+                        for item in graph_data:
+                            st.markdown(
+                                f"- **{item.get('source')}** -[{item.get('relationship')}]-> **{item.get('target')}**"
+                            )
 
                 total_docs = len(vector_chunks) + len(keyword_chunks)
                 if total_docs > 0:
-                     with st.expander(f"📚 Retrieved Documents ({total_docs})"):
+                    with st.expander(f"📚 Retrieved Documents ({total_docs})"):
                         st.caption("Vector Search (MMR)")
                         for c in vector_chunks:
                             st.text(f"---\n{c.content[:200]}...")
@@ -249,13 +250,17 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                             st.text(f"---\n{c.content[:200]}...")
 
             # Save to History
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": answer,
-                "debug_info": context_data if context_data else {},
-                "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")} if context_data else {},
-                "debug_prompt": context_data.get("full_context") if context_data else ""
-            })
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": answer,
+                    "debug_info": context_data if context_data else {},
+                    "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")}
+                    if context_data
+                    else {},
+                    "debug_prompt": context_data.get("full_context") if context_data else "",
+                }
+            )
 
         except Exception as e:
             st.error(f"Error: {e}")
@@ -278,4 +283,3 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "assis
         if st.button("👎 Bad"):
             feedback_service.save_feedback({"query": last_user_msg, "response": last_bot_msg, "feedback": "negative"})
             st.toast("Feedback recorded.")
-

@@ -1,11 +1,10 @@
-
 import asyncio
 import logging
 from dataclasses import dataclass
 from typing import Any
 
 from app.domain.entities.chunk import Chunk
-from app.domain.schemas.intent import UserIntent, IntentType
+from app.domain.schemas.intent import IntentType, UserIntent
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 
@@ -21,6 +20,7 @@ class RAGResult:
     graph_data: list[dict]
     full_context: str
 
+
 class RAGService:
     def __init__(
         self,
@@ -29,11 +29,11 @@ class RAGService:
         chroma_repo: Any,
         query_rewriter: QueryRewriter,
         intent_classifier: IntentClassifier,
-        llm: Any
+        llm: Any,
     ):
         """
         Orchestrates the Hybrid Retrieval Augmented Generation pipeline.
-        
+
         Args:
             neo4j_doc_repo: Repository for Neo4j Keyword Search.
             neo4j_graph_repo: Repository for Graph Traversal.
@@ -55,13 +55,13 @@ class RAGService:
         """
         # 1. Intent Classification (NEW in Spec 032)
         user_intent = self._classify_intent_with_fallback(query, history)
-        
+
         # 2. Convert Intent to Filters (Auto-derived)
         auto_filters = self._intent_to_filters(user_intent)
-        
+
         # 3. Merge Filters (Manual filters override auto filters)
         final_filters = filters if filters is not None else auto_filters
-        
+
         # 4. Rewrite Query
         rewritten_query = self.query_rewriter.rewrite(query, history)
 
@@ -70,14 +70,10 @@ class RAGService:
         keyword_task = asyncio.create_task(self._search_keyword(rewritten_query, final_filters))
         graph_task = asyncio.create_task(self._search_graph(rewritten_query))
 
-        vector_results, keyword_results, graph_results = await asyncio.gather(
-            vector_task, keyword_task, graph_task
-        )
+        vector_results, keyword_results, graph_results = await asyncio.gather(vector_task, keyword_task, graph_task)
 
         # 6. Merge and Format Context
-        context_str = self._merge_and_format_context(
-            vector_results, keyword_results, graph_results
-        )
+        context_str = self._merge_and_format_context(vector_results, keyword_results, graph_results)
 
         # 7. Generate Answer
         prompt = (
@@ -90,7 +86,7 @@ class RAGService:
 
         response = self.llm.generate(prompt)
 
-        if hasattr(response, 'content'):
+        if hasattr(response, "content"):
             answer_text = response.content
         else:
             answer_text = str(response)
@@ -101,7 +97,7 @@ class RAGService:
             vector_chunks=vector_results,
             keyword_chunks=keyword_results,
             graph_data=graph_results,
-            full_context=context_str
+            full_context=context_str,
         )
 
     def _classify_intent_with_fallback(self, query: str, history: list[dict]) -> UserIntent:
@@ -114,18 +110,16 @@ class RAGService:
         except Exception as e:
             logger.warning(f"Intent classification failed: {e}. Falling back to GENERAL_QUERY.")
             return UserIntent(
-                intent=IntentType.GENERAL_QUERY,
-                targets=[],
-                reasoning="Fallback due to classification error"
+                intent=IntentType.GENERAL_QUERY, targets=[], reasoning="Fallback due to classification error"
             )
 
     def _intent_to_filters(self, intent: UserIntent) -> dict | None:
         """
         Intent를 Repository Filters로 변환.
-        
+
         Args:
             intent: User Intent 분류 결과
-            
+
         Returns:
             dict: Repository 필터 (document_id, topic 등)
             None: 필터 불필요 (GENERAL_QUERY)
@@ -137,13 +131,13 @@ class RAGService:
                 # 간단한 구현: targets를 lowercase로 변환하여 source 검색
                 return {"source": intent.targets}
             return None
-        
+
         elif intent.intent == IntentType.FILTER_BY_TOPIC:
             # targets를 topic/entity 필터로 변환
             if intent.targets:
                 return {"topic": intent.targets}
             return None
-        
+
         else:  # GENERAL_QUERY
             return None
 
@@ -157,10 +151,7 @@ class RAGService:
         return self.neo4j_graph_repo.get_subgraph([query])
 
     def _merge_and_format_context(
-        self,
-        vector_chunks: list[Chunk],
-        keyword_chunks: list[Chunk],
-        graph_data: list[dict]
+        self, vector_chunks: list[Chunk], keyword_chunks: list[Chunk], graph_data: list[dict]
     ) -> str:
         """
         Merges chunks, deduplicates, and formats citations.
@@ -183,9 +174,7 @@ class RAGService:
         for i, chunk in enumerate(combined, 1):
             source = chunk.metadata.get("source", "Unknown")
             title = chunk.metadata.get("title", "Untitled")
-            formatted_chunks.append(
-                f"[{i}] Source: {source} ({title})\\n{chunk.content}"
-            )
+            formatted_chunks.append(f"[{i}] Source: {source} ({title})\\n{chunk.content}")
 
         text_context = "\\n\\n".join(formatted_chunks)
 

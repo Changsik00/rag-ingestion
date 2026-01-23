@@ -28,6 +28,7 @@ async def test_ingest_url_tool():
         mock_ingestion_service.process_job.assert_called_once_with("job-123")
         assert "Successfully ingested" in result
 
+
 @pytest.mark.asyncio
 async def test_search_knowledge_base_tool():
     """Test search_knowledge_base tool calling RAGService"""

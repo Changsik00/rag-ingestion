@@ -1,4 +1,3 @@
-
 import pytest
 
 from app.domain.schemas.ontology import EntityType
@@ -12,6 +11,7 @@ def graph_repo():
     repo = Neo4jGraphRepository(driver)
     yield repo
 
+
 @pytest.mark.integration
 def test_get_subgraph_flow(graph_repo):
     """
@@ -24,6 +24,7 @@ def test_get_subgraph_flow(graph_repo):
     # 1. Setup Data
     # Use unique names to avoid collision
     from uuid import uuid4
+
     suffix = uuid4().hex[:6]
     elon = f"Elon_{suffix}"
     tesla = f"Tesla_{suffix}"

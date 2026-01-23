@@ -31,6 +31,7 @@ from app.use_cases.ingestion import IngestionService
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
 # 모든 의존성은 함수로 정의되어 테스트 시 Mock으로 대체 가능합니다.
 
+
 # Scraper 의존성 (웹 페이지 스크래핑)
 @lru_cache
 def get_scraper() -> ScraperInterface:
@@ -120,6 +121,7 @@ def get_langgraph_adapter(extractor: Annotated[SemanticExtractor, Depends(get_se
 
 # === RAG Service Dependencies (Spec 032) ===
 
+
 # Query Rewriter 의존성
 @lru_cache
 def get_query_rewriter() -> QueryRewriter:
@@ -145,7 +147,7 @@ def get_rag_service(
     neo4j_graph_repo = Neo4jGraphRepository(driver)
     chroma_repo = ChromaStorage()
     llm_adapter = get_llm()
-    
+
     return RAGService(
         neo4j_doc_repo=neo4j_doc_repo,
         neo4j_graph_repo=neo4j_graph_repo,

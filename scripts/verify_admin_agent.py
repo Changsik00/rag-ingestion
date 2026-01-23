@@ -33,11 +33,7 @@ async def main():
     rewriter = QueryRewriter(llm)
 
     rag_service = RAGService(
-        neo4j_doc_repo=neo4j_doc,
-        neo4j_graph_repo=neo4j_graph,
-        chroma_repo=chroma,
-        query_rewriter=rewriter,
-        llm=llm
+        neo4j_doc_repo=neo4j_doc, neo4j_graph_repo=neo4j_graph, chroma_repo=chroma, query_rewriter=rewriter, llm=llm
     )
 
     job_repo = Neo4jJobRepository(driver)
@@ -52,7 +48,7 @@ async def main():
         graph=neo4j_graph,
         job_repository=job_repo,
         chunker=chunker,
-        extractor=extractor
+        extractor=extractor,
     )
 
     agent = AdminAgent(rag_service, ingestion_service)
@@ -89,6 +85,7 @@ async def main():
     assert "vector_chunks" in context
 
     print("\n🎉 Verification Success!")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

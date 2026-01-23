@@ -11,6 +11,7 @@ class TestQueryRewriteFlow:
     @pytest.fixture
     def rewriter(self):
         from dotenv import load_dotenv
+
         load_dotenv()
 
         # Real LLM Adapter (requires GEMINI_API_KEY in env)
@@ -19,11 +20,8 @@ class TestQueryRewriteFlow:
             pytest.skip("GEMINI_API_KEY not found")
 
         from langchain_google_genai import ChatGoogleGenerativeAI
-        base_llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash-exp",
-            temperature=0,
-            google_api_key=api_key
-        )
+
+        base_llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0, google_api_key=api_key)
         llm = LangChainLLMAdapter(llm=base_llm)
         return QueryRewriter(llm)
 
@@ -47,28 +45,28 @@ class TestQueryRewriteFlow:
         # Simulate that Turn 1 was answered
         history2 = [
             {"role": "user", "content": query1},
-            {"role": "assistant", "content": "그는 프리토리아 남학교를 다녔습니다."}
+            {"role": "assistant", "content": "그는 프리토리아 남학교를 다녔습니다."},
         ]
         query2 = "그가 만든 자동차 회사는?"
 
         rewrite2 = rewriter.rewrite(query2, history2)
         print(f"\n[Turn 2] Input: {query2} -> Rewritten: {rewrite2}")
         assert "자동차" in rewrite2 or "Car" in rewrite2
-        assert "일론" in rewrite2 or "Musk" in rewrite2 # Should resolve 'He'
+        assert "일론" in rewrite2 or "Musk" in rewrite2  # Should resolve 'He'
 
         # 3. Turn 3: Recall (The problematic step)
         # Simulate Turn 2 answered
         history3 = history2 + [
             {"role": "user", "content": query2},
-            {"role": "assistant", "content": "그는 테슬라(Tesla)를 창립했습니다."}
+            {"role": "assistant", "content": "그는 테슬라(Tesla)를 창립했습니다."},
         ]
-        query3 = "그가 다닌 그 학교는?" # Refers back to Turn 1 'School', ignoring Turn 2 'Car'
+        query3 = "그가 다닌 그 학교는?"  # Refers back to Turn 1 'School', ignoring Turn 2 'Car'
 
         rewrite3 = rewriter.rewrite(query3, history3)
         print(f"\n[Turn 3] Input: {query3} -> Rewritten: {rewrite3}")
 
         # Critical Assertion: Does it still know 'He' is Musk and 'School' is Pretoria/School context?
-        assert "성" not in rewrite3 # Should not be about Tesla 'Castle'(?) - ensuring no hallucination
+        assert "성" not in rewrite3  # Should not be about Tesla 'Castle'(?) - ensuring no hallucination
         assert "일론" in rewrite3 or "Musk" in rewrite3
         assert "학교" in rewrite3 or "School" in rewrite3
 
@@ -102,7 +100,7 @@ class TestQueryRewriteFlow:
         # (This automates Case 2)
         history = [
             {"role": "user", "content": "Tell me about Elon Musk."},
-            {"role": "assistant", "content": "He is the CEO of Tesla."}
+            {"role": "assistant", "content": "He is the CEO of Tesla."},
         ]
         service_result = rewriter.rewrite(query, history)
         print(f"\n[Case 3: QueryRewriter Service] -> Output: '{service_result}'")

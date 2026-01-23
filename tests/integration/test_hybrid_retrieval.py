@@ -1,5 +1,3 @@
-
-
 import pytest
 
 from app.infrastructure.storage.chroma import ChromaStorage
@@ -12,7 +10,6 @@ from app.interfaces.api.dependencies import get_neo4j_driver
 # But for now we run it.
 @pytest.mark.integration
 class TestHybridRetrievalReal:
-
     @pytest.fixture(scope="class")
     def driver(self):
         return get_neo4j_driver()
@@ -32,7 +29,7 @@ class TestHybridRetrievalReal:
     def test_full_pipeline_components(self, neo4j_repo, graph_repo, chroma_repo):
         """
         Verify that all three components can query their respective real DBs without error.
-        We don't assert specific data unless we seed it, 
+        We don't assert specific data unless we seed it,
         but we assert the return structures are valid (empty lists or lists of Chunks).
         """
         query = "Test Query for Hybrid Retrieval"

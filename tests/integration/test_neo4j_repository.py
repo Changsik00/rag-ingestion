@@ -1,4 +1,3 @@
-
 from uuid import uuid4
 
 import pytest
@@ -16,6 +15,7 @@ def neo4j_repo():
     yield repo
     # Cleanup (Optional)
     # repo.close() # Shared driver usually managed by dependency injection
+
 
 @pytest.mark.integration
 def test_neo4j_fulltext_search_flow(neo4j_repo):
@@ -57,6 +57,7 @@ def test_neo4j_fulltext_search_flow(neo4j_repo):
     # 3. Search
     # Wait for index consistency (Eventual Consistency handling)
     import time
+
     results = []
     # Search for the unique keyword
     target_query = unique_keyword

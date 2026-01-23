@@ -288,6 +288,7 @@
   * [ ] **Output**: `{"intent": "compare", "targets": ["doc_A", "doc_B"]}` 형태의 구조화된 데이터.
   * **Reference**: [Design Guide 005: LLM RAG Strategy](docs/design_guides/005-llm-rag-strategy.md)
   * **우선순위**: High (Spec 031 이후 필수)
+  * **Note**: Planning 중 (2026-01-23) - [Spec](specs/032-router-intent-classifier/spec.md), [Plan](specs/032-router-intent-classifier/plan.md)
 
 * [ ] **Spec 033: LangGraph State Management (Nervous System)**
   * [ ] **Goal**: Router의 결정을 `GraphState`에 저장하고, 이를 `RetrievalNode`로 정확히 전달하여 실행을 강제하는 흐름 제어 구현.

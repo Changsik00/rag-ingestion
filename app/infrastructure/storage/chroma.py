@@ -61,7 +61,7 @@ class ChromaStorage(DocumentRepository):
                 try:
                     flattened[key] = str(value)
                 except Exception:
-                     pass
+                    pass
         return flattened
 
     def save(self, document: Document) -> None:
@@ -186,7 +186,7 @@ class ChromaStorage(DocumentRepository):
         """
         if not filters:
             return None
-        
+
         conditions = []
         for key, value in filters.items():
             # Map 'doc_id' -> 'parent_id' for chunk
@@ -219,11 +219,7 @@ class ChromaStorage(DocumentRepository):
         """Vector search implementation."""
         try:
             where_clause = self._build_where_clause(filters)
-            results = self.collection.query(
-                query_texts=[query],
-                n_results=limit,
-                where=where_clause
-            )
+            results = self.collection.query(query_texts=[query], n_results=limit, where=where_clause)
 
             chunks = []
             if results and results["ids"] and results["ids"][0]:
@@ -246,7 +242,9 @@ class ChromaStorage(DocumentRepository):
             logger.error(f"ChromaDB search failed: {e}")
             return []
 
-    def search_mmr(self, query: str, limit: int = 5, diversity: float = 0.5, filters: dict | None = None) -> list[Chunk]:
+    def search_mmr(
+        self, query: str, limit: int = 5, diversity: float = 0.5, filters: dict | None = None
+    ) -> list[Chunk]:
         """
         Maximal Marginal Relevance (MMR) Search.
         diversity: 0.0 (Pure Relevance) ~ 1.0 (Pure Diversity).
@@ -266,7 +264,7 @@ class ChromaStorage(DocumentRepository):
                 query_texts=[query],
                 n_results=fetch_k,
                 include=["metadatas", "documents", "embeddings", "distances"],
-                where=where_clause
+                where=where_clause,
             )
 
             if not results or not results["ids"] or len(results["ids"][0]) == 0:
@@ -280,7 +278,7 @@ class ChromaStorage(DocumentRepository):
             # 2. Embed Query
             query_embedding = np.array(self.collection._embedding_function([query]))
             if query_embedding.ndim == 1:
-                query_embedding = query_embedding.reshape(1, -1) # (1, D)
+                query_embedding = query_embedding.reshape(1, -1)  # (1, D)
 
             # Helper: Cosine Similarity
             def compute_similarity(v1, v2):

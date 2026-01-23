@@ -41,8 +41,8 @@ def dump_full_document(doc_id_str=None):
         try:
             target_uuid = UUID(doc_id_str)
         except ValueError:
-             print("❌ Invalid UUID format.")
-             return
+            print("❌ Invalid UUID format.")
+            return
 
         doc = repo.get(target_uuid)
 
@@ -55,10 +55,10 @@ def dump_full_document(doc_id_str=None):
             f.write(doc.content)
 
         print(f"✅ Full content saved to: {os.path.abspath(output_filename)}")
-        print("="*80)
+        print("=" * 80)
         print(f"Title: {doc.metadata.get('title')}")
         print(f"URL: {doc.metadata.get('url')}")
-        print("="*80)
+        print("=" * 80)
         print("Preview (First 1000 chars):")
         print(doc.content[:1000])
         print("...")
@@ -67,6 +67,7 @@ def dump_full_document(doc_id_str=None):
         print(f"❌ Error: {e}")
     finally:
         repo.close()
+
 
 if __name__ == "__main__":
     target_id = None

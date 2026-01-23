@@ -114,13 +114,15 @@ class Neo4jGraphRepository:
             results = session.run(query, names=entity_names)
             for record in results:
                 # Deduplication logic might be needed at service layer, but here we just return what we find
-                triples.append({
-                    "source": record["source"],
-                    "relationship": record["relationship"],
-                    "target": record["target"],
-                    # Optional: Include types if needed for better context generation
-                    # "source_type": record["source_labels"][0] if record["source_labels"] else "Unknown",
-                    # "target_type": record["target_labels"][0] if record["target_labels"] else "Unknown"
-                })
+                triples.append(
+                    {
+                        "source": record["source"],
+                        "relationship": record["relationship"],
+                        "target": record["target"],
+                        # Optional: Include types if needed for better context generation
+                        # "source_type": record["source_labels"][0] if record["source_labels"] else "Unknown",
+                        # "target_type": record["target_labels"][0] if record["target_labels"] else "Unknown"
+                    }
+                )
 
         return triples
