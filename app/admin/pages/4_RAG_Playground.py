@@ -275,13 +275,13 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             # [Spec 034] HITL Thread ID & Interrupt Logic
             thread_id = f"playground-{st.session_state.get('thread_id_seed', 'default')}"
             interrupt_nodes = ["search"] if hitl_enabled else None
-            
+
             # Rebuild graph IF HITL setting changed (or just always for simplicity in playground)
             admin_agent.workflow = admin_agent._build_graph(interrupt_before=interrupt_nodes)
-            
+
             inputs = {"messages": history_interactive, "filters": filters, "thread_id": thread_id}
             config = {"configurable": {"thread_id": thread_id}}
-            
+
             # Execute with possible interrupt
             final_state = asyncio.run(admin_agent.workflow.ainvoke(inputs, config=config))
 
@@ -290,7 +290,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             if snapshot.next:
                 status_container.update(label="🚦 Paused for Human Review", state="running", expanded=True)
                 st.warning(f"Pipeline paused at: **{snapshot.next[0]}**. Review the reasoning trace below.")
-                
+
                 if st.button("✅ Confirm & Generate Answer", type="primary", use_container_width=True):
                     # Resume
                     final_state = asyncio.run(admin_agent.workflow.ainvoke(None, config=config))

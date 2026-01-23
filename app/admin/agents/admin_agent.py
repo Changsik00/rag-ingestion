@@ -46,7 +46,7 @@ class AdminAgent:
         workflow.add_edge("ingest", "search")  # Ingest finishes -> Go to Search (Summary)
         workflow.add_edge("search", END)  # Search finishes and returns answer
 
-        # Checkpointer is handled by RAGService, but AdminAgent itself 
+        # Checkpointer is handled by RAGService, but AdminAgent itself
         # can also have one if we want HITL at this top level.
         # For now, we mainly want to pass HITL signals down to RAG.
         from app.interfaces.api.dependencies import get_checkpointer
@@ -160,11 +160,11 @@ class AdminAgent:
 
         filters = state.get("filters")
         # [Spec 034] Pass thread_id from state if present
-        thread_id = state.get("thread_id") 
-        
+        thread_id = state.get("thread_id")
+
         result = await self.rag_service.retrieve_and_generate(
-            last_user_msg, 
-            history, 
+            last_user_msg,
+            history,
             filters=filters,
             thread_id=thread_id
         )
