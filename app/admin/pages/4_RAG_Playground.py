@@ -55,8 +55,11 @@ def get_deps():
         intent_classifier=intent_classifier,
         llm=llm,
     )
+    from app.interfaces.api.dependencies import get_checkpointer
+
+    checkpointer = get_checkpointer()
     rag_graph_builder = RAGGraphBuilder(rag_nodes)
-    rag_graph = rag_graph_builder.build()  # Checkpointer는 선택사항
+    rag_graph = rag_graph_builder.build(checkpointer=checkpointer)
     
     rag_service = RAGService(graph=rag_graph)
 
@@ -158,6 +161,12 @@ def render_debug_ui(message):
             st.divider()
             st.markdown("**📝 LLM Prompt**")
             st.code(prompt_info, language="text")
+
+        # [Spec 034] Fallback & Recovery Info
+        fallback_triggered = debug.get("fallback_triggered", False)
+        if fallback_triggered:
+            st.divider()
+            st.warning("🔄 **Fallback Triggered**: Strict filters returned no results. Global search was performed.")
 
 
 admin_agent, feedback_service = get_deps()
