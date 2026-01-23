@@ -12,10 +12,12 @@ from app.interfaces.api.dependencies import get_job_repository, get_neo4j_driver
 st.set_page_config(page_title="Job Queue", page_icon="📋", layout="wide")
 st.title("📋 Processed Job Queue")
 
+
 @st.cache_resource
 def get_repo():
     driver = get_neo4j_driver()
     return get_job_repository(driver)
+
 
 try:
     repo = get_repo()
@@ -41,14 +43,16 @@ try:
         # Job List Table
         data = []
         for j in jobs:
-            data.append({
-                "Job ID": j.job_id,
-                "Status": j.status.value,
-                "URL": j.source_url,
-                "Created At": j.created_at,
-                "Updated At": j.updated_at,
-                "Error": j.error_message if j.error_message else ""
-            })
+            data.append(
+                {
+                    "Job ID": j.job_id,
+                    "Status": j.status.value,
+                    "URL": j.source_url,
+                    "Created At": j.created_at,
+                    "Updated At": j.updated_at,
+                    "Error": j.error_message if j.error_message else "",
+                }
+            )
 
         df = pd.DataFrame(data)
         # Sort by Created At desc
@@ -61,7 +65,7 @@ try:
             column_config={
                 "URL": st.column_config.LinkColumn("Source URL"),
                 "Status": st.column_config.TextColumn("Status", help="Current job status"),
-            }
+            },
         )
 
         if st.button("Refresh"):

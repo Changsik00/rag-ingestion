@@ -10,6 +10,7 @@ try:
 except ImportError:
     QueryRewriter = None
 
+
 @pytest.mark.skipif(QueryRewriter is None, reason="QueryRewriter not implemented yet")
 def test_rewrite_with_empty_history_returns_original():
     """
@@ -29,6 +30,7 @@ def test_rewrite_with_empty_history_returns_original():
     assert result == query
     llm.generate.assert_not_called()
 
+
 @pytest.mark.skipif(QueryRewriter is None, reason="QueryRewriter not implemented yet")
 def test_rewrite_with_history_calls_llm():
     """
@@ -42,7 +44,7 @@ def test_rewrite_with_history_calls_llm():
     query = "그의 형제는?"
     history = [
         {"role": "user", "content": "일론 머스크에 대해 알려줘"},
-        {"role": "assistant", "content": "일론 머스크는 테슬라의 CEO입니다."}
+        {"role": "assistant", "content": "일론 머스크는 테슬라의 CEO입니다."},
     ]
 
     # When
@@ -56,6 +58,7 @@ def test_rewrite_with_history_calls_llm():
     prompt_sent = llm.generate.call_args[0][0]
     assert "일론 머스크에 대해 알려줘" in prompt_sent
     assert "그의 형제는?" in prompt_sent
+
 
 @pytest.mark.skipif(QueryRewriter is None, reason="QueryRewriter not implemented yet")
 def test_rewrite_instruction_only_maintains_context():
@@ -71,7 +74,7 @@ def test_rewrite_instruction_only_maintains_context():
     query = "한국어로 대답해줘"
     history = [
         {"role": "user", "content": "Where did Elon Musk go to school?"},
-        {"role": "assistant", "content": "He attended Queen's University and UPenn."}
+        {"role": "assistant", "content": "He attended Queen's University and UPenn."},
     ]
 
     # When

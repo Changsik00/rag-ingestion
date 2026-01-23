@@ -57,18 +57,19 @@ def dump_chunks():
             return
 
         print(f"✅ Found {len(chunks)} chunks:\n")
-        print("="*80)
+        print("=" * 80)
         for chunk in chunks:
             print(f"🧩 Chunk #{chunk.index} (ID: {chunk.id})")
             print(f"Metadata: {chunk.metadata}")
             print("-" * 40)
             print(chunk.content)
-            print("="*80)
+            print("=" * 80)
 
     except Exception as e:
         print(f"❌ Error: {e}")
     finally:
         repo.close()
+
 
 if __name__ == "__main__":
     dump_chunks()

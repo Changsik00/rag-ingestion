@@ -1,4 +1,3 @@
-
 from unittest.mock import MagicMock
 from uuid import uuid4
 
@@ -14,6 +13,7 @@ def mock_deps():
     neo4j_graph_repo = MagicMock()
     chroma_repo = MagicMock()
     query_rewriter = MagicMock()
+    intent_classifier = MagicMock()
     llm = MagicMock()
 
     return {
@@ -21,8 +21,10 @@ def mock_deps():
         "neo4j_graph": neo4j_graph_repo,
         "chroma": chroma_repo,
         "rewriter": query_rewriter,
-        "llm": llm
+        "intent_classifier": intent_classifier,
+        "llm": llm,
     }
+
 
 @pytest.mark.asyncio
 async def test_rag_service_orchestration(mock_deps):
@@ -34,12 +36,22 @@ async def test_rag_service_orchestration(mock_deps):
     4. Format Context & Generate Answer.
     """
     deps = mock_deps
+    
+    # Mock Intent Classifier (Spec 032)
+    from app.domain.schemas.intent import IntentType, UserIntent
+    deps["intent_classifier"].classify.return_value = UserIntent(
+        intent=IntentType.GENERAL_QUERY,
+        targets=[],
+        reasoning="General question for testing"
+    )
+    
     service = RAGService(
         neo4j_doc_repo=deps["neo4j_doc"],
         neo4j_graph_repo=deps["neo4j_graph"],
         chroma_repo=deps["chroma"],
         query_rewriter=deps["rewriter"],
-        llm=deps["llm"]
+        intent_classifier=deps["intent_classifier"],
+        llm=deps["llm"],
     )
 
     # Setup Mocks
@@ -47,17 +59,19 @@ async def test_rag_service_orchestration(mock_deps):
     deps["rewriter"].rewrite.return_value = "Rewritten Query"
 
     # 2. Vector Search (MMR)
-    chunk_v = Chunk(id=uuid4(), content="Vector Content", parent_id="doc-1", index=0, metadata={"source": "wiki", "title": "V"})
+    chunk_v = Chunk(
+        id=uuid4(), content="Vector Content", parent_id="doc-1", index=0, metadata={"source": "wiki", "title": "V"}
+    )
     deps["chroma"].search_mmr.return_value = [chunk_v]
 
     # 3. Keyword Search
-    chunk_k = Chunk(id=uuid4(), content="Keyword Content", parent_id="doc-1", index=0, metadata={"source": "news", "title": "K"})
+    chunk_k = Chunk(
+        id=uuid4(), content="Keyword Content", parent_id="doc-1", index=0, metadata={"source": "news", "title": "K"}
+    )
     deps["neo4j_doc"].search.return_value = [chunk_k]
 
     # 4. Graph Search
-    deps["neo4j_graph"].get_subgraph.return_value = [
-        {"source": "Elon", "relationship": "FOUNDED", "target": "Tesla"}
-    ]
+    deps["neo4j_graph"].get_subgraph.return_value = [{"source": "Elon", "relationship": "FOUNDED", "target": "Tesla"}]
 
     # 5. LLM Generation
     deps["llm"].generate.return_value = "Final Answer"
@@ -81,7 +95,7 @@ async def test_rag_service_orchestration(mock_deps):
     # Check if context passed to LLM includes Graph Facts
     call_args = deps["llm"].generate.call_args
     assert call_args is not None
-    prompt_sent = str(call_args) # Simple check
+    prompt_sent = str(call_args)  # Simple check
     assert "Vector Content" in prompt_sent
     assert "Keyword Content" in prompt_sent
     assert "Elon" in prompt_sent and "FOUNDED" in prompt_sent and "Tesla" in prompt_sent

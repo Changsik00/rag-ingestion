@@ -7,6 +7,7 @@ from app.schemas.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)
 
+
 class TrafilaturaWebScraper(ScraperInterface):
     """
     Intelligent Web Scraper using Trafilatura.
@@ -28,11 +29,7 @@ class TrafilaturaWebScraper(ScraperInterface):
             # include_tables=True: 표 유지
             # include_images=False: 이미지는 텍스트 위주로 처리 (RAG 목적)
             markdown_content = trafilatura.extract(
-                downloaded,
-                include_comments=False,
-                include_tables=True,
-                include_images=False,
-                output_format="markdown"
+                downloaded, include_comments=False, include_tables=True, include_images=False, output_format="markdown"
             )
 
             if not markdown_content:
@@ -55,14 +52,10 @@ class TrafilaturaWebScraper(ScraperInterface):
                     "published_date": str(metadata.date) if metadata.date else None,
                     "sitename": metadata.sitename,
                     "description": metadata.description,
-                    "url": metadata.url or url
+                    "url": metadata.url or url,
                 }
 
-            return IngestResponse(
-                url=url,
-                markdown=markdown_content,
-                metadata=meta_dict
-            )
+            return IngestResponse(url=url, markdown=markdown_content, metadata=meta_dict)
 
         except Exception as e:
             logger.error(f"Trafilatura scraping failed: {e}")

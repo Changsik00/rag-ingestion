@@ -4,6 +4,7 @@ from app.domain.interfaces.llm import LLMInterface
 
 logger = logging.getLogger(__name__)
 
+
 class QueryRewriter:
     """
     대화 이력(History)을 기반으로 현재 질문(Query)을
@@ -18,7 +19,7 @@ class QueryRewriter:
         Args:
             query: 사용자의 현재 질문
             history: 대화 이력 리스트 [{"role": "user", "content": "..."}, ...]
-            
+
         Returns:
             str: 재구성된 쿼리 (또는 원본 쿼리)
         """
@@ -28,7 +29,7 @@ class QueryRewriter:
             return query
 
         # 2. 최근 5턴만 유지 (너무 길면 노이즈)
-        recent_history = history[-10:] # 5 turns (pairs)
+        recent_history = history[-10:]  # 5 turns (pairs)
 
         # 3. 프롬프트 구성
         history_text = ""

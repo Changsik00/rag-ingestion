@@ -114,6 +114,7 @@ class LangChainLLMAdapter:
         except Exception as e:
             logger.error(f"Failed to extract semantic metadata: {e}")
             return None
+
     def generate(self, prompt: str) -> str:
         """
         단순 텍스트 생성 (RAG 답변 등)

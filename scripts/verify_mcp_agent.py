@@ -20,6 +20,7 @@ load_dotenv()
 # But usually the original function is accessible or the wrapper is callable.
 # Let's clean wrap them.
 
+
 @tool
 async def agent_ingest_url(url: str) -> str:
     """Ingest a web URL into the knowledge base."""
@@ -27,10 +28,12 @@ async def agent_ingest_url(url: str) -> str:
     # Note: ingest_url in server.py is decorated with @mcp.tool()
     return await ingest_url(url)
 
+
 @tool
 async def agent_search(query: str) -> str:
     """Search the knowledge base."""
     return await search_knowledge_base(query)
+
 
 async def main():
     print("--- Starting Agentic Verification ---")
@@ -41,11 +44,7 @@ async def main():
         print("Error: GEMINI_API_KEY not found in .env")
         return
 
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash-exp",
-        temperature=0,
-        google_api_key=gemini_key
-    )
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0, google_api_key=gemini_key)
 
     # 2. Bind Tools
     tools = [agent_ingest_url, agent_search]
@@ -84,6 +83,7 @@ async def main():
 
             # Append Tool Message
             from langchain_core.messages import ToolMessage
+
             messages.append(ToolMessage(tool_call_id=tool_call["id"], content=str(tool_output)))
 
         # Turn 2: LLM generates answer based on tool output
@@ -91,6 +91,7 @@ async def main():
         print(f"\nFinal Answer: {ai_msg_2.content}")
     else:
         print("AI did not call any tools.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

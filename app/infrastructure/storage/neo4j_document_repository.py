@@ -177,7 +177,7 @@ class Neo4jStorage(DocumentRepository):
                             content=node.get("content", ""),
                             parent_id=node.get("parent_id"),
                             index=node.get("index", 0),
-                            metadata=metadata
+                            metadata=metadata,
                         )
                     )
             return chunks
@@ -215,27 +215,27 @@ class Neo4jStorage(DocumentRepository):
                 for key, value in filters.items():
                     # Sanitize key to prevent excessive injection (basic check)
                     # Assuming keys are safe (e.g. doc_id, source)
-                    
-                    # Map 'doc_id' to internal 'id' or 'parent_id'? 
+
+                    # Map 'doc_id' to internal 'id' or 'parent_id'?
                     # Chunk has 'parent_id' which links to Document ID.
                     # DocumentRepository.search usually searches Chunks.
                     # So filtering by 'doc_id' usually means filtering by Chunk's parent_id.
-                    
+
                     # Property name mapping:
                     target_prop = "parent_id" if key == "doc_id" else key
-                    
+
                     param_key = f"filter_{key}"
                     params[param_key] = value
-                    
+
                     if isinstance(value, list):
-                         where_clauses.append(f"node.{target_prop} IN ${param_key}")
+                        where_clauses.append(f"node.{target_prop} IN ${param_key}")
                     else:
-                         where_clauses.append(f"node.{target_prop} = ${param_key}")
+                        where_clauses.append(f"node.{target_prop} = ${param_key}")
 
             where_snippet = " AND ".join(where_clauses)
             if where_snippet:
                 where_snippet = f"WHERE {where_snippet}"
-            
+
             cypher_query = f"""
             CALL db.index.fulltext.queryNodes("chunk_fulltext", $keyword) YIELD node, score
             {where_snippet}
@@ -249,7 +249,7 @@ class Neo4jStorage(DocumentRepository):
                 for record in results:
                     node = record["node"]
                     # Map Neo4j Node to Chunk Entity
-                    
+
                     # Unflatten metadata
                     metadata = {}
                     for k, v in node.items():
@@ -270,7 +270,7 @@ class Neo4jStorage(DocumentRepository):
                             content=node.get("content", ""),
                             parent_id=node.get("parent_id"),
                             index=node.get("index", 0),
-                            metadata=metadata
+                            metadata=metadata,
                         )
                     )
             return chunks

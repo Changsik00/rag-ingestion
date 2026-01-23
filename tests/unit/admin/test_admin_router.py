@@ -12,10 +12,12 @@ def mock_services():
     rag = AsyncMock()
     return ingestion, rag
 
+
 @pytest.fixture
 def mock_llm_class():
     with patch("app.admin.agents.admin_agent.ChatGoogleGenerativeAI") as mock:
         yield mock
+
 
 def test_router_detects_url_intent(mock_services, mock_llm_class):
     ingestion, rag = mock_services
@@ -28,6 +30,7 @@ def test_router_detects_url_intent(mock_services, mock_llm_class):
     result = agent.router_node(state)
 
     assert result["intent"] == "ingest"
+
 
 def test_router_detects_search_intent(mock_services, mock_llm_class):
     ingestion, rag = mock_services
