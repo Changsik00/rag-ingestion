@@ -294,11 +294,15 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
             debug_intent = None
             if context_data and context_data.get("user_intent"):
                 user_intent_obj = context_data["user_intent"]
+                logging.info(f"User Intent Object: {user_intent_obj}")
                 debug_intent = {
                     "intent": user_intent_obj.intent.value if hasattr(user_intent_obj, "intent") else "N/A",
                     "targets": user_intent_obj.targets if hasattr(user_intent_obj, "targets") else [],
                     "reasoning": user_intent_obj.reasoning if hasattr(user_intent_obj, "reasoning") else "",
                 }
+                logging.info(f"Debug Intent Dict: {debug_intent}")
+            else:
+                logging.warning(f"No user_intent in context_data. Context keys: {context_data.keys() if context_data else 'None'}")
 
             st.session_state.messages.append(
                 {
