@@ -98,24 +98,30 @@ StateGraph를 구성하고 Checkpointer와 통합하여 CompiledGraph를 생성.
 ### RAGService (`app/domain/services/rag_service.py`)
 Graph를 실행하고 결과를 RAGResult로 변환하는 Orchestrator.
 
-```python
-async def retrieve_and_generate(
-    query: str,
-    history: list[dict],
-    filters: dict | None = None,
-    thread_id: str | None = None
-) -> RAGResult:
-    # Graph 실행 및 State → Result 변환
-```
+---
+
+## 💡 Lessons Learned & Troubleshooting (Spec 033)
+
+### 1. 자동 필터링의 견고성 문제 (Scenario 2 & 3 이슈)
+
+**문제 현상**:  
+`COMPARE` 의도 시 추출된 `targets`가 `source` 필터로 강제 적용되는데, 다음 사유로 검색 결과가 0건이 되는 현상 발생.
+1.  **데이터 부재**: DB에 해당 주제의 문서 자체가 없음.
+2.  **언어/명칭 불일치**: Intent는 "일론 머스크"(한국어)를 추출했으나, DB에는 "Elon Musk Bio"(영어)로 저장되어 매칭 실패.
+3.  **엄격한 매칭**: 필터가 `source` 전체 일치를 요구하여 조금만 달라도 차단됨.
+
+**LLM Fallback 현상**:
+RAG 컨텍스트가 비어있을 때 LLM이 자신의 사전 지식(Internal Knowledge)으로 답변을 생성함. 이는 사용자가 RAG 기반 답변인지 식별하기 어렵게 만듦.
+
+**설계 결정 및 개선 방향 (Spec 034 예정)**:  
+- **Soft Filter / Fallback 로직**: 필터 결과가 0건일 경우 자동으로 필터를 해제(Global Search)하여 의미적으로 유사한 문서를 재검색.
+- **검색 쿼리 강화**: 추출된 `targets`를 필터뿐만 아니라 검색 쿼리에 포함시켜 검색 확률을 높임.
+
+---
 
 ## Checkpointer 통합
 
 `SqliteSaver`를 사용하여 State Snapshot을 저장하며, 향후 HITL(Human-in-the-Loop) 확장이 가능합니다.
-
-```python
-config = {"configurable": {"thread_id": thread_id}}
-result = await graph.ainvoke(initial_state, config=config)
-```
 
 ## 테스트 전략
 
