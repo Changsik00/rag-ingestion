@@ -113,17 +113,28 @@ class Neo4jStorage(DocumentRepository):
             logger.error(f"Failed to get document from Neo4j (id={doc_id}): {e}")
             raise InfrastructureException(f"Failed to get document from Neo4j: {e}") from e
 
-    def list_documents(self, limit: int = 10) -> list[Document]:
+    def list_documents(self, limit: int = 10, search_term: str | None = None) -> list[Document]:
+        """
+        List documents with optional case-insensitive search (LIKE style).
+        """
         try:
-            query = "MATCH (d:Document) RETURN d ORDER BY d.created_at DESC LIMIT $limit"
+            where_clause = ""
+            params = {"limit": limit}
+            if search_term:
+                # Case-insensitive substring match using regex
+                # Neo4j regex syntax: =~ '(?i).*term.*'
+                where_clause = "WHERE d.title =~ $regex OR d.source =~ $regex"
+                params["regex"] = f"(?i).*{search_term}.*"
+
+            query = f"MATCH (d:Document) {where_clause} RETURN d ORDER BY d.created_at DESC LIMIT $limit"
             docs = []
             with self.driver.session() as session:
-                results = session.run(query, limit=limit)
+                results = session.run(query, **params)
                 for record in results:
                     node = record["d"]
                     docs.append(
                         Document(
-                            id=node["id"],  # Pydantic handles str->str
+                            id=node["id"],
                             content=node.get("content", ""),
                             metadata={k: v for k, v in node.items() if k not in ["id", "content", "created_at"]},
                         )
@@ -145,7 +156,7 @@ class Neo4jStorage(DocumentRepository):
                 results = session.run(query, doc_id=str(doc_id))
                 for record in results:
                     node = record["c"]
-                    
+
                     # Unflatten metadata (Reuse logic if possible, or duplicate for now due to helper method privacy)
                     metadata = {}
                     for k, v in node.items():
@@ -189,38 +200,61 @@ class Neo4jStorage(DocumentRepository):
             logger.error(f"Failed to create fulltext index: {e}")
             raise InfrastructureException(f"Failed to create fulltext index: {e}") from e
 
-    def search(self, query: str, limit: int = 5) -> list[Chunk]:
+    def search(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
         """Fulltext Index를 이용한 키워드 검색"""
         try:
-            # Lucene query syntax requires fuzzy/boosting handling often, but standard keyword works.
-            # Explicitly naming the index 'chunk_fulltext' created above.
-            cypher_query = """
+            # 기본 Cypher Query
+            # Note: 5.x Fulltext index does not support WHERE clause directly inside call queryNodes in legacy way?
+            # Actually, we can filter AFTER yielding nodes.
+            # "CALL ... YIELD node WHERE ..." is the standard pattern.
+
+            where_clauses = []
+            params = {"keyword": query, "limit": limit}
+
+            if filters:
+                for key, value in filters.items():
+                    # Sanitize key to prevent excessive injection (basic check)
+                    # Assuming keys are safe (e.g. doc_id, source)
+                    
+                    # Map 'doc_id' to internal 'id' or 'parent_id'? 
+                    # Chunk has 'parent_id' which links to Document ID.
+                    # DocumentRepository.search usually searches Chunks.
+                    # So filtering by 'doc_id' usually means filtering by Chunk's parent_id.
+                    
+                    # Property name mapping:
+                    target_prop = "parent_id" if key == "doc_id" else key
+                    
+                    param_key = f"filter_{key}"
+                    params[param_key] = value
+                    
+                    if isinstance(value, list):
+                         where_clauses.append(f"node.{target_prop} IN ${param_key}")
+                    else:
+                         where_clauses.append(f"node.{target_prop} = ${param_key}")
+
+            where_snippet = " AND ".join(where_clauses)
+            if where_snippet:
+                where_snippet = f"WHERE {where_snippet}"
+            
+            cypher_query = f"""
             CALL db.index.fulltext.queryNodes("chunk_fulltext", $keyword) YIELD node, score
+            {where_snippet}
             RETURN node, score
             LIMIT $limit
             """
 
             chunks = []
             with self.driver.session() as session:
-                # Rename parameter 'query' to 'keyword' to avoid conflict with session.run(query, ...) argument name
-                results = session.run(cypher_query, keyword=query, limit=limit)
+                results = session.run(cypher_query, **params)
                 for record in results:
                     node = record["node"]
                     # Map Neo4j Node to Chunk Entity
-                    # Note: parent_id in Neo4j might be stored as string, Entity expects UUID?
-                    # Chunk entity: id:str, parent_id:str ... wait, let's check Chunk definition.
-                    # domain/entities/chunk.py says: id: str, parent_id: str.
-                    # So simple fetching is fine.
-
+                    
                     # Unflatten metadata
                     metadata = {}
                     for k, v in node.items():
                         if k in ["id", "content", "index", "parent_id"]:
                             continue
-                        # If keys end with _json, parse them?
-                        # _flatten_metadata did: flattened[f"{key}_json"] = json.dumps(value)
-                        # We should reverse this if possible, or just return as is for now.
-                        # Simple reverse logic:
                         if k.endswith("_json"):
                             try:
                                 clean_key = k[:-5]
@@ -243,9 +277,5 @@ class Neo4jStorage(DocumentRepository):
 
         except Exception as e:
             logger.error(f"Neo4j search failed: {e}")
-            # Instead of crashing logic flow, return empty list or raise?
-            # Repository pattern usually raises or returns empty.
-            # Given it's a search, returning empty with log is often safer for hybrid logic.
-            # But let's log and re-raise to be noticed during TDD.
             logger.warning(f"Neo4j Search Error: {e}")
             return []

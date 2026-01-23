@@ -41,7 +41,7 @@ class RAGService:
         self.query_rewriter = query_rewriter
         self.llm = llm
 
-    async def retrieve_and_generate(self, query: str, history: list[dict]) -> RAGResult:
+    async def retrieve_and_generate(self, query: str, history: list[dict], filters: dict | None = None) -> RAGResult:
         """
         Executes the full RAG pipeline: Rewrite -> Hybrid Search -> Format -> Generate.
         """
@@ -51,8 +51,8 @@ class RAGService:
 
         # 2. Parallel Hybrid Search
         # Vector, Keyword, Graph
-        vector_task = asyncio.create_task(self._search_vector(rewritten_query))
-        keyword_task = asyncio.create_task(self._search_keyword(rewritten_query))
+        vector_task = asyncio.create_task(self._search_vector(rewritten_query, filters))
+        keyword_task = asyncio.create_task(self._search_keyword(rewritten_query, filters))
         graph_task = asyncio.create_task(self._search_graph(rewritten_query))
 
         vector_results, keyword_results, graph_results = await asyncio.gather(
@@ -97,12 +97,12 @@ class RAGService:
             full_context=context_str
         )
 
-    async def _search_vector(self, query: str) -> list[Chunk]:
+    async def _search_vector(self, query: str, filters: dict | None = None) -> list[Chunk]:
         # Using MMR for diversity (k=5, fetch_k=20 usually, but default params handled in repo)
-        return self.chroma_repo.search_mmr(query)
+        return self.chroma_repo.search_mmr(query, filters=filters)
 
-    async def _search_keyword(self, query: str) -> list[Chunk]:
-        return self.neo4j_doc_repo.search(query)
+    async def _search_keyword(self, query: str, filters: dict | None = None) -> list[Chunk]:
+        return self.neo4j_doc_repo.search(query, filters=filters)
 
     async def _search_graph(self, query: str) -> list[dict]:
         # Get 1-depth subgraph related to entities in the query

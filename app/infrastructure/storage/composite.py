@@ -38,12 +38,12 @@ class CompositeStorage(DocumentRepository):
         # Primary 검색 소스는 Neo4j
         return self.neo4j.get(doc_id)
 
-    def list_documents(self, limit: int = 10) -> list[Document]:
-        return self.neo4j.list_documents(limit)
+    def list_documents(self, limit: int = 10, search_term: str | None = None) -> list[Document]:
+        return self.neo4j.list_documents(limit, search_term=search_term)
 
     def get_chunks(self, doc_id: UUID) -> list[Chunk]:
         """Retrieve all chunks for a document."""
         return self.neo4j.get_chunks(doc_id)
 
-    def search(self, query: str, limit: int = 5) -> list[Chunk]:
-        return self.chroma.search(query, limit)
+    def search(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
+        return self.chroma.search(query, limit, filters=filters)

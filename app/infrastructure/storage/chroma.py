@@ -49,7 +49,7 @@ class ChromaStorage(DocumentRepository):
             if value is None:
                 # ChromaDB often issues with None, skip or use empty string
                 continue
-            
+
             if isinstance(value, (dict, list)):
                 # 복잡한 타입은 JSON 문자열로 직렬화
                 flattened[f"{key}_json"] = json.dumps(value)
@@ -133,7 +133,7 @@ class ChromaStorage(DocumentRepository):
             logger.warning(f"Failed to get document from ChromaDB (id={doc_id}): {e}")
             return None
 
-    def list_documents(self, limit: int = 10) -> list[Document]:
+    def list_documents(self, limit: int = 10, search_term: str | None = None) -> list[Document]:
         try:
             # ChromaDB peek (샘플 조회)
             result = self.collection.peek(limit=limit)
@@ -147,7 +147,6 @@ class ChromaStorage(DocumentRepository):
                             metadata=result["metadatas"][i],
                         )
                     )
-            return docs
             return docs
         except Exception as e:
             logger.error(f"Failed to list documents from ChromaDB: {e}")
@@ -180,10 +179,51 @@ class ChromaStorage(DocumentRepository):
             logger.error(f"Failed to get chunks from ChromaDB: {e}")
             return []
 
-    def search(self, query: str, limit: int = 5) -> list[Chunk]:
+    def _build_where_clause(self, filters: dict | None) -> dict | None:
+        """
+        Build ChromaDB where clause from filters.
+        Supports single value equality and list value inclusion ($in).
+        """
+        if not filters:
+            return None
+        
+        conditions = []
+        for key, value in filters.items():
+            # Map 'doc_id' -> 'parent_id' for chunk
+            target_key = "parent_id" if key == "doc_id" else key
+
+            if isinstance(value, list):
+                if len(value) == 1:
+                    conditions.append({target_key: value[0]})
+                elif len(value) > 1:
+                    conditions.append({target_key: {"$in": value}})
+            else:
+                conditions.append({target_key: value})
+
+        if not conditions:
+            return None
+
+        if len(conditions) == 1:
+            return conditions[0]
+        else:
+            # ChromaDB supports implicit AND structure?
+            # Yes, standard Chroma where clause is a dict.
+            merged_where = {}
+            for cond in conditions:
+                merged_where.update(cond)
+            # Note: If keys collide (same key used twice for AND??), this dict update overwrites.
+            # But here keys are unique (iterating filters.items).
+            return merged_where
+
+    def search(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
         """Vector search implementation."""
         try:
-            results = self.collection.query(query_texts=[query], n_results=limit)
+            where_clause = self._build_where_clause(filters)
+            results = self.collection.query(
+                query_texts=[query],
+                n_results=limit,
+                where=where_clause
+            )
 
             chunks = []
             if results and results["ids"] and results["ids"][0]:
@@ -206,7 +246,7 @@ class ChromaStorage(DocumentRepository):
             logger.error(f"ChromaDB search failed: {e}")
             return []
 
-    def search_mmr(self, query: str, limit: int = 5, diversity: float = 0.5) -> list[Chunk]:
+    def search_mmr(self, query: str, limit: int = 5, diversity: float = 0.5, filters: dict | None = None) -> list[Chunk]:
         """
         Maximal Marginal Relevance (MMR) Search.
         diversity: 0.0 (Pure Relevance) ~ 1.0 (Pure Diversity).
@@ -215,16 +255,18 @@ class ChromaStorage(DocumentRepository):
             import numpy as np
         except ImportError:
             logger.error("MMR search requires numpy.")
-            return self.search(query, limit)
+            return self.search(query, limit, filters=filters)
 
         try:
             # 1. Fetch Candidates
             fetch_k = min(limit * 20, 100)
+            where_clause = self._build_where_clause(filters)
 
             results = self.collection.query(
                 query_texts=[query],
                 n_results=fetch_k,
-                include=["metadatas", "documents", "embeddings", "distances"]
+                include=["metadatas", "documents", "embeddings", "distances"],
+                where=where_clause
             )
 
             if not results or not results["ids"] or len(results["ids"][0]) == 0:
@@ -311,4 +353,4 @@ class ChromaStorage(DocumentRepository):
 
         except Exception as e:
             logger.error(f"MMR search logic failed: {e}")
-            return self.search(query, limit)
+            return self.search(query, limit, filters=filters)

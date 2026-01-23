@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from uuid import UUID
 
 # Create a fake module structure to allow imports if running from script
@@ -7,6 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.interfaces.api.dependencies import get_neo4j_driver
+
 
 def dump_chunks():
     print("Initializing Neo4j Connection...")
@@ -16,7 +17,7 @@ def dump_chunks():
     try:
         print("\n📚 List of Recent Documents:")
         docs = repo.list_documents(limit=10)
-        
+
         if not docs:
             print("No documents found.")
             return
@@ -32,7 +33,7 @@ def dump_chunks():
             selection = sys.argv[1]
         else:
             selection = input("\nEnter document index or ID to view chunks: ")
-        
+
         target_doc_id = None
         try:
             idx = int(selection)
@@ -43,14 +44,14 @@ def dump_chunks():
                 target_doc_id = UUID(selection)
             except ValueError:
                 pass
-        
+
         if not target_doc_id:
             print("❌ Invalid selection.")
             return
 
         print(f"\n🔍 Fetching chunks for Document ID: {target_doc_id}...")
         chunks = repo.get_chunks(target_doc_id)
-        
+
         if not chunks:
             print("⚠️ No chunks found for this document.")
             return
