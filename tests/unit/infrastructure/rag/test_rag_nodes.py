@@ -45,13 +45,13 @@ def mock_intent_classifier():
 def mock_repositories():
     """Mock Repositories (Neo4j, Chroma)"""
     neo4j_doc = Mock()
-    neo4j_doc.search = AsyncMock(return_value=[])
+    neo4j_doc.search.return_value = []
 
     neo4j_graph = Mock()
-    neo4j_graph.get_subgraph = AsyncMock(return_value=[])
+    neo4j_graph.get_subgraph.return_value = []
 
     chroma = Mock()
-    chroma.search_mmr = AsyncMock(return_value=[])
+    chroma.search_mmr.return_value = []
 
     return {
         "neo4j_doc": neo4j_doc,

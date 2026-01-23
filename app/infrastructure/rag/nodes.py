@@ -122,6 +122,7 @@ class RAGNodes:
         Node 3: Hybrid Search (Memory/Body Layer)
         
         Parallel로 Vector, Keyword, Graph 검색을 수행하고 결과를 State에 저장합니다.
+        각 리포지토리는 동기식으로 구현되어 있으므로 asyncio.to_thread를 사용하여 병렬로 실행합니다.
         
         Args:
             state: RAGGraphState
@@ -132,10 +133,10 @@ class RAGNodes:
         rewritten_query = state.get("rewritten_query") or state["query"]
         final_filters = state.get("final_filters")
 
-        # Parallel Hybrid Search
-        vector_task = asyncio.create_task(self._search_vector(rewritten_query, final_filters))
-        keyword_task = asyncio.create_task(self._search_keyword(rewritten_query, final_filters))
-        graph_task = asyncio.create_task(self._search_graph(rewritten_query))
+        # Parallel Hybrid Search (Running sync calls in threads)
+        vector_task = asyncio.to_thread(self._search_vector, rewritten_query, final_filters)
+        keyword_task = asyncio.to_thread(self._search_keyword, rewritten_query, final_filters)
+        graph_task = asyncio.to_thread(self._search_graph, rewritten_query)
 
         vector_results, keyword_results, graph_results = await asyncio.gather(
             vector_task, keyword_task, graph_task
@@ -222,17 +223,17 @@ class RAGNodes:
         else:  # GENERAL_QUERY
             return None
 
-    async def _search_vector(self, query: str, filters: dict | None = None) -> list[Chunk]:
-        """Vector DB(ChromaDB) MMR 검색"""
-        return await self.chroma_repo.search_mmr(query, filters=filters)
+    def _search_vector(self, query: str, filters: dict | None = None) -> list[Chunk]:
+        """Vector DB(ChromaDB) MMR 검색 (Sync)"""
+        return self.chroma_repo.search_mmr(query, filters=filters)
 
-    async def _search_keyword(self, query: str, filters: dict | None = None) -> list[Chunk]:
-        """Neo4j Keyword 검색"""
-        return await self.neo4j_doc_repo.search(query, filters=filters)
+    def _search_keyword(self, query: str, filters: dict | None = None) -> list[Chunk]:
+        """Neo4j Keyword 검색 (Sync)"""
+        return self.neo4j_doc_repo.search(query, filters=filters)
 
-    async def _search_graph(self, query: str) -> list[dict]:
-        """Neo4j Graph Traversal"""
-        return await self.neo4j_graph_repo.get_subgraph([query])
+    def _search_graph(self, query: str) -> list[dict]:
+        """Neo4j Graph Traversal (Sync)"""
+        return self.neo4j_graph_repo.get_subgraph([query])
 
     def _merge_and_format_context(
         self, vector_chunks: list[Chunk], keyword_chunks: list[Chunk], graph_data: list[dict]
