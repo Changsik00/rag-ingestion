@@ -136,23 +136,42 @@ def get_intent_classifier() -> IntentClassifier:
     return IntentClassifier(llm_adapter)
 
 
-# RAG Service 의존성 (Spec 032)
-def get_rag_service(
+# RAG Nodes 의존성 (Spec 033)
+def get_rag_nodes(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     query_rewriter: Annotated[QueryRewriter, Depends(get_query_rewriter)],
     intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
-) -> RAGService:
-    # RAG Service needs: neo4j_doc_repo, neo4j_graph_repo, chroma_repo
+):
+    from app.infrastructure.rag.nodes import RAGNodes
+
     neo4j_doc_repo = Neo4jStorage(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
     chroma_repo = ChromaStorage()
     llm_adapter = get_llm()
 
-    return RAGService(
+    return RAGNodes(
         neo4j_doc_repo=neo4j_doc_repo,
         neo4j_graph_repo=neo4j_graph_repo,
         chroma_repo=chroma_repo,
         query_rewriter=query_rewriter,
         intent_classifier=intent_classifier,
-        llm=llm_adapter,
+        llm=llm_adapter
     )
+
+
+# RAG Graph Builder 의존성 (Spec 033)
+def get_rag_graph_builder(nodes=Depends(get_rag_nodes)):
+    from app.infrastructure.rag.graph import RAGGraphBuilder
+
+    return RAGGraphBuilder(nodes)
+
+
+# RAG Service 의존성 (Spec 033: LangGraph 기반)
+def get_rag_service(
+    graph_builder=Depends(get_rag_graph_builder),
+    checkpointer: Annotated[SqliteSaver, Depends(get_checkpointer)] = None,
+) -> RAGService:
+    # Build Graph with Checkpointer
+    compiled_graph = graph_builder.build(checkpointer=checkpointer)
+
+    return RAGService(graph=compiled_graph)

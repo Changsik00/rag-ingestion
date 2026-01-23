@@ -1,195 +1,112 @@
-import asyncio
+"""
+RAG Service - LangGraph 기반으로 전환.
+
+Spec 033: LangGraph State Management
+기존 함수 기반 로직을 LangGraph Orchestration으로 변경하여
+의사결정 과정을 State로 관리합니다.
+"""
+
 import logging
 from dataclasses import dataclass
-from typing import Any
+
+from langgraph.graph.state import CompiledStateGraph
 
 from app.domain.entities.chunk import Chunk
-from app.domain.schemas.intent import IntentType, UserIntent
-from app.domain.services.intent_classifier import IntentClassifier
-from app.domain.services.query_rewriter import QueryRewriter
+from app.domain.schemas.intent import UserIntent
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class RAGResult:
+    """RAG Pipeline 실행 결과"""
+
     answer: str
     rewritten_query: str
     vector_chunks: list[Chunk]
     keyword_chunks: list[Chunk]
     graph_data: list[dict]
     full_context: str
-    user_intent: UserIntent | None = None  # Spec 032: Intent Classifier 결과
+    user_intent: UserIntent | None = None
 
 
 class RAGService:
-    def __init__(
+    """
+    LangGraph 기반 RAG Orchestrator.
+    
+    Spec 033에서 기존 함수 기반 로직을 Graph 기반으로 전환했습니다.
+    모든 비즈니스 로직은 RAGNodes로 분리되었고,
+    이 서비스는 Graph를 실행하고 결과를 변환하는 역할만 합니다.
+    """
+
+    def __init__(self, graph: CompiledStateGraph):
+        """
+        Args:
+            graph: 컴파일된 RAG Graph (RAGGraphBuilder.build() 결과)
+        """
+        self.graph = graph
+
+    async def retrieve_and_generate(
         self,
-        neo4j_doc_repo: Any,
-        neo4j_graph_repo: Any,
-        chroma_repo: Any,
-        query_rewriter: QueryRewriter,
-        intent_classifier: IntentClassifier,
-        llm: Any,
-    ):
+        query: str,
+        history: list[dict],
+        filters: dict | None = None,
+        thread_id: str | None = None
+    ) -> RAGResult:
         """
-        Orchestrates the Hybrid Retrieval Augmented Generation pipeline.
-
+        RAG Pipeline 실행: Intent → Rewrite → Hybrid Search → Generate.
+        
         Args:
-            neo4j_doc_repo: Repository for Neo4j Keyword Search.
-            neo4j_graph_repo: Repository for Graph Traversal.
-            chroma_repo: Repository for Vector MMR Search.
-            query_rewriter: Service to rewrite user queries based on history.
-            intent_classifier: Service to classify user intent and extract targets.
-            llm: Language Model interface (e.g., LangChain Runnable or Adapter).
-        """
-        self.neo4j_doc_repo = neo4j_doc_repo
-        self.neo4j_graph_repo = neo4j_graph_repo
-        self.chroma_repo = chroma_repo
-        self.query_rewriter = query_rewriter
-        self.intent_classifier = intent_classifier
-        self.llm = llm
-
-    async def retrieve_and_generate(self, query: str, history: list[dict], filters: dict | None = None) -> RAGResult:
-        """
-        Executes the full RAG pipeline: Intent -> Rewrite -> Hybrid Search -> Format -> Generate.
-        """
-        # 1. Intent Classification (NEW in Spec 032)
-        user_intent = self._classify_intent_with_fallback(query, history)
-
-        # 2. Convert Intent to Filters (Auto-derived)
-        auto_filters = self._intent_to_filters(user_intent)
-
-        # 3. Merge Filters (Manual filters override auto filters)
-        final_filters = filters if filters is not None else auto_filters
-
-        # 4. Rewrite Query
-        rewritten_query = self.query_rewriter.rewrite(query, history)
-
-        # 5. Parallel Hybrid Search
-        vector_task = asyncio.create_task(self._search_vector(rewritten_query, final_filters))
-        keyword_task = asyncio.create_task(self._search_keyword(rewritten_query, final_filters))
-        graph_task = asyncio.create_task(self._search_graph(rewritten_query))
-
-        vector_results, keyword_results, graph_results = await asyncio.gather(vector_task, keyword_task, graph_task)
-
-        # 6. Merge and Format Context
-        context_str = self._merge_and_format_context(vector_results, keyword_results, graph_results)
-
-        # 7. Generate Answer
-        prompt = (
-            f"Please answer the following question based on the context provided below.\\n\\n"
-            f"Question: {query}\\n"
-            f"(Context/Rewritten): {rewritten_query}\\n\\n"
-            f"Context:\\n{context_str}\\n\\n"
-            f"Answer:"
-        )
-
-        response = self.llm.generate(prompt)
-
-        if hasattr(response, "content"):
-            answer_text = response.content
-        else:
-            answer_text = str(response)
-
-        return RAGResult(
-            answer=answer_text,
-            rewritten_query=rewritten_query,
-            vector_chunks=vector_results,
-            keyword_chunks=keyword_results,
-            graph_data=graph_results,
-            full_context=context_str,
-            user_intent=user_intent,  # Spec 032
-        )
-
-    def _classify_intent_with_fallback(self, query: str, history: list[dict]) -> UserIntent:
-        """
-        Intent Classification with Graceful Degradation.
-        LLM 파싱 실패 시 GENERAL_QUERY로 Fallback.
-        """
-        try:
-            return self.intent_classifier.classify(query, history)
-        except Exception as e:
-            logger.warning(f"Intent classification failed: {e}. Falling back to GENERAL_QUERY.")
-            return UserIntent(
-                intent=IntentType.GENERAL_QUERY, targets=[], reasoning="Fallback due to classification error"
-            )
-
-    def _intent_to_filters(self, intent: UserIntent) -> dict | None:
-        """
-        Intent를 Repository Filters로 변환.
-
-        Args:
-            intent: User Intent 분류 결과
-
+            query: 사용자 질문
+            history: 대화 이력
+            filters: 수동 필터 (Optional)
+            thread_id: Checkpointer Thread ID (Optional)
+            
         Returns:
-            dict: Repository 필터 (document_id, topic 등)
-            None: 필터 불필요 (GENERAL_QUERY)
+            RAGResult: 최종 답변 및 중간 결과
         """
-        if intent.intent == IntentType.COMPARE or intent.intent == IntentType.SUMMARIZE:
-            # targets를 document_id 또는 source 필터로 변환
-            # 실제 구현에서는 targets를 document ID로 매핑하는 로직 필요
-            if intent.targets:
-                # 간단한 구현: targets를 lowercase로 변환하여 source 검색
-                return {"source": intent.targets}
-            return None
+        # Initial State 구성
+        initial_state = {
+            "query": query,
+            "history": history,
+            "manual_filters": filters,
+            # Initialize empty fields
+            "user_intent": None,
+            "rewritten_query": None,
+            "auto_filters": None,
+            "final_filters": None,
+            "vector_chunks": [],
+            "keyword_chunks": [],
+            "graph_data": [],
+            "full_context": "",
+            "final_answer": ""
+        }
 
-        elif intent.intent == IntentType.FILTER_BY_TOPIC:
-            # targets를 topic/entity 필터로 변환
-            if intent.targets:
-                return {"topic": intent.targets}
-            return None
+        # Config 설정 (Thread ID가 있으면 Checkpointer 사용)
+        config = {"configurable": {"thread_id": thread_id}} if thread_id else {}
 
-        else:  # GENERAL_QUERY
-            return None
+        # Graph 실행
+        result_state = await self.graph.ainvoke(initial_state, config=config)
 
-    async def _search_vector(self, query: str, filters: dict | None = None) -> list[Chunk]:
-        return self.chroma_repo.search_mmr(query, filters=filters)
+        # State → RAGResult 변환
+        return self._state_to_result(result_state)
 
-    async def _search_keyword(self, query: str, filters: dict | None = None) -> list[Chunk]:
-        return self.neo4j_doc_repo.search(query, filters=filters)
-
-    async def _search_graph(self, query: str) -> list[dict]:
-        return self.neo4j_graph_repo.get_subgraph([query])
-
-    def _merge_and_format_context(
-        self, vector_chunks: list[Chunk], keyword_chunks: list[Chunk], graph_data: list[dict]
-    ) -> str:
+    def _state_to_result(self, state: dict) -> RAGResult:
         """
-        Merges chunks, deduplicates, and formats citations.
-        Adds Graph Facts at the top.
+        RAGGraphState를 RAGResult로 변환.
+        
+        Args:
+            state: Graph 실행 후 최종 State
+            
+        Returns:
+            RAGResult: API Response 형식
         """
-        combined = []
-        seen_ids = set()
-
-        def add_chunks(chunks):
-            for c in chunks:
-                if c.id not in seen_ids:
-                    combined.append(c)
-                    seen_ids.add(c.id)
-
-        add_chunks(vector_chunks)
-        add_chunks(keyword_chunks)
-
-        # Format Text Context
-        formatted_chunks = []
-        for i, chunk in enumerate(combined, 1):
-            source = chunk.metadata.get("source", "Unknown")
-            title = chunk.metadata.get("title", "Untitled")
-            formatted_chunks.append(f"[{i}] Source: {source} ({title})\\n{chunk.content}")
-
-        text_context = "\\n\\n".join(formatted_chunks)
-
-        # Format Graph Context
-        graph_lines = []
-        if graph_data:
-            graph_lines.append("Graph Facts:")
-            for item in graph_data:
-                src = item.get("source")
-                rel = item.get("relationship")
-                tgt = item.get("target")
-                graph_lines.append(f"- ({src}) -[{rel}]-> ({tgt})")
-
-        graph_context = "\\n".join(graph_lines)
-
-        return f"{graph_context}\\n\\nDocument Context:\\n{text_context}"
+        return RAGResult(
+            answer=state.get("final_answer", ""),
+            rewritten_query=state.get("rewritten_query", state["query"]),
+            vector_chunks=state.get("vector_chunks", []),
+            keyword_chunks=state.get("keyword_chunks", []),
+            graph_data=state.get("graph_data", []),
+            full_context=state.get("full_context", ""),
+            user_intent=state.get("user_intent")
+        )

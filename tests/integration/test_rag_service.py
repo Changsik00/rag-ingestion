@@ -1,110 +1,78 @@
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
 
 from app.domain.entities.chunk import Chunk
+from app.domain.schemas.intent import IntentType, UserIntent
 from app.domain.services.rag_service import RAGService
 
 
-@pytest.fixture
-def mock_deps():
-    neo4j_doc_repo = MagicMock()
-    neo4j_graph_repo = MagicMock()
-    chroma_repo = MagicMock()
-    query_rewriter = MagicMock()
-    intent_classifier = MagicMock()
-    llm = MagicMock()
-
-    return {
-        "neo4j_doc": neo4j_doc_repo,
-        "neo4j_graph": neo4j_graph_repo,
-        "chroma": chroma_repo,
-        "rewriter": query_rewriter,
-        "intent_classifier": intent_classifier,
-        "llm": llm,
-    }
-
-
 @pytest.mark.asyncio
-async def test_rag_service_orchestration(mock_deps):
+async def test_rag_service_orchestration():
     """
-    Scenario: Verify RAGService orchestration flow.
-    1. Rewrite Query.
-    2. Search Hybrid (Vector MMR + Keyword).
-    3. Search Graph (SubGraph).
-    4. Format Context & Generate Answer.
+    Scenario: Verify RAGService orchestration flow with LangGraph.
+    
+    Spec 033: RAGService가 Graph 기반으로 리팩토링되어,
+    Graph가 반환한 State를 RAGResult로 변환하는지 검증합니다.
+    
+    Given: Mock Graph가 완전한 RAGGraphState를 반환
+    When: RAGService.retrieve_and_generate() 호출
+    Then: State가 RAGResult로 올바르게 변환됨
     """
-    deps = mock_deps
+    # Given: Mock Graph 생성
+    mock_graph = MagicMock()
     
-    # Mock Intent Classifier (Spec 032)
-    from app.domain.schemas.intent import IntentType, UserIntent
-    deps["intent_classifier"].classify.return_value = UserIntent(
-        intent=IntentType.GENERAL_QUERY,
-        targets=[],
-        reasoning="General question for testing"
-    )
-    
-    service = RAGService(
-        neo4j_doc_repo=deps["neo4j_doc"],
-        neo4j_graph_repo=deps["neo4j_graph"],
-        chroma_repo=deps["chroma"],
-        query_rewriter=deps["rewriter"],
-        intent_classifier=deps["intent_classifier"],
-        llm=deps["llm"],
-    )
-
-    # Setup Mocks
-    # 1. Rewrite
-    deps["rewriter"].rewrite.return_value = "Rewritten Query"
-
-    # 2. Vector Search (MMR)
+    # Mock ainvoke: 완전한 RAGGraphState 반환
     chunk_v = Chunk(
         id=uuid4(), content="Vector Content", parent_id="doc-1", index=0, metadata={"source": "wiki", "title": "V"}
     )
-    deps["chroma"].search_mmr.return_value = [chunk_v]
-
-    # 3. Keyword Search
     chunk_k = Chunk(
         id=uuid4(), content="Keyword Content", parent_id="doc-1", index=0, metadata={"source": "news", "title": "K"}
     )
-    deps["neo4j_doc"].search.return_value = [chunk_k]
-
-    # 4. Graph Search
-    deps["neo4j_graph"].get_subgraph.return_value = [{"source": "Elon", "relationship": "FOUNDED", "target": "Tesla"}]
-
-    # 5. LLM Generation
-    deps["llm"].generate.return_value = "Final Answer"
-
-    # Execution
+    
+    mock_result_state = {
+        "query": "Original Query",
+        "history": [],
+        "manual_filters": None,
+        "user_intent": UserIntent(
+            intent=IntentType.GENERAL_QUERY,
+            targets=[],
+            reasoning="General question for testing"
+        ),
+        "rewritten_query": "Rewritten Query",
+        "auto_filters": None,
+        "final_filters": None,
+        "vector_chunks": [chunk_v],
+        "keyword_chunks": [chunk_k],
+        "graph_data": [{"source": "Elon", "relationship": "FOUNDED", "target": "Tesla"}],
+        "full_context": "Mock context with Vector Content, Keyword Content, and Elon FOUNDED Tesla",
+        "final_answer": "Final Answer"
+    }
+    
+    mock_graph.ainvoke = AsyncMock(return_value=mock_result_state)
+    
+    # When: RAGService 생성 및 실행
+    service = RAGService(graph=mock_graph)
+    
     history = []
     response = await service.retrieve_and_generate("Original Query", history)
-
-    # Verification
-    # 1. Check Rewrite
-    deps["rewriter"].rewrite.assert_called_with("Original Query", history)
-
-    # 2. Check Parallel Search (Sequential is fine for MVP, but inputs must be from rewritten query)
-    deps["chroma"].search_mmr.assert_called()
-    assert deps["chroma"].search_mmr.call_args[0][0] == "Rewritten Query"
-
-    deps["neo4j_doc"].search.assert_called()
-    assert deps["neo4j_doc"].search.call_args[0][0] == "Rewritten Query"
-
-    # 3. Check Graph Context
-    # Check if context passed to LLM includes Graph Facts
-    call_args = deps["llm"].generate.call_args
-    assert call_args is not None
-    prompt_sent = str(call_args)  # Simple check
-    assert "Vector Content" in prompt_sent
-    assert "Keyword Content" in prompt_sent
-    assert "Elon" in prompt_sent and "FOUNDED" in prompt_sent and "Tesla" in prompt_sent
-
-    # 4. Check Result
+    
+    # Then: Verification
+    # 1. Graph가 올바른 initial_state로 호출되었는지 확인
+    mock_graph.ainvoke.assert_called_once()
+    call_args = mock_graph.ainvoke.call_args
+    initial_state = call_args[0][0]
+    
+    assert initial_state["query"] == "Original Query"
+    assert initial_state["history"] == []
+    assert initial_state["manual_filters"] is None
+    
+    # 2. State → RAGResult 변환 확인
     assert response.answer == "Final Answer"
-
-    # 5. Check Debug Info
     assert response.rewritten_query == "Rewritten Query"
     assert len(response.vector_chunks) == 1
     assert len(response.keyword_chunks) == 1
     assert len(response.graph_data) == 1
+    assert response.user_intent.intent == IntentType.GENERAL_QUERY
+    assert response.full_context == "Mock context with Vector Content, Keyword Content, and Elon FOUNDED Tesla"
