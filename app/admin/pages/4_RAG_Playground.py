@@ -43,8 +43,11 @@ def get_deps():
 
     intent_classifier = IntentClassifier(llm)
 
-    # 4. Domain Service
-    rag_service = RAGService(
+    # 4. RAG Service (Spec 033: Graph 기반)
+    from app.infrastructure.rag.graph import RAGGraphBuilder
+    from app.infrastructure.rag.nodes import RAGNodes
+
+    rag_nodes = RAGNodes(
         neo4j_doc_repo=neo4j_doc,
         neo4j_graph_repo=neo4j_graph,
         chroma_repo=chroma,
@@ -52,6 +55,10 @@ def get_deps():
         intent_classifier=intent_classifier,
         llm=llm,
     )
+    rag_graph_builder = RAGGraphBuilder(rag_nodes)
+    rag_graph = rag_graph_builder.build()  # Checkpointer는 선택사항
+    
+    rag_service = RAGService(graph=rag_graph)
 
     feedback_service = FeedbackService()
 
@@ -176,7 +183,10 @@ with st.sidebar:
 
     with st.spinner("Loading Documents..."):
         try:
-            doc_repo = admin_agent.rag_service.neo4j_doc_repo
+            # Spec 033: RAGService는 더 이상 repository를 직접 노출하지 않음
+            # 대신 get_deps()에서 반환된 neo4j_doc 사용
+            driver = get_neo4j_driver()
+            doc_repo = Neo4jStorage(driver)
             docs = doc_repo.list_documents(limit=50, search_term=search_term if search_term else None)
 
             doc_options = {}
