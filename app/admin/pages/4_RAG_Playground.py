@@ -141,41 +141,43 @@ for message in st.session_state.messages:
                      st.caption(f"Rewritten: {rewrite_info.get('rewritten')}")
                  st.code(message["debug_prompt"], language="text")
 
-# --- Sidebar: Source Filter ---
+# --- Sidebar: Knowledge Source ---
 with st.sidebar:
-    st.header("🔍 Search Settings")
-    st.markdown("---")
-
-    # Fetch Documents
+    st.subheader("📚 Knowledge Source")
+    st.caption("Restrict search scope to specific documents")
+    
+    # Document Search Functionality
+    search_term = st.text_input("🔍 Search Documents", placeholder="Enter title or URL...")
+    
     with st.spinner("Loading Documents..."):
         try:
-            # Access direct repo from agent's service (Not ideal check law of demeter, but fine for Playground)
             doc_repo = admin_agent.rag_service.neo4j_doc_repo
-            # Increase limit to show more items
-            docs = doc_repo.list_documents(limit=50)
-
-            # Create options dict: "Title (ID)" -> ID
-            # Assuming metadata has title, fallback to ID
+            # Use the new search_term in list_documents
+            docs = doc_repo.list_documents(limit=50, search_term=search_term if search_term else None)
+            
             doc_options = {}
             for d in docs:
                 title = d.metadata.get("title", "Untitled")
                 source = d.metadata.get("source", "")
                 label = f"{title} ({source})" if source else title
-                # Ensure unique keys for selectbox if titles duplicate?
-                # Multiselect uses values.
-                # We'll use ID as value, label as format_func.
                 doc_options[d.id] = label
-
+            
             selected_doc_ids = st.multiselect(
-                "Knowledge Source (Documents)",
+                "Select Documents",
                 options=list(doc_options.keys()),
                 format_func=lambda x: doc_options.get(x, x),
-                help="Select documents to restrict search scope."
+                help="Only these documents will be used for RAG context."
             )
-
+            
         except Exception as e:
             st.error(f"Failed to load documents: {e}")
             selected_doc_ids = []
+
+    st.divider()
+    
+    with st.expander("🛠️ Advanced Settings", expanded=False):
+        st.caption("Debug & Internal Settings")
+        # Any other settings can go here
 
 # Input
 if prompt := st.chat_input("Ask a question regarding the ingested content..."):
