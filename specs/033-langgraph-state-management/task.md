@@ -43,10 +43,10 @@
 - [x] Commit:  `feat(spec-033): implement rag nodes business logic`
 
 ### 2-3. Implementation - Graph Builder
-- [ ] `app/infrastructure/rag/graph.py` 구현 (RAGGraphBuilder 클래스)
-- [ ] Linear Pipeline (4 nodes) 구성
-- [ ] Checkpointer 통합
-- [ ] Commit: `feat(spec-033): implement rag graph builder`
+- [x] `app/infrastructure/rag/graph.py` 구현 (RAGGraphBuilder 클래스)
+- [x] Linear Pipeline (4 nodes) 구성
+- [x] Checkpointer 통합
+- [x] Commit: `feat(spec-033): implement rag graph builder`
 
 ---
 
