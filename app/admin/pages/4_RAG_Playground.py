@@ -142,13 +142,44 @@ for message in st.session_state.messages:
                     for c in k_chunks:
                         st.text(f"[Keyword] {c.metadata.get('title', 'No Title')}\n{c.content[:100]}...")
 
-        # Debug Prompt
-        if message.get("debug_prompt"):
-            with st.expander("🛠️ Debug: Prompt & Rewriting"):
+        # Debug: Intent & Prompt (Spec 032)
+        if message.get("debug_prompt") or message.get("debug_intent"):
+            with st.expander("🛠️ Debug: Intent & Prompt"):
+                # Intent Analysis
+                intent_info = message.get("debug_intent")
+                if intent_info:
+                    st.markdown("**🧠 Intent Classification**")
+                    intent_type = intent_info.get("intent", "N/A")
+                    targets = intent_info.get("targets", [])
+                    reasoning = intent_info.get("reasoning", "")
+
+                    col1, col2 = st.columns([1, 2])
+                    with col1:
+                        intent_color = {
+                            "general_query": "🟢",
+                            "compare": "🔵",
+                            "summarize": "🟡",
+                            "filter_by_topic": "🟣",
+                        }.get(intent_type, "⚪")
+                        st.metric("Intent", f"{intent_color} {intent_type.upper()}")
+                    with col2:
+                        if targets:
+                            st.caption(f"**Targets:** {', '.join(targets)}")
+                        st.caption(f"**Reasoning:** {reasoning}")
+                    st.divider()
+
+                # Query Rewriting
                 rewrite_info = message.get("debug_rewrite")
                 if rewrite_info:
+                    st.markdown("**✏️ Query Rewriting**")
+                    st.caption(f"Original: {rewrite_info.get('original')}")
                     st.caption(f"Rewritten: {rewrite_info.get('rewritten')}")
-                st.code(message["debug_prompt"], language="text")
+                    st.divider()
+
+                # Full Prompt
+                if message.get("debug_prompt"):
+                    st.markdown("**📝 LLM Prompt**")
+                    st.code(message["debug_prompt"], language="text")
 
 # --- Sidebar: Knowledge Source ---
 with st.sidebar:
@@ -259,12 +290,22 @@ if prompt := st.chat_input("Ask a question regarding the ingested content..."):
                         for c in keyword_chunks:
                             st.text(f"---\n{c.content[:200]}...")
 
-            # Save to History
+            # Save to History with Intent Info (Spec 032)
+            debug_intent = None
+            if context_data and context_data.get("user_intent"):
+                user_intent_obj = context_data["user_intent"]
+                debug_intent = {
+                    "intent": user_intent_obj.intent.value if hasattr(user_intent_obj, "intent") else "N/A",
+                    "targets": user_intent_obj.targets if hasattr(user_intent_obj, "targets") else [],
+                    "reasoning": user_intent_obj.reasoning if hasattr(user_intent_obj, "reasoning") else "",
+                }
+
             st.session_state.messages.append(
                 {
                     "role": "assistant",
                     "content": answer,
                     "debug_info": context_data if context_data else {},
+                    "debug_intent": debug_intent,
                     "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")}
                     if context_data
                     else {},
