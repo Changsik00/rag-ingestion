@@ -71,11 +71,11 @@
 ## Task 4: Dependency Injection 업데이트
 
 ### 4-1. Implementation
-- [ ] `app/interfaces/api/dependencies.py` 수정
+- [x] `app/interfaces/api/dependencies.py` 수정
   - `get_rag_nodes()` 추가
   - `get_rag_graph_builder()` 추가
   - `get_rag_service()` 리팩토링 (Graph Builder 주입)
-- [ ] Commit: `feat(spec-033): update di for rag graph components`
+- [x] Commit: `feat(spec-033): update di for rag graph components`
 
 ---
 
