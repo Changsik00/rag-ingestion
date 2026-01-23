@@ -186,11 +186,16 @@ class RAGNodes:
 
         # Generate Answer
         prompt = (
-            f"Please answer the following question based on the context provided below.\\n\\n"
-            f"Question: {query}\\n"
-            f"(Context/Rewritten): {rewritten_query}\\n\\n"
-            f"Context:\\n{context_str}\\n\\n"
-            f"Answer:"
+            "You are a professional AI assistant. Answer the question based strictly on the provided Context.\n"
+            "CRITICAL RULES:\n"
+            "1. If the provided context is empty or does not contain sufficient information to answer the question, "
+            "explicitly state that you do not have enough information in your knowledge base to answer definitively.\n"
+            "2. Do NOT use your internal knowledge to supplement the answer if it's not supported by the context.\n"
+            "3. If multiple documents are provided, cite them correctly using [Source ID].\n\n"
+            f"Question: {query}\n"
+            f"(Rewritten Query): {rewritten_query}\n\n"
+            f"Context:\n{context_str}\n\n"
+            "Answer:"
         )
 
         response = self.llm.generate(prompt)

@@ -408,3 +408,53 @@ class TestRAGNodesFallback:
         calls = mock_repositories["chroma"].search_mmr.call_args_list
         assert calls[0][1]["filters"] == {"source": ["non-existent"]}
         assert calls[1][1]["filters"] is None
+
+
+class TestRAGNodesPromptGuard:
+    """Prompt 가드레일 테스트 (Spec 034)"""
+
+    def test_generate_answer_includes_critical_rules(
+        self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
+    ):
+        """
+        Given: RAG State
+        When: generate_answer 노드 실행
+        Then: LLM에게 전달되는 프롬프트에 CRITICAL RULES가 포함되어야 함
+        """
+        from app.infrastructure.rag.nodes import RAGNodes
+
+        mock_llm.generate.return_value = Mock(content="답변")
+
+        nodes = RAGNodes(
+            neo4j_doc_repo=mock_repositories["neo4j_doc"],
+            neo4j_graph_repo=mock_repositories["neo4j_graph"],
+            chroma_repo=mock_repositories["chroma"],
+            query_rewriter=mock_query_rewriter,
+            intent_classifier=mock_intent_classifier,
+            llm=mock_llm
+        )
+
+        state = {
+            "query": "질문",
+            "history": [],
+            "manual_filters": None,
+            "user_intent": None,
+            "rewritten_query": "재작성",
+            "auto_filters": None,
+            "final_filters": None,
+            "vector_chunks": [],
+            "keyword_chunks": [],
+            "graph_data": [],
+            "full_context": "",
+            "final_answer": ""
+        }
+
+        # When
+        nodes.generate_answer(state)
+
+        # Then
+        assert mock_llm.generate.call_count == 1
+        prompt = mock_llm.generate.call_args[0][0]
+        assert "CRITICAL RULES" in prompt
+        assert "not contain sufficient information" in prompt
+        assert "Do NOT use your internal knowledge" in prompt
