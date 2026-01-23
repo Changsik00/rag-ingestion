@@ -168,6 +168,10 @@ def render_debug_ui(message):
             st.divider()
             st.warning("🔄 **Fallback Triggered**: Strict filters returned no results. Global search was performed.")
 
+        if fallback_triggered:
+            st.divider()
+            st.warning("🔄 **Fallback Triggered**: Strict filters returned no results. Global search was performed.")
+
 
 admin_agent, feedback_service = get_deps()
 
