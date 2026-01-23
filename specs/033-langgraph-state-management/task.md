@@ -33,14 +33,14 @@
 - [x] Commit: `test(spec-033): add rag nodes unit tests`
 
 ### 2-2. Implementation - Nodes
-- [ ] 디렉토리 생성: `app/infrastructure/rag/`
-- [ ] `app/infrastructure/rag/nodes.py` 구현 (RAGNodes 클래스)
+- [x] 디렉토리 생성: `app/infrastructure/rag/`
+- [x] `app/infrastructure/rag/nodes.py` 구현 (RAGNodes 클래스)
   - `classify_intent()` - Intent + Query Rewrite
   - `route_decision()` - Intent → Filters 변환
   - `retrieve_hybrid()` - Parallel Search
   - `generate_answer()` - LLM Generation
-- [ ] Test 실행 (Pass): `uv run pytest tests/unit/infrastructure/rag/test_rag_nodes.py -v`
-- [ ] Commit: `feat(spec-033): implement rag nodes business logic`
+- [x] Test 실행 (Pass): `uv run pytest tests/unit/infrastructure/rag/test_rag_nodes.py -v`
+- [x] Commit:  `feat(spec-033): implement rag nodes business logic`
 
 ### 2-3. Implementation - Graph Builder
 - [ ] `app/infrastructure/rag/graph.py` 구현 (RAGGraphBuilder 클래스)

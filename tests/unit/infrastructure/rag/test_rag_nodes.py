@@ -224,7 +224,8 @@ class TestRAGNodesRetrieveHybrid:
         mock_chunk = Chunk(
             id="chunk_1",
             content="테스트 내용",
-            document_id="doc_1",
+            parent_id="doc_1",
+            index=0,
             metadata={"source": "test.com", "title": "Test"}
         )
         
@@ -305,7 +306,8 @@ class TestRAGNodesGenerateAnswer:
         chunk = Chunk(
             id="chunk_1",
             content="AI는 인공지능을 의미합니다.",
-            document_id="doc_1",
+            parent_id="doc_1",
+            index=0,
             metadata={"source": "test.com", "title": "AI 개념"}
         )
         
