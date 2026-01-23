@@ -16,12 +16,12 @@
 ### 1-1. Domain Structure Setup
 - [x] 디렉토리 생성: `app/domain/rag/`
 - [x] `__init__.py` 생성
-- [ ] Commit: `chore(spec-033): create rag domain package`
+- [x] Commit: `chore(spec-033): create rag domain package`
 
 ### 1-2. State Schema Definition
-- [ ] `app/domain/rag/state.py` 작성 (RAGGraphState TypedDict)
-- [ ] Type hints 및 Docstring 작성
-- [ ] Commit: `feat(spec-033): define RAGGraphState schema`
+- [x] `app/domain/rag/state.py` 작성 (RAGGraphState TypedDict)
+- [x] Type hints 및 Docstring 작성
+- [x] Commit: `feat(spec-033): define RAGGraphState schema`
 
 ---
 
