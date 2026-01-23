@@ -143,12 +143,12 @@ def get_rag_nodes(
     intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
 ):
     from app.infrastructure.rag.nodes import RAGNodes
-    
+
     neo4j_doc_repo = Neo4jStorage(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
     chroma_repo = ChromaStorage()
     llm_adapter = get_llm()
-    
+
     return RAGNodes(
         neo4j_doc_repo=neo4j_doc_repo,
         neo4j_graph_repo=neo4j_graph_repo,
@@ -162,7 +162,7 @@ def get_rag_nodes(
 # RAG Graph Builder 의존성 (Spec 033)
 def get_rag_graph_builder(nodes=Depends(get_rag_nodes)):
     from app.infrastructure.rag.graph import RAGGraphBuilder
-    
+
     return RAGGraphBuilder(nodes)
 
 
@@ -173,5 +173,5 @@ def get_rag_service(
 ) -> RAGService:
     # Build Graph with Checkpointer
     compiled_graph = graph_builder.build(checkpointer=checkpointer)
-    
+
     return RAGService(graph=compiled_graph)

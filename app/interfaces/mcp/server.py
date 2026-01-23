@@ -76,7 +76,7 @@ def provide_rag_service() -> RAGService:
     # LLM, Query Rewriter, Intent Classifier (Spec 032)
     llm = get_llm()
     query_rewriter = QueryRewriter(llm)
-    
+
     from app.domain.services.intent_classifier import IntentClassifier
     intent_classifier = IntentClassifier(llm)
 

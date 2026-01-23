@@ -46,13 +46,13 @@ def mock_repositories():
     """Mock Repositories (Neo4j, Chroma)"""
     neo4j_doc = Mock()
     neo4j_doc.search = AsyncMock(return_value=[])
-    
+
     neo4j_graph = Mock()
     neo4j_graph.get_subgraph = AsyncMock(return_value=[])
-    
+
     chroma = Mock()
     chroma.search_mmr = AsyncMock(return_value=[])
-    
+
     return {
         "neo4j_doc": neo4j_doc,
         "neo4j_graph": neo4j_graph,
@@ -62,7 +62,7 @@ def mock_repositories():
 
 class TestRAGNodesClassifyIntent:
     """classify_intent 노드 테스트"""
-    
+
     def test_updates_state_with_intent_and_rewritten_query(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
@@ -72,7 +72,7 @@ class TestRAGNodesClassifyIntent:
         Then: user_intent와 rewritten_query가 State에 추가됨
         """
         from app.infrastructure.rag.nodes import RAGNodes
-        
+
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
             neo4j_graph_repo=mock_repositories["neo4j_graph"],
@@ -81,7 +81,7 @@ class TestRAGNodesClassifyIntent:
             intent_classifier=mock_intent_classifier,
             llm=mock_llm
         )
-        
+
         # Given
         state = {
             "query": "인공지능이 뭐야?",
@@ -97,10 +97,10 @@ class TestRAGNodesClassifyIntent:
             "full_context": "",
             "final_answer": ""
         }
-        
+
         # When
         result = nodes.classify_intent(state)
-        
+
         # Then
         assert result["user_intent"] is not None
         assert result["user_intent"].intent == IntentType.GENERAL_QUERY
@@ -111,7 +111,7 @@ class TestRAGNodesClassifyIntent:
 
 class TestRAGNodesRouteDecision:
     """route_decision 노드 테스트"""
-    
+
     def test_converts_intent_to_auto_filters(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
@@ -121,7 +121,7 @@ class TestRAGNodesRouteDecision:
         Then: auto_filters가 Intent로부터 도출됨
         """
         from app.infrastructure.rag.nodes import RAGNodes
-        
+
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
             neo4j_graph_repo=mock_repositories["neo4j_graph"],
@@ -130,7 +130,7 @@ class TestRAGNodesRouteDecision:
             intent_classifier=mock_intent_classifier,
             llm=mock_llm
         )
-        
+
         # Given
         state = {
             "query": "Claude와 GPT-4를 비교해줘",
@@ -150,15 +150,15 @@ class TestRAGNodesRouteDecision:
             "full_context": "",
             "final_answer": ""
         }
-        
+
         # When
         result = nodes.route_decision(state)
-        
+
         # Then
         assert result["auto_filters"] is not None
         assert result["auto_filters"] == {"source": ["claude", "gpt-4"]}
         assert result["final_filters"] == {"source": ["claude", "gpt-4"]}
-    
+
     def test_prioritizes_manual_filters_over_auto(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
@@ -168,7 +168,7 @@ class TestRAGNodesRouteDecision:
         Then: Manual Filters가 우선 적용됨 (Auto Filters 무시)
         """
         from app.infrastructure.rag.nodes import RAGNodes
-        
+
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
             neo4j_graph_repo=mock_repositories["neo4j_graph"],
@@ -177,7 +177,7 @@ class TestRAGNodesRouteDecision:
             intent_classifier=mock_intent_classifier,
             llm=mock_llm
         )
-        
+
         # Given
         manual_filters = {"source": ["doc_A"]}
         state = {
@@ -198,17 +198,17 @@ class TestRAGNodesRouteDecision:
             "full_context": "",
             "final_answer": ""
         }
-        
+
         # When
         result = nodes.route_decision(state)
-        
+
         # Then
         assert result["final_filters"] == manual_filters  # Manual이 우선
 
 
 class TestRAGNodesRetrieveHybrid:
     """retrieve_hybrid 노드 테스트"""
-    
+
     @pytest.mark.asyncio
     async def test_parallel_search_updates_all_chunks(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
@@ -219,7 +219,7 @@ class TestRAGNodesRetrieveHybrid:
         Then: vector_chunks, keyword_chunks, graph_data가 모두 State에 추가됨
         """
         from app.infrastructure.rag.nodes import RAGNodes
-        
+
         # Mock 검색 결과
         mock_chunk = Chunk(
             id="chunk_1",
@@ -228,13 +228,13 @@ class TestRAGNodesRetrieveHybrid:
             index=0,
             metadata={"source": "test.com", "title": "Test"}
         )
-        
+
         mock_repositories["chroma"].search_mmr.return_value = [mock_chunk]
         mock_repositories["neo4j_doc"].search.return_value = [mock_chunk]
         mock_repositories["neo4j_graph"].get_subgraph.return_value = [
             {"source": "Entity1", "relationship": "RELATED_TO", "target": "Entity2"}
         ]
-        
+
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
             neo4j_graph_repo=mock_repositories["neo4j_graph"],
@@ -243,7 +243,7 @@ class TestRAGNodesRetrieveHybrid:
             intent_classifier=mock_intent_classifier,
             llm=mock_llm
         )
-        
+
         # Given
         state = {
             "query": "인공지능이 뭐야?",
@@ -263,10 +263,10 @@ class TestRAGNodesRetrieveHybrid:
             "full_context": "",
             "final_answer": ""
         }
-        
+
         # When
         result = await nodes.retrieve_hybrid(state)
-        
+
         # Then
         assert len(result["vector_chunks"]) == 1
         assert len(result["keyword_chunks"]) == 1
@@ -276,7 +276,7 @@ class TestRAGNodesRetrieveHybrid:
 
 class TestRAGNodesGenerateAnswer:
     """generate_answer 노드 테스트"""
-    
+
     def test_formats_context_and_generates_answer(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
@@ -286,13 +286,14 @@ class TestRAGNodesGenerateAnswer:
         Then: full_context와 final_answer가 State에 추가됨
         """
         from unittest.mock import Mock
+
         from app.infrastructure.rag.nodes import RAGNodes
-        
+
         # Mock LLM Response
         mock_response = Mock()
         mock_response.content = "인공지능은 기계가 인간처럼 학습하고 판단하는 기술입니다."
         mock_llm.generate.return_value = mock_response
-        
+
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
             neo4j_graph_repo=mock_repositories["neo4j_graph"],
@@ -301,7 +302,7 @@ class TestRAGNodesGenerateAnswer:
             intent_classifier=mock_intent_classifier,
             llm=mock_llm
         )
-        
+
         # Given
         chunk = Chunk(
             id="chunk_1",
@@ -310,7 +311,7 @@ class TestRAGNodesGenerateAnswer:
             index=0,
             metadata={"source": "test.com", "title": "AI 개념"}
         )
-        
+
         state = {
             "query": "인공지능이 뭐야?",
             "history": [],
@@ -329,10 +330,10 @@ class TestRAGNodesGenerateAnswer:
             "full_context": "",
             "final_answer": ""
         }
-        
+
         # When
         result = nodes.generate_answer(state)
-        
+
         # Then
         assert result["full_context"] != ""
         assert "test.com" in result["full_context"]  # Citation 포함

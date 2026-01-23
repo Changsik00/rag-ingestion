@@ -24,44 +24,44 @@ class RAGGraphState(TypedDict):
     - 의사결정 과정을 추적 가능하게 함
     - HITL(Human-in-the-Loop) 및 Checkpointer 지원
     """
-    
+
     # === Input (사용자 요청) ===
     query: str
     """원본 사용자 질문"""
-    
+
     history: list[dict]
     """대화 이력 (Query Rewriting에 사용)"""
-    
+
     manual_filters: dict | None
     """사용자가 명시적으로 지정한 필터 (우선순위 최고)"""
-    
+
     # === Brain Layer (LLM 의사결정) ===
     user_intent: UserIntent | None
     """Intent Classifier가 분석한 사용자 의도"""
-    
+
     rewritten_query: str | None
     """Query Rewriter가 대화 이력을 반영하여 재작성한 질문"""
-    
+
     # === Nervous System (라우팅 결정) ===
     auto_filters: dict | None
     """Intent → Filters 변환 결과 (자동 도출)"""
-    
+
     final_filters: dict | None
     """Manual Filters + Auto Filters 병합 결과 (실제 검색에 사용)"""
-    
+
     # === Memory/Body (검색 결과) ===
     vector_chunks: list[Chunk]
     """Vector DB(ChromaDB) MMR 검색 결과"""
-    
+
     keyword_chunks: list[Chunk]
     """Neo4j Keyword 검색 결과"""
-    
+
     graph_data: list[dict]
     """Neo4j Graph Traversal 결과 (Entity 관계)"""
-    
+
     # === Output (최종 결과) ===
     full_context: str
     """LLM에게 제공할 포맷팅된 컨텍스트 (Citations 포함)"""
-    
+
     final_answer: str
     """LLM이 생성한 최종 답변"""

@@ -8,7 +8,6 @@ Spec 033: LangGraph State Management
 
 import logging
 from dataclasses import dataclass
-from typing import Any
 
 from langgraph.graph.state import CompiledStateGraph
 
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RAGResult:
     """RAG Pipeline 실행 결과"""
-    
+
     answer: str
     rewritten_query: str
     vector_chunks: list[Chunk]
@@ -82,13 +81,13 @@ class RAGService:
             "full_context": "",
             "final_answer": ""
         }
-        
+
         # Config 설정 (Thread ID가 있으면 Checkpointer 사용)
         config = {"configurable": {"thread_id": thread_id}} if thread_id else {}
-        
+
         # Graph 실행
         result_state = await self.graph.ainvoke(initial_state, config=config)
-        
+
         # State → RAGResult 변환
         return self._state_to_result(result_state)
 

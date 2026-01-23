@@ -68,7 +68,7 @@ class RAGNodes:
         """
         query = state["query"]
         history = state["history"]
-        
+
         # Intent Classification (with Fallback)
         try:
             user_intent = self.intent_classifier.classify(query, history)
@@ -79,14 +79,14 @@ class RAGNodes:
                 targets=[],
                 reasoning="Fallback due to classification error"
             )
-        
+
         # Query Rewriting
         rewritten_query = self.query_rewriter.rewrite(query, history)
-        
+
         # Update State
         state["user_intent"] = user_intent
         state["rewritten_query"] = rewritten_query
-        
+
         return state
 
     def route_decision(self, state: RAGGraphState) -> RAGGraphState:
@@ -104,17 +104,17 @@ class RAGNodes:
         """
         user_intent = state.get("user_intent")
         manual_filters = state.get("manual_filters")
-        
+
         # Convert Intent to Auto Filters
         auto_filters = self._intent_to_filters(user_intent) if user_intent else None
-        
+
         # Merge Filters (Manual > Auto)
         final_filters = manual_filters if manual_filters is not None else auto_filters
-        
+
         # Update State
         state["auto_filters"] = auto_filters
         state["final_filters"] = final_filters
-        
+
         return state
 
     async def retrieve_hybrid(self, state: RAGGraphState) -> RAGGraphState:
@@ -131,21 +131,21 @@ class RAGNodes:
         """
         rewritten_query = state.get("rewritten_query") or state["query"]
         final_filters = state.get("final_filters")
-        
+
         # Parallel Hybrid Search
         vector_task = asyncio.create_task(self._search_vector(rewritten_query, final_filters))
         keyword_task = asyncio.create_task(self._search_keyword(rewritten_query, final_filters))
         graph_task = asyncio.create_task(self._search_graph(rewritten_query))
-        
+
         vector_results, keyword_results, graph_results = await asyncio.gather(
             vector_task, keyword_task, graph_task
         )
-        
+
         # Update State
         state["vector_chunks"] = vector_results
         state["keyword_chunks"] = keyword_results
         state["graph_data"] = graph_results
-        
+
         return state
 
     def generate_answer(self, state: RAGGraphState) -> RAGGraphState:
@@ -165,10 +165,10 @@ class RAGNodes:
         vector_chunks = state.get("vector_chunks", [])
         keyword_chunks = state.get("keyword_chunks", [])
         graph_data = state.get("graph_data", [])
-        
+
         # Format Context
         context_str = self._merge_and_format_context(vector_chunks, keyword_chunks, graph_data)
-        
+
         # Generate Answer
         prompt = (
             f"Please answer the following question based on the context provided below.\\n\\n"
@@ -177,18 +177,18 @@ class RAGNodes:
             f"Context:\\n{context_str}\\n\\n"
             f"Answer:"
         )
-        
+
         response = self.llm.generate(prompt)
-        
+
         if hasattr(response, "content"):
             answer_text = response.content
         else:
             answer_text = str(response)
-        
+
         # Update State
         state["full_context"] = context_str
         state["final_answer"] = answer_text
-        
+
         return state
 
     # === Helper Methods ===
@@ -206,19 +206,19 @@ class RAGNodes:
         """
         if not intent:
             return None
-        
+
         if intent.intent == IntentType.COMPARE or intent.intent == IntentType.SUMMARIZE:
             # targets를 source 필터로 변환
             if intent.targets:
                 return {"source": intent.targets}
             return None
-        
+
         elif intent.intent == IntentType.FILTER_BY_TOPIC:
             # targets를 topic 필터로 변환
             if intent.targets:
                 return {"topic": intent.targets}
             return None
-        
+
         else:  # GENERAL_QUERY
             return None
 

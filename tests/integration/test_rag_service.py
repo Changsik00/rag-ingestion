@@ -36,7 +36,7 @@ async def test_rag_service_orchestration(mock_deps):
     4. Format Context & Generate Answer.
     """
     deps = mock_deps
-    
+
     # Mock Intent Classifier (Spec 032)
     from app.domain.schemas.intent import IntentType, UserIntent
     deps["intent_classifier"].classify.return_value = UserIntent(
@@ -44,7 +44,7 @@ async def test_rag_service_orchestration(mock_deps):
         targets=[],
         reasoning="General question for testing"
     )
-    
+
     service = RAGService(
         neo4j_doc_repo=deps["neo4j_doc"],
         neo4j_graph_repo=deps["neo4j_graph"],

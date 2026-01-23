@@ -83,7 +83,7 @@ class TestRAGGraphFlow:
 
         # Then
         assert result.final_answer != ""
-        
+
         # Checkpointer를 통해 State 조회 가능한지 확인
         # (실제로는 RAGService 내부에서 checkpointer.get() 호출 필요)
         # 여기서는 최소한 오류 없이 실행되었음을 확인
