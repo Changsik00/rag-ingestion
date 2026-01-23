@@ -217,7 +217,11 @@ with st.sidebar:
 
     with st.expander("🛠️ Advanced Settings", expanded=False):
         st.caption("Debug & Internal Settings")
-        # Any other settings can go here
+        
+        # Clear Chat History Button (Spec 032)
+        if st.button("🗑️ Clear Chat History", use_container_width=True):
+            st.session_state.messages = []
+            st.rerun()
 
 # Input
 if prompt := st.chat_input("Ask a question regarding the ingested content..."):
