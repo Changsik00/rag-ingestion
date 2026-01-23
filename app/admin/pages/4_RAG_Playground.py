@@ -153,19 +153,19 @@ for message in st.session_state.messages:
                     targets = intent_info.get("targets", [])
                     reasoning = intent_info.get("reasoning", "")
 
-                    col1, col2 = st.columns([1, 2])
-                    with col1:
-                        intent_color = {
-                            "general_query": "🟢",
-                            "compare": "🔵",
-                            "summarize": "🟡",
-                            "filter_by_topic": "🟣",
-                        }.get(intent_type, "⚪")
-                        st.metric("Intent", f"{intent_color} {intent_type.upper()}")
-                    with col2:
-                        if targets:
-                            st.caption(f"**Targets:** {', '.join(targets)}")
-                        st.caption(f"**Reasoning:** {reasoning}")
+                    # Intent color coding
+                    intent_color = {
+                        "general_query": "🟢",
+                        "compare": "🔵",
+                        "summarize": "🟡",
+                        "filter_by_topic": "🟣",
+                    }.get(intent_type, "⚪")
+                    
+                    # Compact display
+                    st.markdown(f"**Intent:** {intent_color} `{intent_type.upper()}`")
+                    if targets:
+                        st.markdown(f"**Targets:** {', '.join([f'`{t}`' for t in targets])}")
+                    st.caption(f"**Reasoning:** {reasoning}")
                     st.divider()
 
                 # Query Rewriting
