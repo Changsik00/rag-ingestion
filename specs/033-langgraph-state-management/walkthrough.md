@@ -1,106 +1,35 @@
-# Spec 033 Walkthrough: LangGraph State Management
+# Walkthrough: Spec 033 - LangGraph State Management
 
-## ✅ 작업 완료 내역
+LangGraph를 사용하여 RAG 파이프라인의 제어 흐름(Nervous System)을 구축하고, 상태 기반의 의사결정 체계를 완성했습니다.
 
-### 구현된 기능
-1. **RAG Domain Layer** (`app/domain/rag/`)
-   - `RAGGraphState` TypedDict 정의
-   - 모든 중간 상태를 명시적으로 관리
+## 🚀 주요 성과
 
-2. **RAG Infrastructure Layer** (`app/infrastructure/rag/`)
-   - `RAGNodes`: 4개 노드 비즈니스 로직 구현
-     - `classify_intent`: Intent + Query Rewrite
-     - `route_decision`: Intent → Filters 변환
-     - `retrieve_hybrid`: Parallel Hybrid Search
-     - `generate_answer`: LLM Answer Generation
-   - `RAGGraphBuilder`: Linear Pipeline 구성 및 Checkpointer 통합
+1.  **3-Layer Architecture 완성**: Brain(의도), Nervous System(흐름), Body(검색) 레이어의 격리를 통해 유지보수성 향상.
+2.  **State Management**: `RAGGraphState`를 통해 파이프라인의 모든 중간 과정(Intent, Filters, Chunks)을 명시적으로 관리.
+3.  **병렬 검색 및 비동기 처리**: `asyncio.to_thread`와 `gather`를 사용하여 Vector, Keyword, Graph 검색을 동시 수행하여 성능 최적화.
+4.  **HITL 기반 확보**: `SqliteSaver`를 연동하여 대화 상태 스냅샷 저장 및 향후 중단/재개 가능한 구조 마련.
 
-3. **RAGService 리팩토링**
-   - 기존 함수 기반 → LangGraph 기반으로 전환
-   - Graph 실행 및 State → Result 변환만 담당
+## 🧪 테스트 및 트러블슈팅 결과
 
-4. **Dependency Injection 업데이트**
-   - `get_rag_nodes()` 추가
-   - `get_rag_graph_builder()` 추가
-   - `get_rag_service()` Graph 기반으로 재구성
+### 시나리오 1: 일반 질문 (Context Awareness)
+- **질문**: "인공지능이 뭐야?" → "일론 머스크는?"
+- **결과**: **성공**. 주어가 없는 후속 질문에서도 맥락을 파악하여 쿼리를 재작성함.
+- **학습**: 지식 베이스에 정보가 없을 경우 할루시네이션 없이 "정보가 없다"고 응답하는 방어 동작 확인.
 
-## 🧪 테스트 결과
+### 시나리오 2 & 3: 비교 질문 및 필터링 이슈 (Lessons Learned)
+- **질문**: "Claude와 GPT-4 비교", "일론 머스크와 스티브 잡스의 공통점"
+- **발견된 필터링 한계**: 
+    - **언어/명칭 불일치**: Intent는 한국어 타겟("일론 머스크")을 뽑았으나 DB의 메타데이터(`source`)와 일치하지 않아 검색 결과가 0건이 됨.
+    - **엄격한 매칭**: 자동 필터가 너무 강력하게 작동하여 관련 정보를 차단하는 부작용 확인.
+- **LLM 폴백**: 컨텍스트가 없을 때 LLM이 자신의 내부 지식으로 답변하는 현상 관찰 (수정이 필요함).
 
-### Unit Tests
-```bash
-uv run pytest tests/unit/infrastructure/rag/ -v
-```
-**결과**: 5 passed ✅
+## 🛠 향후 과제 (Spec 034 이관)
+- **Filtering Robustness**: 필터 결과 0건 시 자동으로 전역 검색으로 전환하는 Fallback 로직 구현.
+- **Query Expansion**: 추출된 대상을 검색 쿼리에 포함시켜 검색 확률 제고.
 
-**테스트 커버리지:**
-- ✅ Intent Classification 및 Query Rewriting State 업데이트
-- ✅ Intent → Filters 변환 정확성
-- ✅ Manual Filters 우선순위 보장
-- ✅ Parallel Hybrid Search 결과 State 저장
-- ✅ Context Formatting 및 LLM 호출
+---
 
-### Integration Tests
-```bash
-uv run pytest tests/integration/bdd/test_rag_graph_flow.py -v
-```
-**결과**: 3 skipped (구현 완료 후 활성화 예정)
+## 📸 실행 스크린샷
 
-## 📊 코드 변경 사항
-
-### 신규 파일 (9개)
-- `app/domain/rag/__init__.py`
-- `app/domain/rag/state.py` (RAGGraphState)
-- `app/infrastructure/rag/__init__.py`
-- `app/infrastructure/rag/nodes.py` (RAGNodes)
-- `app/infrastructure/rag/graph.py` (RAGGraphBuilder)
-- `tests/unit/infrastructure/rag/test_rag_nodes.py`
-- `tests/integration/bdd/test_rag_graph_flow.py`
-- `docs/architecture/rag_pipeline.md`
-- `specs/033-langgraph-state-management/` (spec.md, plan.md, task.md)
-
-### 수정 파일 (3개)
-- `app/domain/services/rag_service.py` (완전 리팩토링)
-- `app/interfaces/api/dependencies.py` (DI 업데이트)
-- `backlog/queue.md` (Spec 033 Note 추가)
-
-### 커밋 이력 (9개)
-1. `chore(spec-033): create rag domain package`
-2. `feat(spec-033): define RAGGraphState schema`
-3. `test(spec-033): add rag nodes unit tests`
-4. `feat(spec-033): implement rag nodes business logic`
-5. `feat(spec-033): implement rag graph builder`
-6. `test(spec-033): add rag graph integration tests`
-7. `refactor(spec-033): migrate rag service to langgraph`
-8. `feat(spec-033): update di for rag graph components`
-9. `docs(spec-033): add rag pipeline architecture documentation`
-
-## 🎯 달성된 목표
-
-### Design Guide 005 완성
-- ✅ **Brain Layer**: Intent Classifier, Query Rewriter (의사결정)
-- ✅ **Nervous System**: LangGraph + RAGGraphState (흐름 제어)
-- ✅ **Memory/Body**: Repository (물리적 검색 및 필터 강제)
-
-### 가시성 향상
-- ✅ 모든 의사결정 과정이 State에 명시적으로 저장
-- ✅ Checkpointer 통합으로 State Snapshot 저장 가능
-- ✅ 향후 HITL(Human-in-the-Loop) 확장 준비 완료
-
-### 유지보수성 향상
-- ✅ 각 노드를 독립적으로 테스트 및 수정 가능
-- ✅ Ingestion/RAG 모두 LangGraph 기반으로 패턴 통일
-- ✅ 조건부 분기 추가 용이 (향후 확장성)
-
-## 📝 남은 작업 (Icebox)
-
-### Task 5: 기존 테스트 회귀 수정
-기존 RAGService 의존 테스트가 있다면 수정 필요. 핵심 기능은 모두 작동하므로 나중에 처리.
-
-### Task 6: Admin Dashboard State View
-State Snapshot을 Admin에서 조회할 수 있는 UI 추가 (Optional).
-
-## 🚀 다음 단계
-
-- ✅ PR 생성 및 리뷰 요청
-- ⏳ 전체 테스트 스위트 검증
-- ⏳ Production 배포 후 모니터링
+![Comparison Issue Screenshot](https://github.com/Changsik00/rag-ingestion/assets/placeholder_comparison_empty.png)
+> 필터 불일치로 인해 Context가 비어있는 상태에서 LLM이 답변하는 모습 (Spec 034에서 개선 예정)
