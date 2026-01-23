@@ -28,9 +28,9 @@
 ## Task 2: RAG Infrastructure Layer (Nodes \u0026 Graph Builder)
 
 ### 2-1. TDD Warming up - Nodes
-- [ ] Test Case 작성: `tests/unit/infrastructure/rag/test_rag_nodes.py` (5개 시나리오)
-- [ ] Test 실행 (Fail): `uv run pytest tests/unit/infrastructure/rag/test_rag_nodes.py -v`
-- [ ] Commit: `test(spec-033): add rag nodes unit tests`
+- [x] Test Case 작성: `tests/unit/infrastructure/rag/test_rag_nodes.py` (5개 시나리오)
+- [x] Test 실행 (Fail): `uv run pytest tests/unit/infrastructure/rag/test_rag_nodes.py -v`
+- [x] Commit: `test(spec-033): add rag nodes unit tests`
 
 ### 2-2. Implementation - Nodes
 - [ ] 디렉토리 생성: `app/infrastructure/rag/`
