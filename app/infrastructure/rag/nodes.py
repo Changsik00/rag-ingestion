@@ -114,6 +114,7 @@ class RAGNodes:
         # Update State
         state["auto_filters"] = auto_filters
         state["final_filters"] = final_filters
+        state["fallback_triggered"] = False
 
         return state
 
@@ -141,6 +142,19 @@ class RAGNodes:
         vector_results, keyword_results, graph_results = await asyncio.gather(
             vector_task, keyword_task, graph_task
         )
+
+        # Fallback Logic: 필터링된 결과가 없고 필터가 적용된 상태라면 필터 제거 후 재검색
+        if final_filters and not vector_results and not keyword_results:
+            logger.info("No results found with filters. Triggering Fallback (Global Search)...")
+            state["fallback_triggered"] = True
+
+            # 재검색 (필터 없이)
+            v_fallback_task = asyncio.to_thread(self._search_vector, rewritten_query, None)
+            k_fallback_task = asyncio.to_thread(self._search_keyword, rewritten_query, None)
+
+            v_fall, k_fall = await asyncio.gather(v_fallback_task, k_fallback_task)
+            vector_results = v_fall
+            keyword_results = k_fall
 
         # Update State
         state["vector_chunks"] = vector_results
