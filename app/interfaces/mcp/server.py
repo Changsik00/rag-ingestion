@@ -73,14 +73,19 @@ def provide_rag_service() -> RAGService:
 
     neo4j_doc_repo = Neo4jStorage(driver)
 
+    # LLM, Query Rewriter, Intent Classifier (Spec 032)
     llm = get_llm()
     query_rewriter = QueryRewriter(llm)
+    
+    from app.domain.services.intent_classifier import IntentClassifier
+    intent_classifier = IntentClassifier(llm)
 
     return RAGService(
         neo4j_doc_repo=neo4j_doc_repo,
         neo4j_graph_repo=graph_repo,
         chroma_repo=chroma_repo,
         query_rewriter=query_rewriter,
+        intent_classifier=intent_classifier,
         llm=llm,
     )
 

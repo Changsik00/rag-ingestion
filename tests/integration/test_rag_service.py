@@ -13,6 +13,7 @@ def mock_deps():
     neo4j_graph_repo = MagicMock()
     chroma_repo = MagicMock()
     query_rewriter = MagicMock()
+    intent_classifier = MagicMock()
     llm = MagicMock()
 
     return {
@@ -20,6 +21,7 @@ def mock_deps():
         "neo4j_graph": neo4j_graph_repo,
         "chroma": chroma_repo,
         "rewriter": query_rewriter,
+        "intent_classifier": intent_classifier,
         "llm": llm,
     }
 
@@ -34,11 +36,21 @@ async def test_rag_service_orchestration(mock_deps):
     4. Format Context & Generate Answer.
     """
     deps = mock_deps
+    
+    # Mock Intent Classifier (Spec 032)
+    from app.domain.schemas.intent import IntentType, UserIntent
+    deps["intent_classifier"].classify.return_value = UserIntent(
+        intent=IntentType.GENERAL_QUERY,
+        targets=[],
+        reasoning="General question for testing"
+    )
+    
     service = RAGService(
         neo4j_doc_repo=deps["neo4j_doc"],
         neo4j_graph_repo=deps["neo4j_graph"],
         chroma_repo=deps["chroma"],
         query_rewriter=deps["rewriter"],
+        intent_classifier=deps["intent_classifier"],
         llm=deps["llm"],
     )
 
