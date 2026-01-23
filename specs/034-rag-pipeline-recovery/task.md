@@ -3,21 +3,21 @@
 ## Progress
 - [x] Spec 번호 확정
 - [x] spec.md 작성
-- [ ] plan.md 작성
+- [x] plan.md 작성
 - [x] task.md 작성
 - [x] 백로그 업데이트 (Note 추가)
-- [ ] User Plan Accept
+- [x] User Plan Accept
+- [x] Feature 브랜치 생성: `feature/034-rag-pipeline-recovery`
 
 ## Task 1: RAG Domain & Infrastructure (Fallback Logic)
 ### 1-1. Domain Update
-- [x] `app/domain/rag/state.py` 수정: `fallback_triggered: bool` 필드 추가
-- [x] Commit: `feat(spec-034): add fallback_triggered field to RAGGraphState`
+- [x] `app/domain/rag/state.py` 수정: `fallback_triggered: bool`, `reasoning_log: list[str]` 필드 추가
+- [x] Commit: `feat(spec-034): add reasoning_log and fallback_triggered to state`
 
-### 1-2. Implementation - Nodes Fallback
-- [x] `app/infrastructure/rag/nodes.py` 수정 (`retrieve_hybrid` 노드)
-  - 필터링된 검색 결과가 0건일 경우 필터 없이 재검색하는 로직 추가
-- [x] TDD: `tests/unit/infrastructure/rag/test_rag_nodes.py`에 Fallback 테스트 추가 및 검증
-- [x] Commit: `feat(spec-034): implement filter fallback and strengthen prompt guard`
+### 1-2. Implementation - Nodes Fallback & Reasoning
+- [x] `app/infrastructure/rag/nodes.py` 수정: `reasoning_log` 기록 및 Fallback 로직 추가
+- [x] TDD: `tests/unit/infrastructure/rag/test_rag_nodes.py` 검증
+- [x] Commit: `feat(spec-034): record reasoning logs and implement filter fallback`
 
 ## Task 2: Prompting & Guardrails (Empty Guard)
 ### 2-1. Prompt Refinement
@@ -33,23 +33,24 @@
 - [x] Commit: `fix(spec-034): stabilize checkpointer usage and integrate with playground`
 
 ### 3-2. UI Integration (HITL & Trace)
+- [x] `app/infrastructure/rag/graph.py` 수정: `interrupt_before` 파라미터 지원
 - [x] `app/admin/pages/4_RAG_Playground.py` 수정
-  - `render_debug_ui`에 Reasoning Trace/Fallback 상태 표시 추가
-  - HITL Interrupt 발생 시 Resume 제어부 활성화 확인
+  - `render_debug_ui`에 `reasoning_log` 표시 및 디버그 UI 개선
+  - HITL 활성화 토글 및 Interrupt 발생 시 Resume 버튼 UI 추가
 - [x] Commit: `feat(spec-034): integrate HITL control and reasoning trace in admin UI`
 
 ## Task 4: Documentation
-- [ ] `docs/architecture/rag_pipeline.md` 업데이트 (Fallback 로직 기술)
-- [ ] `docs/guides/admin_guide.md` 업데이트 (Playground 기능 가이드)
-- [ ] Commit: `docs(spec-034): update rag architecture and admin guide`
+- [x] `docs/architecture/rag_pipeline.md` 업데이트 (Fallback 로직 기술)
+- [x] `docs/guides/admin_guide.md` 업데이트 (Playground 기능 가이드)
+- [x] Commit: `docs(spec-034): update rag architecture and admin guide`
 
 ## Task 5: PR Creation
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
-- [ ] Walkthrough 작성: `specs/034-rag-pipeline-recovery/walkthrough.md`
-- [ ] PR Description 작성: `specs/034-rag-pipeline-recovery/pr_description.md`
-- [ ] Create PR: `gh pr create --title "feat(spec-034): rag pipeline recovery and stability" --body-file specs/034-rag-pipeline-recovery/pr_description.md`
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Run Full Tests: `uv run pytest`
+- [x] Walkthrough 작성: `specs/034-rag-pipeline-recovery/walkthrough.md`
+- [x] PR Description 작성: `specs/034-rag-pipeline-recovery/pr_description.md`
+- [x] Create PR: `gh pr create --title "feat(spec-034): rag pipeline recovery and stability" --body-file specs/034-rag-pipeline-recovery/pr_description.md`
 
 ## Summary
-**총 Task**: 4개
-**예상 커밋 수**: 7개
+**총 Task**: 5개 대항목 완료
+**검증 결과**: 204개 테스트 통과
