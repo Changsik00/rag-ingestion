@@ -15,6 +15,8 @@ Spec 033에서 발견된 RAG 파이프라인의 검색 실패 및 답변 품질 
 
 ### 3. Checkpointer & Admin UI (Infrastructure)
 - `4_RAG_Playground.py`에서 `SqliteSaver`가 누락되던 버그 수정. 대화 기록 보존 및 HITL 준비 완료.
+- **HITL Control**: `AdminAgent` 및 `RAGGraphBuilder`에 `interrupt_before` 설정을 추가하여 큐레이션 개입 가능.
+- **Reasoning Trace Viewer**: `RAGGraphState`에 `reasoning_log`를 추가하여 각 노드의 사고 과정을 상세히 기록.
 - 디버그 UI에 Fallback 발생 여부 및 사고 과정 정보를 표시하도록 연동.
 
 ## 검증 결과
