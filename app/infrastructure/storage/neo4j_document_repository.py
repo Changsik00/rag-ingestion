@@ -113,17 +113,28 @@ class Neo4jStorage(DocumentRepository):
             logger.error(f"Failed to get document from Neo4j (id={doc_id}): {e}")
             raise InfrastructureException(f"Failed to get document from Neo4j: {e}") from e
 
-    def list_documents(self, limit: int = 10) -> list[Document]:
+    def list_documents(self, limit: int = 10, search_term: str | None = None) -> list[Document]:
+        """
+        List documents with optional case-insensitive search (LIKE style).
+        """
         try:
-            query = "MATCH (d:Document) RETURN d ORDER BY d.created_at DESC LIMIT $limit"
+            where_clause = ""
+            params = {"limit": limit}
+            if search_term:
+                # Case-insensitive substring match using regex
+                # Neo4j regex syntax: =~ '(?i).*term.*'
+                where_clause = "WHERE d.title =~ $regex OR d.source =~ $regex"
+                params["regex"] = f"(?i).*{search_term}.*"
+
+            query = f"MATCH (d:Document) {where_clause} RETURN d ORDER BY d.created_at DESC LIMIT $limit"
             docs = []
             with self.driver.session() as session:
-                results = session.run(query, limit=limit)
+                results = session.run(query, **params)
                 for record in results:
                     node = record["d"]
                     docs.append(
                         Document(
-                            id=node["id"],  # Pydantic handles str->str
+                            id=node["id"],
                             content=node.get("content", ""),
                             metadata={k: v for k, v in node.items() if k not in ["id", "content", "created_at"]},
                         )

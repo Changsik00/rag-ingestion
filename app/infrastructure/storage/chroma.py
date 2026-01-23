@@ -133,7 +133,7 @@ class ChromaStorage(DocumentRepository):
             logger.warning(f"Failed to get document from ChromaDB (id={doc_id}): {e}")
             return None
 
-    def list_documents(self, limit: int = 10) -> list[Document]:
+    def list_documents(self, limit: int = 10, search_term: str | None = None) -> list[Document]:
         try:
             # ChromaDB peek (샘플 조회)
             result = self.collection.peek(limit=limit)
@@ -147,7 +147,6 @@ class ChromaStorage(DocumentRepository):
                             metadata=result["metadatas"][i],
                         )
                     )
-            return docs
             return docs
         except Exception as e:
             logger.error(f"Failed to list documents from ChromaDB: {e}")

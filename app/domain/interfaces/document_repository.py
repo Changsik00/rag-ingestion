@@ -22,7 +22,7 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
-    def list_documents(self, limit: int = 10) -> list[Document]:
+    def list_documents(self, limit: int = 10, search_term: str | None = None) -> list[Document]:
         """List recently stored documents."""
         pass
 
