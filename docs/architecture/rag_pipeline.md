@@ -143,5 +143,13 @@ PR 리뷰 과정에서 도출된 RAG 설계 철학에 대한 중요한 논의 �
 
 ---
 
-## Checkpointer 통합
+## Checkpointer 통합 및 상태 관리
 `SqliteSaver`를 사용하여 State Snapshot을 저장하며, 이를 통해 Admin Dashboard에서 과거의 의사결정 과정을 추적할 수 있습니다.
+
+### Troubleshooting: `checkpoints.sqlite` 손상 및 Playground 미연동 이슈 (2026-01-24)
+- **현상**: `sqlite3.DatabaseError: file is not a database` 발생.
+- **원인**: `checkpoints.sqlite` 파일이 알 수 없는 바이너리 데이터(UUID 등 포함)로 채워져 SQLite 형식이 파괴됨. 또한 `4_RAG_Playground.py`에서 `graph_builder.build()` 호출 시 `checkpointer` 인자가 누락되어 Playground 대화 내역이 저장되지 않는 문제 발견.
+- **해결 및 후속 조치**:
+  1. 손상된 파일을 백업하고 정상적인 SQLite DB로 교체 완료.
+  2. `rag-backend` 컨테이너에는 `sqlite3` CLI가 없으므로 Python 스크립트(`check_states.py`)를 통해 관리하도록 프로세스 정립.
+  3. Spec 034 작업 시 Playground 코드에 `checkpointer`를 명시적으로 주입하도록 수정 예정.

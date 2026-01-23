@@ -263,8 +263,17 @@ Admin Dashboard에서 다음을 확인하세요:
 - [ ] **시나리오 1**: 일반 질문 시 전체 지식 베이스 검색
 - [ ] **시나리오 2**: 비교 질문 시 특정 문서만 검색 (Auto Filter 적용)
 - [ ] **시나리오 3**: Manual Filter 설정 시 Intent와 무관하게 Manual Filter 우선
-- [ ] **시나리오 4**: `checkpoints.sqlite` 파일에 State 저장 확인
+- [x] **시나리오 4**: `checkpoints.sqlite` 파일에 State 저장 확인
 - [ ] **답변 품질**: Citations가 포함되고, 올바른 출처 정보 표시
+
+### ⚠️ 검증 중 발견된 특이사항 (Spec 034에서 개선 예정)
+이번 Spec 033 검증 과정에서 RAG의 견고성을 높이기 위한 다음의 이슈들을 발견했으며, 이는 의도적으로 **Spec 034 (RAG Pipeline Robustness)**로 이관하여 해결할 예정입니다:
+
+1. **엄격한 필터링 문제**: 자동 추출된 `source` 필터가 DB 메타데이터와 조금만 달라도 Context가 비어버리는 현상 (-> Filter Fallback 구현 예정)
+2. **Checkpointer DB 손상**: 특정 환경에서 `checkpoints.sqlite` 파일이 SQLite 포맷을 잃는 현상 (-> 복구 프로세스 및 Playground 연동 예정)
+3. **LLM 배경지식 활용**: Context가 부족할 때 LLM이 자신의 지식을 섞어 답변하는 전략 (-> Transparent Hybrid 전략 구현 예정)
+
+현재 PR(Spec 033)은 **LangGraph 기반의 상태 관리 및 파이프라인 구조 전환**이라는 원 목적을 충실히 달성했으므로, 구조적 안정성을 확인 후 머지를 권장합니다.
 
 ## 📦 Files Changed
 

@@ -295,12 +295,13 @@
   * [x] **Review Findings**: 시나리오 1~3 테스트를 통해 자동 필터링의 배타성, DB 메타데이터 불일치, Context 부재 시 LLM의 답변 성향 분석 완료. ([`rag_pipeline.md`](docs/architecture/rag_pipeline.md) TroubleShooting 섹션 참조)
   * **완료**: 2026-01-24 (PR #35)
 
-* [ ] **Spec 034: RAG Pipeline Robustness: Filter Fallback & Hybrid Answer**
-  * [ ] **Goal**: 033 리뷰에서 발견된 필터링 한계 및 답변 품질 이슈 해결.
+* [ ] **Spec 034: RAG Pipeline Robustness: Filter Fallback & Hybrid Answer & Checkpointer Stability**
+  * [ ] **Goal**: 033 리뷰에서 발견된 필터링 한계 및 답변 품질 이슈 해결, Checkpointer 안정화.
   * [ ] **Features**:
     - **Filter Fallback**: 필터 결과 0건 시 자동으로 Filter-less Global Search 수행.
     - **Hybrid Knowledge Strategy**: DB 정보(RAG)와 LLM 지식을 융합하되 출처를 명확히 구분(Transparent Hybrid).
     - **Empty Guard**: Context 부재 시 답변 거부 프롬프트 강화.
+    - **Checkpointer Stability**: `checkpoints.sqlite` 파일 손상 복구 프로세스 정립 및 Playground 연동 (State 추적).
   * **Reference**: [`docs/architecture/rag_pipeline.md`](docs/architecture/rag_pipeline.md) 의 Advanced Topic 섹션 참조.
   * **우선순위**: High (Spec 033 후속)
 
