@@ -290,18 +290,25 @@
   * **우선순위**: High (Spec 031 이후 필수)
   * **Note**: Planning 중 (2026-01-23) - [Spec](specs/032-router-intent-classifier/spec.md), [Plan](specs/032-router-intent-classifier/plan.md)
 
-* [ ] **Spec 033: LangGraph State Management (Nervous System)**
-  * [ ] **Goal**: Router의 결정을 `GraphState`에 저장하고, 이를 `RetrievalNode`로 정확히 전달하여 실행을 강제하는 흐름 제어 구현.
-  * [ ] **Scope**: LangGraph `State` 스키마 확장 (`filters`, `intent` 필드 추가) 및 노드 간 데이터 파이프라인 구축.
-  * **Reference**: [Design Guide 005: LLM RAG Strategy](docs/design_guides/005-llm-rag-strategy.md)
-  * **우선순위**: High (Spec 032와 연계)
-  * **Note**: Planning 중 (2026-01-24) - [Spec](specs/033-langgraph-state-management/spec.md), [Plan](specs/033-langgraph-state-management/plan.md), [Task](specs/033-langgraph-state-management/task.md)
+* [x] **Spec 033: LangGraph State Management (Nervous System)**
+  * [x] **Goal**: Router의 결정을 `GraphState`에 저장하고, 이를 `RetrievalNode`로 정확히 전달하여 실행을 강제하는 흐름 제어 구현.
+  * [x] **Review Findings**: 시나리오 1~3 테스트를 통해 자동 필터링의 배타성, DB 메타데이터 불일치, Context 부재 시 LLM의 답변 성향 분석 완료. ([`rag_pipeline.md`](docs/architecture/rag_pipeline.md) TroubleShooting 섹션 참조)
+  * **완료**: 2026-01-24 (PR #35)
 
-* [ ] **Spec 034: Advanced Scraper (Headless & Complex Layout Support)**
+* [ ] **Spec 034: RAG Pipeline Robustness: Filter Fallback & Hybrid Answer**
+  * [ ] **Goal**: 033 리뷰에서 발견된 필터링 한계 및 답변 품질 이슈 해결.
+  * [ ] **Features**:
+    - **Filter Fallback**: 필터 결과 0건 시 자동으로 Filter-less Global Search 수행.
+    - **Hybrid Knowledge Strategy**: DB 정보(RAG)와 LLM 지식을 융합하되 출처를 명확히 구분(Transparent Hybrid).
+    - **Empty Guard**: Context 부재 시 답변 거부 프롬프트 강화.
+  * **Reference**: [`docs/architecture/rag_pipeline.md`](docs/architecture/rag_pipeline.md) 의 Advanced Topic 섹션 참조.
+  * **우선순위**: High (Spec 033 후속)
+
+* [ ] **Spec 035: Advanced Scraper (Headless & Complex Layout Support)**
   * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락하는 현상 발생.
   * [ ] **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
   * [ ] **Target**: 나무위키(복잡한 레이아웃), 네이버 뉴스(동적 요소) 등 완벽 지원.
-  * **우선순위**: High (User Feedback) - Spec 033 이후 진행
+  * **우선순위**: High (User Feedback) - Spec 034 이후 진행
 
 ---
 
