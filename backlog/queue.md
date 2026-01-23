@@ -290,21 +290,14 @@
   * **우선순위**: High (Spec 031 이후 필수)
   * **Note**: Planning 중 (2026-01-23) - [Spec](specs/032-router-intent-classifier/spec.md), [Plan](specs/032-router-intent-classifier/plan.md)
 
-* [x] **Spec 033: LangGraph State Management (Nervous System)**
-  * [x] **Goal**: Router의 결정을 `GraphState`에 저장하고, 이를 `RetrievalNode`로 정확히 전달하여 실행을 강제하는 흐름 제어 구현.
-  * [x] **Achievements**: RAG Nodes 비동기 병렬 처리, StateSnapshot 저장, Admin Dashboard 연동 완료.
-  * **Note**: 완료 (2026-01-24). 시나리오 2, 3에서 필터 견고성 이슈 발견하여 Spec 034로 도출.
-  * **Reference**: [PR #35](https://github.com/Changsik00/rag-ingestion/pull/35)
+* [ ] **Spec 033: LangGraph State Management (Nervous System)**
+  * [ ] **Goal**: Router의 결정을 `GraphState`에 저장하고, 이를 `RetrievalNode`로 정확히 전달하여 실행을 강제하는 흐름 제어 구현.
+  * [ ] **Scope**: LangGraph `State` 스키마 확장 (`filters`, `intent` 필드 추가) 및 노드 간 데이터 파이프라인 구축.
+  * **Reference**: [Design Guide 005: LLM RAG Strategy](docs/design_guides/005-llm-rag-strategy.md)
+  * **우선순위**: High (Spec 032와 연계)
+  * **Note**: Planning 중 (2026-01-24) - [Spec](specs/033-langgraph-state-management/spec.md), [Plan](specs/033-langgraph-state-management/plan.md), [Task](specs/033-langgraph-state-management/task.md)
 
-* [ ] **Spec 034: RAG Pipeline Robustness (Filter Fallback & Query Expansion)**
-  * [ ] **Problem**: Intent 기반 필터링 시 명칭 불일치나 데이터 부재로 검색이 차단되는 문제 (Scenario 2, 3).
-  * [ ] **Goal**: 필터 검색 결과가 0건일 경우 자동으로 필터를 해제(Fallback)하고 전역 검색을 수행하는 로직 구현.
-  * [ ] **Action**: 
-    - `retrieve_hybrid` 노드에 Fallback Search 로직 추가.
-    - 검색어에 Intent Targets 포함 (Query Expansion).
-  * **우선순위**: High (UX 개선)
-
-* [ ] **Spec 035: Advanced Scraper (Headless & Complex Layout Support)**
+* [ ] **Spec 034: Advanced Scraper (Headless & Complex Layout Support)**
   * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락하는 현상 발생.
   * [ ] **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
   * [ ] **Target**: 나무위키(복잡한 레이아웃), 네이버 뉴스(동적 요소) 등 완벽 지원.
