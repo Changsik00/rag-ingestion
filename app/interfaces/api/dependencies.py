@@ -13,6 +13,9 @@ from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.services.chunker import ChunkerService
+from app.domain.services.intent_classifier import IntentClassifier
+from app.domain.services.query_rewriter import QueryRewriter
+from app.domain.services.rag_service import RAGService
 from app.domain.services.semantic_extractor import SemanticExtractor
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
@@ -113,3 +116,41 @@ def get_langgraph_adapter(extractor: Annotated[SemanticExtractor, Depends(get_se
     if isinstance(extractor.llm, LangGraphAdapter):
         return extractor.llm
     raise ValueError("SemanticExtractor is not using LangGraphAdapter")
+
+
+# === RAG Service Dependencies (Spec 032) ===
+
+# Query Rewriter 의존성
+@lru_cache
+def get_query_rewriter() -> QueryRewriter:
+    llm_adapter = get_llm()
+    return QueryRewriter(llm_adapter)
+
+
+# Intent Classifier 의존성 (Spec 032)
+@lru_cache
+def get_intent_classifier() -> IntentClassifier:
+    llm_adapter = get_llm()
+    return IntentClassifier(llm_adapter)
+
+
+# RAG Service 의존성 (Spec 032)
+def get_rag_service(
+    driver: Annotated[Driver, Depends(get_neo4j_driver)],
+    query_rewriter: Annotated[QueryRewriter, Depends(get_query_rewriter)],
+    intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
+) -> RAGService:
+    # RAG Service needs: neo4j_doc_repo, neo4j_graph_repo, chroma_repo
+    neo4j_doc_repo = Neo4jStorage(driver)
+    neo4j_graph_repo = Neo4jGraphRepository(driver)
+    chroma_repo = ChromaStorage()
+    llm_adapter = get_llm()
+    
+    return RAGService(
+        neo4j_doc_repo=neo4j_doc_repo,
+        neo4j_graph_repo=neo4j_graph_repo,
+        chroma_repo=chroma_repo,
+        query_rewriter=query_rewriter,
+        intent_classifier=intent_classifier,
+        llm=llm_adapter,
+    )
