@@ -273,15 +273,15 @@
 ---
 
 
-* [ ] **Spec 031: Source-Filtered RAG (Contextual Isolation)**
-  * [ ] **Problem**: RAG 검색 시 전체 지식 베이스를 조회하므로, 특정 문서를 요약해달라는 요청에도 타 관련 문서의 청크가 섞여 들어옴 (예: 위키피디아 링크를 요약 요청했는데 나무위키 내용이 나옴).
-  * [ ] **Goal**:
+* [x] **Spec 031: Source-Filtered RAG (Contextual Isolation)**
+  * [x] **Problem**: RAG 검색 시 전체 지식 베이스를 조회하므로, 특정 문서를 요약해달라는 요청에도 타 관련 문서의 청크가 섞여 들어옴 (예: 위키피디아 링크를 요약 요청했는데 나무위키 내용이 나옴).
+  * [x] **Goal**:
     - 검색(Retrieval) 시 `source_id` 또는 `url`로 범위를 제한하는 필터링 기능 추가.
     - Admin UI 및 API에서 "이 문서랑만 대화하기(Chat with Doc)" 모드 지원.
-  * [ ] **Action**:
+  * [x] **Action**:
     - `RAGService.retrieve` 메소드에 필터 파라미터 추가.
     - Vector DB 조회 시 Metadata Filter 적용.
-  * **우선순위**: Critical (Critical User Issue)
+  * **완료**: 2026-01-22 (PR #33)
 
 * [ ] **Spec 032: Router & Intent Classifier (Decision Layer)**
   * [ ] **Goal**: LLM을 사용하여 사용자의 의도(Intent)를 분류하고, 데이터 검색이 필요한지 여부와 어떤 필터를 적용할지 "결정(Decision)"하는 라우터 노드 구현.
@@ -339,6 +339,14 @@
   * Job 상태 자동 갱신 (Auto-refresh) 구현
   * Streamlit 실시간 업데이트 메커니즘 개선
   * Job 목록 필터링 및 정렬 기능 추가
+
+* **[Feature] RAG Advanced Settings & Debugging**
+  * **Goal**: Playground의 "Advanced Settings"를 고도화하여 RAG 엔진의 세부 동작을 제어하고 가시성을 확보함.
+  * **Action**:
+    - **Hyperparameter Tuning**: 검색 결과 개수(Top-K), 검색 다양도(MMR Diversity), 모델 Temperature 조절 UI 추가.
+    - **Advanced Debug View**: 유사도 점수(Score) 시각화, 지식 그래프 연결망 조회 등 상세 분석 도구 연동.
+    - **Search Strategy Selector**: Vector Only, Hybrid, Graph Only 등 검색 엔진 모드 스위치 추가.
+  * **Priority**: Medium (RAG 품질 정밀 튜닝 시점)
 
 * **[Tech] Multi-Model Comparison**
   * 다양한 LLM(GPT, Claude 등)을 붙여 정보 추출 품질 및 비용 비교 분석

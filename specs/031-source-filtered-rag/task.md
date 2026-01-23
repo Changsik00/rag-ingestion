@@ -35,8 +35,9 @@
 - [x] `4_RAG_Playground.py` UI 개선
     - [x] `st.multiselect`로 문서 선택 UI 변경 (Source of Truth)
     - [x] 선택된 문서 ID 리스트를 Service로 전달
+    - [x] UX 개선: 사이드바 상단으로 이동 및 검색/자동완성 기능 추가
 - [x] Manual Check: Playground에서 시나리오 1, 2, 3 직접 수행
-- [x] Commit: `feat(spec-031): add multi-select source filter`
+- [x] Commit: `feat(spec-031): add prominent searchable source filter`
 
 ## Task 4: Finalize
 - [x] Code Quality Check: `uv run ruff check . --fix`
