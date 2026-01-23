@@ -295,6 +295,7 @@
   * [ ] **Scope**: LangGraph `State` 스키마 확장 (`filters`, `intent` 필드 추가) 및 노드 간 데이터 파이프라인 구축.
   * **Reference**: [Design Guide 005: LLM RAG Strategy](docs/design_guides/005-llm-rag-strategy.md)
   * **우선순위**: High (Spec 032와 연계)
+  * **Note**: Planning 중 (2026-01-24) - [Spec](specs/033-langgraph-state-management/spec.md), [Plan](specs/033-langgraph-state-management/plan.md), [Task](specs/033-langgraph-state-management/task.md)
 
 * [ ] **Spec 034: Advanced Scraper (Headless & Complex Layout Support)**
   * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락하는 현상 발생.
