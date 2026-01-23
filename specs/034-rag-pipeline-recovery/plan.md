@@ -30,7 +30,14 @@
 #### [MODIFY] `app/admin/pages/4_RAG_Playground.py`
 - `get_deps()` 내에서 `get_checkpointer()` 의존성을 사용하여 Graph 빌드 시 주입.
 - State에 기록된 `fallback_triggered` 및 Reasoning 정보를 디버그 창에 표시하는 로직 추가.
-- (필요 시) HITL Resume을 위한 버튼 및 상태 핸들링 로직 점검.
+- **HITL 지원**: `thread_id` 고정 및 Interrupt 발생 시 'Resume' 버튼 노출 로직 추가.
+
+### [Infrastructure Layer]
+#### [MODIFY] `app/infrastructure/rag/graph.py`
+- `build()` 메서드에 `interrupt_before` 파라미터 추가하여 런타임 인터럽트 지원.
+
+#### [MODIFY] `app/domain/rag/state.py`
+- `reasoning_log: list[str]` 필드 추가하여 각 노드의 사고 과정을 추적.
 
 ### [Documentation Layer]
 #### [MODIFY] `docs/architecture/rag_pipeline.md`

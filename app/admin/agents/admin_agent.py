@@ -29,9 +29,10 @@ class AdminAgent:
         self.llm = ChatGoogleGenerativeAI(
             model="gemini-2.0-flash-exp", temperature=0, google_api_key=get_settings().GEMINI_API_KEY
         )
+        # Default workflow (No HITL)
         self.workflow = self._build_graph()
 
-    def _build_graph(self):
+    def _build_graph(self, interrupt_before: list[str] | None = None):
         workflow = StateGraph(AdminState)
 
         workflow.add_node("router", self.router_node)
@@ -45,7 +46,11 @@ class AdminAgent:
         workflow.add_edge("ingest", "search")  # Ingest finishes -> Go to Search (Summary)
         workflow.add_edge("search", END)  # Search finishes and returns answer
 
-        return workflow.compile()
+        # Checkpointer is handled by RAGService, but AdminAgent itself 
+        # can also have one if we want HITL at this top level.
+        # For now, we mainly want to pass HITL signals down to RAG.
+        from app.interfaces.api.dependencies import get_checkpointer
+        return workflow.compile(checkpointer=get_checkpointer(), interrupt_before=interrupt_before)
 
     def route_logic(self, state: AdminState) -> Literal["ingest", "search"]:
         return state["intent"]
@@ -154,7 +159,15 @@ class AdminAgent:
         ]
 
         filters = state.get("filters")
-        result = await self.rag_service.retrieve_and_generate(last_user_msg, history, filters=filters)
+        # [Spec 034] Pass thread_id from state if present
+        thread_id = state.get("thread_id") 
+        
+        result = await self.rag_service.retrieve_and_generate(
+            last_user_msg, 
+            history, 
+            filters=filters,
+            thread_id=thread_id
+        )
 
         context_data = {
             "rewritten_query": result.rewritten_query,

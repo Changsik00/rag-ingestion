@@ -7,7 +7,7 @@ Mock LLM을 사용하여 외부 의존성 없이 독립적으로 테스트합니
 Spec 033: LangGraph State Management
 """
 
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -402,7 +402,7 @@ class TestRAGNodesFallback:
         assert result["fallback_triggered"] is True
         assert len(result["vector_chunks"]) == 1
         assert result["vector_chunks"][0].id == "fallback_chunk"
-        
+
         # search_mmr이 두 번 호출되었는지 확인 (첫 번째는 필터 포함, 두 번째는 None)
         assert mock_repositories["chroma"].search_mmr.call_count == 2
         calls = mock_repositories["chroma"].search_mmr.call_args_list

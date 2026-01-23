@@ -86,6 +86,12 @@ class RAGNodes:
         # Update State
         state["user_intent"] = user_intent
         state["rewritten_query"] = rewritten_query
+        
+        # [Spec 034] Reasoning Log
+        reasoning_log = state.get("reasoning_log", [])
+        reasoning_log.append(f"🧠 [Intent] Classified as {user_intent.intent.value} targeting {user_intent.targets}. Reasoning: {user_intent.reasoning}")
+        reasoning_log.append(f"✍️ [Rewrite] Query rewritten to: {rewritten_query}")
+        state["reasoning_log"] = reasoning_log
 
         return state
 
@@ -115,6 +121,12 @@ class RAGNodes:
         state["auto_filters"] = auto_filters
         state["final_filters"] = final_filters
         state["fallback_triggered"] = False
+        
+        # [Spec 034] Reasoning Log
+        reasoning_log = state.get("reasoning_log", [])
+        filter_desc = f"Applied Filters: {final_filters}" if final_filters else "No Filters Applied"
+        reasoning_log.append(f"🚦 [Routing] {filter_desc}")
+        state["reasoning_log"] = reasoning_log
 
         return state
 
@@ -134,6 +146,9 @@ class RAGNodes:
         rewritten_query = state.get("rewritten_query") or state["query"]
         final_filters = state.get("final_filters")
 
+        # [Spec 034] Initial Search reasoning
+        reasoning_log = state.get("reasoning_log", [])
+
         # Parallel Hybrid Search (Running sync calls in threads)
         vector_task = asyncio.to_thread(self._search_vector, rewritten_query, final_filters)
         keyword_task = asyncio.to_thread(self._search_keyword, rewritten_query, final_filters)
@@ -142,11 +157,14 @@ class RAGNodes:
         vector_results, keyword_results, graph_results = await asyncio.gather(
             vector_task, keyword_task, graph_task
         )
+        
+        reasoning_log.append(f"🔍 [Search] Found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks, {len(graph_results)} graph facts.")
 
         # Fallback Logic: 필터링된 결과가 없고 필터가 적용된 상태라면 필터 제거 후 재검색
         if final_filters and not vector_results and not keyword_results:
             logger.info("No results found with filters. Triggering Fallback (Global Search)...")
             state["fallback_triggered"] = True
+            reasoning_log.append("🔄 [Fallback] Strict filters returned zero results. Retrying with Global Search (no filters).")
 
             # 재검색 (필터 없이)
             v_fallback_task = asyncio.to_thread(self._search_vector, rewritten_query, None)
@@ -155,11 +173,14 @@ class RAGNodes:
             v_fall, k_fall = await asyncio.gather(v_fallback_task, k_fallback_task)
             vector_results = v_fall
             keyword_results = k_fall
+            
+            reasoning_log.append(f"🔍 [Search/Fallback] Post-fallback found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks.")
 
         # Update State
         state["vector_chunks"] = vector_results
         state["keyword_chunks"] = keyword_results
         state["graph_data"] = graph_results
+        state["reasoning_log"] = reasoning_log
 
         return state
 

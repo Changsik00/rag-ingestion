@@ -60,7 +60,7 @@ def get_deps():
     checkpointer = get_checkpointer()
     rag_graph_builder = RAGGraphBuilder(rag_nodes)
     rag_graph = rag_graph_builder.build(checkpointer=checkpointer)
-    
+
     rag_service = RAGService(graph=rag_graph)
 
     feedback_service = FeedbackService()
@@ -162,6 +162,16 @@ def render_debug_ui(message):
             st.markdown("**📝 LLM Prompt**")
             st.code(prompt_info, language="text")
 
+        # [Spec 034] Reasoning Trace
+        reasoning_log = debug.get("reasoning_log", [])
+        if reasoning_log:
+            st.divider()
+            st.markdown("**🔍 Reasoning Trace**")
+            for entry in reasoning_log:
+                st.caption(entry)
+
+        # [Spec 034] Fallback & Recovery Info
+
         # [Spec 034] Fallback & Recovery Info
         fallback_triggered = debug.get("fallback_triggered", False)
         if fallback_triggered:
@@ -230,6 +240,14 @@ with st.sidebar:
             st.session_state.messages = []
             st.rerun()
 
+        st.divider()
+        st.subheader("🚦 HITL Control")
+        hitl_enabled = st.toggle(
+            "Enable HITL Review",
+            value=False,
+            help="If enabled, the pipeline will stop before generating the final answer for your review.",
+        )
+
 # --- Input 처리 ---
 if prompt := st.chat_input("Ask a question regarding the ingested content..."):
     # 사용자 메시지 추가
@@ -254,16 +272,39 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             # Prepare filters if selected
             filters = {"doc_id": selected_doc_ids} if selected_doc_ids else None
 
-            inputs = {"messages": history_interactive, "filters": filters}
-            final_state = asyncio.run(admin_agent.workflow.ainvoke(inputs))
+            # [Spec 034] HITL Thread ID & Interrupt Logic
+            thread_id = f"playground-{st.session_state.get('thread_id_seed', 'default')}"
+            interrupt_nodes = ["search"] if hitl_enabled else None
+            
+            # Rebuild graph IF HITL setting changed (or just always for simplicity in playground)
+            admin_agent.workflow = admin_agent._build_graph(interrupt_before=interrupt_nodes)
+            
+            inputs = {"messages": history_interactive, "filters": filters, "thread_id": thread_id}
+            config = {"configurable": {"thread_id": thread_id}}
+            
+            # Execute with possible interrupt
+            final_state = asyncio.run(admin_agent.workflow.ainvoke(inputs, config=config))
+
+            # Check for Interrupt
+            snapshot = admin_agent.workflow.get_state(config)
+            if snapshot.next:
+                status_container.update(label="🚦 Paused for Human Review", state="running", expanded=True)
+                st.warning(f"Pipeline paused at: **{snapshot.next[0]}**. Review the reasoning trace below.")
+                
+                if st.button("✅ Confirm & Generate Answer", type="primary", use_container_width=True):
+                    # Resume
+                    final_state = asyncio.run(admin_agent.workflow.ainvoke(None, config=config))
+                    answer = final_state["messages"][-1].content
+                else:
+                    st.stop() # Wait for user to click resume
+            else:
+                last_msg = final_state["messages"][-1]
+                answer = last_msg.content if last_msg else "No response generated."
 
             # Analyze Result
             intent = final_state.get("intent", "search")
             tool_output = final_state.get("tool_output", "")
             context_data = final_state.get("context_data", {})
-
-            last_msg = final_state["messages"][-1]
-            answer = last_msg.content if last_msg else "No response generated."
 
             status_container.write(f"🎯 Intent: **{intent.upper()}**")
 
