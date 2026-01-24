@@ -104,9 +104,9 @@ class Neo4jGraphRepository:
         # Query: Find all relationships connected to the given entities (undirected)
         # But return them as directed triples (Source)-[Rel]->(Target) to preserve semantics
         query = """
-        MATCH (n)-[r]-(m)
+        MATCH (n:Entity)-[r]-(m:Entity)
         WHERE n.name IN $names
-        RETURN startNode(r).name as source, type(r) as relationship, endNode(r).name as target, labels(startNode(r)) as source_labels, labels(endNode(r)) as target_labels
+        RETURN startNode(r).name as source, type(r) as relationship, endNode(r).name as target
         LIMIT 100
         """
 

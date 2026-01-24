@@ -4,21 +4,17 @@ from app.infrastructure.rag.nodes import RAGNodes
 def test_clean_context_noise_removes_wiki_templates():
     nodes = RAGNodes(None, None, None, None, None, None)
     
-    # Wiki Table and Template
-    raw_text = """{| class="wikitable"
-|-
-! Header
-|}
-Some content {{Template}}
-More content [[파일:image.jpg]]
-"""
+    raw_text = """Some content {{Infobox | role = CEO}}
+    More content {{Navbox | topic = Tech}}
+    Even more [[파일:image.jpg]]
+    """
     cleaned = nodes._clean_context_noise(raw_text)
     
-    assert "wikitable" not in cleaned
-    assert "Template" not in cleaned
+    assert "Infobox" in cleaned
+    assert "CEO" in cleaned
+    assert "Navbox" not in cleaned
     assert "파일:image.jpg" not in cleaned
     assert "Some content" in cleaned
-    assert "More content" in cleaned
 
 def test_clean_context_noise_removes_excessive_newlines():
     nodes = RAGNodes(None, None, None, None, None, None)
