@@ -386,6 +386,8 @@ class ChromaStorage(DocumentRepository):
             # Chroma에서 중복되지 않는 parent_id 목록을 가져오는 효율적인 방법이 제한적이므로
             # 전체 가져온 후 그룹화 (Chroma는 서브 저장소이므로 빈도 낮음)
             result = self.collection.get(include=["metadatas"])
+            if not result or not result["metadatas"]:
+                return []
             stats_map = {}
             for meta in result["metadatas"]:
                 pid = meta.get("parent_id")
@@ -396,6 +398,20 @@ class ChromaStorage(DocumentRepository):
             return list(stats_map.values())
         except Exception as e:
             logger.error(f"Failed to get document stats from ChromaDB: {e}")
+            return []
+
+    def get_all_chunk_metadata(self) -> list[dict]:
+        """ChromaDB의 모든 청크 핵심 메타데이터를 일괄 조회합니다."""
+        try:
+            result = self.collection.get(include=["metadatas"])
+            if not result or not result["ids"]:
+                return []
+            return [
+                {"id": result["ids"][i], "parent_id": result["metadatas"][i].get("parent_id")}
+                for i in range(len(result["ids"]))
+            ]
+        except Exception as e:
+            logger.error(f"Failed to get all chunk metadata from ChromaDB: {e}")
             return []
 
     def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:

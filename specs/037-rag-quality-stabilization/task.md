@@ -82,15 +82,15 @@
 
 ## Task 5: Admin UI Refinement & Optimization
 ### 5-1. Performance (N+1 Fix)
-- [x] `Neo4jStorage.get_document_stats()` 집계 쿼리 구현
-- [x] `StorageIntegrityService` 최적화 및 Missing Snippet 추출 로직 추가
-- [x] Commit: `perf(spec-037): optimize drift report performance with neo4j aggregation`
+- [x] `Neo4jStorage.get_document_stats()` 및 `get_all_chunk_metadata()` 벌크 조회 구현
+- [x] `StorageIntegrityService` N+1 쿼리 제거 (Bulk Load 방식으로 전환)
+- [x] Commit: `perf(spec-037): ultra-optimize drift report with bulk metadata retrieval`
 
 ### 5-2. UX & Layout Improvement
-- [x] Admin UI 레이아웃 재배치 (Analysis -> Action)
-- [x] 버튼 색상 및 명칭 정리 (미스매치 시에만 빨간색 노출)
-- [x] Missing Chunk Snippet 시각화 (Expander 추가)
-- [x] Commit: `fix(spec-037): refine admin UI layout and improve data visibility`
+- [x] 'Missing Title' 상태 정의 및 리포트 가시화 (정지되었던 리포트 문제 해결)
+- [x] 버튼 활성화 로직 수정 (제목 누락 시에도 복구 버튼 활성화)
+- [x] Missing Chunk Snippet 시각화 (상세 진단 기능 추가)
+- [x] Commit: `fix(spec-037): resolve UI rendering issues and enhance document drift status`
 
 ---
 

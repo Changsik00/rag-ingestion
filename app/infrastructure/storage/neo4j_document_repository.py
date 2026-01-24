@@ -365,3 +365,14 @@ class Neo4jStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to get document stats from Neo4j: {e}")
             return []
+
+    def get_all_chunk_metadata(self) -> list[dict]:
+        """모든 청크의 핵심 데이터(ID, 부모 ID, 본문)를 한 번의 쿼리로 가져옵니다."""
+        try:
+            query = "MATCH (c:Chunk) RETURN c.id as id, c.parent_id as parent_id, c.content as content"
+            with self.driver.session() as session:
+                results = session.run(query)
+                return [dict(record) for record in results]
+        except Exception as e:
+            logger.error(f"Failed to get all chunk metadata from Neo4j: {e}")
+            return []

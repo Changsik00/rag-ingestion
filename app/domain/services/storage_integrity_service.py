@@ -39,12 +39,25 @@ class StorageIntegrityService:
         }
 
     def get_document_drift_report(self) -> List[Dict[str, Any]]:
-        """문서별 인덱싱 현황 리포트 생성 (최적화 버전)"""
-        # 1. 모든 인덱싱된 청크 ID를 한 번에 확보 (Chroma)
+        """문서별 인덱싱 현황 리포트 생성 (N+1 Query 최적화 버전)"""
+        # 1. 모든 인덱싱된 청크 ID 확보 (Chroma)
         target_chunks_ids = self.target_repo.get_all_chunk_ids()
         
-        # 2. 문서별 통계 일괄 조회 (Neo4j)
-        # return list of {id, title, url, chunk_count}
+        # 2. 모든 청크의 ID와 부모 ID를 한 번에 확보 (Neo4j)
+        # 이 작업은 get_chunks_by_ids 처럼 bulk 조회가 필요하거나 
+        # 레포지토리에 그룹화된 조회를 요청해야 함. 
+        # 여기서는 primary_repo에 새로운 bulk 메서드가 없으므로 
+        # 모든 청크 정보를 가져와 메모리에서 그룹화 처리.
+        all_primary_chunk_info = self.primary_repo.get_all_chunk_metadata() # id, parent_id, content(샘플용) 필요
+        
+        chunk_groups = {}
+        for chunk in all_primary_chunk_info:
+            pid = chunk.get("parent_id")
+            if pid not in chunk_groups:
+                chunk_groups[pid] = []
+            chunk_groups[pid].append(chunk)
+
+        # 3. 문서별 통계 일괄 조회 (Neo4j)
         doc_stats = self.primary_repo.get_document_stats()
         
         report = []
@@ -54,19 +67,26 @@ class StorageIntegrityService:
             if total_chunks == 0:
                 continue
                 
-            # 해당 문서의 청크 ID들을 가져와서 Chroma에 있는지 비교
-            # (이 부분은 여전히 청크 조회가 필요할 수 있으나, 
-            #  전체 ID 셋을 메모리에 올리면 쿼리 없이 체크 가능)
-            all_chunks_for_doc = self.primary_repo.get_chunks(doc_id)
-            indexed_count = sum(1 for c in all_chunks_for_doc if str(c.id) in target_chunks_ids)
+            # 메모리에 그룹화된 정보에서 가져옴
+            chunks = chunk_groups.get(doc_id, [])
+            indexed_count = sum(1 for c in chunks if str(c["id"]) in target_chunks_ids)
             
-            # 누락된 청크 샘플 추출 (첫 번째 누락된 조각)
+            # 샘플 추출
             missing_sample = ""
             if indexed_count < total_chunks:
-                for c in all_chunks_for_doc:
-                    if str(c.id) not in target_chunks_ids:
-                        missing_sample = c.content[:200] + "..."
+                for c in chunks:
+                    if str(c["id"]) not in target_chunks_ids:
+                        missing_sample = (c.get("content") or "")[:200] + "..."
                         break
+
+            # 보정 필요성 판단
+            has_title = stat["title"] not in ["Untitled", "", None]
+            if total_chunks > indexed_count:
+                status = "Missing" if indexed_count == 0 else "Partial"
+            elif not has_title:
+                status = "Missing Title"
+            else:
+                status = "In Sync"
 
             report.append({
                 "id": str(doc_id),
@@ -75,7 +95,7 @@ class StorageIntegrityService:
                 "total_chunks": total_chunks,
                 "target_chunks": indexed_count,
                 "drift_ratio": (total_chunks - indexed_count) / total_chunks if total_chunks > 0 else 0,
-                "status": "In Sync" if total_chunks == indexed_count else ("Missing" if indexed_count == 0 else "Partial"),
+                "status": status,
                 "missing_sample": missing_sample
             })
             
@@ -129,22 +149,20 @@ class StorageIntegrityService:
             return {"success": False, "error": str(e)}
 
     def sync_all(self, batch_size: int = 20, callback: Any = None):
-        """누락된 모든 데이터를 찾아 배치 단위로 동기화"""
-        drift = self.get_drift_report()
-        missing_ids = list(drift["missing_ids"])
+        """누락된 데이터(Chunk) 및 결함 있는 메타데이터(Title)를 일괄 복구"""
+        reports = self.get_document_drift_report()
+        target_docs = [r for r in reports if r["status"] != "In Sync"]
         
-        if not missing_ids:
+        if not target_docs:
             if callback: callback(1.0, "Already in sync")
             return
             
-        total = len(missing_ids)
-        for i in range(0, total, batch_size):
-            batch_ids = missing_ids[i:i + batch_size]
-            chunks = self.primary_repo.get_chunks_by_ids(batch_ids)
+        total = len(target_docs)
+        for i, doc_report in enumerate(target_docs):
+            doc_id = doc_report["id"]
+            # sync_document는 metadata 보정과 chunk 저장을 모두 수행함
+            self.sync_document(doc_id)
             
-            if chunks:
-                self.target_repo.save_chunks(chunks)
-                
             if callback:
-                progress = min((i + batch_size) / total, 1.0)
-                callback(progress, f"Synced {min(i + batch_size, total)} / {total} items")
+                progress = min((i + 1) / total, 1.0)
+                callback(progress, f"Fixed {i + 1} / {total} documents ('{doc_report['title']}')")

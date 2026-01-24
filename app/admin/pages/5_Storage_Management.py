@@ -111,24 +111,30 @@ st.divider()
 # --- 3. Global Recovery Actions (Execution) ---
 st.subheader("🚀 Global Recovery Actions")
 
-# Dynamic Button Logic: Missing이 있으면 빨간색(primary), 없으면 중립(secondary)
-missing_count = service.get_stats()["missing_count"]
-button_type = "primary" if missing_count > 0 else "secondary"
-button_label = "🚀 Run Global Sync (Fix All Mismatches)" if missing_count > 0 else "✅ Storage is Healthy"
+try:
+    reports = service.get_document_reports()
+    mismatch_docs = [r for r in reports if r["status"] != "In Sync"]
+    needs_sync = len(mismatch_docs) > 0
+    
+    # 덮어씌울 수 있는 미스매치 수 (Chunk 누락 + Title 누락 포함)
+    button_type = "primary" if needs_sync else "secondary"
+    button_label = f"🚀 Run Global Sync (Fix {len(mismatch_docs)} Issues)" if needs_sync else "✅ Storage is Healthy"
 
-if st.button(button_label, type=button_type, disabled=(missing_count == 0)):
-    progress_bar = st.progress(0.0)
-    status_text = st.empty()
-    
-    def ui_callback(progress, message):
-        progress_bar.progress(progress)
-        status_text.text(f"Status: {message}")
+    if st.button(button_label, type=button_type, disabled=not needs_sync):
+        progress_bar = st.progress(0.0)
+        status_text = st.empty()
         
-    with st.status("Performing Full Synchronization...", expanded=True) as status:
-        service.sync_all(callback=ui_callback)
-        status.update(label="Sync Completed!", state="complete", expanded=False)
-    
-    st.success("Synchronization finished successfully.")
-    st.rerun()
+        def ui_callback(progress, message):
+            progress_bar.progress(progress)
+            status_text.text(f"Status: {message}")
+            
+        with st.status("Performing Full Synchronization...", expanded=True) as status:
+            service.sync_all(callback=ui_callback)
+            status.update(label="Sync Completed!", state="complete", expanded=False)
+        
+        st.success("Synchronization finished successfully.")
+        st.rerun()
+except Exception as e:
+    st.error(f"Failed to prepare recovery actions: {e}")
 
 st.caption("Tip: Global Sync는 데이터 양에 따라 시간이 소요될 수 있습니다.")
