@@ -50,7 +50,9 @@ class AdminAgent:
         # can also have one if we want HITL at this top level.
         # For now, we mainly want to pass HITL signals down to RAG.
         from app.interfaces.api.dependencies import get_checkpointer
-        return workflow.compile(checkpointer=get_checkpointer(), interrupt_before=interrupt_before)
+        import asyncio
+        checkpointer = asyncio.run(get_checkpointer())
+        return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
     def route_logic(self, state: AdminState) -> Literal["ingest", "search"]:
         return state["intent"]
