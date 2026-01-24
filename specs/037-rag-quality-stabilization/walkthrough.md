@@ -52,7 +52,17 @@ uv run pytest tests/unit/infrastructure/rag/test_context_cleaning.py
 2. **복구 테스트**: 특정 문서의 **"Fix Metadata"**를 눌러 제목이 생성되고 상태가 `In Sync`로 변하는지 확인합니다.
 3. **일괄 복구 검증**: **"Run Global Sync"**를 눌러 **프로그레스 바**가 차오르고 **실시간 동기화 로그**가 찍히는 '데이터 복구의 피날레'를 감상합니다. ✨
 
----
+## 🎨 리팩토링된 Admin UI (Part 5. Storage Management)
+사용자 피드백을 반영하여 **"분석 후 조치"**가 가능한 직관적인 레이아웃으로 개선되었습니다.
 
-## 📸 UI 구조 (Part 5. Storage Management)
-> Admin Dashboard 좌측 메뉴에서 **`5_Storage_Management`**를 통해 접근 가능합니다.
+### 1. 지능형 레이아웃 (Diagnostic -> Action)
+- **현황(Summary)**: 상단 메트릭으로 전체 정합성 점수를 확인.
+- **분석(Analysis)**: 중앙 리포트에서 **어떤 문서의 어떤 문장이 누락되었는지(Sample Snippet)** 즉시 확인.
+- **조치(Execution)**: 최하단에서 일괄 복구 버튼 실행.
+
+### 2. 다이나믹 버튼 스타일링 (Conditional Coloring)
+- **보정 필요 시 (Mismatch > 0)**: "Run Global Sync" 버튼이 **빨간색 (`primary`)**으로 활성화되어 주의를 환기합니다.
+- **보정 완료 시 (Mismatch = 0)**: 버튼이 **중립색 (`secondary`)**으로 변하며 비활성화되어 시스템이 건강함을 시각적으로 알립니다.
+
+### 3. 성능 최적화 (N+1 Query Fix)
+- Neo4j Cypher 집계 쿼리를 도입하여 기존 수천 번의 쿼리를 **단 1회의 쿼리**로 최적화했습니다. 페이지 로딩 속도가 획기적으로 개선되었습니다.

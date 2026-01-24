@@ -11,22 +11,39 @@
 
 ---
 
-## Task 1: Document Integrity & Stats (Core)
+## 🎯 Core Strategy
 
-### 1-1. TDD Warming up
-- [x] Test Case 작성: `tests/unit/domain/services/test_storage_integrity.py`
-  - 문서별 청크 개수(Total vs Indexed) 비교 로직 검증
-  - 제목 전파(Title Propagation: Document -> Chunk) 로직 검증
-- [x] Test 실행 (Pass): `uv run pytest tests/unit/domain/services/test_storage_integrity.py`
-- [x] Commit: `test(spec-037): add tests for document-level drift analysis and title propagation`
+### 1. Performance Optimization (N+1 해결)
+- **Cypher 최적화**: `MATCH (d:Document) OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk) RETURN d.id, d.metadata.title, count(c)` 쿼리를 사용하여 문서별 청크 개수를 한 번에 산출.
+- **Batch Metadata Check**: ChromaDB에서 모든 ID를 한 번만 가져와서 메모리에서 대조 (기존 방식 유지하되 데이터 구조 효율화).
 
-### 1-2. Implementation
-- [x] 코드 구현: `app/domain/services/storage_integrity_service.py`
-  - [x] `get_drift_report()`: 전체 ID 대조 및 통계
-  - [x] `get_document_drift_report()`: 문서별 인덱싱 통계 산출
-  - [x] `propagate_document_metadata()`: 상위 문서 정보를 하위 청크로 동기화
-- [x] Test 실행 (Pass): `uv run pytest tests/unit/domain/services/test_storage_integrity.py`
-- [x] Commit: `feat(spec-037): implement document-centric integrity analysis and metadata sync`
+### 2. UI Layout & UX (분석 후 조치)
+- **레이아웃 순서**: Metrics -> **Drift Report (상세 분석)** -> **Recovery Actions (하단 배치)**.
+- **버튼 스타일링**: 
+  - "Run Global Sync": `type="secondary"` (기본색)로 변경하여 공포감(?) 해소.
+  - "Fix Document": 테이블 내 Action 버튼으로 배치 고려.
+- **임시 버튼 제거**: 사용자 혼란을 주는 "test only" 관련 잔재가 있다면 완전히 제거.
+
+### 3. Visibility of Mismatches (세부 내용 확인)
+- 특정 문서 행 클릭 시 **"누락된 문장(Chunk Snippet)"**을 바로 확인할 수 있는 Expander 기능 추가.
+
+---
+
+## 📂 Proposed Changes
+
+### [Infrastructure Layer]
+#### [MODIFY] `app/infrastructure/storage/neo4j_document_repository.py`
+- `get_document_stats()` 메서드 추가: Cypher 집계 쿼리 구현.
+
+### [Domain Layer]
+#### [MODIFY] `app/domain/services/storage_integrity_service.py`
+- `get_document_drift_report()`: 新 집계 메서드 사용하여 리팩토링.
+- `get_missing_chunk_previews(doc_id)`: 누락된 청크 본문 상위 300자 반환 로직 추가.
+
+### [Admin Dashboard]
+#### [MODIFY] `app/admin/pages/5_Storage_Management.py`
+- 최하단으로 'Recovery Actions' 이동.
+- 데이터프레임 하단에 '선택 문서 상세 보기' 배치.
 
 ---
 
@@ -63,6 +80,20 @@
 
 ---
 
+## Task 5: Admin UI Refinement & Optimization
+### 5-1. Performance (N+1 Fix)
+- [x] `Neo4jStorage.get_document_stats()` 집계 쿼리 구현
+- [x] `StorageIntegrityService` 최적화 및 Missing Snippet 추출 로직 추가
+- [x] Commit: `perf(spec-037): optimize drift report performance with neo4j aggregation`
+
+### 5-2. UX & Layout Improvement
+- [x] Admin UI 레이아웃 재배치 (Analysis -> Action)
+- [x] 버튼 색상 및 명칭 정리 (미스매치 시에만 빨간색 노출)
+- [x] Missing Chunk Snippet 시각화 (Expander 추가)
+- [x] Commit: `fix(spec-037): refine admin UI layout and improve data visibility`
+
+---
+
 ## Summary
-**총 Task**: 모든 구현 단계 완료
-**최종 상태**: 단위 테스트 통과 및 Admin UI 신설 완료.
+**총 Task**: 9개 주요 항목 (Refinement 추가됨)
+**최종 상태**: 초기 구현 완료, 사용자 피드백 기반 리팩토링 진행 중.
