@@ -203,7 +203,10 @@ class RAGNodes:
         graph_data = state.get("graph_data", [])
 
         # Format Context
-        context_str = self._merge_and_format_context(vector_chunks, keyword_chunks, graph_data)
+        context_str, mapped_chunks = self._merge_and_format_context(vector_chunks, keyword_chunks, graph_data)
+
+        # Store mapped chunks in state temporarily for citation parsing if needed
+        # (Though we'll likely handle it within this node)
 
         # Generate Answer
         prompt = (
@@ -277,10 +280,13 @@ class RAGNodes:
 
     def _merge_and_format_context(
         self, vector_chunks: list[Chunk], keyword_chunks: list[Chunk], graph_data: list[dict]
-    ) -> str:
+    ) -> tuple[str, dict[int, Chunk]]:
         """
         검색 결과를 병합하고 포맷팅하여 LLM에게 제공할 Context를 생성합니다.
         Citations(출처)를 포함하여 Hallucination 방지.
+        
+        Returns:
+            tuple: (포맷팅된 컨텍스트 문자열, 인덱스별 Chunk 매핑 딕셔너리)
         """
         combined = []
         seen_ids = set()
@@ -296,12 +302,14 @@ class RAGNodes:
 
         # Format Text Context
         formatted_chunks = []
+        mapped_chunks = {}
         for i, chunk in enumerate(combined, 1):
             source = chunk.metadata.get("source", "Unknown")
             title = chunk.metadata.get("title", "Untitled")
-            formatted_chunks.append(f"[{i}] Source: {source} ({title})\\n{chunk.content}")
+            formatted_chunks.append(f"[{i}] Source: {source} ({title})\n{chunk.content}")
+            mapped_chunks[i] = chunk
 
-        text_context = "\\n\\n".join(formatted_chunks)
+        text_context = "\n\n".join(formatted_chunks)
 
         # Format Graph Context
         graph_lines = []
@@ -313,6 +321,6 @@ class RAGNodes:
                 tgt = item.get("target")
                 graph_lines.append(f"- ({src}) -[{rel}]-> ({tgt})")
 
-        graph_context = "\\n".join(graph_lines)
+        graph_context = "\n".join(graph_lines)
 
-        return f"{graph_context}\\n\\nDocument Context:\\n{text_context}"
+        return f"{graph_context}\n\nDocument Context:\n{text_context}", mapped_chunks
