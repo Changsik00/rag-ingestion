@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated, Literal, TypedDict
+from typing import Annotated, Any, Literal, TypedDict
 
 from langchain_core.messages import AIMessage, AnyMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -32,7 +32,7 @@ class AdminAgent:
         # Default workflow (No HITL)
         self.workflow = self._build_graph()
 
-    def _build_graph(self, interrupt_before: list[str] | None = None):
+    def _build_graph(self, checkpointer: Any = None, interrupt_before: list[str] | None = None):
         workflow = StateGraph(AdminState)
 
         workflow.add_node("router", self.router_node)
@@ -48,10 +48,6 @@ class AdminAgent:
 
         # Checkpointer is handled by RAGService, but AdminAgent itself
         # can also have one if we want HITL at this top level.
-        # For now, we mainly want to pass HITL signals down to RAG.
-        from app.interfaces.api.dependencies import get_checkpointer
-        import asyncio
-        checkpointer = asyncio.run(get_checkpointer())
         return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
     def route_logic(self, state: AdminState) -> Literal["ingest", "search"]:

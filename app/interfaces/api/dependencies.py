@@ -62,20 +62,36 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 # Checkpointer 의존성 (HITL Persistence)
 _checkpointer_instance: AsyncSqliteSaver | None = None
 _checkpointer_conn: Any = None
+_creation_loop: Any = None
 
 
 async def get_checkpointer() -> AsyncSqliteSaver:
-    global _checkpointer_instance, _checkpointer_conn
-    if _checkpointer_instance is None:
+    global _checkpointer_instance, _checkpointer_conn, _creation_loop
+    import asyncio
+
+    try:
+        current_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+
+    if _checkpointer_instance is None or (current_loop and _creation_loop != current_loop):
         import aiosqlite
 
-        # 싱글톤 연결 생성.
-        # check_same_thread=False는 aiosqlite에서 기본적으로 처리되거나 필요 없을 수 있지만,
-        # 안정성을 위해 명시적으로 관리할 수 있음.
+        # 이전 연결이 있고 루프가 바뀌었다면 닫기 시도 (Best effort)
+        if _checkpointer_conn and _creation_loop != current_loop:
+            try:
+                # 주의: 다른 루프의 연결을 현재 루프에서 닫는 것이 실패할 수 있음
+                pass
+            except Exception:
+                pass
+
+        # 싱글톤 연결 생성 (루프별)
         _checkpointer_conn = await aiosqlite.connect("checkpoints.sqlite")
         _checkpointer_instance = AsyncSqliteSaver(_checkpointer_conn)
         # 테이블 생성 등 초기화 작업 수행
         await _checkpointer_instance.setup()
+        _creation_loop = current_loop
+
     return _checkpointer_instance
 
 
