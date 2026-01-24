@@ -21,7 +21,7 @@ class SemanticExtractor:
         """
         self.llm = llm
 
-    def extract(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:
+    async def extract(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:
         """
         텍스트에서 메타데이터 추출
 
@@ -31,18 +31,19 @@ class SemanticExtractor:
 
         Returns:
             ExtractedMetadata: 추출된 메타데이터 (실패 시 None)
-
-        Example:
-            >>> llm_adapter = LangChainLLMAdapter(...)
-            >>> extractor = SemanticExtractor(llm=llm_adapter)
-            >>> metadata = extractor.extract("Sample text")
         """
         if hasattr(self.llm, "extract_metadata"):
-            # Check if extract_metadata supports thread_id (it should if it's LangGraphAdapter)
-            # But LLMInterface might not defined it. We assume dynamic dispatch or updated interface.
             try:
-                return self.llm.extract_metadata(text, thread_id=thread_id)
+                # adapter methods are now async
+                import asyncio
+                if asyncio.iscoroutinefunction(self.llm.extract_metadata):
+                    return await self.llm.extract_metadata(text, thread_id=thread_id)
+                else:
+                    return self.llm.extract_metadata(text, thread_id=thread_id)
             except TypeError:
                 # Fallback for other adapters
-                return self.llm.extract_metadata(text)
+                if asyncio.iscoroutinefunction(self.llm.extract_metadata):
+                    return await self.llm.extract_metadata(text)
+                else:
+                    return self.llm.extract_metadata(text)
         return None

@@ -6,18 +6,22 @@
 이번 작업에서는 이를 해결하기 위해 다음의 3가지 핵심 개선을 수행했습니다:
 1. **Adaptive Retrieval (Fallback)**: 필터링 검색 실패 시 자동으로 범위를 넓혀 재검색하여 사용자에게 유의미한 정보를 반드시 제공하도록 개선했습니다.
 2. **Deterministic Guardrails**: 프롬프트를 강화하여 컨텍스트에 없는 내용은 명확히 "모른다"고 답하게 하여 시스템 신뢰도를 높였습니다.
-3. **Session Persistence**: Playground에 `SqliteSaver` 체크포인터를 완벽히 연동하여 대화 내역과 내부 상태(State)가 영구적으로 보존되도록 안정화했습니다.
+3. **Session Persistence (Hotfix)**: Playground에 `AsyncSqliteSaver` 체크포인터를 완벽히 연동하여 대화 내역과 내부 상태(State)가 영구적으로 보존되도록 안정화했습니다. (`aiosqlite` 기반 비동기 처리 도입)
 
 ## 🎯 Key Review Points
 1. **Automatic Fallback Mechanism**: `retrieve_hybrid` 노드에서 `if not results and filters: ... retry without filters` 로직의 적절성.
 2. **Prompt Instruction Clarity**: LLM에게 부여된 `CRITICAL RULES`가 실제 할루시네이션을 억제하기에 충분히 강력한지 검토.
-3. **UI Feedback**: Fallback 발생 시 사용자에게 노란색 경고 창으로 상태를 고지하는 UX 흐름.
+3. **Async Checkpointer Stability**: `dependencies.py`에서 `AsyncSqliteSaver`를 싱글톤으로 관리하고 `aiosqlite`를 사용하도록 변경한 구조의 적절성.
+4. **UI Feedback**: Fallback 발생 시 사용자에게 노란색 경고 창으로 상태를 고지하는 UX 흐름.
 
 ## 🧪 Verification
 ### Automated Tests
 ```bash
 # Fallback 및 Prompt 단위 테스트 실행
 uv run pytest tests/unit/infrastructure/rag/test_rag_nodes.py -v
+
+# 체크포인터 및 HITL 연동 테스트
+uv run pytest tests/integration/bdd/test_human_loop.py
 
 # 전체 통합 테스트 (204 passed)
 uv run pytest -v
@@ -51,13 +55,15 @@ uv run pytest -v
 
 ### 🛠 Modified Files
 - `app/infrastructure/rag/nodes.py`: Fallback 로직 및 프롬프트 가드레일 구현
-- `app/admin/pages/4_RAG_Playground.py`: Checkpointer 주입 및 디버그 UI 연동
+- `app/admin/pages/4_RAG_Playground.py`: `AsyncSqliteSaver` 핸들링 및 디버그 UI 연동
+- `app/interfaces/api/dependencies.py`: `AsyncSqliteSaver` 싱글톤 의존성 주입 (Hotfix)
 - `app/domain/rag/state.py`: `fallback_triggered` 필드 추가
+- `pyproject.toml`: `aiosqlite` 의존성 추가
 - `docs/architecture/rag_pipeline.md`: 트러블슈팅 해결책 업데이트
-- `docs/guides/admin_guide.md`: Playground 상세 사용 가이드 추가
-- `tests/unit/infrastructure/rag/test_rag_nodes.py`: 단위 테스트 119라인 추가
+- `docs/guides/admin_guide.md`: Playground 가이드 업데이트
+- `tests/unit/infrastructure/rag/test_rag_nodes.py`: 단위 테스트 추가
 
-**Total:** 10 files changed
+**Total:** 12 files changed
 
 ## ✅ Definition of Done
 - [x] 필터 검색 실패 시 자동 Fallback 및 시각화 확인

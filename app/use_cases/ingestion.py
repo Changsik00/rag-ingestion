@@ -38,7 +38,7 @@ class IngestionService:
         self.job_repository.create_job(job)
         return job
 
-    def process_job(self, job_id: str) -> None:
+    async def process_job(self, job_id: str) -> None:
         """Execute the ingestion logic asynchronously."""
         job = self.job_repository.get_job(job_id)
         if not job:
@@ -59,7 +59,7 @@ class IngestionService:
             semantic_data = None
             if self.extractor:
                 try:
-                    semantic_data = self.extractor.extract(result.markdown, thread_id=job_id)
+                    semantic_data = await self.extractor.extract(result.markdown, thread_id=job_id)
                     if semantic_data:
                         # Append semantic data to metadata
                         result.metadata["semantic_data"] = semantic_data.model_dump()
@@ -68,7 +68,6 @@ class IngestionService:
                     logger.warning(f"Semantic extraction failed for job {job_id}: {e}")
 
             # 4. Map to Domain Entity
-            # Document 생성 (source_url은 metadata에 포함됨)
             doc_metadata = result.metadata.copy()
             doc_metadata["source_url"] = str(result.url)
 

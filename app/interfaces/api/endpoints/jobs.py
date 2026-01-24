@@ -57,7 +57,7 @@ class ResumeRequest(BaseModel):
 async def list_active_threads(limit: int = 10, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
     """List threads managed by LangGraph checkpointer."""
     try:
-        threads = adapter.list_threads(limit=limit)
+        threads = await adapter.list_threads(limit=limit)
         # Serialize CheckpointTuple
         return [
             {
@@ -75,7 +75,8 @@ async def list_active_threads(limit: int = 10, adapter: LangGraphAdapter = Depen
 async def get_job_status(job_id: str, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
     """Get LangGraph execution status for a job/thread."""
     try:
-        return {"status": adapter.get_thread_status(job_id)}
+        status = await adapter.get_thread_status(job_id)
+        return {"status": status}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -84,7 +85,7 @@ async def get_job_status(job_id: str, adapter: LangGraphAdapter = Depends(get_la
 async def get_job_trace(job_id: str, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
     """Get LangGraph state snapshot."""
     try:
-        snapshot = adapter.get_state(job_id)
+        snapshot = await adapter.get_state(job_id)
         return {
             "values": snapshot.values,
             "next": snapshot.next,
@@ -101,7 +102,7 @@ async def resume_job(job_id: str, request: ResumeRequest, adapter: LangGraphAdap
     try:
         # Resume implies invoking with new input
         # We assume strict architecture where we update state or send command
-        result = adapter.resume(job_id, request.input)
+        result = await adapter.resume(job_id, request.input)
         return {"status": "Resumed", "result_metadata": result.get("metadata", None)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

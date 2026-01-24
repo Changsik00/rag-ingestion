@@ -57,7 +57,7 @@ def get_deps():
     )
     from app.interfaces.api.dependencies import get_checkpointer
 
-    checkpointer = get_checkpointer()
+    checkpointer = asyncio.run(get_checkpointer())
     rag_graph_builder = RAGGraphBuilder(rag_nodes)
     rag_graph = rag_graph_builder.build(checkpointer=checkpointer)
 
@@ -286,7 +286,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             final_state = asyncio.run(admin_agent.workflow.ainvoke(inputs, config=config))
 
             # Check for Interrupt
-            snapshot = admin_agent.workflow.get_state(config)
+            snapshot = asyncio.run(admin_agent.workflow.aget_state(config))
             if snapshot.next:
                 status_container.update(label="🚦 Paused for Human Review", state="running", expanded=True)
                 st.warning(f"Pipeline paused at: **{snapshot.next[0]}**. Review the reasoning trace below.")
