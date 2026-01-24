@@ -88,10 +88,17 @@ def render_doc_table():
             selected_title = st.selectbox("Select document to preview missing parts", options=df["title"].tolist())
             if selected_title:
                 row = df[df["title"] == selected_title].iloc[0]
-                if row["status"] != "In Sync":
+                
+                # 상세 정보 표시 (Missing Title인 경우 URL 중심, 아니면 본문 중심)
+                if row["status"] == "Missing Title":
+                    st.warning(f"**Document has no title.**")
+                    st.info(f"**Source URL:** {row['url']}")
+                    st.caption("Fix 버튼을 누르면 위 URL을 기반으로 제목을 추출하고 하위 청크에 전파합니다.")
+                elif row["status"] != "In Sync":
                     st.error(f"**Missing Snippet Sample from '{selected_title}':**")
                     st.code(row["missing_sample"] or "Snippet not available.")
-                    
+                
+                if row["status"] != "In Sync":
                     if st.button(f"🛠 Fix '{selected_title}' Metadata & Sync"):
                         with st.spinner("Repairing..."):
                             res = service.sync_document(row["id"])
