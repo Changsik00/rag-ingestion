@@ -87,6 +87,12 @@ class RAGNodes:
         state["user_intent"] = user_intent
         state["rewritten_query"] = rewritten_query
 
+        # [Spec 034] Reasoning Log
+        reasoning_log = state.get("reasoning_log", [])
+        reasoning_log.append(f"🧠 [Intent] Classified as {user_intent.intent.value} targeting {user_intent.targets}. Reasoning: {user_intent.reasoning}")
+        reasoning_log.append(f"✍️ [Rewrite] Query rewritten to: {rewritten_query}")
+        state["reasoning_log"] = reasoning_log
+
         return state
 
     def route_decision(self, state: RAGGraphState) -> RAGGraphState:
@@ -114,6 +120,13 @@ class RAGNodes:
         # Update State
         state["auto_filters"] = auto_filters
         state["final_filters"] = final_filters
+        state["fallback_triggered"] = False
+
+        # [Spec 034] Reasoning Log
+        reasoning_log = state.get("reasoning_log", [])
+        filter_desc = f"Applied Filters: {final_filters}" if final_filters else "No Filters Applied"
+        reasoning_log.append(f"🚦 [Routing] {filter_desc}")
+        state["reasoning_log"] = reasoning_log
 
         return state
 
@@ -133,6 +146,9 @@ class RAGNodes:
         rewritten_query = state.get("rewritten_query") or state["query"]
         final_filters = state.get("final_filters")
 
+        # [Spec 034] Initial Search reasoning
+        reasoning_log = state.get("reasoning_log", [])
+
         # Parallel Hybrid Search (Running sync calls in threads)
         vector_task = asyncio.to_thread(self._search_vector, rewritten_query, final_filters)
         keyword_task = asyncio.to_thread(self._search_keyword, rewritten_query, final_filters)
@@ -142,10 +158,29 @@ class RAGNodes:
             vector_task, keyword_task, graph_task
         )
 
+        reasoning_log.append(f"🔍 [Search] Found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks, {len(graph_results)} graph facts.")
+
+        # Fallback Logic: 필터링된 결과가 없고 필터가 적용된 상태라면 필터 제거 후 재검색
+        if final_filters and not vector_results and not keyword_results:
+            logger.info("No results found with filters. Triggering Fallback (Global Search)...")
+            state["fallback_triggered"] = True
+            reasoning_log.append("🔄 [Fallback] Strict filters returned zero results. Retrying with Global Search (no filters).")
+
+            # 재검색 (필터 없이)
+            v_fallback_task = asyncio.to_thread(self._search_vector, rewritten_query, None)
+            k_fallback_task = asyncio.to_thread(self._search_keyword, rewritten_query, None)
+
+            v_fall, k_fall = await asyncio.gather(v_fallback_task, k_fallback_task)
+            vector_results = v_fall
+            keyword_results = k_fall
+
+            reasoning_log.append(f"🔍 [Search/Fallback] Post-fallback found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks.")
+
         # Update State
         state["vector_chunks"] = vector_results
         state["keyword_chunks"] = keyword_results
         state["graph_data"] = graph_results
+        state["reasoning_log"] = reasoning_log
 
         return state
 
@@ -172,11 +207,16 @@ class RAGNodes:
 
         # Generate Answer
         prompt = (
-            f"Please answer the following question based on the context provided below.\\n\\n"
-            f"Question: {query}\\n"
-            f"(Context/Rewritten): {rewritten_query}\\n\\n"
-            f"Context:\\n{context_str}\\n\\n"
-            f"Answer:"
+            "You are a professional AI assistant. Answer the question based strictly on the provided Context.\n"
+            "CRITICAL RULES:\n"
+            "1. If the provided context is empty or does not contain sufficient information to answer the question, "
+            "explicitly state that you do not have enough information in your knowledge base to answer definitively.\n"
+            "2. Do NOT use your internal knowledge to supplement the answer if it's not supported by the context.\n"
+            "3. If multiple documents are provided, cite them correctly using [Source ID].\n\n"
+            f"Question: {query}\n"
+            f"(Rewritten Query): {rewritten_query}\n\n"
+            f"Context:\n{context_str}\n\n"
+            "Answer:"
         )
 
         response = self.llm.generate(prompt)

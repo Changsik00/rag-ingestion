@@ -34,12 +34,13 @@ class RAGGraphBuilder:
         """
         self.nodes = nodes
 
-    def build(self, checkpointer: Any = None) -> CompiledStateGraph:
+    def build(self, checkpointer: Any = None, interrupt_before: list[str] | None = None) -> CompiledStateGraph:
         """
         RAG Workflow 그래프를 생성하고 컴파일하여 반환합니다.
         
         Args:
             checkpointer: LangGraph Checkpointer (SqliteSaver 등). Defaults to None.
+            interrupt_before: 특정 노드 실행 전에 중단할 지점 목록 (HITL용)
             
         Returns:
             CompiledStateGraph: 실행 가능한 RAG Graph
@@ -61,7 +62,8 @@ class RAGGraphBuilder:
         workflow.add_edge("generate_answer", END)
 
         # 4. Compile
-        # Checkpointer가 제공되면 State Snapshot 저장 기능 활성화
-        if checkpointer:
-            return workflow.compile(checkpointer=checkpointer)
-        return workflow.compile()
+        # HITL 및 Checkpointer 설정 반영
+        return workflow.compile(
+            checkpointer=checkpointer,
+            interrupt_before=interrupt_before
+        )

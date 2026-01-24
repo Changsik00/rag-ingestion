@@ -1,9 +1,9 @@
 import sqlite3
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
 from app.core.config import get_settings
@@ -59,20 +59,46 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
     return Neo4jJobRepository(driver)
 
 
-# Semantic Extractor 의존성 (LLM 기반 메타데이터 추출)
-
-
 # Checkpointer 의존성 (HITL Persistence)
-@lru_cache
-def get_checkpointer() -> SqliteSaver:
-    # Use check_same_thread=False for FastAPI/Streamlit concurrency
-    conn = sqlite3.connect("checkpoints.sqlite", check_same_thread=False)
-    return SqliteSaver(conn)
+_checkpointer_instance: AsyncSqliteSaver | None = None
+_checkpointer_conn: Any = None
+_creation_loop: Any = None
+
+
+async def get_checkpointer() -> AsyncSqliteSaver:
+    global _checkpointer_instance, _checkpointer_conn, _creation_loop
+    import asyncio
+
+    try:
+        current_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+
+    if _checkpointer_instance is None or (current_loop and _creation_loop != current_loop):
+        import aiosqlite
+
+        # 이전 연결이 있고 루프가 바뀌었다면 닫기 시도 (Best effort)
+        if _checkpointer_conn and _creation_loop != current_loop:
+            try:
+                # 주의: 다른 루프의 연결을 현재 루프에서 닫는 것이 실패할 수 있음
+                pass
+            except Exception:
+                pass
+
+        # 싱글톤 연결 생성 (루프별)
+        _checkpointer_conn = await aiosqlite.connect("checkpoints.sqlite")
+        # WAL 모드 활성화로 멀티 프로세스 동시성 향상
+        await _checkpointer_conn.execute("PRAGMA journal_mode=WAL;")
+        _checkpointer_instance = AsyncSqliteSaver(_checkpointer_conn)
+        # 테이블 생성 등 초기화 작업 수행
+        await _checkpointer_instance.setup()
+        _creation_loop = current_loop
+
+    return _checkpointer_instance
 
 
 # Semantic Extractor 의존성 (LLM 기반 메타데이터 추출)
-@lru_cache
-def get_semantic_extractor(checkpointer: Annotated[SqliteSaver, Depends(get_checkpointer)]) -> SemanticExtractor:
+async def get_semantic_extractor(checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)]) -> SemanticExtractor:
     llm_adapter = get_llm()  # LangChainLLMAdapter를 반환
     # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
     # Spec 024: Checkpointer 주입
@@ -112,7 +138,9 @@ def get_ingestion_service(
 
 
 # Spec 024: LangGraphAdapter 직접 접근 (HITL Control용)
-def get_langgraph_adapter(extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)]) -> LangGraphAdapter:
+async def get_langgraph_adapter(
+    extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
+) -> LangGraphAdapter:
     # SemanticExtractor.llm is the LangGraphAdapter
     if isinstance(extractor.llm, LangGraphAdapter):
         return extractor.llm
@@ -167,9 +195,9 @@ def get_rag_graph_builder(nodes=Depends(get_rag_nodes)):
 
 
 # RAG Service 의존성 (Spec 033: LangGraph 기반)
-def get_rag_service(
+async def get_rag_service(
     graph_builder=Depends(get_rag_graph_builder),
-    checkpointer: Annotated[SqliteSaver, Depends(get_checkpointer)] = None,
+    checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)] = None,
 ) -> RAGService:
     # Build Graph with Checkpointer
     compiled_graph = graph_builder.build(checkpointer=checkpointer)

@@ -25,73 +25,84 @@ st.set_page_config(page_title="RAG Playground", page_icon="🎮", layout="wide")
 st.title("🎮 RAG Playground")
 
 
-@st.cache_resource
-def get_deps():
+def get_core_deps():
+    """핵심 의존성 객체(드라이버, 저장소)만 캐싱하여 반환"""
     driver = get_neo4j_driver()
-
-    # 1. Repositories
     neo4j_doc = Neo4jStorage(driver)
     neo4j_graph = Neo4jGraphRepository(driver)
     chroma = ChromaStorage()
-
-    # 2. Base Services
     llm = get_llm()
-    rewriter = QueryRewriter(llm)
-
-    # 3. Intent Classifier (Spec 032)
+    
+    from app.domain.services.query_rewriter import QueryRewriter
     from app.domain.services.intent_classifier import IntentClassifier
-
+    rewriter = QueryRewriter(llm)
     intent_classifier = IntentClassifier(llm)
+    
+    return {
+        "driver": driver,
+        "neo4j_doc": neo4j_doc,
+        "neo4j_graph": neo4j_graph,
+        "chroma": chroma,
+        "llm": llm,
+        "rewriter": rewriter,
+        "intent_classifier": intent_classifier
+    }
 
-    # 4. RAG Service (Spec 033: Graph 기반)
+@st.cache_resource
+def get_feedback_service():
+    return FeedbackService()
+
+async def get_active_agent(interrupt_nodes=None):
+    """현재 이벤트 루프에 맞는 AdminAgent를 생성 (Checkpointer 동기화 포함)"""
+    core = get_core_deps()
     from app.infrastructure.rag.graph import RAGGraphBuilder
     from app.infrastructure.rag.nodes import RAGNodes
+    from app.interfaces.api.dependencies import get_checkpointer
 
     rag_nodes = RAGNodes(
-        neo4j_doc_repo=neo4j_doc,
-        neo4j_graph_repo=neo4j_graph,
-        chroma_repo=chroma,
-        query_rewriter=rewriter,
-        intent_classifier=intent_classifier,
-        llm=llm,
+        neo4j_doc_repo=core["neo4j_doc"],
+        neo4j_graph_repo=core["neo4j_graph"],
+        chroma_repo=core["chroma"],
+        query_rewriter=core["rewriter"],
+        intent_classifier=core["intent_classifier"],
+        llm=core["llm"],
     )
-    rag_graph_builder = RAGGraphBuilder(rag_nodes)
-    rag_graph = rag_graph_builder.build()  # Checkpointer는 선택사항
     
+    checkpointer = await get_checkpointer()
+    rag_graph_builder = RAGGraphBuilder(rag_nodes)
+    rag_graph = rag_graph_builder.build(checkpointer=checkpointer)
     rag_service = RAGService(graph=rag_graph)
 
-    feedback_service = FeedbackService()
-
-    # 5. Ingestion Service
+    # Ingestion Service
     from app.domain.services.semantic_extractor import SemanticExtractor
     from app.infrastructure.brain.adapter import LangGraphAdapter
     from app.infrastructure.chunker.langchain_chunker import LangChainChunker
     from app.infrastructure.storage.composite import CompositeStorage
     from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
     from app.use_cases.ingestion import IngestionService
-
-    composite_repo = CompositeStorage(neo4j_doc, chroma)
-    job_repo = Neo4jJobRepository(driver)
-    chunker = LangChainChunker()
-    graph_adapter = LangGraphAdapter(llm)
-    extractor = SemanticExtractor(graph_adapter)
-
     from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
 
+    composite_repo = CompositeStorage(core["neo4j_doc"], core["chroma"])
+    job_repo = Neo4jJobRepository(core["driver"])
+    chunker = LangChainChunker()
+    graph_adapter = LangGraphAdapter(core["llm"], checkpointer=checkpointer)
+    extractor = SemanticExtractor(graph_adapter)
     scraper = TrafilaturaWebScraper()
 
     ingestion_service = IngestionService(
         scraper=scraper,
         repository=composite_repo,
-        graph=neo4j_graph,
+        graph=core["neo4j_graph"],
         job_repository=job_repo,
         chunker=chunker,
         extractor=extractor,
     )
 
     admin_agent = AdminAgent(rag_service, ingestion_service)
-
-    return admin_agent, feedback_service
+    # 현재 루프의 체크포인터로 워크플로우 컴파일
+    admin_agent.workflow = admin_agent._build_graph(checkpointer=checkpointer, interrupt_before=interrupt_nodes)
+    
+    return admin_agent
 
 
 # --- [Spec 032] 디버그 UI 렌더링 함수 (중복 제거 및 일관성 유지) ---
@@ -159,12 +170,35 @@ def render_debug_ui(message):
             st.markdown("**📝 LLM Prompt**")
             st.code(prompt_info, language="text")
 
+        # [Spec 034] Reasoning Trace
+        reasoning_log = debug.get("reasoning_log", [])
+        if reasoning_log:
+            st.divider()
+            st.markdown("**🔍 Reasoning Trace**")
+            for entry in reasoning_log:
+                st.caption(entry)
 
-admin_agent, feedback_service = get_deps()
+        # [Spec 034] Fallback & Recovery Info
 
-# Initialize Chat History
+        # [Spec 034] Fallback & Recovery Info
+        fallback_triggered = debug.get("fallback_triggered", False)
+        if fallback_triggered:
+            st.divider()
+            st.warning("🔄 **Fallback Triggered**: Strict filters returned no results. Global search was performed.")
+
+
+feedback_service = get_feedback_service()
+
+# Initialize Chat History and Session ID
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+if "thread_id_seed" not in st.session_state:
+    import uuid
+    st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
+
+if "hitl_enabled" not in st.session_state:
+    st.session_state.hitl_enabled = False
 
 # --- Chat Interface (히스토리 루프) ---
 for message in st.session_state.messages:
@@ -212,10 +246,30 @@ with st.sidebar:
     with st.expander("🛠️ Advanced Settings", expanded=False):
         st.caption("Debug & Internal Settings")
 
-        # Clear Chat History Button (Spec 032)
         if st.button("🗑️ Clear Chat History", use_container_width=True):
             st.session_state.messages = []
             st.rerun()
+
+        if st.button("🔄 New Conversation (Reset Thread)", use_container_width=True):
+            import uuid
+            st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
+            st.session_state.messages = []
+            st.rerun()
+
+        st.divider()
+        st.subheader("🚦 HITL Control")
+        # Display Thread ID for Trace Viewer
+        st.info(f"**Thread ID**: `{f'playground-{st.session_state.thread_id_seed}'}`")
+        
+        if "hitl_enabled" not in st.session_state:
+            st.session_state.hitl_enabled = False
+
+        hitl_enabled = st.toggle(
+            "Enable HITL Review",
+            value=st.session_state.hitl_enabled,
+            help="If enabled, the pipeline will stop before generating the final answer for your review.",
+        )
+        st.session_state.hitl_enabled = hitl_enabled
 
 # --- Input 처리 ---
 if prompt := st.chat_input("Ask a question regarding the ingested content..."):
@@ -241,16 +295,56 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             # Prepare filters if selected
             filters = {"doc_id": selected_doc_ids} if selected_doc_ids else None
 
-            inputs = {"messages": history_interactive, "filters": filters}
-            final_state = asyncio.run(admin_agent.workflow.ainvoke(inputs))
+
+            # [Spec 034] HITL Thread ID & Interrupt Logic
+            thread_id = f"playground-{st.session_state.thread_id_seed}"
+            interrupt_nodes = ["search"] if st.session_state.hitl_enabled else None
+
+            async def run_agent_workflow():
+                thread_id = f"playground-{st.session_state.thread_id_seed}"
+                config = {"configurable": {"thread_id": thread_id}}
+                agent = await get_active_agent(interrupt_nodes=interrupt_nodes)
+                
+                # 1. 현 상태 먼저 확인 (이미 멈춰있는지)
+                snapshot = await agent.workflow.aget_state(config)
+                
+                # 2. 멈춰있지 않은 경우에만 실행 시작
+                if not snapshot.next:
+                    inputs = {"messages": history_interactive, "filters": filters, "thread_id": thread_id}
+                    final_state = await agent.workflow.ainvoke(inputs, config=config)
+                    # 실행 후 다시 스냅샷 (인터럽트 발생했을 수 있음)
+                    snapshot = await agent.workflow.aget_state(config)
+                else:
+                    final_state = snapshot.values
+                
+                return final_state, snapshot
+
+            final_state, snapshot = asyncio.run(run_agent_workflow())
+            config = {"configurable": {"thread_id": f"playground-{st.session_state.thread_id_seed}"}}
+
+            if snapshot.next:
+                status_container.update(label="🚦 Paused for Human Review", state="running", expanded=True)
+                st.warning(f"Pipeline paused at: **{snapshot.next[0]}**. Review the reasoning trace below.")
+
+                if st.button("✅ Confirm & Generate Answer", type="primary", use_container_width=True):
+                    # Resume
+                    async def resume_agent():
+                        agent = await get_active_agent(interrupt_nodes=interrupt_nodes)
+                        # Resume by passing None to continue from interrupt
+                        return await agent.workflow.ainvoke(None, config=config)
+                    final_state = asyncio.run(resume_agent())
+                    answer = final_state["messages"][-1].content
+                else:
+                    st.info("💡 Trace Viewer 혹은 HITL Control 메뉴에서 상태를 확인하거나, 위 버튼을 눌러 계속하세요.")
+                    st.stop()
+            else:
+                last_msg = final_state["messages"][-1]
+                answer = last_msg.content if last_msg else "No response generated."
 
             # Analyze Result
             intent = final_state.get("intent", "search")
             tool_output = final_state.get("tool_output", "")
             context_data = final_state.get("context_data", {})
-
-            last_msg = final_state["messages"][-1]
-            answer = last_msg.content if last_msg else "No response generated."
 
             status_container.write(f"🎯 Intent: **{intent.upper()}**")
 

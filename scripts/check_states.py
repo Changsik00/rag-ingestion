@@ -1,4 +1,5 @@
 import sqlite3
+
 from langgraph.checkpoint.sqlite import SqliteSaver
 
 # 1. DB 연결 (현재 경로의 checkpoints.sqlite 사용)
@@ -18,10 +19,10 @@ if threads:
     # 가장 최근 스레드 하나 선택하여 상태 확인
     target_id = threads[-1]
     print(f"\n🔍 '{target_id}' 스레드의 최신 상태(State)를 가져옵니다...")
-    
+
     config = {"configurable": {"thread_id": target_id}}
     snapshot = checkpointer.get(config)
-    
+
     if snapshot:
         # snapshot.values는 RAGGraphState 또는 IngestionState의 딕셔너리입니다.
         state = snapshot.values

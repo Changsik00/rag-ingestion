@@ -22,7 +22,7 @@ async def test_rag_service_orchestration():
     """
     # Given: Mock Graph 생성
     mock_graph = MagicMock()
-    
+
     # Mock ainvoke: 완전한 RAGGraphState 반환
     chunk_v = Chunk(
         id=uuid4(), content="Vector Content", parent_id="doc-1", index=0, metadata={"source": "wiki", "title": "V"}
@@ -30,7 +30,7 @@ async def test_rag_service_orchestration():
     chunk_k = Chunk(
         id=uuid4(), content="Keyword Content", parent_id="doc-1", index=0, metadata={"source": "news", "title": "K"}
     )
-    
+
     mock_result_state = {
         "query": "Original Query",
         "history": [],
@@ -49,25 +49,25 @@ async def test_rag_service_orchestration():
         "full_context": "Mock context with Vector Content, Keyword Content, and Elon FOUNDED Tesla",
         "final_answer": "Final Answer"
     }
-    
+
     mock_graph.ainvoke = AsyncMock(return_value=mock_result_state)
-    
+
     # When: RAGService 생성 및 실행
     service = RAGService(graph=mock_graph)
-    
+
     history = []
     response = await service.retrieve_and_generate("Original Query", history)
-    
+
     # Then: Verification
     # 1. Graph가 올바른 initial_state로 호출되었는지 확인
     mock_graph.ainvoke.assert_called_once()
     call_args = mock_graph.ainvoke.call_args
     initial_state = call_args[0][0]
-    
+
     assert initial_state["query"] == "Original Query"
     assert initial_state["history"] == []
     assert initial_state["manual_filters"] is None
-    
+
     # 2. State → RAGResult 변환 확인
     assert response.answer == "Final Answer"
     assert response.rewritten_query == "Rewritten Query"

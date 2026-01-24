@@ -7,7 +7,7 @@ Mock LLM을 사용하여 외부 의존성 없이 독립적으로 테스트합니
 Spec 033: LangGraph State Management
 """
 
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -339,3 +339,122 @@ class TestRAGNodesGenerateAnswer:
         assert "test.com" in result["full_context"]  # Citation 포함
         assert result["final_answer"] == "인공지능은 기계가 인간처럼 학습하고 판단하는 기술입니다."
         mock_llm.generate.assert_called_once()
+
+
+class TestRAGNodesFallback:
+    """Fallback 로직 테스트"""
+
+    @pytest.mark.asyncio
+    async def test_retrieve_hybrid_triggers_fallback_when_filtered_results_empty(
+        self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
+    ):
+        """
+        Given: Filters가 적용되었으나 검색 결과가 0건인 상황
+        When: retrieve_hybrid 노드 실행
+        Then: fallback_triggered가 True로 설정되고, 필터 없이 재검색 수행
+        """
+        from app.infrastructure.rag.nodes import RAGNodes
+
+        mock_chunk = Chunk(
+            id="fallback_chunk",
+            content="Fallback 결과",
+            parent_id="doc_fallback",
+            index=0,
+            metadata={"source": "fallback.com", "title": "Fallback"}
+        )
+
+        # 1. 첫 번째 검색 (필터 있음) -> 빈 결과
+        # 2. 두 번째 검색 (필터 없음) -> 결과 있음
+        mock_repositories["chroma"].search_mmr.side_effect = [[], [mock_chunk]]
+        mock_repositories["neo4j_doc"].search.side_effect = [[], []]
+        mock_repositories["neo4j_graph"].get_subgraph.return_value = []
+
+        nodes = RAGNodes(
+            neo4j_doc_repo=mock_repositories["neo4j_doc"],
+            neo4j_graph_repo=mock_repositories["neo4j_graph"],
+            chroma_repo=mock_repositories["chroma"],
+            query_rewriter=mock_query_rewriter,
+            intent_classifier=mock_intent_classifier,
+            llm=mock_llm
+        )
+
+        # Given
+        state = {
+            "query": "비교해줘",
+            "history": [],
+            "manual_filters": {"source": ["non-existent"]},
+            "user_intent": UserIntent(intent=IntentType.COMPARE, targets=["A", "B"], reasoning=""),
+            "rewritten_query": "비교",
+            "auto_filters": None,
+            "final_filters": {"source": ["non-existent"]},
+            "vector_chunks": [],
+            "keyword_chunks": [],
+            "graph_data": [],
+            "fallback_triggered": False,
+            "full_context": "",
+            "final_answer": ""
+        }
+
+        # When
+        result = await nodes.retrieve_hybrid(state)
+
+        # Then
+        assert result["fallback_triggered"] is True
+        assert len(result["vector_chunks"]) == 1
+        assert result["vector_chunks"][0].id == "fallback_chunk"
+
+        # search_mmr이 두 번 호출되었는지 확인 (첫 번째는 필터 포함, 두 번째는 None)
+        assert mock_repositories["chroma"].search_mmr.call_count == 2
+        calls = mock_repositories["chroma"].search_mmr.call_args_list
+        assert calls[0][1]["filters"] == {"source": ["non-existent"]}
+        assert calls[1][1]["filters"] is None
+
+
+class TestRAGNodesPromptGuard:
+    """Prompt 가드레일 테스트 (Spec 034)"""
+
+    def test_generate_answer_includes_critical_rules(
+        self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
+    ):
+        """
+        Given: RAG State
+        When: generate_answer 노드 실행
+        Then: LLM에게 전달되는 프롬프트에 CRITICAL RULES가 포함되어야 함
+        """
+        from app.infrastructure.rag.nodes import RAGNodes
+
+        mock_llm.generate.return_value = Mock(content="답변")
+
+        nodes = RAGNodes(
+            neo4j_doc_repo=mock_repositories["neo4j_doc"],
+            neo4j_graph_repo=mock_repositories["neo4j_graph"],
+            chroma_repo=mock_repositories["chroma"],
+            query_rewriter=mock_query_rewriter,
+            intent_classifier=mock_intent_classifier,
+            llm=mock_llm
+        )
+
+        state = {
+            "query": "질문",
+            "history": [],
+            "manual_filters": None,
+            "user_intent": None,
+            "rewritten_query": "재작성",
+            "auto_filters": None,
+            "final_filters": None,
+            "vector_chunks": [],
+            "keyword_chunks": [],
+            "graph_data": [],
+            "full_context": "",
+            "final_answer": ""
+        }
+
+        # When
+        nodes.generate_answer(state)
+
+        # Then
+        assert mock_llm.generate.call_count == 1
+        prompt = mock_llm.generate.call_args[0][0]
+        assert "CRITICAL RULES" in prompt
+        assert "not contain sufficient information" in prompt
+        assert "Do NOT use your internal knowledge" in prompt

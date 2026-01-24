@@ -60,6 +60,12 @@ class RAGGraphState(TypedDict):
     """Neo4j Graph Traversal 결과 (Entity 관계)"""
 
     # === Output (최종 결과) ===
+    fallback_triggered: bool
+    """필터 검색 실패로 인해 전역 검색(Fallback)이 수행되었는지 여부"""
+
+    reasoning_log: list[str]
+    """각 노드의 사고 과정 및 의사결정 로그"""
+
     full_context: str
     """LLM에게 제공할 포맷팅된 컨텍스트 (Citations 포함)"""
 
