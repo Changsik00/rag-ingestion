@@ -10,6 +10,7 @@ Design Guide 005: 3-Layer Architecture (Brain → Nervous System → Body)
 
 import asyncio
 import logging
+import re
 from typing import Any
 
 from app.domain.entities.chunk import Chunk
@@ -208,17 +209,20 @@ class RAGNodes:
         # Store mapped chunks in state temporarily for citation parsing if needed
         # (Though we'll likely handle it within this node)
 
-        # Generate Answer
+        # [Spec 035] Hybrid Knowledge PromptING
+        # "Sparse but Powerful" Strategy
         prompt = (
-            "You are a professional AI assistant. Answer the question based strictly on the provided Context.\n"
-            "CRITICAL RULES:\n"
-            "1. If the provided context is empty or does not contain sufficient information to answer the question, "
-            "explicitly state that you do not have enough information in your knowledge base to answer definitively.\n"
-            "2. Do NOT use your internal knowledge to supplement the answer if it's not supported by the context.\n"
-            "3. If multiple documents are provided, cite them correctly using [Source ID].\n\n"
+            "You are a professional AI assistant. Answer the question by combining the provided Context (DB) and your internal knowledge.\n\n"
+            "KNOWLEDGE MIXING RULES:\n"
+            "1. CONTEXT IS ABSOLUTE: If the provided Context contains information, it MUST be prioritized as the source of truth.\n"
+            "2. CITATION REQUIREMENT: For every sentence or fact derived from the Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
+            "3. LLM KNOWLEDGE SUPPLEMENT: If the Context is missing information or is sparse, use your own internal knowledge to provide a complete and helpful answer.\n"
+            "4. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n"
+            "5. SEAMLESS FUSION: Mix both sources into a natural, coherent response. If no relevant info exists in DB at all, state this clearly before answering with your general knowledge.\n\n"
             f"Question: {query}\n"
-            f"(Rewritten Query): {rewritten_query}\n\n"
-            f"Context:\n{context_str}\n\n"
+            f"(Rewritten Query for Search): {rewritten_query}\n\n"
+            "=== Provided Context (DB) ===\n"
+            f"{context_str}\n\n"
             "Answer:"
         )
 
@@ -229,8 +233,25 @@ class RAGNodes:
         else:
             answer_text = str(response)
 
+        # [Spec 035] Citation Parsing
+        # Answer 내의 [n] 패턴을 찾아 실제 메타데이터와 매칭
+        indices = [int(idx_str) for idx_str in re.findall(r"\[(\d+)\]", answer_text)]
+        citations = []
+        seen_indices = set()
+        for idx in indices:
+            if idx in mapped_chunks and idx not in seen_indices:
+                chunk = mapped_chunks[idx]
+                citations.append({
+                    "index": idx,
+                    "source": chunk.metadata.get("source", "Unknown"),
+                    "title": chunk.metadata.get("title", "Untitled"),
+                    "url": chunk.metadata.get("url") or chunk.metadata.get("source_url")
+                })
+                seen_indices.add(idx)
+
         # Update State
         state["full_context"] = context_str
+        state["citations"] = citations
         state["final_answer"] = answer_text
 
         return state
