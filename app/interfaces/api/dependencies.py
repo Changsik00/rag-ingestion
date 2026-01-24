@@ -87,6 +87,8 @@ async def get_checkpointer() -> AsyncSqliteSaver:
 
         # 싱글톤 연결 생성 (루프별)
         _checkpointer_conn = await aiosqlite.connect("checkpoints.sqlite")
+        # WAL 모드 활성화로 멀티 프로세스 동시성 향상
+        await _checkpointer_conn.execute("PRAGMA journal_mode=WAL;")
         _checkpointer_instance = AsyncSqliteSaver(_checkpointer_conn)
         # 테이블 생성 등 초기화 작업 수행
         await _checkpointer_instance.setup()

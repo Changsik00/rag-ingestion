@@ -189,9 +189,16 @@ def render_debug_ui(message):
 
 feedback_service = get_feedback_service()
 
-# Initialize Chat History
+# Initialize Chat History and Session ID
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+if "thread_id_seed" not in st.session_state:
+    import uuid
+    st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
+
+if "hitl_enabled" not in st.session_state:
+    st.session_state.hitl_enabled = False
 
 # --- Chat Interface (히스토리 루프) ---
 for message in st.session_state.messages:
@@ -239,18 +246,30 @@ with st.sidebar:
     with st.expander("🛠️ Advanced Settings", expanded=False):
         st.caption("Debug & Internal Settings")
 
-        # Clear Chat History Button (Spec 032)
         if st.button("🗑️ Clear Chat History", use_container_width=True):
+            st.session_state.messages = []
+            st.rerun()
+
+        if st.button("🔄 New Conversation (Reset Thread)", use_container_width=True):
+            import uuid
+            st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
             st.session_state.messages = []
             st.rerun()
 
         st.divider()
         st.subheader("🚦 HITL Control")
+        # Display Thread ID for Trace Viewer
+        st.info(f"**Thread ID**: `{f'playground-{st.session_state.thread_id_seed}'}`")
+        
+        if "hitl_enabled" not in st.session_state:
+            st.session_state.hitl_enabled = False
+
         hitl_enabled = st.toggle(
             "Enable HITL Review",
-            value=False,
+            value=st.session_state.hitl_enabled,
             help="If enabled, the pipeline will stop before generating the final answer for your review.",
         )
+        st.session_state.hitl_enabled = hitl_enabled
 
 # --- Input 처리 ---
 if prompt := st.chat_input("Ask a question regarding the ingested content..."):
@@ -278,23 +297,30 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 
 
             # [Spec 034] HITL Thread ID & Interrupt Logic
-            thread_id = f"playground-{st.session_state.get('thread_id_seed', 'default')}"
-            interrupt_nodes = ["search"] if hitl_enabled else None
+            thread_id = f"playground-{st.session_state.thread_id_seed}"
+            interrupt_nodes = ["search"] if st.session_state.hitl_enabled else None
 
-            async def run_agent():
-                agent = await get_active_agent(interrupt_nodes=interrupt_nodes)
-                inputs = {"messages": history_interactive, "filters": filters, "thread_id": thread_id}
+            async def run_agent_workflow():
+                thread_id = f"playground-{st.session_state.thread_id_seed}"
                 config = {"configurable": {"thread_id": thread_id}}
+                agent = await get_active_agent(interrupt_nodes=interrupt_nodes)
                 
-                # Execute with possible interrupt
-                final_state = await agent.workflow.ainvoke(inputs, config=config)
-                
-                # Check for Interrupt
+                # 1. 현 상태 먼저 확인 (이미 멈춰있는지)
                 snapshot = await agent.workflow.aget_state(config)
+                
+                # 2. 멈춰있지 않은 경우에만 실행 시작
+                if not snapshot.next:
+                    inputs = {"messages": history_interactive, "filters": filters, "thread_id": thread_id}
+                    final_state = await agent.workflow.ainvoke(inputs, config=config)
+                    # 실행 후 다시 스냅샷 (인터럽트 발생했을 수 있음)
+                    snapshot = await agent.workflow.aget_state(config)
+                else:
+                    final_state = snapshot.values
+                
                 return final_state, snapshot
 
-            final_state, snapshot = asyncio.run(run_agent())
-            config = {"configurable": {"thread_id": thread_id}} # Re-define for outside use
+            final_state, snapshot = asyncio.run(run_agent_workflow())
+            config = {"configurable": {"thread_id": f"playground-{st.session_state.thread_id_seed}"}}
 
             if snapshot.next:
                 status_container.update(label="🚦 Paused for Human Review", state="running", expanded=True)
@@ -304,11 +330,13 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     # Resume
                     async def resume_agent():
                         agent = await get_active_agent(interrupt_nodes=interrupt_nodes)
+                        # Resume by passing None to continue from interrupt
                         return await agent.workflow.ainvoke(None, config=config)
                     final_state = asyncio.run(resume_agent())
                     answer = final_state["messages"][-1].content
                 else:
-                    st.stop() # Wait for user to click resume
+                    st.info("💡 Trace Viewer 혹은 HITL Control 메뉴에서 상태를 확인하거나, 위 버튼을 눌러 계속하세요.")
+                    st.stop()
             else:
                 last_msg = final_state["messages"][-1]
                 answer = last_msg.content if last_msg else "No response generated."

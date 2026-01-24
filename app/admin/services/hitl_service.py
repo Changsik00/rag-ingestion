@@ -3,16 +3,20 @@ from typing import Any
 
 import requests
 
+from app.core.config import get_settings
+
 logger = logging.getLogger(__name__)
 
 
 class HitlService:
-    BASE_URL = "http://localhost:8000/jobs"  # Assuming default port
+    def __init__(self):
+        self.settings = get_settings()
+        self.base_url = f"{self.settings.API_URL}/jobs"
 
     def list_threads(self, limit: int = 10) -> list[dict[str, Any]]:
         """List active threads from the backend."""
         try:
-            response = requests.get(f"{self.BASE_URL}/active/threads", params={"limit": limit})
+            response = requests.get(f"{self.base_url}/active/threads", params={"limit": limit})
             if response.status_code == 200:
                 return response.json()
             logger.error(f"Failed to list threads: {response.text}")
@@ -24,7 +28,7 @@ class HitlService:
     def get_thread_status(self, thread_id: str) -> str:
         """Get status of a specific thread."""
         try:
-            response = requests.get(f"{self.BASE_URL}/{thread_id}/status")
+            response = requests.get(f"{self.base_url}/{thread_id}/status")
             if response.status_code == 200:
                 return response.json().get("status", "Unknown")
             return "Error"
@@ -35,7 +39,7 @@ class HitlService:
     def get_thread_trace(self, thread_id: str) -> dict[str, Any]:
         """Get execution trace (snapshot) of a thread."""
         try:
-            response = requests.get(f"{self.BASE_URL}/{thread_id}/trace")
+            response = requests.get(f"{self.base_url}/{thread_id}/trace")
             if response.status_code == 200:
                 return response.json()
             return {}
@@ -46,7 +50,7 @@ class HitlService:
     def resume_thread(self, thread_id: str, input_data: dict[str, Any]) -> bool:
         """Resume an interrupted thread with new input."""
         try:
-            response = requests.post(f"{self.BASE_URL}/{thread_id}/resume", json={"input": input_data})
+            response = requests.post(f"{self.base_url}/{thread_id}/resume", json={"input": input_data})
             return response.status_code == 200
         except Exception as e:
             logger.error(f"Error resuming thread {thread_id}: {e}")

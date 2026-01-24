@@ -6,13 +6,13 @@
 이번 작업에서는 이를 해결하기 위해 다음의 3가지 핵심 개선을 수행했습니다:
 1. **Adaptive Retrieval (Fallback)**: 필터링 검색 실패 시 자동으로 범위를 넓혀 재검색하여 사용자에게 유의미한 정보를 반드시 제공하도록 개선했습니다.
 2. **Deterministic Guardrails**: 프롬프트를 강화하여 컨텍스트에 없는 내용은 명확히 "모른다"고 답하게 하여 시스템 신뢰도를 높였습니다.
-3. **Session Persistence (Hotfix)**: Playground에 `AsyncSqliteSaver` 체크포인터를 완벽히 연동하여 대화 내역과 내부 상태(State)가 영구적으로 보존되도록 안정화했습니다. (`aiosqlite` 기반 비동기 처리 도입)
+3. **Session Persistence (Hotfix)**: Playground에 `AsyncSqliteSaver` 체크포인터를 완벽히 연동하고, SQLite **WAL(Write-Ahead Logging)** 모드를 적용하여 멀티 프로세스 환경에서의 DB 손상을 방지했습니다. 또한 Streamlit의 세션 관리 로직을 강화하여 페이지 이동 시에도 상태가 유지되도록 안정화했습니다.
 
 ## 🎯 Key Review Points
 1. **Automatic Fallback Mechanism**: `retrieve_hybrid` 노드에서 `if not results and filters: ... retry without filters` 로직의 적절성.
 2. **Prompt Instruction Clarity**: LLM에게 부여된 `CRITICAL RULES`가 실제 할루시네이션을 억제하기에 충분히 강력한지 검토.
-3. **Async Checkpointer Stability**: `dependencies.py`에서 `AsyncSqliteSaver`를 싱글톤으로 관리하고 `aiosqlite`를 사용하도록 변경한 구조의 적절성.
-4. **UI Feedback**: Fallback 발생 시 사용자에게 노란색 경고 창으로 상태를 고지하는 UX 흐름.
+3. **Async Checkpointer & DB Stability**: `dependencies.py`에서 WAL 모드 활성화 및 `AsyncSqliteSaver` 싱글톤 관리의 적절성.
+4. **Session Durability**: 페이지 네비게이션 시에도 HITL 설정 및 대화 내역이 유지되는 Streamlit 세션 핸들링.
 
 ## 🧪 Verification
 ### Automated Tests
