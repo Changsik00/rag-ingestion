@@ -85,9 +85,19 @@ def render_doc_table():
         if not df.empty:
             st.write("---")
             st.markdown("### 📄 Missing Content Preview")
-            selected_title = st.selectbox("Select document to preview missing parts", options=df["title"].tolist())
-            if selected_title:
-                row = df[df["title"] == selected_title].iloc[0]
+            
+            # ID와 제목을 조합하여 유니크한 옵션 생성
+            df["display_name"] = df["title"] + " (" + df["id"].str[:8] + "...)"
+            display_to_id = dict(zip(df["display_name"], df["id"]))
+            
+            selected_display = st.selectbox(
+                "Select document to preview missing parts", 
+                options=df["display_name"].tolist()
+            )
+            
+            if selected_display:
+                doc_id = display_to_id[selected_display]
+                row = df[df["id"] == doc_id].iloc[0]
                 
                 # 상세 정보 표시 (Missing Title인 경우 URL 중심, 아니면 본문 중심)
                 if row["status"] == "Missing Title":
@@ -95,18 +105,20 @@ def render_doc_table():
                     st.info(f"**Source URL:** {row['url']}")
                     st.caption("Fix 버튼을 누르면 위 URL을 기반으로 제목을 추출하고 하위 청크에 전파합니다.")
                 elif row["status"] != "In Sync":
-                    st.error(f"**Missing Snippet Sample from '{selected_title}':**")
-                    st.code(row["missing_sample"] or "Snippet not available.")
+                    st.error(f"**Missing Snippet Sample from '{row['title']}':**")
+                    with st.spinner("Loading snippet..."):
+                        snippet = service.get_missing_chunk_sample(doc_id)
+                    st.code(snippet or "Snippet not available.")
                 
                 if row["status"] != "In Sync":
-                    if st.button(f"🛠 Fix '{selected_title}' Metadata & Sync"):
+                    if st.button(f"🛠 Fix Selected Document Metadata & Sync", key=f"fix_btn_{doc_id}"):
                         with st.spinner("Repairing..."):
-                            res = service.sync_document(row["id"])
+                            res = service.sync_document(doc_id)
                             if res["success"]:
                                 st.success(f"Successfully repaired {res['count']} chunks.")
                                 st.rerun()
                 else:
-                    st.success(f"'{selected_title}' is fully synchronized.")
+                    st.success(f"'{row['title']}' is fully synchronized.")
 
     except Exception as e:
         st.error(f"Failed to load document report: {e}")

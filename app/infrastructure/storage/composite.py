@@ -47,3 +47,15 @@ class CompositeStorage(DocumentRepository):
 
     def search(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
         return self.chroma.search(query, limit, filters=filters)
+
+    def get_all_chunk_ids(self) -> set[str]:
+        return self.neo4j.get_all_chunk_ids()
+
+    def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
+        return self.neo4j.get_chunks_by_ids(chunk_ids)
+
+    def get_document_stats(self) -> list[dict]:
+        return self.neo4j.get_document_stats()
+
+    def get_all_chunk_metadata(self) -> list[dict]:
+        return self.neo4j.get_all_chunk_metadata()

@@ -39,48 +39,37 @@ class StorageIntegrityService:
         }
 
     def get_document_drift_report(self) -> List[Dict[str, Any]]:
-        """문서별 인덱싱 현황 리포트 생성 (N+1 Query 최적화 버전)"""
+        """문서별 인덱싱 현황 리포트 생성 (성능 최적화 및 안정화 버전)"""
         # 1. 모든 인덱싱된 청크 ID 확보 (Chroma)
         target_chunks_ids = self.target_repo.get_all_chunk_ids()
         
-        # 2. 모든 청크의 ID와 부모 ID를 한 번에 확보 (Neo4j)
-        # 이 작업은 get_chunks_by_ids 처럼 bulk 조회가 필요하거나 
-        # 레포지토리에 그룹화된 조회를 요청해야 함. 
-        # 여기서는 primary_repo에 새로운 bulk 메서드가 없으므로 
-        # 모든 청크 정보를 가져와 메모리에서 그룹화 처리.
-        all_primary_chunk_info = self.primary_repo.get_all_chunk_metadata() # id, parent_id, content(샘플용) 필요
+        # 2. 모든 청크의 ID와 부모 ID 확보 (Neo4j - content 제외)
+        all_primary_chunk_info = self.primary_repo.get_all_chunk_metadata()
         
         chunk_groups = {}
         for chunk in all_primary_chunk_info:
             pid = chunk.get("parent_id")
             if pid not in chunk_groups:
                 chunk_groups[pid] = []
-            chunk_groups[pid].append(chunk)
+            chunk_groups[pid].append(str(chunk.get("id")))
 
         # 3. 문서별 통계 일괄 조회 (Neo4j)
         doc_stats = self.primary_repo.get_document_stats()
         
         report = []
         for stat in doc_stats:
-            doc_id = stat["id"]
+            doc_id = str(stat["id"])
             total_chunks = stat["chunk_count"]
             if total_chunks == 0:
                 continue
                 
             # 메모리에 그룹화된 정보에서 가져옴
             chunks = chunk_groups.get(doc_id, [])
-            indexed_count = sum(1 for c in chunks if str(c["id"]) in target_chunks_ids)
+            indexed_count = sum(1 for cid in chunks if cid in target_chunks_ids)
             
-            # 샘플 추출
-            missing_sample = ""
-            if indexed_count < total_chunks:
-                for c in chunks:
-                    if str(c["id"]) not in target_chunks_ids:
-                        missing_sample = (c.get("content") or "")[:200] + "..."
-                        break
-
             # 보정 필요성 판단
             has_title = stat["title"] not in ["Untitled", "", None]
+            
             if total_chunks > indexed_count:
                 status = "Missing" if indexed_count == 0 else "Partial"
             elif not has_title:
@@ -88,18 +77,30 @@ class StorageIntegrityService:
             else:
                 status = "In Sync"
 
+            # 샘플 추출 (오직 보정이나 리포트가 필요한 경우에만 추가 정보 조회 고려할 수 있으나 생략 가능)
+            # 여기서는 status != 'In Sync'인 경우에만 나중에 UI에서 상세 조회하도록 유도
+            
             report.append({
-                "id": str(doc_id),
+                "id": doc_id,
                 "title": stat["title"],
                 "url": stat["url"],
                 "total_chunks": total_chunks,
                 "target_chunks": indexed_count,
                 "drift_ratio": (total_chunks - indexed_count) / total_chunks if total_chunks > 0 else 0,
                 "status": status,
-                "missing_sample": missing_sample
+                "missing_sample": "" # UI에서 필요 시 개별 조회
             })
             
         return report
+
+    def get_missing_chunk_sample(self, doc_id: str) -> str:
+        """특정 문서의 누락된 청크 샘플 하나를 가져옵니다."""
+        target_ids = self.target_repo.get_all_chunk_ids()
+        chunks = self.primary_repo.get_chunks(doc_id)
+        for c in chunks:
+            if str(c.id) not in target_ids:
+                return c.content[:300] + "..."
+        return ""
 
     def propagate_document_metadata(self, doc_id: str) -> bool:
         """상위 문서의 제목(Title) 등을 하위 청크들로 전파"""
@@ -108,13 +109,22 @@ class StorageIntegrityService:
             return False
             
         title = doc.metadata.get("title")
-        if not title:
+        if not title or title == "Untitled":
             # URL 기반 Fallback 시도 (나중에 고도화)
-            source = doc.metadata.get("source", "")
+            source = doc.metadata.get("source_url") or doc.metadata.get("source", "")
             if source:
-                title = source.split("/")[-1] or "Untitled"
-                doc.metadata["title"] = title
+                # URL에서 파일명 추출 시도 (trailing slash 처리 및 디코딩)
+                from urllib.parse import unquote
+                path = source.strip("/").split("/")[-1]
+                new_title = unquote(path.split("?")[0]) or "Untitled"
+                
+                # 'Untitled'가 나오면 상위 경로 시도
+                if new_title == "Untitled" and len(source.strip("/").split("/")) > 1:
+                    new_title = source.strip("/").split("/")[-2]
+                
+                doc.metadata["title"] = new_title
                 self.primary_repo.save(doc)
+                title = new_title
             else:
                 return False
                 

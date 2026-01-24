@@ -16,6 +16,9 @@ class IntegrityAdminService:
     def get_document_reports(self):
         return self.service.get_document_drift_report()
 
+    def get_missing_chunk_sample(self, doc_id: str):
+        return self.service.get_missing_chunk_sample(doc_id)
+
     def sync_document(self, doc_id: str):
         return self.service.sync_document(doc_id)
 
