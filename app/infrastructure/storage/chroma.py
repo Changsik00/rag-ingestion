@@ -380,6 +380,23 @@ class ChromaStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to get all chunk IDs from ChromaDB: {e}")
             return set()
+    def get_document_stats(self) -> list[dict]:
+        """ChromaDB의 문서별 통계 (Chroma는 Chunk 중심이므로 기본 정보만 반환)"""
+        try:
+            # Chroma에서 중복되지 않는 parent_id 목록을 가져오는 효율적인 방법이 제한적이므로
+            # 전체 가져온 후 그룹화 (Chroma는 서브 저장소이므로 빈도 낮음)
+            result = self.collection.get(include=["metadatas"])
+            stats_map = {}
+            for meta in result["metadatas"]:
+                pid = meta.get("parent_id")
+                if not pid: continue
+                if pid not in stats_map:
+                    stats_map[pid] = {"id": pid, "title": meta.get("title", "Untitled"), "chunk_count": 0}
+                stats_map[pid]["chunk_count"] += 1
+            return list(stats_map.values())
+        except Exception as e:
+            logger.error(f"Failed to get document stats from ChromaDB: {e}")
+            return []
 
     def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
         """여러 청크 ID에 해당하는 청크들을 한 번에 가져옵니다."""

@@ -40,14 +40,13 @@ def test_get_document_drift_report_groups_by_document(service, mock_primary_repo
     chunk1 = Chunk(id=str(uuid4()), content="c1", parent_id=doc_id, index=0, metadata={"title": "Doc A"})
     chunk2 = Chunk(id=str(uuid4()), content="c2", parent_id=doc_id, index=1, metadata={"title": "Doc A"})
     
-    # Primary has Document A with 2 chunks
-    mock_primary_repo.list_documents.return_value = [
-        MagicMock(id=doc_id, metadata={"title": "Doc A"})
+    # New optimized way: use get_document_stats
+    mock_primary_repo.get_document_stats.return_value = [
+        {"id": doc_id, "title": "Doc A", "url": "http://test.com", "chunk_count": 2}
     ]
+    # And get_chunks still needed for detailed comparison/sample
     mock_primary_repo.get_chunks.return_value = [chunk1, chunk2]
     
-    # All IDs from primary
-    mock_primary_repo.get_all_chunk_ids.return_value = {chunk1.id, chunk2.id}
     # Target only has chunk1
     mock_target_repo.get_all_chunk_ids.return_value = {chunk1.id}
     

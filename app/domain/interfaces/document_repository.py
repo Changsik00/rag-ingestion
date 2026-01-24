@@ -50,3 +50,8 @@ class DocumentRepository(ABC):
     def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
         """Retrieve multiple chunks by their IDs."""
         pass
+
+    @abstractmethod
+    def get_document_stats(self) -> list[dict]:
+        """Retrieve high-level statistics per document."""
+        pass

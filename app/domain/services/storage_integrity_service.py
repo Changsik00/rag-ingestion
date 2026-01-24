@@ -39,29 +39,44 @@ class StorageIntegrityService:
         }
 
     def get_document_drift_report(self) -> List[Dict[str, Any]]:
-        """문서별 인덱싱 현황 리포트 생성"""
-        primary_chunks_ids = self.primary_repo.get_all_chunk_ids()
+        """문서별 인덱싱 현황 리포트 생성 (최적화 버전)"""
+        # 1. 모든 인덱싱된 청크 ID를 한 번에 확보 (Chroma)
         target_chunks_ids = self.target_repo.get_all_chunk_ids()
         
-        docs = self.primary_repo.list_documents(limit=1000)
+        # 2. 문서별 통계 일괄 조회 (Neo4j)
+        # return list of {id, title, url, chunk_count}
+        doc_stats = self.primary_repo.get_document_stats()
         
         report = []
-        for doc in docs:
-            chunks = self.primary_repo.get_chunks(doc.id)
-            total_chunks = len(chunks)
+        for stat in doc_stats:
+            doc_id = stat["id"]
+            total_chunks = stat["chunk_count"]
             if total_chunks == 0:
                 continue
                 
-            indexed_count = sum(1 for c in chunks if str(c.id) in target_chunks_ids)
+            # 해당 문서의 청크 ID들을 가져와서 Chroma에 있는지 비교
+            # (이 부분은 여전히 청크 조회가 필요할 수 있으나, 
+            #  전체 ID 셋을 메모리에 올리면 쿼리 없이 체크 가능)
+            all_chunks_for_doc = self.primary_repo.get_chunks(doc_id)
+            indexed_count = sum(1 for c in all_chunks_for_doc if str(c.id) in target_chunks_ids)
             
+            # 누락된 청크 샘플 추출 (첫 번째 누락된 조각)
+            missing_sample = ""
+            if indexed_count < total_chunks:
+                for c in all_chunks_for_doc:
+                    if str(c.id) not in target_chunks_ids:
+                        missing_sample = c.content[:200] + "..."
+                        break
+
             report.append({
-                "id": str(doc.id),
-                "title": doc.metadata.get("title", "Untitled"),
-                "url": doc.metadata.get("source", ""),
+                "id": str(doc_id),
+                "title": stat["title"],
+                "url": stat["url"],
                 "total_chunks": total_chunks,
                 "target_chunks": indexed_count,
                 "drift_ratio": (total_chunks - indexed_count) / total_chunks if total_chunks > 0 else 0,
-                "status": "In Sync" if total_chunks == indexed_count else ("Missing" if indexed_count == 0 else "Partial")
+                "status": "In Sync" if total_chunks == indexed_count else ("Missing" if indexed_count == 0 else "Partial"),
+                "missing_sample": missing_sample
             })
             
         return report

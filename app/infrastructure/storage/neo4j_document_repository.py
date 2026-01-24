@@ -330,3 +330,38 @@ class Neo4jStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to get chunks by IDs from Neo4j: {e}")
             return []
+    def get_document_stats(self) -> list[dict]:
+        """문서별 기본 통계(ID, 제목, 청크 수)를 한 번의 쿼리로 가져옵니다."""
+        try:
+            # Document와 Chunk를 매칭하여 제목과 청크 수를 집계
+            query = """
+            MATCH (d:Document)
+            OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
+            RETURN d.id as id, 
+                   d.metadata_json as metadata_json,
+                   count(c) as chunk_count
+            ORDER BY d.id
+            """
+            stats = []
+            with self.driver.session() as session:
+                results = session.run(query)
+                for record in results:
+                    # metadata_json 언매핑 (기존 로직 활용)
+                    metadata = {}
+                    meta_json = record.get("metadata_json")
+                    if meta_json:
+                        try:
+                            metadata = json.loads(meta_json)
+                        except (ValueError, TypeError):
+                            pass
+                    
+                    stats.append({
+                        "id": record["id"],
+                        "title": metadata.get("title", "Untitled"),
+                        "url": metadata.get("source", ""),
+                        "chunk_count": record["chunk_count"]
+                    })
+            return stats
+        except Exception as e:
+            logger.error(f"Failed to get document stats from Neo4j: {e}")
+            return []
