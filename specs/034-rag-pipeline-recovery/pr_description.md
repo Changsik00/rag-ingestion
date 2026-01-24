@@ -44,6 +44,14 @@ uv run pytest -v
 2. **방법**: 질문을 한 번 주고받은 뒤, Playground 화면을 새로고침합니다.
 3. **결과**: 이전 대화 내역이 그대로 남아있어야 하며, 디버그UI 우측 상단의 사고 과정(Reasoning Trace)도 복구되어야 합니다.
 
+#### Scenario 4: HITL & Trace Viewer Integration (워크플로우 제어 테스트)
+1. **상황**: 답변 생성 전 인간의 검토가 필요한 복잡한 질문 상황.
+2. **방법**: 사이드바 `Advanced Settings`에서 `Enable HITL Review`를 켜고 질문을 던집니다.
+3. **결과**:
+    - Playground에 **`🚦 Paused`** 상태가 표시되어야 합니다.
+    - `Trace Viewer` 메뉴에서 **`playground-default`** ID로 조회 시 현재까지의 사고 과정이 로그로 출력되어야 합니다.
+    - `Confirm` 버튼 클릭 시 최종 답변이 생성되어야 합니다.
+
 ## 📦 Files Changed
 
 ### 🆕 New Files
