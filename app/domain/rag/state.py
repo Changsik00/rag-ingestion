@@ -69,5 +69,8 @@ class RAGGraphState(TypedDict):
     full_context: str
     """LLM에게 제공할 포맷팅된 컨텍스트 (Citations 포함)"""
 
+    citations: list[dict]
+    """답변에 사용된 출처 정보 (index, source, url, title 등 포함)"""
+
     final_answer: str
     """LLM이 생성한 최종 답변"""
