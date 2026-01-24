@@ -51,6 +51,12 @@
 - [x] PR Description 작성: `specs/034-rag-pipeline-recovery/pr_description.md`
 - [x] Create PR: `gh pr create --title "feat(spec-034): rag pipeline recovery and stability" --body-file specs/034-rag-pipeline-recovery/pr_description.md`
 
+## Task 6: Hotfix - Async Checkpointer
+- [x] `pyproject.toml`: `aiosqlite` 의존성 추가
+- [x] `app/interfaces/api/dependencies.py`: `AsyncSqliteSaver` 도입
+- [x] `app/admin/pages/4_RAG_Playground.py`: async checkpointer 핸들링
+- [x] Verify: RAG Playground 실행 시 에러 해소 확인
+
 ## Summary
-**총 Task**: 5개 대항목 완료
-**검증 결과**: 204개 테스트 통과
+**총 Task**: 6개 대항목 완료
+**검증 결과**: 204개 테스트 통과 (Spec 034 기준)
