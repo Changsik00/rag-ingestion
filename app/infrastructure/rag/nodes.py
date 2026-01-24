@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class RAGNodes:
     """
     RAG Pipeline의 각 Graph Node 비즈니스 로직을 구현하는 클래스.
-    
+
     각 메서드는 LangGraph 노드로 사용되며,
     RAGGraphState를 입력받아 업데이트된 State를 반환합니다.
     """
@@ -58,12 +58,12 @@ class RAGNodes:
     def classify_intent(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 1: Intent Classification + Query Rewriting (Brain Layer)
-        
+
         사용자 질문의 의도를 분석하고, 대화 이력을 반영하여 질문을 재작성합니다.
-        
+
         Args:
             state: RAGGraphState
-            
+
         Returns:
             RAGGraphState with updated user_intent and rewritten_query
         """
@@ -99,13 +99,13 @@ class RAGNodes:
     def route_decision(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 2: Intent → Filters 변환 (Nervous System Layer)
-        
+
         Intent Classifier의 결정을 Repository Filters로 변환하고,
         Manual Filters와 병합합니다 (Manual Filters가 우선).
-        
+
         Args:
             state: RAGGraphState
-            
+
         Returns:
             RAGGraphState with updated auto_filters and final_filters
         """
@@ -134,13 +134,13 @@ class RAGNodes:
     async def retrieve_hybrid(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 3: Hybrid Search (Memory/Body Layer)
-        
+
         Parallel로 Vector, Keyword, Graph 검색을 수행하고 결과를 State에 저장합니다.
         각 리포지토리는 동기식으로 구현되어 있으므로 asyncio.to_thread를 사용하여 병렬로 실행합니다.
-        
+
         Args:
             state: RAGGraphState
-            
+
         Returns:
             RAGGraphState with updated vector_chunks, keyword_chunks, graph_data
         """
@@ -188,12 +188,12 @@ class RAGNodes:
     def generate_answer(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 4: Answer Generation
-        
+
         검색 결과를 포맷팅하고 LLM을 사용하여 최종 답변을 생성합니다.
-        
+
         Args:
             state: RAGGraphState
-            
+
         Returns:
             RAGGraphState with updated full_context and final_answer
         """
@@ -261,10 +261,10 @@ class RAGNodes:
     def _intent_to_filters(self, intent: UserIntent | None) -> dict | None:
         """
         Intent를 Repository Filters로 변환.
-        
+
         Args:
             intent: User Intent 분류 결과
-            
+
         Returns:
             dict: Repository 필터 (source, topic 등)
             None: 필터 불필요 (GENERAL_QUERY)
@@ -305,7 +305,7 @@ class RAGNodes:
         """
         검색 결과를 병합하고 포맷팅하여 LLM에게 제공할 Context를 생성합니다.
         Citations(출처)를 포함하여 Hallucination 방지.
-        
+
         Returns:
             tuple: (포맷팅된 컨텍스트 문자열, 인덱스별 Chunk 매핑 딕셔너리)
         """

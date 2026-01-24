@@ -2,8 +2,8 @@
 RAGGraphState 단위 테스트.
 """
 
-import pytest
 from app.domain.rag.state import RAGGraphState
+
 
 def test_rag_graph_state_has_citations_field():
     """
@@ -29,7 +29,7 @@ def test_rag_graph_state_has_citations_field():
             {"index": 1, "source": "test_source", "url": "http://test.com", "title": "Test Title"}
         ]
     }
-    
+
     # Then: citations 필드에 접근 가능해야 함
     assert len(state["citations"]) == 1
     assert state["citations"][0]["index"] == 1

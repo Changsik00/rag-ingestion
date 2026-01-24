@@ -190,7 +190,7 @@ def test_classify_with_history_includes_context_in_prompt():
     ]
 
     # When
-    result = classifier.classify(query, history)
+    classifier.classify(query, history)
 
     # Then
     llm.generate.assert_called_once()

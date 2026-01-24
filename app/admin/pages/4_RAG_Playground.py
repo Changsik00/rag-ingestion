@@ -32,12 +32,11 @@ def get_core_deps():
     neo4j_graph = Neo4jGraphRepository(driver)
     chroma = ChromaStorage()
     llm = get_llm()
-    
-    from app.domain.services.query_rewriter import QueryRewriter
+
     from app.domain.services.intent_classifier import IntentClassifier
     rewriter = QueryRewriter(llm)
     intent_classifier = IntentClassifier(llm)
-    
+
     return {
         "driver": driver,
         "neo4j_doc": neo4j_doc,
@@ -67,7 +66,7 @@ async def get_active_agent(interrupt_nodes=None):
         intent_classifier=core["intent_classifier"],
         llm=core["llm"],
     )
-    
+
     checkpointer = await get_checkpointer()
     rag_graph_builder = RAGGraphBuilder(rag_nodes)
     rag_graph = rag_graph_builder.build(checkpointer=checkpointer)
@@ -77,10 +76,10 @@ async def get_active_agent(interrupt_nodes=None):
     from app.domain.services.semantic_extractor import SemanticExtractor
     from app.infrastructure.brain.adapter import LangGraphAdapter
     from app.infrastructure.chunker.langchain_chunker import LangChainChunker
+    from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
     from app.infrastructure.storage.composite import CompositeStorage
     from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
     from app.use_cases.ingestion import IngestionService
-    from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
 
     composite_repo = CompositeStorage(core["neo4j_doc"], core["chroma"])
     job_repo = Neo4jJobRepository(core["driver"])
@@ -101,7 +100,7 @@ async def get_active_agent(interrupt_nodes=None):
     admin_agent = AdminAgent(rag_service, ingestion_service)
     # 현재 루프의 체크포인터로 워크플로우 컴파일
     admin_agent.workflow = admin_agent._build_graph(checkpointer=checkpointer, interrupt_before=interrupt_nodes)
-    
+
     return admin_agent
 
 
@@ -267,7 +266,7 @@ with st.sidebar:
         st.subheader("🚦 HITL Control")
         # Display Thread ID for Trace Viewer
         st.info(f"**Thread ID**: `{f'playground-{st.session_state.thread_id_seed}'}`")
-        
+
         if "hitl_enabled" not in st.session_state:
             st.session_state.hitl_enabled = False
 
@@ -311,10 +310,10 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 thread_id = f"playground-{st.session_state.thread_id_seed}"
                 config = {"configurable": {"thread_id": thread_id}}
                 agent = await get_active_agent(interrupt_nodes=interrupt_nodes)
-                
+
                 # 1. 현 상태 먼저 확인 (이미 멈춰있는지)
                 snapshot = await agent.workflow.aget_state(config)
-                
+
                 # 2. 멈춰있지 않은 경우에만 실행 시작
                 if not snapshot.next:
                     inputs = {"messages": history_interactive, "filters": filters, "thread_id": thread_id}
@@ -323,7 +322,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     snapshot = await agent.workflow.aget_state(config)
                 else:
                     final_state = snapshot.values
-                
+
                 return final_state, snapshot
 
             final_state, snapshot = asyncio.run(run_agent_workflow())
@@ -375,12 +374,12 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     title = cite.get("title", "Untitled")
                     url = cite.get("url")
                     source = cite.get("source", "Unknown")
-                    
+
                     if url:
                         st.markdown(f"{index}. [{title}]({url}) - *{source}*")
                     else:
                         st.markdown(f"{index}. {title} - *{source}*")
-                
+
                 st.caption("💡 *Numeric citations [n] refer to specific documents in our knowledge base. Sentences without citations are derived from AI's general knowledge.*")
 
             # 데이터 정리 (Spec 032)

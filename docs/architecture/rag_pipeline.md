@@ -128,20 +128,21 @@ class RAGGraphState(TypedDict):
 
 ---
 
-## 🔬 Advanced Topic: Hybrid Knowledge Strategy (RAG vs LLM Balance)
+## 🏗️ RAG Evolution: From Strict to Hybrid
 
-PR 리뷰 과정에서 도출된 RAG 설계 철학에 대한 중요한 논의 기록입니다.
+Spec 033/034 개발 과정에서 "Strict RAG(제시된 컨텍스트 내에서만 답변)"의 한계가 명확히 드러났습니다. 이에 따라 시스템의 철학을 **Flexible Hybrid Knowledge Strategy**로 확장합니다.
 
-**사용자 제보 및 제안**:
-- "RAG에 정보가 부족하거나 한쪽 정보만 있을 경우, 시스템이 유연하게 LLM의 배경 지식을 섞어서 답변해야 한다. (예: 일론은 DB 정보로, 잡스는 LLM 정보로 비교)"
-- "의존도가 너무 RAG에만 쏠리는 것보다 사용성을 위해 하이브리드로 가야 하지 않을까?"
+### 1. The "Strict RAG" Problem (Spec 033 Findings)
+- **과도한 배타성**: 사용자가 의도한 대상(예: "잡스")이 DB에 있더라도 필터 명칭 불일치로 인해 차단되는 현상 발생.
+- **사용자 경험 저하**: DB에 정보가 부족할 때 LLM이 충분히 답할 수 있는 상식임에도 불구하고 "모른다"고 답변하여 도구로서의 가치가 하락함.
 
-**기술적 합의 및 설계 원칙**:
-- **Transparent Hybrid 패턴 채택**: LLM의 지식을 융합하되, **출처의 투명성**을 유지하는 방향으로 발전시킨다.
-- **구분 답변**: 
-  - DB 근거 정보: `[1] (Source)` 처럼 인덱스를 붙여 팩트 강조. 
-  - LLM 보충 정보: "지식 베이스 외 일반 상식(General Knowledge)"임을 명시하여 신뢰도를 관리함.
-- **Adaptive Augmentation**: 검색된 Context의 질이 검색어(Query)에 비해 현저히 낮을 경우, LLM에게 "문맥을 보강하라"는 지시를 동적으로 추가함.
+### 2. The "Flexible RAG" Strategy (Spec 034+)
+- **Adaptive Retrieval**: 필터 결과가 없을 경우 자동으로 Global Search로 전환 (이미 구현).
+- **Graceful Collaboration**: DB 정보와 LLM 지식을 융합하되, 그 경계를 투명하게 공개.
+
+### 3. Future Vision (Spec 035+)
+- **Citations First**: 답변 내에 `[1]` 등의 인덱스를 사용하여 DB 근거와 LLM 보충 지식을 시각적으로 구분.
+- **Intent-based Balancing**: 질문의 성격에 따라 RAG 의존도(Strictness Level)를 동적으로 조절.
 
 ---
 

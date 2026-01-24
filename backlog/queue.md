@@ -303,12 +303,15 @@
     - **Checkpointer Stability**: `checkpoints.sqlite` 파일 안정화 및 Playground 연동 수정.
   * **Priority**: Critical (Spec 033 후속)
 
-* [ ] **Spec 035: Transparent Hybrid Knowledge Strategy**
-  * [ ] **Goal**: DB 정보(RAG)와 LLM 지식을 융합하되 출처를 명확히 구분하여 답변 품질 향상.
+* [ ] **Spec 035: Transparent Hybrid Knowledge Strategy (RAG Resilience)**
+  * **Documentation**: [`docs/architecture/rag_pipeline.md`](docs/architecture/rag_pipeline.md#rag-evolution-from-strict-to-hybrid)
+  * [ ] **Goal**: "Strict RAG"의 한계를 극복하기 위해 DB 정보와 LLM 지식을 지능적으로 융합하고, 출처(Citation)를 투명하게 제공하여 신뢰도와 사용성을 동시에 확보.
   * [ ] **Features**:
-    - **Hybrid Strategy**: DB 정보와 LLM 지식 융합 전략 구현.
-    - **Citations**: 출처 명시 및 LLM 추가 정보 구분 표시.
-  * **Priority**: High
+    - **Hybrid Reasoning**: DB 검색 결과와 LLM의 내부 지식을 결합한 답변 생성 로직.
+    - **Granular Citations**: 답변 내 인라인 인덱스(`[1]`) 및 하단 주석(Reference) UI 구현.
+    - **Knowledge Source Distinction**: 답변 내에서 "DB 근거"와 "LLM 보충" 정보를 시각적으로 구분하여 사용자에게 알림.
+  * **우선순위**: High (Spec 034 완료 후 즉시 진행)
+  * **Status**: Planning (2026-01-24)
 
 * [ ] **Spec 036: Advanced Scraper (Headless & Complex Layout Support)**
   * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락하는 현상 발생.
