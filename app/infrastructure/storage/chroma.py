@@ -85,22 +85,41 @@ class ChromaStorage(DocumentRepository):
         self.save_chunks(chunks)
 
     def save_chunks(self, chunks: list[Chunk]) -> None:
-        """청크 리스트를 저장합니다 (Embedding은 chunk.content 기준)"""
-        try:
-            ids = [chunk.id for chunk in chunks]
-            documents = [chunk.content for chunk in chunks]
+        """청크 리스트를 저장합니다 (Embedding은 chunk.content 기준)
+        [Spec 037] Gemini API Rate Limit 대응을 위한 재시도 로직 추가
+        """
+        import time
+        import random
 
-            metadatas = []
-            for chunk in chunks:
-                meta = self._flatten_metadata(chunk.metadata)
-                meta["parent_id"] = chunk.parent_id
-                meta["index"] = chunk.index
-                metadatas.append(meta)
+        ids = [str(chunk.id) for chunk in chunks]
+        documents = [chunk.content for chunk in chunks]
 
-            self.collection.add(ids=ids, documents=documents, metadatas=metadatas)
-        except Exception as e:
-            logger.error(f"Failed to save chunks to ChromaDB: {e}")
-            raise InfrastructureException(f"Failed to save chunks to ChromaDB: {e}") from e
+        metadatas = []
+        for chunk in chunks:
+            meta = self._flatten_metadata(chunk.metadata)
+            meta["parent_id"] = str(chunk.parent_id)
+            meta["index"] = chunk.index
+            metadatas.append(meta)
+
+        max_retries = 3
+        base_delay = 2  # seconds
+
+        for attempt in range(max_retries):
+            try:
+                self.collection.add(ids=ids, documents=documents, metadatas=metadatas)
+                return  # Success
+            except Exception as e:
+                # 429 (Rate Limit) 또는 기타 일시적 오류 대응
+                is_rate_limit = "429" in str(e) or "quota" in str(e).lower()
+                
+                if attempt < max_retries - 1 and (is_rate_limit or "retry" in str(e).lower()):
+                    delay = (base_delay ** attempt) + random.uniform(0, 1)
+                    logger.warning(f"ChromaDB save failed (attempt {attempt+1}/{max_retries}). Retrying in {delay:.2f}s... Error: {e}")
+                    time.sleep(delay)
+                    continue
+                
+                logger.error(f"Failed to save chunks to ChromaDB after {max_retries} attempts: {e}")
+                raise InfrastructureException(f"Failed to save chunks to ChromaDB: {e}") from e
 
     def get(self, doc_id: UUID) -> Document | None:
         try:

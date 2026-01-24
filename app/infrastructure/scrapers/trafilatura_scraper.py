@@ -39,9 +39,6 @@ class TrafilaturaWebScraper(ScraperInterface):
                 raise ValueError("Extracted content is empty")
 
             # 3. Extract Metadata
-            # bare_extraction을 먼저 호출하면 메타데이터를 얻을 수 있으나,
-            # extract() 함수 내부적으로도 메타데이터 추출을 수행함.
-            # 여기서는 별도로 extract_metadata 호출
             metadata = trafilatura.extract_metadata(downloaded)
 
             meta_dict = {}
@@ -55,14 +52,24 @@ class TrafilaturaWebScraper(ScraperInterface):
                     "url": metadata.url or url,
                 }
 
+            # [Spec 037] Title Fallback: Meta title이 없으면 URL이나 본문에서 추출
+            if not meta_dict.get("title") or meta_dict["title"].lower() == "none":
+                # URL에서 마지막 부분 추출 (e.g. /Elon_Musk -> Elon Musk)
+                from urllib.parse import urlparse
+                path = urlparse(url).path.strip('/')
+                if path:
+                    fallback_title = path.split('/')[-1].replace('_', ' ').replace('-', ' ').title()
+                    meta_dict["title"] = fallback_title
+                else:
+                    meta_dict["title"] = "Untitled Document"
+
+            # [Spec 037] Context Cleaning: 지저분한 위키피디아 navbox나 빈 표 제거
+            # Trafilatura가 가끔 추출하는 불필요한 마바크다운 패턴 정제
+            markdown_content = re.sub(r'\|\s*\|\s*\|\n\| --- \| --- \| --- \|\n\| \| \| \|', '', markdown_content) # 빈 표 제거
+            markdown_content = re.sub(r'\[\s*\]\(\s*\)', '', markdown_content) # 빈 링크 제거
+
             return IngestResponse(url=url, markdown=markdown_content, metadata=meta_dict)
 
         except Exception as e:
             logger.error(f"Trafilatura scraping failed: {e}")
-            # Fallback Strategy:
-            # 원칙적으로 실패 시 에러를 던져서 상위에서 재시도하게 하거나,
-            # 여기서 BasicScraper로 전환할 수 있음.
-            # 현재 Spec에서는 'Fallback'을 요구했으므로, 예외를 그대로 던지는 대신
-            # 호출부에서 처리하도록 하거나, 여기서 단순 텍스트라도 반환해야 함.
-            # 일단은 상위층에 전파하여 처리하도록 함 (구현 단순화)
             raise e

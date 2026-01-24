@@ -47,11 +47,11 @@ async def provide_ingestion_service() -> IngestionService:
 
 
 async def provide_rag_service() -> RAGService:
+    from app.domain.services.intent_classifier import IntentClassifier
     from app.infrastructure.rag.graph import RAGGraphBuilder
     from app.infrastructure.rag.nodes import RAGNodes
-    from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
     from app.infrastructure.storage.chroma import ChromaStorage
-    from app.domain.services.intent_classifier import IntentClassifier
+    from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 
     driver = get_neo4j_driver()
     neo4j_doc_repo = Neo4jStorage(driver)

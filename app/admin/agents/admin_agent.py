@@ -63,13 +63,13 @@ class AdminAgent:
         prompt = ChatPromptTemplate.from_template(
             """
             Analyze the user's input and determine the intent.
-            
+
             Options:
             - 'ingest': The user wants to read, learn, scrape, or ingest a URL. (e.g. "Read this link", "Ingest https://...")
             - 'search': The user is asking a question or chatting. (e.g. "What is RAG?", "Summarize the doc")
-            
+
             Input: {input}
-            
+
             Return ONLY 'ingest' or 'search'.
             """
         )

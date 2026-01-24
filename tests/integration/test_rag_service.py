@@ -12,10 +12,10 @@ from app.domain.services.rag_service import RAGService
 async def test_rag_service_orchestration():
     """
     Scenario: Verify RAGService orchestration flow with LangGraph.
-    
+
     Spec 033: RAGService가 Graph 기반으로 리팩토링되어,
     Graph가 반환한 State를 RAGResult로 변환하는지 검증합니다.
-    
+
     Given: Mock Graph가 완전한 RAGGraphState를 반환
     When: RAGService.retrieve_and_generate() 호출
     Then: State가 RAGResult로 올바르게 변환됨

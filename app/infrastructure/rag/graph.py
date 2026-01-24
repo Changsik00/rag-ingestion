@@ -19,7 +19,7 @@ from app.infrastructure.rag.nodes import RAGNodes
 class RAGGraphBuilder:
     """
     RAG Pipeline의 StateGraph를 구성하고 컴파일하는 빌더 클래스.
-    
+
     4-Node Linear Pipeline을 구성합니다:
     1. classify_intent: Intent Classification + Query Rewriting
     2. route_decision: Intent → Filters 변환
@@ -37,11 +37,11 @@ class RAGGraphBuilder:
     def build(self, checkpointer: Any = None, interrupt_before: list[str] | None = None) -> CompiledStateGraph:
         """
         RAG Workflow 그래프를 생성하고 컴파일하여 반환합니다.
-        
+
         Args:
             checkpointer: LangGraph Checkpointer (SqliteSaver 등). Defaults to None.
             interrupt_before: 특정 노드 실행 전에 중단할 지점 목록 (HITL용)
-            
+
         Returns:
             CompiledStateGraph: 실행 가능한 RAG Graph
         """

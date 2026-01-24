@@ -303,18 +303,33 @@
     - **Checkpointer Stability**: `checkpoints.sqlite` 파일 안정화 및 Playground 연동 수정.
   * **Priority**: Critical (Spec 033 후속)
 
-* [ ] **Spec 035: Transparent Hybrid Knowledge Strategy**
-  * [ ] **Goal**: DB 정보(RAG)와 LLM 지식을 융합하되 출처를 명확히 구분하여 답변 품질 향상.
+* [ ] **Spec 035: Transparent Hybrid Knowledge Strategy (RAG Resilience)**
+  * **Documentation**: [`docs/architecture/rag_pipeline.md`](docs/architecture/rag_pipeline.md#rag-evolution-from-strict-to-hybrid)
+  * [ ] **Goal**: "Strict RAG"의 한계를 극복하기 위해 DB 정보와 LLM 지식을 지능적으로 융합하고, 출처(Citation)를 투명하게 제공하여 신뢰도와 사용성을 동시에 확보.
   * [ ] **Features**:
-    - **Hybrid Strategy**: DB 정보와 LLM 지식 융합 전략 구현.
-    - **Citations**: 출처 명시 및 LLM 추가 정보 구분 표시.
-  * **Priority**: High
+    - **Hybrid Reasoning**: DB 검색 결과와 LLM의 내부 지식을 결합한 답변 생성 로직.
+    - **Granular Citations**: 답변 내 인라인 인덱스(`[1]`) 및 하단 주석(Reference) UI 구현.
+    - **Knowledge Source Distinction**: 답변 내에서 "DB 근거"와 "LLM 보충" 정보를 시각적으로 구분하여 사용자에게 알림.
+  * **우선순위**: High (Spec 034 완료 후 즉시 진행)
+  * **Status**: Planning (2026-01-24)
 
 * [ ] **Spec 036: Advanced Scraper (Headless & Complex Layout Support)**
   * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락하는 현상 발생.
   * [ ] **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
   * [ ] **Target**: 나무위키(복잡한 레이아웃), 네이버 뉴스(동적 요소) 등 완벽 지원.
   * **우선순위**: High (User Feedback) - Spec 034 이후 진행
+
+* [ ] **Spec 037: RAG Quality Stabilization & Data Integrity Sync**
+  * [ ] **Problem**: 
+    - **ChromaDB Drift**: Neo4j와 ChromaDB 간의 데이터 개수 불일치 (1401 vs 93).
+    - **Metadata Loss**: 수집된 문서 중 제목(Title)이 누락된 경우가 많아 검색 품질 저하.
+    - **Context Noise**: 위키피디아 등 복잡한 레이아웃의 마크다운 태그가 LLM의 추론 방해.
+  * [ ] **Goal**: 
+    - **Data Synchronization**: Neo4j의 누락된 청크를 ChromaDB로 재인덱싱하는 동기화 도구 구현.
+    - **Metadata Enrichment**: URL 및 본문 기반 제목 자동 추출 로직 강화.
+    - **Context Cleaning**: LLM 전달 전 불필요한 마크다운 요소(네비게이션, 표 등) 정제.
+  * **우선순위**: Urgent (Spec 035의 실질적 성능 보장)
+  * **Design Guide**: [`docs/design_guides/007-rag-data-integrity.md`](docs/design_guides/007-rag-data-integrity.md)
 
 ---
 

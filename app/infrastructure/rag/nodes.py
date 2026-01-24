@@ -10,6 +10,7 @@ Design Guide 005: 3-Layer Architecture (Brain → Nervous System → Body)
 
 import asyncio
 import logging
+import re
 from typing import Any
 
 from app.domain.entities.chunk import Chunk
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 class RAGNodes:
     """
     RAG Pipeline의 각 Graph Node 비즈니스 로직을 구현하는 클래스.
-    
+
     각 메서드는 LangGraph 노드로 사용되며,
     RAGGraphState를 입력받아 업데이트된 State를 반환합니다.
     """
@@ -57,12 +58,12 @@ class RAGNodes:
     def classify_intent(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 1: Intent Classification + Query Rewriting (Brain Layer)
-        
+
         사용자 질문의 의도를 분석하고, 대화 이력을 반영하여 질문을 재작성합니다.
-        
+
         Args:
             state: RAGGraphState
-            
+
         Returns:
             RAGGraphState with updated user_intent and rewritten_query
         """
@@ -98,13 +99,13 @@ class RAGNodes:
     def route_decision(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 2: Intent → Filters 변환 (Nervous System Layer)
-        
+
         Intent Classifier의 결정을 Repository Filters로 변환하고,
         Manual Filters와 병합합니다 (Manual Filters가 우선).
-        
+
         Args:
             state: RAGGraphState
-            
+
         Returns:
             RAGGraphState with updated auto_filters and final_filters
         """
@@ -133,13 +134,13 @@ class RAGNodes:
     async def retrieve_hybrid(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 3: Hybrid Search (Memory/Body Layer)
-        
+
         Parallel로 Vector, Keyword, Graph 검색을 수행하고 결과를 State에 저장합니다.
         각 리포지토리는 동기식으로 구현되어 있으므로 asyncio.to_thread를 사용하여 병렬로 실행합니다.
-        
+
         Args:
             state: RAGGraphState
-            
+
         Returns:
             RAGGraphState with updated vector_chunks, keyword_chunks, graph_data
         """
@@ -187,12 +188,12 @@ class RAGNodes:
     def generate_answer(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 4: Answer Generation
-        
+
         검색 결과를 포맷팅하고 LLM을 사용하여 최종 답변을 생성합니다.
-        
+
         Args:
             state: RAGGraphState
-            
+
         Returns:
             RAGGraphState with updated full_context and final_answer
         """
@@ -203,19 +204,25 @@ class RAGNodes:
         graph_data = state.get("graph_data", [])
 
         # Format Context
-        context_str = self._merge_and_format_context(vector_chunks, keyword_chunks, graph_data)
+        context_str, mapped_chunks = self._merge_and_format_context(vector_chunks, keyword_chunks, graph_data)
 
-        # Generate Answer
+        # Store mapped chunks in state temporarily for citation parsing if needed
+        # (Though we'll likely handle it within this node)
+
+        # [Spec 035] Hybrid Knowledge PromptING
+        # "Sparse but Powerful" Strategy
         prompt = (
-            "You are a professional AI assistant. Answer the question based strictly on the provided Context.\n"
-            "CRITICAL RULES:\n"
-            "1. If the provided context is empty or does not contain sufficient information to answer the question, "
-            "explicitly state that you do not have enough information in your knowledge base to answer definitively.\n"
-            "2. Do NOT use your internal knowledge to supplement the answer if it's not supported by the context.\n"
-            "3. If multiple documents are provided, cite them correctly using [Source ID].\n\n"
+            "You are a professional AI assistant. Answer the question by combining the provided Context (DB) and your internal knowledge.\n\n"
+            "KNOWLEDGE MIXING RULES:\n"
+            "1. CONTEXT IS ABSOLUTE: If the provided Context contains information, it MUST be prioritized as the source of truth.\n"
+            "2. CITATION REQUIREMENT: For every sentence or fact derived from the Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
+            "3. LLM KNOWLEDGE SUPPLEMENT: If the Context is missing information or is sparse, use your own internal knowledge to provide a complete and helpful answer.\n"
+            "4. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n"
+            "5. SEAMLESS FUSION: Mix both sources into a natural, coherent response. If no relevant info exists in DB at all, state this clearly before answering with your general knowledge.\n\n"
             f"Question: {query}\n"
-            f"(Rewritten Query): {rewritten_query}\n\n"
-            f"Context:\n{context_str}\n\n"
+            f"(Rewritten Query for Search): {rewritten_query}\n\n"
+            "=== Provided Context (DB) ===\n"
+            f"{context_str}\n\n"
             "Answer:"
         )
 
@@ -226,8 +233,25 @@ class RAGNodes:
         else:
             answer_text = str(response)
 
+        # [Spec 035] Citation Parsing
+        # Answer 내의 [n] 패턴을 찾아 실제 메타데이터와 매칭
+        indices = [int(idx_str) for idx_str in re.findall(r"\[(\d+)\]", answer_text)]
+        citations = []
+        seen_indices = set()
+        for idx in indices:
+            if idx in mapped_chunks and idx not in seen_indices:
+                chunk = mapped_chunks[idx]
+                citations.append({
+                    "index": idx,
+                    "source": chunk.metadata.get("source", "Unknown"),
+                    "title": chunk.metadata.get("title", "Untitled"),
+                    "url": chunk.metadata.get("url") or chunk.metadata.get("source_url")
+                })
+                seen_indices.add(idx)
+
         # Update State
         state["full_context"] = context_str
+        state["citations"] = citations
         state["final_answer"] = answer_text
 
         return state
@@ -237,10 +261,10 @@ class RAGNodes:
     def _intent_to_filters(self, intent: UserIntent | None) -> dict | None:
         """
         Intent를 Repository Filters로 변환.
-        
+
         Args:
             intent: User Intent 분류 결과
-            
+
         Returns:
             dict: Repository 필터 (source, topic 등)
             None: 필터 불필요 (GENERAL_QUERY)
@@ -277,10 +301,13 @@ class RAGNodes:
 
     def _merge_and_format_context(
         self, vector_chunks: list[Chunk], keyword_chunks: list[Chunk], graph_data: list[dict]
-    ) -> str:
+    ) -> tuple[str, dict[int, Chunk]]:
         """
         검색 결과를 병합하고 포맷팅하여 LLM에게 제공할 Context를 생성합니다.
         Citations(출처)를 포함하여 Hallucination 방지.
+
+        Returns:
+            tuple: (포맷팅된 컨텍스트 문자열, 인덱스별 Chunk 매핑 딕셔너리)
         """
         combined = []
         seen_ids = set()
@@ -296,12 +323,14 @@ class RAGNodes:
 
         # Format Text Context
         formatted_chunks = []
+        mapped_chunks = {}
         for i, chunk in enumerate(combined, 1):
             source = chunk.metadata.get("source", "Unknown")
             title = chunk.metadata.get("title", "Untitled")
-            formatted_chunks.append(f"[{i}] Source: {source} ({title})\\n{chunk.content}")
+            formatted_chunks.append(f"[{i}] Source: {source} ({title})\n{chunk.content}")
+            mapped_chunks[i] = chunk
 
-        text_context = "\\n\\n".join(formatted_chunks)
+        text_context = "\n\n".join(formatted_chunks)
 
         # Format Graph Context
         graph_lines = []
@@ -313,6 +342,6 @@ class RAGNodes:
                 tgt = item.get("target")
                 graph_lines.append(f"- ({src}) -[{rel}]-> ({tgt})")
 
-        graph_context = "\\n".join(graph_lines)
+        graph_context = "\n".join(graph_lines)
 
-        return f"{graph_context}\\n\\nDocument Context:\\n{text_context}"
+        return f"{graph_context}\n\nDocument Context:\n{text_context}", mapped_chunks

@@ -10,6 +10,7 @@ import logging
 from dataclasses import dataclass
 
 from langgraph.graph.state import CompiledStateGraph
+from pydantic import Field
 
 from app.domain.entities.chunk import Chunk
 from app.domain.schemas.intent import UserIntent
@@ -27,13 +28,14 @@ class RAGResult:
     keyword_chunks: list[Chunk]
     graph_data: list[dict]
     full_context: str
+    citations: list[dict] = Field(default_factory=list)
     user_intent: UserIntent | None = None
 
 
 class RAGService:
     """
     LangGraph 기반 RAG Orchestrator.
-    
+
     Spec 033에서 기존 함수 기반 로직을 Graph 기반으로 전환했습니다.
     모든 비즈니스 로직은 RAGNodes로 분리되었고,
     이 서비스는 Graph를 실행하고 결과를 변환하는 역할만 합니다.
@@ -55,13 +57,13 @@ class RAGService:
     ) -> RAGResult:
         """
         RAG Pipeline 실행: Intent → Rewrite → Hybrid Search → Generate.
-        
+
         Args:
             query: 사용자 질문
             history: 대화 이력
             filters: 수동 필터 (Optional)
             thread_id: Checkpointer Thread ID (Optional)
-            
+
         Returns:
             RAGResult: 최종 답변 및 중간 결과
         """
@@ -94,10 +96,10 @@ class RAGService:
     def _state_to_result(self, state: dict) -> RAGResult:
         """
         RAGGraphState를 RAGResult로 변환.
-        
+
         Args:
             state: Graph 실행 후 최종 State
-            
+
         Returns:
             RAGResult: API Response 형식
         """
@@ -108,5 +110,6 @@ class RAGService:
             keyword_chunks=state.get("keyword_chunks", []),
             graph_data=state.get("graph_data", []),
             full_context=state.get("full_context", ""),
+            citations=state.get("citations", []),
             user_intent=state.get("user_intent")
         )

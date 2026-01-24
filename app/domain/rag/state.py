@@ -18,7 +18,7 @@ class RAGGraphState(TypedDict):
     """
     RAG Pipeline의 전체 상태를 관리하는 TypedDict.
     모든 Graph Node는 이 상태를 공유하고 필요한 필드를 업데이트합니다.
-    
+
     Spec 033: LangGraph State Management
     - Intent Classifier의 결정을 State에 명시적으로 저장
     - 의사결정 과정을 추적 가능하게 함
@@ -68,6 +68,9 @@ class RAGGraphState(TypedDict):
 
     full_context: str
     """LLM에게 제공할 포맷팅된 컨텍스트 (Citations 포함)"""
+
+    citations: list[dict]
+    """답변에 사용된 출처 정보 (index, source, url, title 등 포함)"""
 
     final_answer: str
     """LLM이 생성한 최종 답변"""

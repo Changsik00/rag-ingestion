@@ -89,7 +89,7 @@ class TestQueryRewriteFlow:
         Chat History:
         User: Tell me about Elon Musk.
         Assistant: He is the CEO of Tesla.
-        
+
         Follow Up Input: {query}
         Standalone Question:
         """
