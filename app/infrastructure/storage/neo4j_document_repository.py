@@ -279,3 +279,54 @@ class Neo4jStorage(DocumentRepository):
             logger.error(f"Neo4j search failed: {e}")
             logger.warning(f"Neo4j Search Error: {e}")
             return []
+    def get_all_chunk_ids(self) -> set[str]:
+        """Neo4j의 모든 청크 ID를 가져옵니다."""
+        try:
+            query = "MATCH (c:Chunk) RETURN c.id as id"
+            with self.driver.session() as session:
+                result = session.run(query)
+                return {record["id"] for record in result}
+        except Exception as e:
+            logger.error(f"Failed to get all chunk IDs from Neo4j: {e}")
+            return set()
+
+    def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
+        """여러 청크 ID에 해당하는 청크들을 한 번에 가져옵니다."""
+        try:
+            query = """
+            MATCH (c:Chunk)
+            WHERE c.id IN $ids
+            RETURN c
+            """
+            chunks = []
+            with self.driver.session() as session:
+                results = session.run(query, ids=chunk_ids)
+                for record in results:
+                    node = record["c"]
+                    # Unflatten metadata
+                    metadata = {}
+                    for k, v in node.items():
+                        if k in ["id", "content", "index", "parent_id"]:
+                            continue
+                        if k.endswith("_json"):
+                            try:
+                                clean_key = k[:-5]
+                                metadata[clean_key] = json.loads(v)
+                            except (ValueError, TypeError):
+                                metadata[k] = v
+                        else:
+                            metadata[k] = v
+
+                    chunks.append(
+                        Chunk(
+                            id=node["id"],
+                            content=node.get("content", ""),
+                            parent_id=node.get("parent_id"),
+                            index=node.get("index", 0),
+                            metadata=metadata,
+                        )
+                    )
+            return chunks
+        except Exception as e:
+            logger.error(f"Failed to get chunks by IDs from Neo4j: {e}")
+            return []

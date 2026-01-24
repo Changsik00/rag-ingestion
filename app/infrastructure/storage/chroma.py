@@ -371,3 +371,36 @@ class ChromaStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"MMR search logic failed: {e}")
             return self.search(query, limit, filters=filters)
+    def get_all_chunk_ids(self) -> set[str]:
+        """ChromaDB의 모든 청크 ID를 가져옵니다."""
+        try:
+            # include=[] means only IDs are returned, which is efficient
+            result = self.collection.get(include=[])
+            return set(result["ids"])
+        except Exception as e:
+            logger.error(f"Failed to get all chunk IDs from ChromaDB: {e}")
+            return set()
+
+    def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
+        """여러 청크 ID에 해당하는 청크들을 한 번에 가져옵니다."""
+        try:
+            result = self.collection.get(ids=chunk_ids)
+            chunks = []
+            if result and result["ids"]:
+                for i in range(len(result["ids"])):
+                    chunk_id = result["ids"][i]
+                    content = result["documents"][i]
+                    metadata = result["metadatas"][i]
+                    chunks.append(
+                        Chunk(
+                            id=chunk_id,
+                            content=content,
+                            metadata=metadata,
+                            parent_id=metadata.get("parent_id"),
+                            index=int(metadata.get("index", 0)),
+                        )
+                    )
+            return chunks
+        except Exception as e:
+            logger.error(f"Failed to get chunks by IDs from ChromaDB: {e}")
+            return []

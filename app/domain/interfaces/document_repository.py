@@ -40,3 +40,13 @@ class DocumentRepository(ABC):
         :param filters: Metadata filters (e.g., {"doc_id": "..."} or {"doc_id": ["...", ...]}).
         """
         pass
+
+    @abstractmethod
+    def get_all_chunk_ids(self) -> set[str]:
+        """Retrieve all chunk IDs in the storage."""
+        pass
+
+    @abstractmethod
+    def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
+        """Retrieve multiple chunks by their IDs."""
+        pass
