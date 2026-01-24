@@ -186,6 +186,13 @@ def render_debug_ui(message):
             st.divider()
             st.warning("🔄 **Fallback Triggered**: Strict filters returned no results. Global search was performed.")
 
+        # [Spec 035] Citation Metadata Debug
+        citations = debug.get("citations", [])
+        if citations:
+            st.divider()
+            st.markdown("**📌 Citation Metadata**")
+            st.json(citations)
+
 
 feedback_service = get_feedback_service()
 
@@ -357,6 +364,24 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 
             # Display Answer
             st.markdown(answer)
+
+            # [Spec 035] References Section
+            citations = context_data.get("citations", [])
+            if citations:
+                st.divider()
+                st.markdown("#### 📚 References")
+                for cite in citations:
+                    index = cite.get("index")
+                    title = cite.get("title", "Untitled")
+                    url = cite.get("url")
+                    source = cite.get("source", "Unknown")
+                    
+                    if url:
+                        st.markdown(f"{index}. [{title}]({url}) - *{source}*")
+                    else:
+                        st.markdown(f"{index}. {title} - *{source}*")
+                
+                st.caption("💡 *Numeric citations [n] refer to specific documents in our knowledge base. Sentences without citations are derived from AI's general knowledge.*")
 
             # 데이터 정리 (Spec 032)
             debug_intent = None
