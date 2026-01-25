@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_agraph import Config, Edge, Node, agraph
+
 from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="Graph Explorer", page_icon="🕸️", layout="wide")
@@ -40,11 +41,11 @@ with col1:
         schema = api_client.get("/graph/schema") or {"labels": [], "relationship_types": []}
         labels = ["All"] + schema["labels"]
         rels = ["All"] + schema["relationship_types"]
-        
+
         entity_type = st.selectbox("Entity Type", labels)
         relation_type = st.selectbox("Relation Type", rels)
         limit = st.slider("Limit", 10, 100, 25)
-        
+
         if st.button("Build Query"):
             # Simple build logic (Moved to backend if complex, but kept simple here for now)
             if entity_type == "All":
@@ -74,7 +75,7 @@ with col2:
         try:
             with st.spinner("Fetching Graph Data..."):
                 res = api_client.post("/graph/query", json={"query": cypher_input})
-                
+
                 if res:
                     node_data = res.get("nodes", [])
                     edge_data = res.get("edges", [])

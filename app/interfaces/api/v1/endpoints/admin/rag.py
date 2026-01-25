@@ -1,11 +1,11 @@
 from typing import Annotated, Any
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from app.interfaces.api.dependencies import (
-    get_admin_agent, get_repository, get_checkpointer, get_feedback_service
-)
-from app.domain.services.admin_agent import AdminAgent
+
 from app.domain.interfaces.document_repository import DocumentRepository
+from app.domain.services.admin_agent import AdminAgent
 from app.domain.services.feedback_service import FeedbackService
+from app.interfaces.api.dependencies import get_admin_agent, get_checkpointer, get_feedback_service, get_repository
 
 router = APIRouter()
 
@@ -31,30 +31,30 @@ async def ask_agent(
     """Admin Agent에게 질문을 던지고 결과를 반환 (HITL 지원 가능)"""
     message = payload.get("message")
     filters = payload.get("filters")
-    
+
     if not message:
         raise HTTPException(status_code=400, detail="Message is required")
-    
+
     try:
         # LangGraph Workflow 실행
         config = {"configurable": {"thread_id": id}}
         workflow = agent.build_workflow(checkpointer=checkpointer)
-        
+
         # input state 구성
         input_state = {
             "messages": [{"role": "user", "content": message}],
             "filters": filters,
             "thread_id": id
         }
-        
+
         # 마지막 노드 결과 반환
         result = await workflow.ainvoke(input_state, config=config)
-        
+
         # AIMessage 객체를 직렬화 가능한 형식으로 변환
         output_messages = []
         for msg in result.get("messages", []):
             output_messages.append({"role": msg.type, "content": msg.content})
-            
+
         return {
             "messages": output_messages,
             "context_data": result.get("context_data"),
@@ -76,13 +76,13 @@ async def get_session_trace(
         state = await checkpointer.aget(config)
         if not state:
             return {"messages": [], "values": {}}
-        
+
         # AIMessage 등을 직렬화
         values = state.values
         messages = []
         for m in values.get("messages", []):
             messages.append({"role": m.type, "content": m.content})
-            
+
         return {
             "messages": messages,
             "values": {k: v for k, v in values.items() if k != "messages"}
@@ -111,20 +111,17 @@ async def resume_session(
     user_input = payload.get("input")
     if user_input is None:
         raise HTTPException(status_code=400, detail="Input is required")
-    
+
     try:
-        config = {"configurable": {"thread_id": id}}
-        workflow = agent.build_workflow(checkpointer=checkpointer)
-        
         # Resume (State update or command)
         # LangGraph 0.2+ style: workflow.ainvoke(None, config) to resume from interrupt
         # or workflow.aupdate_state then ainvoke.
         # 기존 adapter의 resume 로직 참고
-        from app.infrastructure.brain.adapter import LangGraphAdapter
         from app.core.llm import get_llm
+        from app.infrastructure.brain.adapter import LangGraphAdapter
         adapter = LangGraphAdapter(llm=get_llm(), checkpointer=checkpointer)
         result = await adapter.resume(id, user_input)
-        
+
         return {"status": "Resumed", "result": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -149,8 +146,8 @@ async def list_threads(
 ):
     """활성 스레드 목록 조회"""
     try:
-        from app.infrastructure.brain.adapter import LangGraphAdapter
         from app.core.llm import get_llm
+        from app.infrastructure.brain.adapter import LangGraphAdapter
         adapter = LangGraphAdapter(llm=get_llm(), checkpointer=checkpointer)
         threads = await adapter.list_threads(limit=50)
         return [

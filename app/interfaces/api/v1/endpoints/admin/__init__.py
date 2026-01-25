@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from app.interfaces.api.v1.endpoints.admin import storage, rag, jobs, graph
+
+from app.interfaces.api.v1.endpoints.admin import graph, jobs, rag, storage
 
 router = APIRouter()
 

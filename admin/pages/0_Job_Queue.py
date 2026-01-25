@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+
 from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="Job Queue", page_icon="📋", layout="wide")

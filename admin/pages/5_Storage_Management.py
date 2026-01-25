@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+
 from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="Storage Management", page_icon="📊", layout="wide")
@@ -14,12 +15,12 @@ try:
     stats = api_client.get("/storage/stats")
     if stats:
         missing_count = stats["missing_count"]
-        
+
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Neo4j Chunks (Source)", stats["total_primary"])
         col2.metric("Chroma Chunks (Index)", stats["total_target"])
         col3.metric("Missing (Drift)", missing_count, delta=-missing_count if missing_count > 0 else 0, delta_color="inverse")
-        
+
         drift_pct = stats["drift_ratio"] * 100
         col4.metric("Integrity Score", f"{100 - drift_pct:.1f}%")
 
@@ -44,17 +45,17 @@ def render_doc_table():
     try:
         with st.spinner("Analyzing document drift..."):
             reports = api_client.get("/storage/reports")
-        
+
         if not reports:
             st.info("No documents found in storage.")
             return
 
         df = pd.DataFrame(reports)
-        
+
         # Search & Filter
         search = st.text_input("🔍 Search Document Title", key="doc_search_v2")
         show_mismatches_only = st.checkbox("Show Mismatches Only", value=True)
-        
+
         if search:
             df = df[df["title"].str.contains(search, case=False)]
         if show_mismatches_only:
@@ -62,7 +63,7 @@ def render_doc_table():
 
         # Display Table
         st.dataframe(
-            df[["status", "title", "total_chunks", "target_chunks", "drift_ratio", "id"]], 
+            df[["status", "title", "total_chunks", "target_chunks", "drift_ratio", "id"]],
             hide_index=True,
             column_config={
                 "status": st.column_config.TextColumn("Status"),
@@ -79,26 +80,26 @@ def render_doc_table():
         if not df.empty:
             st.write("---")
             st.markdown("### 📄 Missing Content Preview")
-            
+
             # ID와 제목을 조합하여 유니크한 옵션 생성
             df["display_name"] = df["title"] + " (" + df["id"].str[:8] + "...)"
             display_to_id = dict(zip(df["display_name"], df["id"]))
-            
+
             selected_display = st.selectbox(
-                "Select document to preview missing parts", 
+                "Select document to preview missing parts",
                 options=df["display_name"].tolist()
             )
-            
+
             if selected_display:
                 doc_id = display_to_id[selected_display]
                 row = df[df["id"] == doc_id].iloc[0]
-                
+
                 # 상세 정보 표시
                 tab1, tab2, tab3 = st.tabs(["💡 Diagnostic", "🔍 RAG Context Preview", "🧬 Graph Enrichment"])
-                
+
                 with tab1:
                     if row["status"] == "Missing Title":
-                        st.warning(f"**Document has no title.**")
+                        st.warning("**Document has no title.**")
                         st.info(f"**Source URL:** {row.get('url', 'N/A')}")
                         st.caption("Fix 버튼을 누르면 위 URL을 기반으로 제목을 추출하고 하위 청크에 전파합니다.")
                     elif row["status"] != "In Sync":
@@ -127,10 +128,10 @@ def render_doc_table():
                                 st.success(f"Successfully enriched: {res['entities']} entities, {res['rels']} relationships.")
                             elif res:
                                 st.error(f"Enrichment failed: {res.get('error')}")
-                
+
                 st.divider()
                 if row["status"] != "In Sync":
-                    if st.button(f"🛠 Fix Selected Document Metadata & Sync", key=f"fix_btn_{doc_id}"):
+                    if st.button("🛠 Fix Selected Document Metadata & Sync", key=f"fix_btn_{doc_id}"):
                         with st.spinner("Repairing..."):
                             res = api_client.post(f"/storage/documents/{doc_id}/sync")
                             if res and res.get("success"):
@@ -152,7 +153,7 @@ try:
     if reports:
         mismatch_docs = [r for r in reports if r["status"] != "In Sync"]
         needs_sync = len(mismatch_docs) > 0
-        
+
         button_type = "primary" if needs_sync else "secondary"
         button_label = f"🚀 Run Global Sync (Fix {len(mismatch_docs)} Issues)" if needs_sync else "✅ Storage is Healthy"
 

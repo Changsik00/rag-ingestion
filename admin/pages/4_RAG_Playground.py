@@ -1,4 +1,5 @@
 import streamlit as st
+
 from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="RAG Playground", page_icon="🎮", layout="wide")
@@ -109,7 +110,7 @@ with st.sidebar:
             else:
                 # Default list if no search term (or empty list)
                 docs = []
-            
+
             doc_options = {d["id"]: d["title"] for d in docs}
             selected_doc_ids = st.multiselect(
                 "Select Documents",
@@ -160,29 +161,29 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
         try:
             thread_id = f"playground-{st.session_state.thread_id_seed}"
             filters = {"doc_id": selected_doc_ids} if selected_doc_ids else None
-            
+
             # API Call
             payload = {
                 "message": prompt,
                 "filters": filters
             }
-            
+
             res = api_client.post(f"/rag/sessions/{thread_id}/ask", json=payload)
-            
+
             if res:
-                # Check for HITL pause (This depends on how the backend returns 
+                # Check for HITL pause (This depends on how the backend returns
                 # HITL state. For now assuming typical response or handling logic)
-                # If we want to support HITL in thin client, the API shouldn't block 
+                # If we want to support HITL in thin client, the API shouldn't block
                 # but return a "waiting" status.
-                
+
                 answer = "No response generated."
                 if res.get("messages"):
                     # Last AI message
                     answer = next((m["content"] for m in reversed(res["messages"]) if m["role"] == "ai"), answer)
-                
+
                 context_data = res.get("context_data", {})
                 intent = res.get("intent", "search")
-                
+
                 status_container.write(f"🎯 Intent: **{intent.upper()}**")
                 status_container.update(label="RAG Search Completed", state="complete", expanded=False)
 
@@ -219,7 +220,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 st.rerun()
             else:
                 st.error("API failed to provide a response.")
-                
+
         except Exception as e:
             st.error(f"Error: {e}")
             st.session_state.messages.append({"role": "assistant", "content": f"Error: {e}"})

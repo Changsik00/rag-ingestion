@@ -1,22 +1,22 @@
-from typing import Annotated, Any
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from app.domain.interfaces.job_repository import JobRepository
-from app.interfaces.api.dependencies import get_job_repository, get_ingestion_service
-from app.use_cases.ingestion import IngestionService
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+
 from app.domain.entities.job import IngestionJob
+from app.domain.interfaces.job_repository import JobRepository
+from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository
+from app.use_cases.ingestion import IngestionService
 
 router = APIRouter()
 
 @router.get("", response_model=list[IngestionJob])
 async def list_jobs(
-    limit: int = 50, 
+    limit: int = 50,
     repo: JobRepository = Depends(get_job_repository)
 ):
     return repo.list_jobs(limit=limit)
 
 @router.get("/{job_id}", response_model=IngestionJob)
 async def get_job(
-    job_id: str, 
+    job_id: str,
     repo: JobRepository = Depends(get_job_repository)
 ):
     job = repo.get_job(job_id)

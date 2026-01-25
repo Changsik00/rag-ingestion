@@ -1,4 +1,5 @@
 import streamlit as st
+
 from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="Trace Viewer", page_icon="🔍", layout="wide")

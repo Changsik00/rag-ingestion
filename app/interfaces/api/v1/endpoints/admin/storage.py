@@ -1,7 +1,9 @@
-from typing import Annotated, Any
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException
-from app.interfaces.api.dependencies import get_storage_integrity_service, get_semantic_extractor, get_checkpointer
+
 from app.domain.services.storage_integrity_service import StorageIntegrityService
+from app.interfaces.api.dependencies import get_checkpointer, get_semantic_extractor, get_storage_integrity_service
 
 router = APIRouter()
 

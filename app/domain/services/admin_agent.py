@@ -34,8 +34,8 @@ class AdminAgent:
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash-exp", 
-            temperature=0, 
+            model="gemini-2.0-flash-exp",
+            temperature=0,
             google_api_key=get_settings().GEMINI_API_KEY
         )
 
@@ -50,8 +50,8 @@ class AdminAgent:
         workflow.set_entry_point("router")
 
         workflow.add_conditional_edges(
-            "router", 
-            self.route_logic, 
+            "router",
+            self.route_logic,
             {"ingest": "ingest", "search": "search"}
         )
 
@@ -59,7 +59,7 @@ class AdminAgent:
         workflow.add_edge("search", END)
 
         return workflow.compile(
-            checkpointer=checkpointer, 
+            checkpointer=checkpointer,
             interrupt_before=interrupt_before
         )
 
@@ -114,7 +114,7 @@ class AdminAgent:
             }
 
         target_url = urls[0]
-        
+
         try:
             # 수집 작업 생성 및 실행 (동기 처리)
             job = self.ingestion_service.create_job(target_url)
@@ -126,8 +126,8 @@ class AdminAgent:
                 if updated_job.docs_ids:
                     doc_id = str(updated_job.docs_ids[0])
                     return {
-                        "messages": [AIMessage(content=msg)], 
-                        "tool_output": msg, 
+                        "messages": [AIMessage(content=msg)],
+                        "tool_output": msg,
                         "filters": {"doc_id": doc_id}
                     }
             else:

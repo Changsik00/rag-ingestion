@@ -1,7 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
+
 from app.interfaces.api.main import app
-from unittest.mock import MagicMock, patch
 
 client = TestClient(app)
 
@@ -23,7 +25,7 @@ async def test_rag_ask():
         # 하지만 여기서는 엔드포인트 도달 여부를 확인하는 수준으로 warming up
         response = client.post("/api/v1/admin/rag/sessions/test_session/ask", json=payload)
         # 실제 LLM 호출이 막히면 500이 날 수 있으므로, 200/500 중 하나를 예상하거나 완벽한 Mocking 필요
-        assert response.status_code in [200, 500] 
+        assert response.status_code in [200, 500]
 
 def test_graph_schema():
     """GET /api/v1/admin/graph/schema 테스트"""

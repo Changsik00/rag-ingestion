@@ -1,6 +1,8 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException
 from neo4j import Driver
+
 from app.interfaces.api.dependencies import get_neo4j_driver
 
 router = APIRouter()
@@ -12,10 +14,10 @@ async def get_schema(driver: Annotated[Driver, Depends(get_neo4j_driver)]):
         with driver.session() as session:
             labels_res = session.run("CALL db.labels()")
             labels = [record[0] for record in labels_res]
-            
+
             rels_res = session.run("CALL db.relationshipTypes()")
             rels = [record[0] for record in rels_res]
-            
+
             return {"labels": labels, "relationship_types": rels}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -40,7 +42,7 @@ async def execute_query(
     cypher = query.get("query")
     if not cypher:
         raise HTTPException(status_code=400, detail="Query is required")
-    
+
     try:
         with driver.session() as session:
             result = session.run(cypher)
@@ -49,8 +51,8 @@ async def execute_query(
             nodes = []
             for node in graph.nodes:
                 nodes.append({
-                    "id": node.element_id, 
-                    "labels": list(node.labels), 
+                    "id": node.element_id,
+                    "labels": list(node.labels),
                     "properties": dict(node._properties)
                 })
 
