@@ -25,6 +25,10 @@ def test_storage_api_endpoints_exist():
     response = client.get("/api/v1/admin/storage/stats")
     assert response.status_code == 200
     
-    # Reports placeholder (Not implemented in router yet, let's add it)
+    # Reports 
     response = client.get("/api/v1/admin/storage/reports")
-    assert response.status_code == 404 # router에서 정의 안 했으므로 404 예상
+    assert response.status_code == 200
+    
+    # Diagnostic
+    response = client.get("/api/v1/admin/storage/documents/test_id/diagnostic")
+    assert response.status_code == 200

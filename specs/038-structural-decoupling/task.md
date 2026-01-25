@@ -22,11 +22,11 @@
 ## Task 2: Granular API Implementation (Backend)
 ### 2-1. Storage Integrity & Recovery API
 - [x] **TDD Warming up**: `tests/integration/api/admin/test_storage.py` 작성
-- [ ] `GET /storage/stats`, `GET /storage/reports` 구현
-- [ ] `GET /storage/documents/{id}/diagnostic` 및 `preview-context` 구현
-- [ ] `POST /storage/documents/{id}/sync`, `enrich` 구현
-- [ ] `POST /storage/sync-all` (Async) 및 `GET /sync-jobs/{id}` (Progress) 구현
-- [ ] Commit: `feat(spec-038): implement exhaustive storage diagnostic and recovery apis`
+- [x] `GET /storage/stats`, `GET /storage/reports` 구현
+- [x] `GET /storage/documents/{id}/diagnostic` 및 `preview-context` 구현
+- [x] `POST /storage/documents/{id}/sync`, `enrich` 구현
+- [x] `POST /storage/sync-all` (Async) 및 `GET /sync-jobs/{id}` (Progress) 구현
+- [x] Commit: `feat(spec-038): implement exhaustive storage diagnostic and recovery apis`
 
 ### 2-2. Graph & RAG Session API
 - [ ] **TDD Warming up**: `tests/integration/api/admin/test_rag.py` 작성

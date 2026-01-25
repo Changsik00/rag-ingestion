@@ -16,6 +16,7 @@ from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.domain.services.rag_service import RAGService
 from app.domain.services.semantic_extractor import SemanticExtractor
+from app.domain.services.storage_integrity_service import StorageIntegrityService
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
@@ -56,6 +57,14 @@ def get_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> Docu
 @lru_cache
 def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> JobRepository:
     return Neo4jJobRepository(driver)
+
+
+# Storage Integrity Service 의존성
+@lru_cache
+def get_storage_integrity_service(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> StorageIntegrityService:
+    primary_repo = Neo4jStorage(driver)
+    target_repo = ChromaStorage()
+    return StorageIntegrityService(primary_repo, target_repo)
 
 
 # Checkpointer 의존성 (HITL Persistence)
