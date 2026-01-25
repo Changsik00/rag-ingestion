@@ -1,36 +1,24 @@
-import os
-import sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
-
 import pandas as pd
 import streamlit as st
-
-from app.domain.entities.job import JobStatus
-from app.interfaces.api.dependencies import get_job_repository, get_neo4j_driver
+from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="Job Queue", page_icon="📋", layout="wide")
 st.title("📋 Processed Job Queue")
 
-
-@st.cache_resource
-def get_repo():
-    driver = get_neo4j_driver()
-    return get_job_repository(driver)
-
+api_client = get_api_client()
 
 try:
-    repo = get_repo()
-    jobs = repo.list_jobs(limit=50)
+    jobs = api_client.get("/jobs")
 
     if not jobs:
         st.info("No jobs found.")
     else:
         # Summary Metrics
         total = len(jobs)
-        completed = sum(1 for j in jobs if j.status == JobStatus.COMPLETED)
-        failed = sum(1 for j in jobs if j.status == JobStatus.FAILED)
-        pending = sum(1 for j in jobs if j.status == JobStatus.PENDING)
+        # API returns job objects. Mapping status to string if needed.
+        completed = sum(1 for j in jobs if j.get("status") == "completed")
+        failed = sum(1 for j in jobs if j.get("status") == "failed")
+        pending = sum(1 for j in jobs if j.get("status") == "pending")
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total Jobs", total)
@@ -45,28 +33,28 @@ try:
         for j in jobs:
             data.append(
                 {
-                    "Job ID": j.job_id,
-                    "Status": j.status.value,
-                    "URL": j.source_url,
-                    "Created At": j.created_at,
-                    "Updated At": j.updated_at,
-                    "Error": j.error_message if j.error_message else "",
+                    "Job ID": j.get("job_id"),
+                    "Status": j.get("status"),
+                    "URL": j.get("source_url"),
+                    "Created At": j.get("created_at"),
+                    "Updated At": j.get("updated_at"),
+                    "Error": j.get("error_message") or "",
                 }
             )
 
         df = pd.DataFrame(data)
-        # Sort by Created At desc
-        df["Created At"] = pd.to_datetime(df["Created At"])
-        df = df.sort_values(by="Created At", ascending=False)
+        if not df.empty:
+            df["Created At"] = pd.to_datetime(df["Created At"])
+            df = df.sort_values(by="Created At", ascending=False)
 
-        st.dataframe(
-            df,
-            use_container_width=True,
-            column_config={
-                "URL": st.column_config.LinkColumn("Source URL"),
-                "Status": st.column_config.TextColumn("Status", help="Current job status"),
-            },
-        )
+            st.dataframe(
+                df,
+                use_container_width=True,
+                column_config={
+                    "URL": st.column_config.LinkColumn("Source URL"),
+                    "Status": st.column_config.TextColumn("Status", help="Current job status"),
+                },
+            )
 
         if st.button("Refresh"):
             st.rerun()

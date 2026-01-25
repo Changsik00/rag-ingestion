@@ -1,24 +1,11 @@
-import os
-import sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
-
 import streamlit as st
 from streamlit_agraph import Config, Edge, Node, agraph
-
-from admin.services.graph_service import GraphService
+from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="Graph Explorer", page_icon="🕸️", layout="wide")
 st.title("🕸️ Graph Explorer")
 
-
-# Initialize Service
-@st.cache_resource
-def get_graph_service():
-    return GraphService()
-
-
-service = get_graph_service()
+api_client = get_api_client()
 
 # --- Sidebar: Configuration ---
 with st.sidebar:
@@ -41,20 +28,35 @@ with col1:
     st.subheader("Query Builder")
 
     # 1. Presets
-    presets = service.get_presets()
+    presets = api_client.get("/graph/presets") or {}
     selected_preset = st.selectbox("📌 Presets", list(presets.keys()))
     if st.button("Load Preset"):
         st.session_state["cypher_query"] = presets[selected_preset]
 
     st.divider()
 
-    # 2. Builder
+    # 2. Builder (Fetch labels/rels from API)
     with st.expander("🛠️ Custom Builder"):
-        entity_type = st.selectbox("Entity Type", ["All", "Person", "Organization", "Technology", "Document", "Chunk"])
-        relation_type = st.selectbox("Relation Type", ["All", "MENTIONS", "WORKS_FOR", "RELATED_TO", "HAS_CHUNK"])
-        limit = st.slider("Limit", 10, 100, 50)
+        schema = api_client.get("/graph/schema") or {"labels": [], "relationship_types": []}
+        labels = ["All"] + schema["labels"]
+        rels = ["All"] + schema["relationship_types"]
+        
+        entity_type = st.selectbox("Entity Type", labels)
+        relation_type = st.selectbox("Relation Type", rels)
+        limit = st.slider("Limit", 10, 100, 25)
+        
         if st.button("Build Query"):
-            query = service.build_query(entity_type, relation_type, limit)
+            # Simple build logic (Moved to backend if complex, but kept simple here for now)
+            if entity_type == "All":
+                if relation_type == "All":
+                    query = f"MATCH (n)-[r]->(m) RETURN n, r, m LIMIT {limit}"
+                else:
+                    query = f"MATCH (n)-[r:{relation_type}]->(m) RETURN n, r, m LIMIT {limit}"
+            else:
+                if relation_type == "All":
+                    query = f"MATCH (n:{entity_type}) RETURN n LIMIT {limit}"
+                else:
+                    query = f"MATCH (n:{entity_type})-[r:{relation_type}]->(m) RETURN n, r, m LIMIT {limit}"
             st.session_state["cypher_query"] = query
 
     st.divider()
@@ -71,47 +73,51 @@ with col2:
     if run_btn:
         try:
             with st.spinner("Fetching Graph Data..."):
-                node_data, edge_data = service.execute_graph_query(cypher_input)
+                res = api_client.post("/graph/query", json={"query": cypher_input})
+                
+                if res:
+                    node_data = res.get("nodes", [])
+                    edge_data = res.get("edges", [])
 
-                nodes = []
-                for n in node_data:
-                    # Determine color/icon based on labels
-                    label = n["labels"][0] if n["labels"] else "Unknown"
-                    color = "#97C2FC"
-                    if "Person" in n["labels"]:
-                        color = "#FF7675"
-                    elif "Organization" in n["labels"]:
-                        color = "#74B9FF"
-                    elif "Technology" in n["labels"]:
-                        color = "#55E6C1"
-                    elif "Document" in n["labels"]:
-                        color = "#A29BFE"
-                    elif "Chunk" in n["labels"]:
-                        color = "#DFE6E9"
+                    nodes = []
+                    for n in node_data:
+                        label = n["labels"][0] if n["labels"] else "Unknown"
+                        color = "#97C2FC"
+                        if "Person" in n["labels"]:
+                            color = "#FF7675"
+                        elif "Organization" in n["labels"]:
+                            color = "#74B9FF"
+                        elif "Technology" in n["labels"]:
+                            color = "#55E6C1"
+                        elif "Document" in n["labels"]:
+                            color = "#A29BFE"
+                        elif "Chunk" in n["labels"]:
+                            color = "#DFE6E9"
 
-                    nodes.append(
-                        Node(
-                            id=n["id"],
-                            label=n["properties"].get("name") or n["properties"].get("title") or label,
-                            size=20,
-                            color=color,
-                            title=str(n["properties"]),  # Tooltip
+                        nodes.append(
+                            Node(
+                                id=n["id"],
+                                label=n["properties"].get("name") or n["properties"].get("title") or label,
+                                size=20,
+                                color=color,
+                                title=str(n["properties"]),
+                            )
                         )
-                    )
 
-                edges = []
-                for e in edge_data:
-                    edges.append(Edge(source=e["source"], target=e["target"], label=e["type"], color="#B2BEC3"))
+                    edges = []
+                    for e in edge_data:
+                        edges.append(Edge(source=e["source"], target=e["target"], label=e["type"], color="#B2BEC3"))
 
-                if not nodes:
-                    st.warning("No nodes found.")
+                    if not nodes:
+                        st.warning("No nodes found.")
+                    else:
+                        st.success(f"Found {len(nodes)} Nodes, {len(edges)} Edges")
+                        agraph(nodes=nodes, edges=edges, config=config)
+
+                        with st.expander("Show Raw Data"):
+                            st.json({"nodes": node_data, "edges": edge_data})
                 else:
-                    st.success(f"Found {len(nodes)} Nodes, {len(edges)} Edges")
-                    agraph(nodes=nodes, edges=edges, config=config)
-
-                    # Show Raw Data in Expander
-                    with st.expander("Show Raw Data"):
-                        st.json({"nodes": node_data, "edges": edge_data})
+                    st.error("Failed to fetch graph data.")
 
         except Exception as e:
             st.error(f"Error executing query: {e}")

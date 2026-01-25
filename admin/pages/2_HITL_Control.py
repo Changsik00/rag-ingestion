@@ -1,51 +1,37 @@
 import json
-import os
-import sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
-
 import pandas as pd
 import streamlit as st
-
-from admin.services.hitl_service import HitlService
+from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="HITL Control", page_icon="🚦", layout="wide")
 st.title("🚦 HITL Control Center")
 
-
-@st.cache_resource
-def get_service():
-    return HitlService()
-
-
-service = get_service()
+api_client = get_api_client()
 
 # --- Active Threads List ---
 st.subheader("Active Threads")
 
-threads = service.list_threads(limit=50)
+# Using the jobs endpoint for active threads
+threads = api_client.get("/jobs/active/threads") or []
 
 if not threads:
     st.info("No active threads found.")
 else:
-    # Transform to DataFrame
     data = []
     for t in threads:
         t_id = t["thread_id"]
-        status = service.get_thread_status(t_id)
+        # Basic info from list
         data.append(
             {
                 "Thread ID": t_id,
-                "Status": status,
                 "Checkpoint ID": t["checkpoint_id"],
-                # "Updated At": t['metadata'].get('ts') # Timestamp might be in metadata
+                "Metadata": str(t.get("metadata", {}))
             }
         )
 
     df = pd.DataFrame(data)
     st.dataframe(df, use_container_width=True)
 
-    # Separation for Actions
     st.divider()
 
     st.subheader("Thread Management")
@@ -56,15 +42,16 @@ else:
         selected_thread = st.selectbox("Select Thread", [t["Thread ID"] for t in data])
 
         if selected_thread:
-            current_status = next((d["Status"] for d in data if d["Thread ID"] == selected_thread), "Unknown")
+            status_res = api_client.get(f"/jobs/{selected_thread}/status")
+            current_status = status_res.get("status", "Unknown") if status_res else "Unknown"
             st.metric("Current Status", current_status)
 
-            trace_data = service.get_thread_trace(selected_thread)
+            trace_data = api_client.get(f"/jobs/{selected_thread}/trace")
             with st.expander("View Trace Snapshot"):
                 st.json(trace_data)
 
     with col2:
-        if selected_thread and current_status == "Interrupted":  # Only allow resume if interrupted/human-review
+        if selected_thread and current_status == "interrupted":
             st.warning(f"Thread {selected_thread} is waiting for input.")
 
             with st.form("resume_form"):
@@ -82,8 +69,9 @@ else:
                             input_payload = None
 
                     if input_payload:
-                        success = service.resume_thread(selected_thread, input_payload)
-                        if success:
+                        # API expectation for resume: {"input": {...}}
+                        res = api_client.post(f"/jobs/{selected_thread}/resume", json={"input": input_payload})
+                        if res and res.get("status") == "Resumed":
                             st.success("Thread Resumed!")
                             st.rerun()
                         else:

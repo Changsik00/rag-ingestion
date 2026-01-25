@@ -1,23 +1,10 @@
-import os
-import sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
-
 import streamlit as st
+from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="Trace Viewer", page_icon="🔍", layout="wide")
 st.title("🔍 Reasoning Trace Viewer")
 
-
-from admin.services.hitl_service import HitlService
-
-
-@st.cache_resource
-def get_service():
-    return HitlService()
-
-
-service = get_service()
+api_client = get_api_client()
 
 # Search
 thread_id = st.text_input("Enter Thread ID / Job ID", value="", placeholder="e.g. job-1234")
@@ -25,7 +12,7 @@ thread_id = st.text_input("Enter Thread ID / Job ID", value="", placeholder="e.g
 if thread_id:
     if st.button("Analyze Trace"):
         with st.spinner("Fetching Trace..."):
-            trace = service.get_thread_trace(thread_id)
+            trace = api_client.get(f"/jobs/{thread_id}/trace")
             if not trace:
                 st.error("Trace not found or empty.")
             else:
