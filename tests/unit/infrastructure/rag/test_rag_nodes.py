@@ -413,13 +413,13 @@ class TestRAGNodesFallback:
 class TestRAGNodesPromptGuard:
     """Prompt 가드레일 테스트 (Spec 034)"""
 
-    def test_generate_answer_includes_critical_rules(
+    def test_generate_answer_includes_knowledge_mixing_rules(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
         """
         Given: RAG State
         When: generate_answer 노드 실행
-        Then: LLM에게 전달되는 프롬프트에 CRITICAL RULES가 포함되어야 함
+        Then: LLM에게 전달되는 프롬프트에 KNOWLEDGE MIXING RULES가 포함되어야 함
         """
         from app.infrastructure.rag.nodes import RAGNodes
 
@@ -455,6 +455,6 @@ class TestRAGNodesPromptGuard:
         # Then
         assert mock_llm.generate.call_count == 1
         prompt = mock_llm.generate.call_args[0][0]
-        assert "CRITICAL RULES" in prompt
-        assert "not contain sufficient information" in prompt
-        assert "Do NOT use your internal knowledge" in prompt
+        assert "KNOWLEDGE MIXING RULES" in prompt
+        assert "KNOWLEDGE SUPPLEMENT" in prompt
+        assert "SEAMLESS FUSION" in prompt
