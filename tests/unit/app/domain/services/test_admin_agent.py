@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 
-from app.admin.agents.admin_agent import AdminAgent, AdminState
+from app.domain.services.admin_agent import AdminAgent, AdminState
 
 
 @pytest.fixture
@@ -15,7 +15,7 @@ def mock_services():
 
 @pytest.fixture
 def mock_llm_class():
-    with patch("app.admin.agents.admin_agent.ChatGoogleGenerativeAI") as mock:
+    with patch("app.domain.services.admin_agent.ChatGoogleGenerativeAI") as mock:
         yield mock
 
 
