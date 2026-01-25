@@ -5,7 +5,7 @@ import streamlit as st
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 
-from app.admin.services.integrity_service import IntegrityAdminService
+from admin.services.integrity_service import IntegrityAdminService
 
 st.set_page_config(page_title="Storage Management", page_icon="📊", layout="wide")
 st.title("📊 Storage Integrity Management")

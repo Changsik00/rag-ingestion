@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 import pandas as pd
 import streamlit as st
 
-from app.admin.services.hitl_service import HitlService
+from admin.services.hitl_service import HitlService
 
 st.set_page_config(page_title="HITL Control", page_icon="🚦", layout="wide")
 st.title("🚦 HITL Control Center")

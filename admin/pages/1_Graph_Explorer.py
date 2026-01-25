@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 import streamlit as st
 from streamlit_agraph import Config, Edge, Node, agraph
 
-from app.admin.services.graph_service import GraphService
+from admin.services.graph_service import GraphService
 
 st.set_page_config(page_title="Graph Explorer", page_icon="🕸️", layout="wide")
 st.title("🕸️ Graph Explorer")

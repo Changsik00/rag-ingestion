@@ -1,6 +1,6 @@
 from neo4j import GraphDatabase
 
-from app.admin.config import AdminConfig
+from admin.config import AdminConfig
 
 
 class GraphService:

@@ -9,8 +9,8 @@ import logging
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 
-from app.admin.agents.admin_agent import AdminAgent
-from app.admin.services.feedback_service import FeedbackService
+from admin.agents.admin_agent import AdminAgent
+from admin.services.feedback_service import FeedbackService
 from app.core.llm import get_llm
 from app.domain.services.query_rewriter import QueryRewriter
 from app.domain.services.rag_service import RAGService

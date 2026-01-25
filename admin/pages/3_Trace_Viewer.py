@@ -9,7 +9,7 @@ st.set_page_config(page_title="Trace Viewer", page_icon="🔍", layout="wide")
 st.title("🔍 Reasoning Trace Viewer")
 
 
-from app.admin.services.hitl_service import HitlService
+from admin.services.hitl_service import HitlService
 
 
 @st.cache_resource

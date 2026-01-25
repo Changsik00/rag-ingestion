@@ -313,18 +313,26 @@
   * **우선순위**: High (Spec 034 완료 후 즉시 진행)
   * **Status**: Planning (2026-01-24)
 
-* [ ] **Spec 037: RAG Quality Stabilization & Data Integrity Sync**
+* [x] **Spec 037: RAG Quality Stabilization & Data Integrity Sync**
   * **Documentation**: [Spec](specs/037-rag-quality-stabilization/spec.md), [Plan](specs/037-rag-quality-stabilization/plan.md), [Task](specs/037-rag-quality-stabilization/task.md)
-  * [ ] **Problem**: 
+  * [x] **Problem**: 
     - **ChromaDB Drift**: Neo4j와 ChromaDB 간의 데이터 개수 불일치 (1401 vs 93).
     - **Metadata Loss**: 수집된 문서 중 제목(Title)이 누락된 경우가 많아 검색 품질 저하.
     - **Context Noise**: 위키피디아 등 복잡한 레이아웃의 마크다운 태그가 LLM의 추론 방해.
-  * [ ] **Goal**: 
+  * [x] **Goal**: 
     - **Data Synchronization**: Neo4j의 누락된 청크를 ChromaDB로 재인덱싱하는 동기화 도구 구현.
     - **Metadata Enrichment**: URL 및 본문 기반 제목 자동 추출 로직 강화.
     - **Context Cleaning**: LLM 전달 전 불필요한 마크다운 요소(네비게이션, 표 등) 정제.
-  * **우선순위**: Urgent (Spec 035의 실질적 성능 보장)
-  * **Design Guide**: [`docs/design_guides/007-rag-data-integrity.md`](docs/design_guides/007-rag-data-integrity.md)
+  * **완료**: 2026-01-25 (PR 생략 및 마무리 확인)
+
+* [ ] **Spec 038: Structural Decoupling (Streamlit & Backend Separation)**
+  * **Goal**: Streamlit Admin UI와 Backend 비즈니스 로직을 완전히 격리하여 독립적 배포 및 확장성을 확보.
+  * **Features**:
+    - **Admin API Layer**: 정합성 관리용 전용 API 엔드포인트(`admin/integrity/*`) 및 RAG 플레이그라운드 API 구축.
+    - **Thin Client Refactoring**: Streamlit 내부의 직접 DB 접근 및 비즈니스 로직 임포트 제거.
+    - **Infrastructure Isolation**: Docker Compose 설정을 변경하여 Streamlit의 DB 접근 권한 박살(격리).
+  * **우선순위**: High (아키텍처 부채 해결 및 운영 안정성 확보)
+  * **Note**: Planning (2026-01-25) - [Spec](specs/038-structural-decoupling/spec.md), [Plan](specs/038-structural-decoupling/plan.md), [Task](specs/038-structural-decoupling/task.md)
 
 ---
 
