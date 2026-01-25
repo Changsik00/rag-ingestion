@@ -2,8 +2,8 @@ import os
 import sys
 import pandas as pd
 import streamlit as st
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
+# admin is now at root level. To import 'admin' or 'app', the root should be in sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 from admin.services.integrity_service import IntegrityAdminService
 
