@@ -14,7 +14,7 @@ class QueryRewriter:
     def __init__(self, llm: LLMInterface):
         self.llm = llm
 
-    def rewrite(self, query: str, history: list[dict]) -> str:
+    async def rewrite(self, query: str, history: list[dict]) -> str:
         """
         Args:
             query: 사용자의 현재 질문
@@ -61,7 +61,14 @@ Your task is to REWRITE the "Follow Up Input" into a standalone question that is
         # 4. LLM 호출
         try:
             logger.info("Rewriting query with context...")
-            rewritten_query = self.llm.generate(prompt).strip()
+            # Handle both sync and async adapters
+            import asyncio
+            if hasattr(self.llm, "generate") and asyncio.iscoroutinefunction(self.llm.generate):
+                raw_rewritten = await self.llm.generate(prompt)
+            else:
+                raw_rewritten = self.llm.generate(prompt)
+            
+            rewritten_query = raw_rewritten.strip()
 
             # 후처리: LLM이 가끔 "Standalone Question: " 등을 포함할 수 있음
             if "Standalone Question:" in rewritten_query:

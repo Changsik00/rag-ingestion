@@ -55,7 +55,7 @@ class RAGNodes:
         self.intent_classifier = intent_classifier
         self.llm = llm
 
-    def classify_intent(self, state: RAGGraphState) -> RAGGraphState:
+    async def classify_intent(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 1: Intent Classification + Query Rewriting (Brain Layer)
 
@@ -72,7 +72,8 @@ class RAGNodes:
 
         # Intent Classification (with Fallback)
         try:
-            user_intent = self.intent_classifier.classify(query, history)
+            # Service is now async
+            user_intent = await self.intent_classifier.classify(query, history)
         except Exception as e:
             logger.warning(f"Intent classification failed: {e}. Falling back to GENERAL_QUERY.")
             user_intent = UserIntent(
@@ -81,8 +82,8 @@ class RAGNodes:
                 reasoning="Fallback due to classification error"
             )
 
-        # Query Rewriting
-        rewritten_query = self.query_rewriter.rewrite(query, history)
+        # Query Rewriting (Service is now async)
+        rewritten_query = await self.query_rewriter.rewrite(query, history)
 
         # Update State
         state["user_intent"] = user_intent
@@ -221,7 +222,7 @@ class RAGNodes:
 
         return text.strip()
 
-    def generate_answer(self, state: RAGGraphState) -> RAGGraphState:
+    async def generate_answer(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 4: Answer Generation
 
@@ -242,11 +243,7 @@ class RAGNodes:
         # Format Context
         context_str, mapped_chunks = self._merge_and_format_context(vector_chunks, keyword_chunks, graph_data)
 
-        # Store mapped chunks in state temporarily for citation parsing if needed
-        # (Though we'll likely handle it within this node)
-
         # [Spec 035] Hybrid Knowledge PromptING
-        # "Sparse but Powerful" Strategy
         prompt = (
             "You are a professional AI assistant. Answer the question by combining the provided Context (DB) and your internal knowledge.\n\n"
             "KNOWLEDGE MIXING RULES:\n"
@@ -262,7 +259,12 @@ class RAGNodes:
             "Answer:"
         )
 
-        response = self.llm.generate(prompt)
+        # Handle both sync and async LLM adapter implementations
+        import asyncio
+        if hasattr(self.llm, "generate") and asyncio.iscoroutinefunction(self.llm.generate):
+            response = await self.llm.generate(prompt)
+        else:
+            response = self.llm.generate(prompt)
 
         if hasattr(response, "content"):
             answer_text = response.content

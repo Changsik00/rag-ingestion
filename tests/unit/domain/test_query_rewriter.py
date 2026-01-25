@@ -12,7 +12,8 @@ except ImportError:
 
 
 @pytest.mark.skipif(QueryRewriter is None, reason="QueryRewriter not implemented yet")
-def test_rewrite_with_empty_history_returns_original():
+@pytest.mark.asyncio
+async def test_rewrite_with_empty_history_returns_original():
     """
     히스토리가 비어있으면 LLM 호출 비용 없이 원본 쿼리를 즉시 반환해야 한다.
     (Non-functional Optimization Requirement)
@@ -24,7 +25,7 @@ def test_rewrite_with_empty_history_returns_original():
     history = []
 
     # When
-    result = rewriter.rewrite(query, history)
+    result = await rewriter.rewrite(query, history)
 
     # Then
     assert result == query
@@ -32,7 +33,8 @@ def test_rewrite_with_empty_history_returns_original():
 
 
 @pytest.mark.skipif(QueryRewriter is None, reason="QueryRewriter not implemented yet")
-def test_rewrite_with_history_calls_llm():
+@pytest.mark.asyncio
+async def test_rewrite_with_history_calls_llm():
     """
     히스토리가 있으면 LLM을 호출하여 쿼리를 재구성해야 한다.
     """
@@ -48,7 +50,7 @@ def test_rewrite_with_history_calls_llm():
     ]
 
     # When
-    result = rewriter.rewrite(query, history)
+    result = await rewriter.rewrite(query, history)
 
     # Then
     assert result == "일론 머스크의 형제는 누구입니까?"
@@ -61,7 +63,8 @@ def test_rewrite_with_history_calls_llm():
 
 
 @pytest.mark.skipif(QueryRewriter is None, reason="QueryRewriter not implemented yet")
-def test_rewrite_instruction_only_maintains_context():
+@pytest.mark.asyncio
+async def test_rewrite_instruction_only_maintains_context():
     """
     '한국어로 말해줘' 같은 명령형 질문이 들어오면 이전 질문의 맥락을 유지해야 한다.
     """
@@ -78,7 +81,7 @@ def test_rewrite_instruction_only_maintains_context():
     ]
 
     # When
-    result = rewriter.rewrite(query, history)
+    result = await rewriter.rewrite(query, history)
 
     # Then
     assert "학교" in result or "school" in result

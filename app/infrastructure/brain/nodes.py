@@ -70,7 +70,7 @@ class IngestionNodes:
     def __init__(self, llm: LLMInterface):
         self.llm = llm
 
-    def extract_metadata(self, state: IngestionState) -> dict[str, Any]:
+    async def extract_metadata(self, state: IngestionState) -> dict[str, Any]:
         """
         Raw Content에서 메타데이터(Title, Summary, Entities 등)를 추출합니다.
 
@@ -94,27 +94,18 @@ class IngestionNodes:
         )
 
         # 2. LLM 호출 (Prompt Injection)
-        # LLMInterface.extract_metadata needs to accept system_prompt override.
-        # However, if LLMInterface is fixed, we might need to pass it differently or implementation specific.
-        # For now, assuming standard method but we should ideally pass instructions.
-        # Since the interface signature is `extract_metadata(content: str) -> ExtractedMetadata`,
-        # we might need to prepend the system prompt to the content OR update the interface.
-        # For this iteration, we prepending instructions to content if interface doesn't support prompt.
-
-        # NOTE: Temporary measure until LLMInterface supports dynamic prompts explicitly.
-        # We append the system instructions to the content for the LLM to see.
         enriched_content = f"{system_prompt}\n\n--- CONTENT ---\n{raw_content}"
 
-        extracted = self.llm.extract_metadata(enriched_content)
+        # Handle both sync and async LLM adapter implementations
+        import asyncio
+        if asyncio.iscoroutinefunction(self.llm.extract_metadata):
+            extracted = await self.llm.extract_metadata(enriched_content)
+        else:
+            extracted = self.llm.extract_metadata(enriched_content)
 
         # History 업데이트
         current_history = state.get("steps_history", [])
         new_history = current_history + ["extract_metadata"]
-
-        # 3. Update Attempt History (if not exists for this run)
-        # Note: Retry logic typically handles attempt counting, but we record success/fail here?
-        # Actually Attempt recording is better done in the Logic/Router or before 'extract'.
-        # We keep it simple here.
 
         return {"metadata": extracted, "steps_history": new_history}
 

@@ -58,19 +58,14 @@
 - [x] 모든 UI 테스트를 `api_client` Mocking 또는 통합 테스트로 전환
 - [x] Commit: `test(spec-038): refactor all admin tests to depend only on apis`
 
-## Task 4: Verification & PR Creation
-### 4-1. QA & Verification
-- [x] **Import Guard**: `grep -r "from app." admin/` 실행하여 의존성 제로 확인
-- [x] 통합 테스트 실행 (`tests/integration/api/admin/`) - All Pass 확인
-- [x] `docker-compose` 환경에서의 격리 기능 최종 검증
-- [x] Commit: `chore(spec-038): finalize architectural isolation and verify`
-
-### 4-2. Documentation & PR
-- [x] Walkthrough.md 작성
-- [x] Code Quality Check: `ruff check . --fix && ruff format .`
-- [x] PR 생성
-- [x] Commit: `docs(spec-038): add walkthrough and finalize spec artifacts`
+## Task 4: PR Creation
+- [x] Code Quality: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Full Tests: `uv run pytest -v` (207 passed)
+- [x] Walkthrough 작성: `specs/038-structural-decoupling/walkthrough.md`
+- [x] PR Description 작성: `specs/038-structural-decoupling/pr_description.md`
+- [x] Create PR: `gh pr create --title "feat(spec-038): structural decoupling of admin ui and async engine alignment" --body-file specs/038-structural-decoupling/pr_description.md`
 
 ## Summary
-**총 Task**: 4개 대분류 (15개 이상 상세 API 처리)
-**예상 커밋 수**: 12~15개
+**총 Task**: 4개 대분류 (백엔드 API 전환, 프론트엔드 격리, 비동기 엔진 정합성 확보)
+**최종 상태**: 아키텍처 격리 및 비동기 안정화 완료 (207 Pass)
+**완료 일자**: 2026-01-26

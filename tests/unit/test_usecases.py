@@ -6,6 +6,7 @@ Mock을 사용하여 의존성을 격리하고 비즈니스 로직만 테스트�
 """
 
 from unittest.mock import Mock
+import pytest
 
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.scraper import ScraperInterface
@@ -38,7 +39,8 @@ def test_create_job():
     mock_job_repo.create_job.assert_called_once_with(job)
 
 
-def test_process_job_success():
+@pytest.mark.asyncio
+async def test_process_job_success():
     # Given: IngestionService와 mocked dependencies
     mock_scraper = Mock(spec=ScraperInterface)
     mock_doc_repo = Mock()
@@ -54,7 +56,10 @@ def test_process_job_success():
     mock_scraper.scrape.return_value = expected_response
 
     # Mock extractor to return None (no semantic data)
-    mock_extractor.extract.return_value = None
+    import asyncio
+    future = asyncio.Future()
+    future.set_result(None)
+    mock_extractor.extract.return_value = future
 
     mock_chunker = Mock()
     service = IngestionService(
@@ -67,7 +72,7 @@ def test_process_job_success():
     )
 
     # When: Job 처리
-    service.process_job(mock_job.job_id)
+    await service.process_job(mock_job.job_id)
 
     # Then: 스크래핑 및 저장 성공, Job 상태가 COMPLETED로 변경
     mock_scraper.scrape.assert_called_once_with("http://example.com")
@@ -80,7 +85,8 @@ def test_process_job_success():
     assert last_updated_job.status == JobStatus.COMPLETED
 
 
-def test_process_job_failure():
+@pytest.mark.asyncio
+async def test_process_job_failure():
     # Given: 스크래핑 실패를 발생시키는 mock scraper
     mock_scraper = Mock(spec=ScraperInterface)
     mock_scraper.scrape.side_effect = Exception("Scrape failed")
@@ -102,7 +108,7 @@ def test_process_job_failure():
     )
 
     # When: Job 처리 (예외가 내부에서 처리됨)
-    service.process_job(mock_job.job_id)
+    await service.process_job(mock_job.job_id)
 
     # Then: Job 상태가 FAILED로 변경됨
     assert mock_job_repo.update_job.call_count == 2

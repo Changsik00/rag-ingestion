@@ -9,14 +9,17 @@ from app.infrastructure.brain.nodes import IngestionNodes
 
 @pytest.fixture
 def mock_llm():
+    import asyncio
     llm = Mock()
-    # Mock extract_metadata to return some dummy data
-    llm.extract_metadata.return_value = {"title": "Test Title", "summary": "Test Summary"}
-    # Mock validate_content (implicit if we mock the node behavior, but graph uses node methods)
+    # Mock extract_metadata to return some dummy data as a Future
+    future = asyncio.Future()
+    future.set_result({"title": "Test Title", "summary": "Test Summary"})
+    llm.extract_metadata.return_value = future
     return llm
 
 
-def test_reasoning_flow_integration(mock_llm):
+@pytest.mark.asyncio
+async def test_reasoning_flow_integration(mock_llm):
     """
     Given: Validation이 실패하여 재시도가 필요한 상황
     When: Graph가 실행되면
@@ -76,7 +79,7 @@ def test_reasoning_flow_integration(mock_llm):
     )
 
     # Run fully
-    final_state = app.invoke(input_state)
+    final_state = await app.ainvoke(input_state)
 
     # 4. Verify History contains 'analyze_failure'
     history = final_state["steps_history"]

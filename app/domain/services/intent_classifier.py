@@ -20,7 +20,7 @@ class IntentClassifier:
     def __init__(self, llm: LLMInterface):
         self.llm = llm
 
-    def classify(self, query: str, history: list[dict]) -> UserIntent:
+    async def classify(self, query: str, history: list[dict]) -> UserIntent:
         """
         사용자 쿼리와 대화 히스토리를 분석하여 의도를 분류한다.
 
@@ -43,7 +43,15 @@ class IntentClassifier:
 
         # 3. LLM 호출
         logger.info(f"Classifying intent for query: {query}")
-        raw_response = self.llm.generate(prompt).strip()
+        
+        # Handle both sync and async adapters
+        import asyncio
+        if hasattr(self.llm, "generate") and asyncio.iscoroutinefunction(self.llm.generate):
+            raw_response_obj = await self.llm.generate(prompt)
+        else:
+            raw_response_obj = self.llm.generate(prompt)
+            
+        raw_response = str(raw_response_obj).strip()
 
         # 4. JSON 파싱 및 Pydantic 검증
         try:

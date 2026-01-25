@@ -25,7 +25,8 @@ class TestQueryRewriteFlow:
         llm = LangChainLLMAdapter(llm=base_llm)
         return QueryRewriter(llm)
 
-    def test_multi_turn_context_maintenance(self, rewriter):
+    @pytest.mark.asyncio
+    async def test_multi_turn_context_maintenance(self, rewriter):
         """
         사용자가 지적한 '대화가 길어질 때 문맥 유지 실패' 현상을 재현하고 검증.
         Steps:
@@ -37,7 +38,7 @@ class TestQueryRewriteFlow:
         query1 = "일론 머스크가 다닌 고등학교는 어디야?"
         history1 = []
 
-        rewrite1 = rewriter.rewrite(query1, history1)
+        rewrite1 = await rewriter.rewrite(query1, history1)
         print(f"\n[Turn 1] Input: {query1} -> Rewritten: {rewrite1}")
         assert "일론" in rewrite1 or "Musk" in rewrite1
 
@@ -49,7 +50,7 @@ class TestQueryRewriteFlow:
         ]
         query2 = "그가 만든 자동차 회사는?"
 
-        rewrite2 = rewriter.rewrite(query2, history2)
+        rewrite2 = await rewriter.rewrite(query2, history2)
         print(f"\n[Turn 2] Input: {query2} -> Rewritten: {rewrite2}")
         assert "자동차" in rewrite2 or "Car" in rewrite2
         assert "일론" in rewrite2 or "Musk" in rewrite2  # Should resolve 'He'
@@ -62,7 +63,7 @@ class TestQueryRewriteFlow:
         ]
         query3 = "그가 다닌 그 학교는?"  # Refers back to Turn 1 'School', ignoring Turn 2 'Car'
 
-        rewrite3 = rewriter.rewrite(query3, history3)
+        rewrite3 = await rewriter.rewrite(query3, history3)
         print(f"\n[Turn 3] Input: {query3} -> Rewritten: {rewrite3}")
 
         # Critical Assertion: Does it still know 'He' is Musk and 'School' is Pretoria/School context?
@@ -70,7 +71,8 @@ class TestQueryRewriteFlow:
         assert "일론" in rewrite3 or "Musk" in rewrite3
         assert "학교" in rewrite3 or "School" in rewrite3
 
-    def test_rewriter_value_add_verification(self, rewriter):
+    @pytest.mark.asyncio
+    async def test_rewriter_value_add_verification(self, rewriter):
         """
         검증: 'Rewriter가 없으면 정말 못 맞추나?'
         """
@@ -102,7 +104,7 @@ class TestQueryRewriteFlow:
             {"role": "user", "content": "Tell me about Elon Musk."},
             {"role": "assistant", "content": "He is the CEO of Tesla."},
         ]
-        service_result = rewriter.rewrite(query, history)
+        service_result = await rewriter.rewrite(query, history)
         print(f"\n[Case 3: QueryRewriter Service] -> Output: '{service_result}'")
 
         # Assertions

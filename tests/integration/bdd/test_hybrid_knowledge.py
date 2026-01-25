@@ -5,7 +5,7 @@ Spec 035: Transparent Hybrid Knowledge Strategy (BDD Integration Tests)
 기존의 순환 참조식 MOCK을 제거하고, 지저분한 위키피디아 데이터를 시뮬레이션하여 검증합니다.
 """
 
-from unittest.mock import Mock
+from unittest.mock import Mock, AsyncMock
 from uuid import uuid4
 
 import pytest
@@ -33,8 +33,8 @@ def mock_dependencies():
         "neo4j_doc": neo4j_doc,
         "neo4j_graph": neo4j_graph,
         "chroma": chroma,
-        "rewriter": Mock(),
-        "intent_classifier": Mock(),
+        "rewriter": AsyncMock(),
+        "intent_classifier": AsyncMock(),
         "llm": llm
     }
 

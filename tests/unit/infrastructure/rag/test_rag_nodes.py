@@ -24,7 +24,8 @@ def mock_llm():
 @pytest.fixture
 def mock_query_rewriter():
     """Mock Query Rewriter"""
-    rewriter = Mock()
+    from unittest.mock import AsyncMock
+    rewriter = AsyncMock()
     rewriter.rewrite.return_value = "재작성된 질문"
     return rewriter
 
@@ -32,7 +33,8 @@ def mock_query_rewriter():
 @pytest.fixture
 def mock_intent_classifier():
     """Mock Intent Classifier"""
-    classifier = Mock()
+    from unittest.mock import AsyncMock
+    classifier = AsyncMock()
     classifier.classify.return_value = UserIntent(
         intent=IntentType.GENERAL_QUERY,
         targets=[],
@@ -63,7 +65,8 @@ def mock_repositories():
 class TestRAGNodesClassifyIntent:
     """classify_intent 노드 테스트"""
 
-    def test_updates_state_with_intent_and_rewritten_query(
+    @pytest.mark.asyncio
+    async def test_updates_state_with_intent_and_rewritten_query(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
         """
@@ -99,7 +102,7 @@ class TestRAGNodesClassifyIntent:
         }
 
         # When
-        result = nodes.classify_intent(state)
+        result = await nodes.classify_intent(state)
 
         # Then
         assert result["user_intent"] is not None
@@ -277,7 +280,8 @@ class TestRAGNodesRetrieveHybrid:
 class TestRAGNodesGenerateAnswer:
     """generate_answer 노드 테스트"""
 
-    def test_formats_context_and_generates_answer(
+    @pytest.mark.asyncio
+    async def test_formats_context_and_generates_answer(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
         """
@@ -332,7 +336,7 @@ class TestRAGNodesGenerateAnswer:
         }
 
         # When
-        result = nodes.generate_answer(state)
+        result = await nodes.generate_answer(state)
 
         # Then
         assert result["full_context"] != ""
@@ -413,7 +417,8 @@ class TestRAGNodesFallback:
 class TestRAGNodesPromptGuard:
     """Prompt 가드레일 테스트 (Spec 034)"""
 
-    def test_generate_answer_includes_knowledge_mixing_rules(
+    @pytest.mark.asyncio
+    async def test_generate_answer_includes_knowledge_mixing_rules(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
         """
@@ -450,7 +455,7 @@ class TestRAGNodesPromptGuard:
         }
 
         # When
-        nodes.generate_answer(state)
+        await nodes.generate_answer(state)
 
         # Then
         assert mock_llm.generate.call_count == 1
