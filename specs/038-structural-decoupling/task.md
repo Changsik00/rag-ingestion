@@ -15,9 +15,9 @@
 - [x] Commit: `chore(spec-038): physical separation and infrastructure isolation`
 
 ### 1-2. Base Backend API Setup
-- [ ] `app/interfaces/api/v1/endpoints/admin/` 라우터 패키지 구조 생성
-- [ ] `app/main.py`에 전체 관리자용 라우터 등록
-- [ ] Commit: `feat(spec-038): setup admin api router foundation`
+- [x] `app/interfaces/api/v1/endpoints/admin/` 라우터 패키지 구조 생성
+- [x] `app/main.py`에 전체 관리자용 라우터 등록
+- [x] Commit: `feat(spec-038): setup admin api router foundation`
 
 ## Task 2: Granular API Implementation (Backend)
 ### 2-1. Storage Integrity & Recovery API

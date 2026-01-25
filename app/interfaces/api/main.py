@@ -8,6 +8,7 @@ from app.domain.interfaces.scraper import ScraperInterface
 from app.interfaces.api.dependencies import get_ingestion_service, get_repository, get_scraper
 from app.interfaces.api.endpoints.entities import router as entities_router
 from app.interfaces.api.endpoints.jobs import router as jobs_router
+from app.interfaces.api.v1.endpoints.admin import router as admin_router
 from app.schemas.ingest import AsyncIngestResponse, IngestRequest, IngestResponse
 from app.use_cases.ingestion import IngestionService
 
@@ -19,6 +20,7 @@ app = FastAPI(
 
 app.include_router(jobs_router)
 app.include_router(entities_router)
+app.include_router(admin_router, prefix="/api/v1/admin")
 
 
 @app.post("/ingest/web", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
