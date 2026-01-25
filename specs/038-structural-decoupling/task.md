@@ -21,7 +21,7 @@
 
 ## Task 2: Granular API Implementation (Backend)
 ### 2-1. Storage Integrity & Recovery API
-- [ ] **TDD Warming up**: `tests/integration/api/admin/test_storage.py` 작성
+- [x] **TDD Warming up**: `tests/integration/api/admin/test_storage.py` 작성
 - [ ] `GET /storage/stats`, `GET /storage/reports` 구현
 - [ ] `GET /storage/documents/{id}/diagnostic` 및 `preview-context` 구현
 - [ ] `POST /storage/documents/{id}/sync`, `enrich` 구현
