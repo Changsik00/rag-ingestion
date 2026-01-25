@@ -177,6 +177,12 @@ class RAGNodes:
 
             reasoning_log.append(f"🔍 [Search/Fallback] Post-fallback found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks.")
 
+        # [Spec 037] Context Noise Cleaning
+        # 검색된 각 청크의 내용에 대해 전처리를 수행합니다.
+        for group in [vector_results, keyword_results]:
+            for chunk in group:
+                chunk.content = self._clean_context_noise(chunk.content)
+
         # Update State
         state["vector_chunks"] = vector_results
         state["keyword_chunks"] = keyword_results
@@ -184,6 +190,36 @@ class RAGNodes:
         state["reasoning_log"] = reasoning_log
 
         return state
+
+    def _clean_context_noise(self, text: str) -> str:
+        """
+        [Spec 037] RAG 컨텍스트 노이즈 제거.
+        Wikipedia Navbox, Infobox, 파일 링크 등 답변 생성에 방해되는 요소를 제거합니다.
+        """
+        if not text:
+            return ""
+
+        # 1. Wikipedia Infobox (Keep content for role/title/etc.)
+        # We remove generic templates but try to preserve Infobox data by hiding the wrapper but keeping internal lines
+        # Or more simply, avoid greedy match for just anything {{...}}. 
+        # Here we ignore Navbox and Cite but keep Infobox.
+        text = re.sub(r'\{\|.*?\|\}', '', text, flags=re.DOTALL)  # Wiki Tables
+        
+        # Remove Navbox, Cite, and other noise templates, but EXEMPT Infobox
+        # Using a lookahead to avoid matching {{Infobox
+        text = re.sub(r'\{\{(?!(?:Infobox|정보상자)).*?\}\}', '', text, flags=re.DOTALL)
+
+        # 2. Wikipedia File/Image links
+        text = re.sub(r'\[\[파일:.*?\]\]', '', text)
+        text = re.sub(r'\[\[File:.*?\]\]', '', text)
+
+        # 3. Excessive newlines
+        text = re.sub(r'\n{3,}', '\n\n', text)
+
+        # 4. Empty markdown tables (e.g. | | |)
+        text = re.sub(r'\|[\s\|-]+\|\n', '', text)
+
+        return text.strip()
 
     def generate_answer(self, state: RAGGraphState) -> RAGGraphState:
         """
@@ -340,6 +376,11 @@ class RAGNodes:
                 src = item.get("source")
                 rel = item.get("relationship")
                 tgt = item.get("target")
+                
+                # Filter out MENTIONS (Internal link metadata) and None values
+                if rel == "MENTIONS" or not src or not tgt or src == "None" or tgt == "None":
+                    continue
+                    
                 graph_lines.append(f"- ({src}) -[{rel}]-> ({tgt})")
 
         graph_context = "\n".join(graph_lines)

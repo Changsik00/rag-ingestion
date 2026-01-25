@@ -313,13 +313,8 @@
   * **우선순위**: High (Spec 034 완료 후 즉시 진행)
   * **Status**: Planning (2026-01-24)
 
-* [ ] **Spec 036: Advanced Scraper (Headless & Complex Layout Support)**
-  * [ ] **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락하는 현상 발생.
-  * [ ] **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
-  * [ ] **Target**: 나무위키(복잡한 레이아웃), 네이버 뉴스(동적 요소) 등 완벽 지원.
-  * **우선순위**: High (User Feedback) - Spec 034 이후 진행
-
 * [ ] **Spec 037: RAG Quality Stabilization & Data Integrity Sync**
+  * **Documentation**: [Spec](specs/037-rag-quality-stabilization/spec.md), [Plan](specs/037-rag-quality-stabilization/plan.md), [Task](specs/037-rag-quality-stabilization/task.md)
   * [ ] **Problem**: 
     - **ChromaDB Drift**: Neo4j와 ChromaDB 간의 데이터 개수 불일치 (1401 vs 93).
     - **Metadata Loss**: 수집된 문서 중 제목(Title)이 누락된 경우가 많아 검색 품질 저하.
@@ -402,6 +397,11 @@
   * **Goal**: Mock이 아닌 실제 LLM과 상호작용하며 HITL 흐름을 검증하는 스크립트 작성 (`scripts/verify_hitl_real.py`).
   * **Scenario**: 실제 Gemini LLM 사용 -> 강제 오류 주입 -> Interrupt 확인 -> 수동 Resume -> 최종 결과 확인.
   * **Priority**: 품질 검증 단계에서 수행 권장.
+
+* **[Feature] Advanced Scraper (Headless & Complex Layout Support)** (Spec 036)
+  * **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락하는 현상 발생.
+  * **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
+  * **Priority**: Low (User requested move to Icebox - 2026-01-25)
 
 * **[Integration] n8n Workflow Automation**
   * **Goal**: 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템.

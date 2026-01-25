@@ -29,6 +29,21 @@ class Neo4jStorage(DocumentRepository):
                 flattened[key] = value
         return flattened
 
+    def _unflatten_metadata(self, node_items: dict) -> dict:
+        """Neo4j 속성을 도메인 메타데이터로 복원 (json 해제 등)"""
+        metadata = {}
+        for k, v in node_items.items():
+            if k in ["id", "content", "created_at", "updated_at"]:
+                continue
+            if isinstance(v, str) and k.endswith("_json"):
+                try:
+                    metadata[k[:-5]] = json.loads(v)
+                except (ValueError, TypeError):
+                    metadata[k] = v
+            else:
+                metadata[k] = v
+        return metadata
+
     def save(self, document: Document) -> None:
         try:
             flattened_metadata = self._flatten_metadata(document.metadata)
@@ -46,12 +61,22 @@ class Neo4jStorage(DocumentRepository):
             # Yes, I removed explicit `source_url` field in Step 181.
             # I must ensure it is saved in metadata if present.
 
+            # created_at 안전하게 처리
+            from datetime import datetime
+            c_at = document.created_at
+            if isinstance(c_at, str):
+                created_at_str = c_at
+            elif isinstance(c_at, datetime):
+                created_at_str = c_at.isoformat()
+            else:
+                created_at_str = datetime.now().isoformat()
+            
             with self.driver.session() as session:
                 session.run(
                     query,
                     id=str(document.id),
                     content=document.content,
-                    created_at=document.created_at.isoformat(),
+                    created_at=created_at_str,
                     metadata=flattened_metadata,
                 )
         except Exception as e:
@@ -102,11 +127,10 @@ class Neo4jStorage(DocumentRepository):
                 if result:
                     node = result["d"]
                     return Document(
-                        id=str(node["id"]),  # Ensure ID is string for Pydantic
+                        id=str(node["id"]),
                         content=node.get("content", ""),
-                        # source_url removal handled by not mapping it explicitly
-                        metadata={k: v for k, v in node.items() if k not in ["id", "content", "created_at"]},
-                        created_at=node.get("created_at"),  # Pydantic will handle parsing if isoformat string
+                        metadata=self._unflatten_metadata(node),
+                        created_at=node.get("created_at"),
                     )
             return None
         except Exception as e:
@@ -136,7 +160,7 @@ class Neo4jStorage(DocumentRepository):
                         Document(
                             id=node["id"],
                             content=node.get("content", ""),
-                            metadata={k: v for k, v in node.items() if k not in ["id", "content", "created_at"]},
+                            metadata=self._unflatten_metadata(node),
                         )
                     )
             return docs
@@ -156,28 +180,13 @@ class Neo4jStorage(DocumentRepository):
                 results = session.run(query, doc_id=str(doc_id))
                 for record in results:
                     node = record["c"]
-
-                    # Unflatten metadata (Reuse logic if possible, or duplicate for now due to helper method privacy)
-                    metadata = {}
-                    for k, v in node.items():
-                        if k in ["id", "content", "index", "parent_id"]:
-                            continue
-                        if k.endswith("_json"):
-                            try:
-                                clean_key = k[:-5]
-                                metadata[clean_key] = json.loads(v)
-                            except (ValueError, TypeError):
-                                metadata[k] = v
-                        else:
-                            metadata[k] = v
-
                     chunks.append(
                         Chunk(
                             id=node["id"],
                             content=node.get("content", ""),
                             parent_id=node.get("parent_id"),
                             index=node.get("index", 0),
-                            metadata=metadata,
+                            metadata=self._unflatten_metadata(node),
                         )
                     )
             return chunks
@@ -278,4 +287,99 @@ class Neo4jStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"Neo4j search failed: {e}")
             logger.warning(f"Neo4j Search Error: {e}")
+            return []
+    def get_all_chunk_ids(self) -> set[str]:
+        """Neo4j의 모든 청크 ID를 가져옵니다."""
+        try:
+            query = "MATCH (c:Chunk) RETURN c.id as id"
+            with self.driver.session() as session:
+                result = session.run(query)
+                return {record["id"] for record in result}
+        except Exception as e:
+            logger.error(f"Failed to get all chunk IDs from Neo4j: {e}")
+            return set()
+
+    def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
+        """여러 청크 ID에 해당하는 청크들을 한 번에 가져옵니다."""
+        try:
+            query = """
+            MATCH (c:Chunk)
+            WHERE c.id IN $ids
+            RETURN c
+            """
+            chunks = []
+            with self.driver.session() as session:
+                results = session.run(query, ids=chunk_ids)
+                for record in results:
+                    node = record["c"]
+                    # Unflatten metadata
+                    metadata = {}
+                    for k, v in node.items():
+                        if k in ["id", "content", "index", "parent_id"]:
+                            continue
+                        if k.endswith("_json"):
+                            try:
+                                clean_key = k[:-5]
+                                metadata[clean_key] = json.loads(v)
+                            except (ValueError, TypeError):
+                                metadata[k] = v
+                        else:
+                            metadata[k] = v
+
+                    chunks.append(
+                        Chunk(
+                            id=node["id"],
+                            content=node.get("content", ""),
+                            parent_id=node.get("parent_id"),
+                            index=node.get("index", 0),
+                            metadata=self._unflatten_metadata(node),
+                        )
+                    )
+            return chunks
+        except Exception as e:
+            logger.error(f"Failed to get chunks by IDs from Neo4j: {e}")
+            return []
+    def get_document_stats(self) -> list[dict]:
+        """문서별 기본 통계를 가장 가볍고 빠르게 가져옵니다. (안정성 보장 버전)"""
+        try:
+            # 1. 문서 정보 가져오기 (가장 가벼운 프로퍼티만)
+            # source_url 프로퍼티도 함께 조회
+            query = "MATCH (d:Document) RETURN d.id as id, d.title as title, d.source as source, d.url as url, d.source_url as source_url"
+            stats = []
+            with self.driver.session() as session:
+                results = session.run(query)
+                for record in results:
+                    stats.append({
+                        "id": record["id"],
+                        "title": record["title"] or "Untitled",
+                        "url": record["source_url"] or record["source"] or record["url"] or "",
+                        "chunk_count": 0
+                    })
+            
+            # 2. 청크 개수 합산 (관계 기반이 아닌 프로퍼티 기반으로 더 가볍게 시도하거나 MATCH (d)-[:HAS_CHUNK]->(c) 사용)
+            # 여기서는 parent_id 프로퍼티를 사용하여 메모리 오버헤드 최소화
+            count_query = "MATCH (c:Chunk) RETURN c.parent_id as pid, count(c) as cnt"
+            with self.driver.session() as session:
+                counts = session.run(count_query)
+                count_map = {str(r["pid"]): r["cnt"] for r in counts}
+            
+            for s in stats:
+                pid_str = str(s["id"])
+                s["chunk_count"] = count_map.get(pid_str, 0)
+                
+            return stats
+        except Exception as e:
+            logger.error(f"Failed to get document stats from Neo4j: {e}")
+            return []
+
+    def get_all_chunk_metadata(self) -> list[dict]:
+        """모든 청크의 핵심 데이터(ID, 부모 ID)를 조인 없이 가볍게 가져옵니다."""
+        try:
+            # content는 벌크 로드에서 제외 (성능 저하 방지)
+            query = "MATCH (c:Chunk) RETURN c.id as id, c.parent_id as parent_id"
+            with self.driver.session() as session:
+                results = session.run(query)
+                return [dict(record) for record in results]
+        except Exception as e:
+            logger.error(f"Failed to get all chunk metadata from Neo4j: {e}")
             return []

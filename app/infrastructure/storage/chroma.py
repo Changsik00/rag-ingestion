@@ -371,3 +371,69 @@ class ChromaStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"MMR search logic failed: {e}")
             return self.search(query, limit, filters=filters)
+    def get_all_chunk_ids(self) -> set[str]:
+        """ChromaDB의 모든 청크 ID를 가져옵니다."""
+        try:
+            # include=[] means only IDs are returned, which is efficient
+            result = self.collection.get(include=[])
+            return set(result["ids"])
+        except Exception as e:
+            logger.error(f"Failed to get all chunk IDs from ChromaDB: {e}")
+            return set()
+    def get_document_stats(self) -> list[dict]:
+        """ChromaDB의 문서별 통계 (Chroma는 Chunk 중심이므로 기본 정보만 반환)"""
+        try:
+            # Chroma에서 중복되지 않는 parent_id 목록을 가져오는 효율적인 방법이 제한적이므로
+            # 전체 가져온 후 그룹화 (Chroma는 서브 저장소이므로 빈도 낮음)
+            result = self.collection.get(include=["metadatas"])
+            if not result or not result["metadatas"]:
+                return []
+            stats_map = {}
+            for meta in result["metadatas"]:
+                pid = meta.get("parent_id")
+                if not pid: continue
+                if pid not in stats_map:
+                    stats_map[pid] = {"id": pid, "title": meta.get("title", "Untitled"), "chunk_count": 0}
+                stats_map[pid]["chunk_count"] += 1
+            return list(stats_map.values())
+        except Exception as e:
+            logger.error(f"Failed to get document stats from ChromaDB: {e}")
+            return []
+
+    def get_all_chunk_metadata(self) -> list[dict]:
+        """ChromaDB의 모든 청크 핵심 메타데이터를 일괄 조회합니다."""
+        try:
+            result = self.collection.get(include=["metadatas"])
+            if not result or not result["ids"]:
+                return []
+            return [
+                {"id": result["ids"][i], "parent_id": result["metadatas"][i].get("parent_id")}
+                for i in range(len(result["ids"]))
+            ]
+        except Exception as e:
+            logger.error(f"Failed to get all chunk metadata from ChromaDB: {e}")
+            return []
+
+    def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
+        """여러 청크 ID에 해당하는 청크들을 한 번에 가져옵니다."""
+        try:
+            result = self.collection.get(ids=chunk_ids)
+            chunks = []
+            if result and result["ids"]:
+                for i in range(len(result["ids"])):
+                    chunk_id = result["ids"][i]
+                    content = result["documents"][i]
+                    metadata = result["metadatas"][i]
+                    chunks.append(
+                        Chunk(
+                            id=chunk_id,
+                            content=content,
+                            metadata=metadata,
+                            parent_id=metadata.get("parent_id"),
+                            index=int(metadata.get("index", 0)),
+                        )
+                    )
+            return chunks
+        except Exception as e:
+            logger.error(f"Failed to get chunks by IDs from ChromaDB: {e}")
+            return []
