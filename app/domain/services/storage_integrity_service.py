@@ -158,6 +158,56 @@ class StorageIntegrityService:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
+    async def get_cleaned_context(self, doc_id: str) -> str:
+        """LLM에게 전달될 정제된 컨텍스트 미리보기"""
+        from app.infrastructure.rag.nodes import RAGNodes
+        chunks = self.primary_repo.get_chunks(doc_id)
+        if not chunks:
+            return "No chunks found."
+        
+        # RAGNodes의 클리닝 로직 재사용 (Dependency injection 없이 정적 메서드처럼 활용 위해 임시 인스턴스)
+        nodes = RAGNodes(None, None, None, None, None, None)
+        cleaned_parts = []
+        for c in chunks:
+            cleaned_parts.append(nodes._clean_context_noise(c.content))
+        
+        return "\n\n---\n\n".join(cleaned_parts)
+
+    async def enrich_knowledge_graph(self, doc_id: str, extractor_service: Any) -> Dict[str, Any]:
+        """특정 문서에 대해 의미 추출을 재실행하여 지식 그래프 보충"""
+        from uuid import UUID
+        doc = self.primary_repo.get(doc_id)
+        if not doc:
+            return {"success": False, "error": "Document not found"}
+        
+        try:
+            # 1. 의미 추출 재실행
+            semantic_data = await extractor_service.extract(doc.content, thread_id=f"enrich_{doc_id}")
+            if not semantic_data:
+                return {"success": False, "error": "Failed to extract semantic data"}
+            
+            # 2. 메타데이터 업데이트
+            doc.metadata["semantic_data"] = semantic_data.model_dump()
+            self.primary_repo.save(doc)
+            
+            # 3. 그래프 빌드 (IngestionService 로직과 동일하게 수행하나 여기선 직접 구성)
+            # Entity 및 Relationship 저장
+            if semantic_data.entities:
+                for entity_type, names in semantic_data.entities.items():
+                    for name in names:
+                        self.primary_repo.graph.save_entity(name, entity_type)
+                        self.primary_repo.graph.create_mention_relationship(str(doc_id), name)
+            
+            if hasattr(semantic_data, "relationships") and semantic_data.relationships:
+                for rel in semantic_data.relationships:
+                    self.primary_repo.graph.create_entity_relationship(
+                        source_name=rel.source, relationship_type=rel.relationship, target_name=rel.target
+                    )
+            
+            return {"success": True, "entities": len(semantic_data.entities or {}), "rels": len(semantic_data.relationships or [])}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
     def sync_all(self, batch_size: int = 20, callback: Any = None):
         """누락된 데이터(Chunk) 및 결함 있는 메타데이터(Title)를 일괄 복구"""
         reports = self.get_document_drift_report()

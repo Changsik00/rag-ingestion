@@ -19,6 +19,18 @@ class IntegrityAdminService:
     def get_missing_chunk_sample(self, doc_id: str):
         return self.service.get_missing_chunk_sample(doc_id)
 
+    async def get_cleaned_context(self, doc_id: str):
+        return await self.service.get_cleaned_context(doc_id)
+
+    async def enrich_knowledge_graph(self, doc_id: str):
+        from app.interfaces.api.dependencies import get_semantic_extractor, get_checkpointer
+        import asyncio
+        
+        # FastAPI dependency injection outside of FastAPI context
+        cp = await get_checkpointer()
+        extractor = await get_semantic_extractor(cp)
+        return await self.service.enrich_knowledge_graph(doc_id, extractor)
+
     def sync_document(self, doc_id: str):
         return self.service.sync_document(doc_id)
 

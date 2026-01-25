@@ -100,16 +100,41 @@ def render_doc_table():
                 row = df[df["id"] == doc_id].iloc[0]
                 
                 # 상세 정보 표시 (Missing Title인 경우 URL 중심, 아니면 본문 중심)
-                if row["status"] == "Missing Title":
-                    st.warning(f"**Document has no title.**")
-                    st.info(f"**Source URL:** {row['url']}")
-                    st.caption("Fix 버튼을 누르면 위 URL을 기반으로 제목을 추출하고 하위 청크에 전파합니다.")
-                elif row["status"] != "In Sync":
-                    st.error(f"**Missing Snippet Sample from '{row['title']}':**")
-                    with st.spinner("Loading snippet..."):
-                        snippet = service.get_missing_chunk_sample(doc_id)
-                    st.code(snippet or "Snippet not available.")
+                tab1, tab2, tab3 = st.tabs(["💡 Diagnostic", "🔍 RAG Context Preview", "🧬 Graph Enrichment"])
                 
+                with tab1:
+                    if row["status"] == "Missing Title":
+                        st.warning(f"**Document has no title.**")
+                        st.info(f"**Source URL:** {row['url']}")
+                        st.caption("Fix 버튼을 누르면 위 URL을 기반으로 제목을 추출하고 하위 청크에 전파합니다.")
+                    elif row["status"] != "In Sync":
+                        st.error(f"**Missing Snippet Sample from '{row['title']}':**")
+                        with st.spinner("Loading snippet..."):
+                            snippet = service.get_missing_chunk_sample(doc_id)
+                        st.code(snippet or "Snippet not available.")
+                    else:
+                        st.success(f"'{row['title']}' is fully synchronized.")
+
+                with tab2:
+                    st.info("LLM이 실제로 보게 될 정제된 컨텍스트입니다. Infobox 등이 잘 보존되었는지 확인하세요.")
+                    if st.button("Generate Preview", key=f"preview_btn_{doc_id}"):
+                        with st.spinner("Cleaning context..."):
+                            import asyncio
+                            cleaned_ctx = asyncio.run(service.get_cleaned_context(doc_id))
+                            st.text_area("Cleaned Content", value=cleaned_ctx, height=400)
+
+                with tab3:
+                    st.info("지식 그래프 데이터(Entity/Relationship)가 부족한 경우 재추출을 실행합니다.")
+                    if st.button("🚀 Re-extract Knowledge Graph", key=f"enrich_btn_{doc_id}"):
+                        with st.spinner("LLM is extracting semantics..."):
+                            import asyncio
+                            res = asyncio.run(service.enrich_knowledge_graph(doc_id))
+                            if res["success"]:
+                                st.success(f"Successfully enriched: {res['entities']} entities, {res['rels']} relationships.")
+                            else:
+                                st.error(f"Enrichment failed: {res.get('error')}")
+                
+                st.divider()
                 if row["status"] != "In Sync":
                     if st.button(f"🛠 Fix Selected Document Metadata & Sync", key=f"fix_btn_{doc_id}"):
                         with st.spinner("Repairing..."):
@@ -117,8 +142,6 @@ def render_doc_table():
                             if res["success"]:
                                 st.success(f"Successfully repaired {res['count']} chunks.")
                                 st.rerun()
-                else:
-                    st.success(f"'{row['title']}' is fully synchronized.")
 
     except Exception as e:
         st.error(f"Failed to load document report: {e}")
