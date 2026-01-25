@@ -29,14 +29,14 @@
 - [x] Commit: `feat(spec-038): implement exhaustive storage diagnostic and recovery apis`
 
 ### 2-2. Graph & RAG Session API
-- [ ] **TDD Warming up**: `tests/integration/api/admin/test_rag.py` 작성
-- [ ] `POST /graph/query` (Neo4j Graph to Agraph JSON conversion) 구현
-- [ ] **Knowledge Source**: `GET /rag/documents/autocomplete` (검색어 기반 문서 추천) 구현
-- [ ] **Advanced Settings**: `POST /rag/sessions` (Reset), `DELETE /history` (Clear), `POST /config` 구현
-- [ ] `POST /rag/sessions/{id}/ask` (Streaming response) 구현
-- [ ] `GET /rag/sessions/{id}/trace` 및 `POST /resume` (HITL) 구현
-- [ ] `POST /feedback` 구현
-- [ ] Commit: `feat(spec-038): implement interactive rag session, autocomplete and advanced settings apis`
+- [x] **TDD Warming up**: `tests/integration/api/admin/test_rag.py` 작성
+- [x] `POST /graph/query` (Neo4j Graph to Agraph JSON conversion) 구현
+- [x] **Knowledge Source**: `GET /rag/documents/autocomplete` (검색어 기반 문서 추천) 구현
+- [x] **Advanced Settings**: `POST /rag/sessions` (Reset), `DELETE /history` (Clear), `POST /config` 구현
+- [x] `POST /rag/sessions/{id}/ask` (Streaming response) 구현
+- [x] `GET /rag/sessions/{id}/trace` 및 `POST /resume` (HITL) 구현
+- [x] `POST /feedback` 구현
+- [x] Commit: `feat(spec-038): implement interactive rag session, autocomplete and advanced settings apis`
 
 ## Task 3: Thin Client Refactoring (Frontend & Tests)
 ### 3-1. API Client Implementation

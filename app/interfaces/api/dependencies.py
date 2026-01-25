@@ -11,7 +11,9 @@ from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
+from app.domain.services.admin_agent import AdminAgent
 from app.domain.services.chunker import ChunkerService
+from app.domain.services.feedback_service import FeedbackService
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.domain.services.rag_service import RAGService
@@ -211,3 +213,17 @@ async def get_rag_service(
     compiled_graph = graph_builder.build(checkpointer=checkpointer)
 
     return RAGService(graph=compiled_graph)
+
+
+# Admin Agent 의존성 (Spec 038)
+async def get_admin_agent(
+    rag_service: Annotated[RAGService, Depends(get_rag_service)],
+    ingestion_service: Annotated[IngestionService, Depends(get_ingestion_service)],
+) -> AdminAgent:
+    return AdminAgent(rag_service=rag_service, ingestion_service=ingestion_service)
+
+
+# Feedback Service 의존성
+@lru_cache
+def get_feedback_service() -> FeedbackService:
+    return FeedbackService()
