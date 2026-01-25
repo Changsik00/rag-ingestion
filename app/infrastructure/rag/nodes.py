@@ -201,10 +201,10 @@ class RAGNodes:
 
         # 1. Wikipedia Infobox (Keep content for role/title/etc.)
         # We remove generic templates but try to preserve Infobox data by hiding the wrapper but keeping internal lines
-        # Or more simply, avoid greedy match for just anything {{...}}. 
+        # Or more simply, avoid greedy match for just anything {{...}}.
         # Here we ignore Navbox and Cite but keep Infobox.
         text = re.sub(r'\{\|.*?\|\}', '', text, flags=re.DOTALL)  # Wiki Tables
-        
+
         # Remove Navbox, Cite, and other noise templates, but EXEMPT Infobox
         # Using a lookahead to avoid matching {{Infobox
         text = re.sub(r'\{\{(?!(?:Infobox|정보상자)).*?\}\}', '', text, flags=re.DOTALL)
@@ -376,11 +376,11 @@ class RAGNodes:
                 src = item.get("source")
                 rel = item.get("relationship")
                 tgt = item.get("target")
-                
+
                 # Filter out MENTIONS (Internal link metadata) and None values
                 if rel == "MENTIONS" or not src or not tgt or src == "None" or tgt == "None":
                     continue
-                    
+
                 graph_lines.append(f"- ({src}) -[{rel}]-> ({tgt})")
 
         graph_context = "\n".join(graph_lines)
