@@ -40,36 +40,36 @@
 
 ## Task 3: Thin Client Refactoring (Frontend & Tests)
 ### 3-1. API Client Implementation
-- [ ] `admin/utils/api_client.py` 구현 (`httpx` singleton with error handling)
-- [ ] Commit: `feat(spec-038): implement streamlit-ready api client`
+- [x] `admin/utils/api_client.py` 구현 (`httpx` singleton with error handling)
+- [x] Commit: `feat(spec-038): implement streamlit-ready api client`
 
 ### 3-2. Page-by-Page Migration (Zero Import)
-- [ ] Page 0 (Jobs) & Page 5 (Storage) API 연동
-- [ ] Page 1 (Graph) API 연동
-- [ ] Page 4 (Playground):
+- [x] Page 0 (Jobs) & Page 5 (Storage) API 연동
+- [x] Page 1 (Graph) API 연동
+- [x] Page 4 (Playground):
     - Knowledge Source: `st.selectbox` + API Autocomplete 연동
     - Advanced Settings: Clear/Reset 버튼 API 연동
     - Main Chat: API 기반 대화 처리 및 HITL 연동
-- [ ] 2, 3 (HITL/Trace) 보조 기능 통합 및 직접 import 전수 제거
-- [ ] Commit: `refactor(spec-038): 100% thin client transformation of all dashboard pages`
+- [x] 2, 3 (HITL/Trace) 보조 기능 통합 및 직접 import 전수 제거
+- [x] Commit: `refactor(spec-038): 100% thin client transformation of all dashboard pages`
 
 ### 3-3. Test Refactoring (Zero Import Enforcement)
-- [ ] 기존 Admin UI 테스트 (`tests/admin/`) 검수: `from app.` 구문 색출
-- [ ] 모든 UI 테스트를 `api_client` Mocking 또는 통합 테스트로 전환
-- [ ] Commit: `test(spec-038): refactor all admin tests to depend only on apis`
+- [x] 기존 Admin UI 테스트 (`tests/admin/`) 검수: `from app.` 구문 색출
+- [x] 모든 UI 테스트를 `api_client` Mocking 또는 통합 테스트로 전환
+- [x] Commit: `test(spec-038): refactor all admin tests to depend only on apis`
 
 ## Task 4: Verification & PR Creation
 ### 4-1. QA & Verification
-- [ ] **Import Guard**: `grep -r "from app." admin/` 실행하여 의존성 제로 확인
-- [ ] 통합 테스트 실행 (`tests/integration/api/admin/`) - All Pass 확인
-- [ ] `docker-compose` 환경에서의 격리 기능 최종 검증
-- [ ] Commit: `chore(spec-038): finalize architectural isolation and verify`
+- [x] **Import Guard**: `grep -r "from app." admin/` 실행하여 의존성 제로 확인
+- [x] 통합 테스트 실행 (`tests/integration/api/admin/`) - All Pass 확인
+- [x] `docker-compose` 환경에서의 격리 기능 최종 검증
+- [x] Commit: `chore(spec-038): finalize architectural isolation and verify`
 
 ### 4-2. Documentation & PR
-- [ ] Walkthrough.md 작성
-- [ ] Code Quality Check: `ruff check . --fix && ruff format .`
-- [ ] PR 생성
-- [ ] Commit: `docs(spec-038): add walkthrough and finalize spec artifacts`
+- [x] Walkthrough.md 작성
+- [x] Code Quality Check: `ruff check . --fix && ruff format .`
+- [x] PR 생성
+- [x] Commit: `docs(spec-038): add walkthrough and finalize spec artifacts`
 
 ## Summary
 **총 Task**: 4개 대분류 (15개 이상 상세 API 처리)
