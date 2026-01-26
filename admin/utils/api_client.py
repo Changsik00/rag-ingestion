@@ -8,8 +8,8 @@ class APIClient:
     """Streamlit Admin Dashboard용 Thin Client"""
     def __init__(self):
         self.config = AdminConfig()
-        self.base_url = self.config.api_url.rstrip("/")
-        self.timeout = 60.0 # RAG 작업 등을 위해 넉넉하게 설정
+        self.base_url = self.config.api_url.rstrip("/") + "/"
+        self.timeout = 60.0
 
     def _handle_response(self, response: httpx.Response):
         try:
@@ -23,16 +23,19 @@ class APIClient:
             return None
 
     def get(self, endpoint: str, params: dict = None):
+        endpoint = endpoint.lstrip("/")
         with httpx.Client(base_url=self.base_url, timeout=self.timeout) as client:
             response = client.get(endpoint, params=params)
             return self._handle_response(response)
 
     def post(self, endpoint: str, json: dict = None):
+        endpoint = endpoint.lstrip("/")
         with httpx.Client(base_url=self.base_url, timeout=self.timeout) as client:
             response = client.post(endpoint, json=json)
             return self._handle_response(response)
 
     def delete(self, endpoint: str):
+        endpoint = endpoint.lstrip("/")
         with httpx.Client(base_url=self.base_url, timeout=self.timeout) as client:
             response = client.delete(endpoint)
             return self._handle_response(response)
