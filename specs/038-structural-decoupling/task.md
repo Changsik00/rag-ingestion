@@ -63,9 +63,14 @@
 - [x] Full Tests: `uv run pytest -v` (207 passed)
 - [x] Walkthrough 작성: `specs/038-structural-decoupling/walkthrough.md`
 - [x] PR Description 작성: `specs/038-structural-decoupling/pr_description.md`
-- [x] Create PR: `gh pr create --title "feat(spec-038): structural decoupling of admin ui and async engine alignment" --body-file specs/038-structural-decoupling/pr_description.md`
+- [x] Create PR: `gh pr create` -> [PR #39](https://github.com/Changsik00/rag-ingestion/pull/39)
+
+## Task 6: Debugging & Stabilization
+- [/] Fix HITL 404: Add missing endpoints to `app/interfaces/api/v1/endpoints/admin/jobs.py`
+- [ ] Fix SQLite 500: Solve "database disk image is malformed" error
+- [ ] Verify Streamlit stability: Correct internal 404s if necessary
 
 ## Summary
-**총 Task**: 4개 대분류 (백엔드 API 전환, 프론트엔드 격리, 비동기 엔진 정합성 확보)
-**최종 상태**: 아키텍처 격리 및 비동기 안정화 완료 (207 Pass)
+**총 Task**: 5개 대분류 + 디버깅
+**최종 상태**: 아키텍처 격리 후 실제 운영 환경 디버깅 중
 **완료 일자**: 2026-01-26
