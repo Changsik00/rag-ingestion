@@ -10,9 +10,9 @@
 
 ## Task 1: Pollution Control & Cleaning Engine
 ### 1-1. Markdown Cleaner Implementation
-- [ ] `MarkdownCleaner` 구현: 정규식을 이용한 Wiki 노이즈(`[1]`, `[편집]`), 빈 링크, 특수문자 제거.
-- [ ] Test: `tests/unit/infrastructure/scraper/test_cleaner.py` (나무위키 샘플 데이터 활용)
-- [ ] Commit: `feat(spec-039): implement markdown cleaner for pollution control`
+- [x] `MarkdownCleaner` 구현: 정규식을 이용한 Wiki 노이즈(`[1]`, `[편집]`), 빈 링크, 특수문자 제거.
+- [x] Test: `tests/unit/infrastructure/scrapers/test_markdown_cleaner.py` (나무위키 샘플 데이터 활용)
+- [x] Commit: `feat(spec-039): implement markdown cleaner for pollution control`
 
 ## Task 2: Advanced Scrapers (Firecrawl & Playwright)
 ### 2-1. Firecrawl Scraper
