@@ -158,10 +158,13 @@ class AdminAgent:
 
         filters = state.get("filters")
         thread_id = state.get("thread_id")
+        # Spec 040 Fix: AdminAgent와 RAGService가 동일한 Checkpointer/ThreadID를 공유하면 상태 충돌 발생.
+        # 따라서 RAGService 호출 시에는 별도의 namespace를 적용한 thread_id를 전달함.
+        rag_thread_id = f"rag-{thread_id}" if thread_id else None
 
         # RAG 검색 및 생성 실행
         result = await self.rag_service.retrieve_and_generate(
-            last_user_msg, history, filters=filters, thread_id=thread_id
+            last_user_msg, history, filters=filters, thread_id=rag_thread_id
         )
 
         context_data = {
