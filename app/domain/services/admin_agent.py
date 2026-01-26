@@ -24,6 +24,7 @@ class AdminState(TypedDict):
     context_data: dict  # RAG 상세 정보 (chunks, graph) 전달용
     filters: dict | None  # RAG 필터링용
     thread_id: str | None  # Thread ID (Spec 034)
+    hitl_enabled: bool  # HITL Toggle Status
 
 
 class AdminAgent:
@@ -46,18 +47,35 @@ class AdminAgent:
         workflow.add_node("router", self.router_node)
         workflow.add_node("ingest", self.ingest_node)
         workflow.add_node("search", self.search_node)
+        workflow.add_node("human_review", self.human_review_node)
 
         workflow.set_entry_point("router")
 
         workflow.add_conditional_edges("router", self.route_logic, {"ingest": "ingest", "search": "search"})
 
         workflow.add_edge("ingest", "search")  # 수집 완료 후 요약을 위해 검색 노드로 이동
-        workflow.add_edge("search", END)
+        
+        # Conditional Edge after Search: Check HITL
+        def route_after_search(state: AdminState):
+            if state.get("hitl_enabled"):
+                return "human_review"
+            return END
+
+        workflow.add_conditional_edges("search", route_after_search, {"human_review": "human_review", END: END})
+        workflow.add_edge("human_review", END)
+
+        # Default interrupt if checkpointer is provided
+        if checkpointer and not interrupt_before:
+            interrupt_before = ["human_review"]
 
         return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
     def route_logic(self, state: AdminState) -> Literal["ingest", "search"]:
         return state["intent"]
+
+    def human_review_node(self, state: AdminState) -> dict:
+        """HITL Review Node (Pass-through)"""
+        return {"tool_output": "Human Review Completed"}
 
     def router_node(self, state: AdminState) -> dict:
         messages = state["messages"]

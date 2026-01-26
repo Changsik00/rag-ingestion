@@ -35,7 +35,8 @@ uv run python scripts/verify_hitl_real.py
 
 ### 🛠 Modified Files
 - `app/domain/ingestion/state.py`: `hitl_enabled` 필드 추가
-- `app/infrastructure/brain/graph.py`: Routing 로직에 토글 체크 추가
+- `app/infrastructure/brain/graph.py`: Routing 로직에 토글 체크 추가 (Ingestion)
+- `app/domain/services/admin_agent.py`: Routing 로직에 토글 체크 추가 (Chat)
 - `app/interfaces/api/v1/endpoints/admin/rag.py`: API Payload 처리 추가
 - `admin/pages/4_RAG_Playground.py`: API 호출 시 토글 값 전달
 
