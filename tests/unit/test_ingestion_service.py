@@ -19,7 +19,8 @@ def service_deps():
     }
 
 
-def test_process_job_handles_scraping_error(service_deps):
+@pytest.mark.asyncio
+async def test_process_job_handles_scraping_error(service_deps):
     """
     Given: Scraper raises ScrapingError
     When: process_job is called
@@ -35,7 +36,7 @@ def test_process_job_handles_scraping_error(service_deps):
     service = IngestionService(**service_deps)
 
     # When
-    service.process_job(job_id)
+    await service.process_job(job_id)
 
     # Then
     service_deps["job_repository"].update_job.assert_called()
@@ -44,7 +45,8 @@ def test_process_job_handles_scraping_error(service_deps):
     assert "404 Not Found" in updated_job.error_message
 
 
-def test_process_job_handles_infrastructure_exception(service_deps):
+@pytest.mark.asyncio
+async def test_process_job_handles_infrastructure_exception(service_deps):
     """
     Given: Repository raises InfrastructureException
     When: process_job is called
@@ -65,7 +67,12 @@ def test_process_job_handles_infrastructure_exception(service_deps):
 
     # Repo fails
     service_deps["repository"].save_with_chunks.side_effect = InfrastructureException("DB Connection Failed")
-    service_deps["extractor"].extract.return_value = None  # Disable extraction logic for this test
+    
+    # Async Extractor Mock
+    import asyncio
+    future = asyncio.Future()
+    future.set_result(None)
+    service_deps["extractor"].extract.return_value = future
 
     service = IngestionService(**service_deps)
 
@@ -73,7 +80,7 @@ def test_process_job_handles_infrastructure_exception(service_deps):
     service_deps["chunker"].chunk_document.return_value = []
 
     # When
-    service.process_job(job_id)
+    await service.process_job(job_id)
 
     # Then
     service_deps["job_repository"].update_job.assert_called()
@@ -82,7 +89,8 @@ def test_process_job_handles_infrastructure_exception(service_deps):
     assert "DB Connection Failed" in updated_job.error_message
 
 
-def test_process_job_chunks_document(service_deps):
+@pytest.mark.asyncio
+async def test_process_job_chunks_document(service_deps):
     """
     Given: ChunkerService splits document into chunks
     When: process_job is called
@@ -92,7 +100,12 @@ def test_process_job_chunks_document(service_deps):
     job_id = "job-chunks"
     job = IngestionJob(id=job_id, source_url="http://chunk.com", status=JobStatus.PENDING)
     service_deps["job_repository"].get_job.return_value = job
-    service_deps["extractor"].extract.return_value = None  # Disable extraction
+    
+    # Async Extractor Mock
+    import asyncio
+    future = asyncio.Future()
+    future.set_result(None)
+    service_deps["extractor"].extract.return_value = future
 
     # Scrape succeeds
     mock_result = Mock()
@@ -112,7 +125,7 @@ def test_process_job_chunks_document(service_deps):
     service = IngestionService(**service_deps)
 
     # When
-    service.process_job(job_id)
+    await service.process_job(job_id)
 
     # Then
     # 1. Chunker called

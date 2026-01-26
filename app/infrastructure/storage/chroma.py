@@ -88,8 +88,8 @@ class ChromaStorage(DocumentRepository):
         """청크 리스트를 저장합니다 (Embedding은 chunk.content 기준)
         [Spec 037] Gemini API Rate Limit 대응을 위한 재시도 로직 추가
         """
-        import time
         import random
+        import time
 
         ids = [str(chunk.id) for chunk in chunks]
         documents = [chunk.content for chunk in chunks]
@@ -111,13 +111,13 @@ class ChromaStorage(DocumentRepository):
             except Exception as e:
                 # 429 (Rate Limit) 또는 기타 일시적 오류 대응
                 is_rate_limit = "429" in str(e) or "quota" in str(e).lower()
-                
+
                 if attempt < max_retries - 1 and (is_rate_limit or "retry" in str(e).lower()):
                     delay = (base_delay ** attempt) + random.uniform(0, 1)
                     logger.warning(f"ChromaDB save failed (attempt {attempt+1}/{max_retries}). Retrying in {delay:.2f}s... Error: {e}")
                     time.sleep(delay)
                     continue
-                
+
                 logger.error(f"Failed to save chunks to ChromaDB after {max_retries} attempts: {e}")
                 raise InfrastructureException(f"Failed to save chunks to ChromaDB: {e}") from e
 
@@ -391,7 +391,8 @@ class ChromaStorage(DocumentRepository):
             stats_map = {}
             for meta in result["metadatas"]:
                 pid = meta.get("parent_id")
-                if not pid: continue
+                if not pid:
+                    continue
                 if pid not in stats_map:
                     stats_map[pid] = {"id": pid, "title": meta.get("title", "Untitled"), "chunk_count": 0}
                 stats_map[pid]["chunk_count"] += 1

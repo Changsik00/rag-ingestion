@@ -15,7 +15,8 @@ except ImportError:
 
 
 @pytest.mark.skipif(IntentClassifier is None, reason="IntentClassifier not implemented yet")
-def test_classify_general_query():
+@pytest.mark.asyncio
+async def test_classify_general_query():
     """
     특정 문서나 타겟이 없는 일반 질문은 GENERAL_QUERY로 분류되어야 한다.
 
@@ -34,7 +35,7 @@ def test_classify_general_query():
     history = []
 
     # When
-    result = classifier.classify(query, history)
+    result = await classifier.classify(query, history)
 
     # Then
     assert result.intent == IntentType.GENERAL_QUERY
@@ -44,7 +45,8 @@ def test_classify_general_query():
 
 
 @pytest.mark.skipif(IntentClassifier is None, reason="IntentClassifier not implemented yet")
-def test_classify_compare_intent():
+@pytest.mark.asyncio
+async def test_classify_compare_intent():
     """
     두 개 이상의 대상을 비교하는 질문은 COMPARE로 분류되어야 한다.
 
@@ -63,7 +65,7 @@ def test_classify_compare_intent():
     history = []
 
     # When
-    result = classifier.classify(query, history)
+    result = await classifier.classify(query, history)
 
     # Then
     assert result.intent == IntentType.COMPARE
@@ -73,7 +75,8 @@ def test_classify_compare_intent():
 
 
 @pytest.mark.skipif(IntentClassifier is None, reason="IntentClassifier not implemented yet")
-def test_classify_summarize_intent():
+@pytest.mark.asyncio
+async def test_classify_summarize_intent():
     """
     특정 문서의 요약을 요청하면 SUMMARIZE로 분류되어야 한다.
 
@@ -93,7 +96,7 @@ def test_classify_summarize_intent():
     ]
 
     # When
-    result = classifier.classify(query, history)
+    result = await classifier.classify(query, history)
 
     # Then
     assert result.intent == IntentType.SUMMARIZE
@@ -101,7 +104,8 @@ def test_classify_summarize_intent():
 
 
 @pytest.mark.skipif(IntentClassifier is None, reason="IntentClassifier not implemented yet")
-def test_classify_filter_by_topic():
+@pytest.mark.asyncio
+async def test_classify_filter_by_topic():
     """
     특정 주제나 카테고리로 필터링하는 질문은 FILTER_BY_TOPIC으로 분류되어야 한다.
 
@@ -120,7 +124,7 @@ def test_classify_filter_by_topic():
     history = []
 
     # When
-    result = classifier.classify(query, history)
+    result = await classifier.classify(query, history)
 
     # Then
     assert result.intent == IntentType.FILTER_BY_TOPIC
@@ -128,7 +132,8 @@ def test_classify_filter_by_topic():
 
 
 @pytest.mark.skipif(IntentClassifier is None, reason="IntentClassifier not implemented yet")
-def test_classify_with_invalid_json_raises_exception():
+@pytest.mark.asyncio
+async def test_classify_with_invalid_json_raises_exception():
     """
     LLM이 잘못된 JSON을 반환하면 예외를 발생시켜야 한다.
     (Caller가 Fallback 처리를 할 수 있도록)
@@ -146,11 +151,12 @@ def test_classify_with_invalid_json_raises_exception():
 
     # When / Then
     with pytest.raises(Exception):  # JSONDecodeError or ValidationError
-        classifier.classify(query, history)
+        await classifier.classify(query, history)
 
 
 @pytest.mark.skipif(IntentClassifier is None, reason="IntentClassifier not implemented yet")
-def test_classify_with_invalid_intent_type_raises_validation_error():
+@pytest.mark.asyncio
+async def test_classify_with_invalid_intent_type_raises_validation_error():
     """
     Pydantic Schema에 정의되지 않은 Intent Type이 오면 ValidationError가 발생해야 한다.
 
@@ -167,11 +173,12 @@ def test_classify_with_invalid_intent_type_raises_validation_error():
 
     # When / Then
     with pytest.raises(Exception):  # Pydantic ValidationError
-        classifier.classify(query, history)
+        await classifier.classify(query, history)
 
 
 @pytest.mark.skipif(IntentClassifier is None, reason="IntentClassifier not implemented yet")
-def test_classify_with_history_includes_context_in_prompt():
+@pytest.mark.asyncio
+async def test_classify_with_history_includes_context_in_prompt():
     """
     히스토리가 있으면 프롬프트에 이전 대화 내용이 포함되어야 한다.
 
@@ -190,7 +197,7 @@ def test_classify_with_history_includes_context_in_prompt():
     ]
 
     # When
-    classifier.classify(query, history)
+    await classifier.classify(query, history)
 
     # Then
     llm.generate.assert_called_once()

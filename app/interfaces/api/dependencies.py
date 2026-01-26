@@ -11,11 +11,14 @@ from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
+from app.domain.services.admin_agent import AdminAgent
 from app.domain.services.chunker import ChunkerService
+from app.domain.services.feedback_service import FeedbackService
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.domain.services.rag_service import RAGService
 from app.domain.services.semantic_extractor import SemanticExtractor
+from app.domain.services.storage_integrity_service import StorageIntegrityService
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
@@ -56,6 +59,14 @@ def get_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> Docu
 @lru_cache
 def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> JobRepository:
     return Neo4jJobRepository(driver)
+
+
+# Storage Integrity Service 의존성
+@lru_cache
+def get_storage_integrity_service(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> StorageIntegrityService:
+    primary_repo = Neo4jStorage(driver)
+    target_repo = ChromaStorage()
+    return StorageIntegrityService(primary_repo, target_repo)
 
 
 # Checkpointer 의존성 (HITL Persistence)
@@ -202,3 +213,17 @@ async def get_rag_service(
     compiled_graph = graph_builder.build(checkpointer=checkpointer)
 
     return RAGService(graph=compiled_graph)
+
+
+# Admin Agent 의존성 (Spec 038)
+async def get_admin_agent(
+    rag_service: Annotated[RAGService, Depends(get_rag_service)],
+    ingestion_service: Annotated[IngestionService, Depends(get_ingestion_service)],
+) -> AdminAgent:
+    return AdminAgent(rag_service=rag_service, ingestion_service=ingestion_service)
+
+
+# Feedback Service 의존성
+@lru_cache
+def get_feedback_service() -> FeedbackService:
+    return FeedbackService()

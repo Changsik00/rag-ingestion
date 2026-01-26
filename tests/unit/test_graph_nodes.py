@@ -28,16 +28,17 @@ def test_nodes_initialization():
     assert nodes.llm == mock_llm
 
 
-def test_extract_metadata_node():
+@pytest.mark.asyncio
+async def test_extract_metadata_node():
     """extract_metadata 노드가 LLM을 호출하고 State를 갱신하는지 검증"""
     from app.infrastructure.brain.nodes import IngestionNodes
 
-    # Mock LLM & Result
-    mock_llm = MagicMock(spec=LLMInterface)
+    from unittest.mock import AsyncMock
+    mock_llm = AsyncMock(spec=LLMInterface)
     mock_metadata = ExtractedMetadata(
         title="Test Title", summary="Test Summary", keywords=["test"], entities={}, language="en"
     )
-    mock_llm.extract_metadata.side_effect = lambda x: mock_metadata
+    mock_llm.extract_metadata.return_value = mock_metadata
 
     nodes = IngestionNodes(llm=mock_llm)
 
@@ -50,8 +51,8 @@ def test_extract_metadata_node():
         "retry_count": 0,
     }
 
-    # Execute Node (Sync)
-    result = nodes.extract_metadata(state)
+    # Execute Node (Async)
+    result = await nodes.extract_metadata(state)
 
     # Verify State Update
     assert "metadata" in result

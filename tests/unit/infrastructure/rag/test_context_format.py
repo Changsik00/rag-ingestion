@@ -38,7 +38,7 @@ def test_merge_and_format_context_injects_explicit_ids():
     )
 
     # When
-    context_str = nodes._merge_and_format_context([chunk1], [chunk2], [])
+    context_str, _ = nodes._merge_and_format_context([chunk1], [chunk2], [])
 
     # Then
     # 현재 구현은 [1] Source: src1 (Title 1) 형식임

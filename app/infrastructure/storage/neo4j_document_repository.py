@@ -70,7 +70,7 @@ class Neo4jStorage(DocumentRepository):
                 created_at_str = c_at.isoformat()
             else:
                 created_at_str = datetime.now().isoformat()
-            
+
             with self.driver.session() as session:
                 session.run(
                     query,
@@ -355,18 +355,18 @@ class Neo4jStorage(DocumentRepository):
                         "url": record["source_url"] or record["source"] or record["url"] or "",
                         "chunk_count": 0
                     })
-            
+
             # 2. 청크 개수 합산 (관계 기반이 아닌 프로퍼티 기반으로 더 가볍게 시도하거나 MATCH (d)-[:HAS_CHUNK]->(c) 사용)
             # 여기서는 parent_id 프로퍼티를 사용하여 메모리 오버헤드 최소화
             count_query = "MATCH (c:Chunk) RETURN c.parent_id as pid, count(c) as cnt"
             with self.driver.session() as session:
                 counts = session.run(count_query)
                 count_map = {str(r["pid"]): r["cnt"] for r in counts}
-            
+
             for s in stats:
                 pid_str = str(s["id"])
                 s["chunk_count"] = count_map.get(pid_str, 0)
-                
+
             return stats
         except Exception as e:
             logger.error(f"Failed to get document stats from Neo4j: {e}")
