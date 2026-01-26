@@ -16,10 +16,17 @@ uv run python scripts/verify_hitl_real.py
 ```
 
 ### Manual Verification
+#### 1. Script Verification
 1. 위 명령어를 실행합니다.
 2. 로그 출력에서 다음 항목을 확인합니다:
    - `✅ SUCCESS: Graph interrupted at 'human_review' as expected (Toggle Works)!`
    - `🎉 HITL Verification COMPLETE`
+
+#### 2. Admin UI Verification
+1. `uv run streamlit run admin/0_Job_Queue.py` 실행
+2. **RAG Playground** 메뉴 이동
+3. **Advanced Settings** > **Enable HITL Review** 토글 활성화
+4. 질문 입력 후 "Thinking..." 단계에서 멈추는지(Status가 complete로 변하지 않는지) 확인 (현재는 Stop UI가 없으므로 로그나 상태로 확인)
 
 ## 📦 Files Changed
 
