@@ -17,12 +17,13 @@ logger = logging.getLogger(__name__)
 
 class AdminState(TypedDict):
     """Admin Agent의 상태를 정의하는 TypedDict"""
+
     messages: Annotated[list[AnyMessage], add_messages]
     intent: str
     tool_output: str
     context_data: dict  # RAG 상세 정보 (chunks, graph) 전달용
     filters: dict | None  # RAG 필터링용
-    thread_id: str | None # Thread ID (Spec 034)
+    thread_id: str | None  # Thread ID (Spec 034)
 
 
 class AdminAgent:
@@ -30,13 +31,12 @@ class AdminAgent:
     RAG Playground 및 관리자용 Orchestration Agent.
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
+
     def __init__(self, rag_service: RAGService, ingestion_service: IngestionService):
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash-exp",
-            temperature=0,
-            google_api_key=get_settings().GEMINI_API_KEY
+            model="gemini-2.0-flash-exp", temperature=0, google_api_key=get_settings().GEMINI_API_KEY
         )
 
     def build_workflow(self, checkpointer: Any = None, interrupt_before: list[str] | None = None):
@@ -49,19 +49,12 @@ class AdminAgent:
 
         workflow.set_entry_point("router")
 
-        workflow.add_conditional_edges(
-            "router",
-            self.route_logic,
-            {"ingest": "ingest", "search": "search"}
-        )
+        workflow.add_conditional_edges("router", self.route_logic, {"ingest": "ingest", "search": "search"})
 
         workflow.add_edge("ingest", "search")  # 수집 완료 후 요약을 위해 검색 노드로 이동
         workflow.add_edge("search", END)
 
-        return workflow.compile(
-            checkpointer=checkpointer,
-            interrupt_before=interrupt_before
-        )
+        return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
     def route_logic(self, state: AdminState) -> Literal["ingest", "search"]:
         return state["intent"]
@@ -125,11 +118,7 @@ class AdminAgent:
                 msg = f"✅ 수집 완료: {target_url}\n\n이제 내용을 요약해드릴게요..."
                 if updated_job.docs_ids:
                     doc_id = str(updated_job.docs_ids[0])
-                    return {
-                        "messages": [AIMessage(content=msg)],
-                        "tool_output": msg,
-                        "filters": {"doc_id": doc_id}
-                    }
+                    return {"messages": [AIMessage(content=msg)], "tool_output": msg, "filters": {"doc_id": doc_id}}
             else:
                 msg = f"❌ 수집 실패: {updated_job.error_message}"
 
@@ -154,10 +143,7 @@ class AdminAgent:
 
         # RAG 검색 및 생성 실행
         result = await self.rag_service.retrieve_and_generate(
-            last_user_msg,
-            history,
-            filters=filters,
-            thread_id=thread_id
+            last_user_msg, history, filters=filters, thread_id=thread_id
         )
 
         context_data = {

@@ -7,6 +7,7 @@ from app.interfaces.api.dependencies import get_neo4j_driver
 
 router = APIRouter()
 
+
 @router.get("/schema")
 async def get_schema(driver: Annotated[Driver, Depends(get_neo4j_driver)]):
     """지석 그래프 노드 라벨 및 관계 타입 조회"""
@@ -22,6 +23,7 @@ async def get_schema(driver: Annotated[Driver, Depends(get_neo4j_driver)]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/presets")
 async def get_presets():
     """자주 사용하는 Cypher 쿼리 프리셋 조회"""
@@ -33,11 +35,9 @@ async def get_presets():
         "최근 수집된 문서 10건": "MATCH (d:Document) RETURN d ORDER BY d.created_at DESC LIMIT 10",
     }
 
+
 @router.post("/query")
-async def execute_query(
-    query: dict[str, str],
-    driver: Annotated[Driver, Depends(get_neo4j_driver)]
-):
+async def execute_query(query: dict[str, str], driver: Annotated[Driver, Depends(get_neo4j_driver)]):
     """Cypher 쿼리 실행 후 agraph 형식(nodes, edges)으로 변환하여 반환"""
     cypher = query.get("query")
     if not cypher:
@@ -50,21 +50,19 @@ async def execute_query(
 
             nodes = []
             for node in graph.nodes:
-                nodes.append({
-                    "id": node.element_id,
-                    "labels": list(node.labels),
-                    "properties": dict(node._properties)
-                })
+                nodes.append({"id": node.element_id, "labels": list(node.labels), "properties": dict(node._properties)})
 
             edges = []
             for rel in graph.relationships:
-                edges.append({
-                    "id": rel.element_id,
-                    "source": rel.start_node.element_id,
-                    "target": rel.end_node.element_id,
-                    "type": rel.type,
-                    "properties": dict(rel._properties),
-                })
+                edges.append(
+                    {
+                        "id": rel.element_id,
+                        "source": rel.start_node.element_id,
+                        "target": rel.end_node.element_id,
+                        "type": rel.type,
+                        "properties": dict(rel._properties),
+                    }
+                )
 
             return {"nodes": nodes, "edges": edges}
     except Exception as e:

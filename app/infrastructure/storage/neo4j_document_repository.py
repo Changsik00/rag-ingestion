@@ -63,6 +63,7 @@ class Neo4jStorage(DocumentRepository):
 
             # created_at 안전하게 처리
             from datetime import datetime
+
             c_at = document.created_at
             if isinstance(c_at, str):
                 created_at_str = c_at
@@ -288,6 +289,7 @@ class Neo4jStorage(DocumentRepository):
             logger.error(f"Neo4j search failed: {e}")
             logger.warning(f"Neo4j Search Error: {e}")
             return []
+
     def get_all_chunk_ids(self) -> set[str]:
         """Neo4j의 모든 청크 ID를 가져옵니다."""
         try:
@@ -339,6 +341,7 @@ class Neo4jStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to get chunks by IDs from Neo4j: {e}")
             return []
+
     def get_document_stats(self) -> list[dict]:
         """문서별 기본 통계를 가장 가볍고 빠르게 가져옵니다. (안정성 보장 버전)"""
         try:
@@ -349,12 +352,14 @@ class Neo4jStorage(DocumentRepository):
             with self.driver.session() as session:
                 results = session.run(query)
                 for record in results:
-                    stats.append({
-                        "id": record["id"],
-                        "title": record["title"] or "Untitled",
-                        "url": record["source_url"] or record["source"] or record["url"] or "",
-                        "chunk_count": 0
-                    })
+                    stats.append(
+                        {
+                            "id": record["id"],
+                            "title": record["title"] or "Untitled",
+                            "url": record["source_url"] or record["source"] or record["url"] or "",
+                            "chunk_count": 0,
+                        }
+                    )
 
             # 2. 청크 개수 합산 (관계 기반이 아닌 프로퍼티 기반으로 더 가볍게 시도하거나 MATCH (d)-[:HAS_CHUNK]->(c) 사용)
             # 여기서는 parent_id 프로퍼티를 사용하여 메모리 오버헤드 최소화

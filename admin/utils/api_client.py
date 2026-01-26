@@ -6,6 +6,7 @@ from admin.config import AdminConfig
 
 class APIClient:
     """Streamlit Admin Dashboard용 Thin Client"""
+
     def __init__(self):
         self.config = AdminConfig()
         self.base_url = self.config.api_url.rstrip("/") + "/"
@@ -39,6 +40,7 @@ class APIClient:
         with httpx.Client(base_url=self.base_url, timeout=self.timeout) as client:
             response = client.delete(endpoint)
             return self._handle_response(response)
+
 
 @st.cache_resource
 def get_api_client():

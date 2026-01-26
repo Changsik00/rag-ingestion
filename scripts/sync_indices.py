@@ -31,13 +31,13 @@ async def main():
     print(f"Chroma total: {drift['total_target']}")
     print(f"Missing items: {drift['missing_count']}")
 
-    if drift['missing_count'] == 0:
+    if drift["missing_count"] == 0:
         print("✅ Everything is in sync!")
         driver.close()
         return
 
     # 3. Synchronize with tqdm progress bar
-    pbar = tqdm(total=drift['missing_count'])
+    pbar = tqdm(total=drift["missing_count"])
 
     def progress_callback(progress, message):
         # We need incremental update for pbar
@@ -47,10 +47,10 @@ async def main():
 
     # Simple loop for script (instead of callback for simplicity in CLI)
     batch_size = 20
-    missing_ids = list(drift['missing_ids'])
+    missing_ids = list(drift["missing_ids"])
 
     for i in range(0, len(missing_ids), batch_size):
-        batch = missing_ids[i:i+batch_size]
+        batch = missing_ids[i : i + batch_size]
         chunks = primary_repo.get_chunks_by_ids(batch)
         if chunks:
             target_repo.save_chunks(chunks)
@@ -59,6 +59,7 @@ async def main():
     pbar.close()
     print("--- 🎉 Recovery Completed ---")
     driver.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -7,6 +7,7 @@ st.title("🎮 RAG Playground")
 
 api_client = get_api_client()
 
+
 # --- [Spec 032] 디버그 UI 렌더링 함수 ---
 def render_debug_ui(message):
     """메시지에 포함된 디버그 정보를 통합 UI로 출력"""
@@ -37,14 +38,22 @@ def render_debug_ui(message):
                 for c in v_chunks:
                     # In API response, chunks might be serialized as dicts
                     content = c.get("content", "") if isinstance(c, dict) else getattr(c, "content", "")
-                    title = c.get("metadata", {}).get("title", "No Title") if isinstance(c, dict) else c.metadata.get("title", "No Title")
+                    title = (
+                        c.get("metadata", {}).get("title", "No Title")
+                        if isinstance(c, dict)
+                        else c.metadata.get("title", "No Title")
+                    )
                     st.text(f"[Score/Vector] {title}\n{content[:100]}...")
             if k_chunks:
                 st.divider()
                 st.caption("Keyword Search (Neo4j)")
                 for c in k_chunks:
                     content = c.get("content", "") if isinstance(c, dict) else getattr(c, "content", "")
-                    title = c.get("metadata", {}).get("title", "No Title") if isinstance(c, dict) else c.metadata.get("title", "No Title")
+                    title = (
+                        c.get("metadata", {}).get("title", "No Title")
+                        if isinstance(c, dict)
+                        else c.metadata.get("title", "No Title")
+                    )
                     st.text(f"[Keyword] {title}\n{content[:100]}...")
 
     # 3. Intent & Prompt
@@ -78,12 +87,14 @@ def render_debug_ui(message):
             st.markdown("**📝 LLM Prompt**")
             st.code(prompt_info, language="text")
 
+
 # Initialize Session State
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 if "thread_id_seed" not in st.session_state:
     import uuid
+
     st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
 
 if "hitl_enabled" not in st.session_state:
@@ -131,6 +142,7 @@ with st.sidebar:
 
         if st.button("🔄 New Conversation (Reset Thread)", use_container_width=True):
             import uuid
+
             st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
             st.session_state.messages = []
             st.rerun()
@@ -163,10 +175,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             filters = {"doc_id": selected_doc_ids} if selected_doc_ids else None
 
             # API Call
-            payload = {
-                "message": prompt,
-                "filters": filters
-            }
+            payload = {"message": prompt, "filters": filters}
 
             res = api_client.post(f"/rag/sessions/{thread_id}/ask", json=payload)
 
@@ -195,7 +204,9 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     st.divider()
                     st.markdown("#### 📚 References")
                     for cite in citations:
-                        st.markdown(f"{cite.get('index')}. [{cite.get('title')}]({cite.get('url')}) - *{cite.get('source')}*")
+                        st.markdown(
+                            f"{cite.get('index')}. [{cite.get('title')}]({cite.get('url')}) - *{cite.get('source')}*"
+                        )
 
                 # Prepare Debug Data
                 debug_intent = None
@@ -209,14 +220,16 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     }
 
                 # Update Session State
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": answer,
-                    "debug_info": context_data,
-                    "debug_intent": debug_intent,
-                    "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")},
-                    "debug_prompt": context_data.get("full_context", ""),
-                })
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": answer,
+                        "debug_info": context_data,
+                        "debug_intent": debug_intent,
+                        "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")},
+                        "debug_prompt": context_data.get("full_context", ""),
+                    }
+                )
                 st.rerun()
             else:
                 st.error("API failed to provide a response.")
@@ -237,9 +250,13 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "assis
     col1, col2, col3 = st.columns([1, 1, 5])
     with col1:
         if st.button("👍 Good"):
-            api_client.post("/rag/feedback", json={"query": last_user_msg, "response": last_bot_msg, "feedback": "positive"})
+            api_client.post(
+                "/rag/feedback", json={"query": last_user_msg, "response": last_bot_msg, "feedback": "positive"}
+            )
             st.toast("Thanks for your feedback!")
     with col2:
         if st.button("👎 Bad"):
-            api_client.post("/rag/feedback", json={"query": last_user_msg, "response": last_bot_msg, "feedback": "negative"})
+            api_client.post(
+                "/rag/feedback", json={"query": last_user_msg, "response": last_bot_msg, "feedback": "negative"}
+            )
             st.toast("Feedback recorded.")

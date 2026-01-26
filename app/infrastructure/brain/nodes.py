@@ -98,6 +98,7 @@ class IngestionNodes:
 
         # Handle both sync and async LLM adapter implementations
         import asyncio
+
         if asyncio.iscoroutinefunction(self.llm.extract_metadata):
             extracted = await self.llm.extract_metadata(enriched_content)
         else:

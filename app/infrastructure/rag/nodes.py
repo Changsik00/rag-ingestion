@@ -77,9 +77,7 @@ class RAGNodes:
         except Exception as e:
             logger.warning(f"Intent classification failed: {e}. Falling back to GENERAL_QUERY.")
             user_intent = UserIntent(
-                intent=IntentType.GENERAL_QUERY,
-                targets=[],
-                reasoning="Fallback due to classification error"
+                intent=IntentType.GENERAL_QUERY, targets=[], reasoning="Fallback due to classification error"
             )
 
         # Query Rewriting (Service is now async)
@@ -91,7 +89,9 @@ class RAGNodes:
 
         # [Spec 034] Reasoning Log
         reasoning_log = state.get("reasoning_log", [])
-        reasoning_log.append(f"🧠 [Intent] Classified as {user_intent.intent.value} targeting {user_intent.targets}. Reasoning: {user_intent.reasoning}")
+        reasoning_log.append(
+            f"🧠 [Intent] Classified as {user_intent.intent.value} targeting {user_intent.targets}. Reasoning: {user_intent.reasoning}"
+        )
         reasoning_log.append(f"✍️ [Rewrite] Query rewritten to: {rewritten_query}")
         state["reasoning_log"] = reasoning_log
 
@@ -156,17 +156,19 @@ class RAGNodes:
         keyword_task = asyncio.to_thread(self._search_keyword, rewritten_query, final_filters)
         graph_task = asyncio.to_thread(self._search_graph, rewritten_query)
 
-        vector_results, keyword_results, graph_results = await asyncio.gather(
-            vector_task, keyword_task, graph_task
-        )
+        vector_results, keyword_results, graph_results = await asyncio.gather(vector_task, keyword_task, graph_task)
 
-        reasoning_log.append(f"🔍 [Search] Found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks, {len(graph_results)} graph facts.")
+        reasoning_log.append(
+            f"🔍 [Search] Found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks, {len(graph_results)} graph facts."
+        )
 
         # Fallback Logic: 필터링된 결과가 없고 필터가 적용된 상태라면 필터 제거 후 재검색
         if final_filters and not vector_results and not keyword_results:
             logger.info("No results found with filters. Triggering Fallback (Global Search)...")
             state["fallback_triggered"] = True
-            reasoning_log.append("🔄 [Fallback] Strict filters returned zero results. Retrying with Global Search (no filters).")
+            reasoning_log.append(
+                "🔄 [Fallback] Strict filters returned zero results. Retrying with Global Search (no filters)."
+            )
 
             # 재검색 (필터 없이)
             v_fallback_task = asyncio.to_thread(self._search_vector, rewritten_query, None)
@@ -176,7 +178,9 @@ class RAGNodes:
             vector_results = v_fall
             keyword_results = k_fall
 
-            reasoning_log.append(f"🔍 [Search/Fallback] Post-fallback found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks.")
+            reasoning_log.append(
+                f"🔍 [Search/Fallback] Post-fallback found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks."
+            )
 
         # [Spec 037] Context Noise Cleaning
         # 검색된 각 청크의 내용에 대해 전처리를 수행합니다.
@@ -204,21 +208,21 @@ class RAGNodes:
         # We remove generic templates but try to preserve Infobox data by hiding the wrapper but keeping internal lines
         # Or more simply, avoid greedy match for just anything {{...}}.
         # Here we ignore Navbox and Cite but keep Infobox.
-        text = re.sub(r'\{\|.*?\|\}', '', text, flags=re.DOTALL)  # Wiki Tables
+        text = re.sub(r"\{\|.*?\|\}", "", text, flags=re.DOTALL)  # Wiki Tables
 
         # Remove Navbox, Cite, and other noise templates, but EXEMPT Infobox
         # Using a lookahead to avoid matching {{Infobox
-        text = re.sub(r'\{\{(?!(?:Infobox|정보상자)).*?\}\}', '', text, flags=re.DOTALL)
+        text = re.sub(r"\{\{(?!(?:Infobox|정보상자)).*?\}\}", "", text, flags=re.DOTALL)
 
         # 2. Wikipedia File/Image links
-        text = re.sub(r'\[\[파일:.*?\]\]', '', text)
-        text = re.sub(r'\[\[File:.*?\]\]', '', text)
+        text = re.sub(r"\[\[파일:.*?\]\]", "", text)
+        text = re.sub(r"\[\[File:.*?\]\]", "", text)
 
         # 3. Excessive newlines
-        text = re.sub(r'\n{3,}', '\n\n', text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
 
         # 4. Empty markdown tables (e.g. | | |)
-        text = re.sub(r'\|[\s\|-]+\|\n', '', text)
+        text = re.sub(r"\|[\s\|-]+\|\n", "", text)
 
         return text.strip()
 
@@ -261,6 +265,7 @@ class RAGNodes:
 
         # Handle both sync and async LLM adapter implementations
         import asyncio
+
         if hasattr(self.llm, "generate") and asyncio.iscoroutinefunction(self.llm.generate):
             response = await self.llm.generate(prompt)
         else:
@@ -279,12 +284,14 @@ class RAGNodes:
         for idx in indices:
             if idx in mapped_chunks and idx not in seen_indices:
                 chunk = mapped_chunks[idx]
-                citations.append({
-                    "index": idx,
-                    "source": chunk.metadata.get("source", "Unknown"),
-                    "title": chunk.metadata.get("title", "Untitled"),
-                    "url": chunk.metadata.get("url") or chunk.metadata.get("source_url")
-                })
+                citations.append(
+                    {
+                        "index": idx,
+                        "source": chunk.metadata.get("source", "Unknown"),
+                        "title": chunk.metadata.get("title", "Untitled"),
+                        "url": chunk.metadata.get("url") or chunk.metadata.get("source_url"),
+                    }
+                )
                 seen_indices.add(idx)
 
         # Update State

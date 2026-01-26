@@ -5,6 +5,7 @@ from typing import Any
 
 class FeedbackService:
     """사용자 피드백을 저장하고 조회하는 서비스 (JSONL 기반)"""
+
     def __init__(self, feedback_file: str = "feedback.jsonl"):
         self.feedback_file = feedback_file
 

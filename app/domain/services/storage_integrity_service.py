@@ -11,6 +11,7 @@ class DriftReport:
     orphan_count: int
     orphan_ids: set[str]
 
+
 class StorageIntegrityService:
     def __init__(self, primary_repo: Any, target_repo: Any):
         """
@@ -35,7 +36,7 @@ class StorageIntegrityService:
             "missing_ids": missing_ids,
             "orphan_count": len(orphan_ids),
             "orphan_ids": orphan_ids,
-            "drift_ratio": (len(missing_ids) / len(primary_ids)) if primary_ids else 0
+            "drift_ratio": (len(missing_ids) / len(primary_ids)) if primary_ids else 0,
         }
 
     def get_document_drift_report(self) -> list[dict[str, Any]]:
@@ -80,16 +81,18 @@ class StorageIntegrityService:
             # 샘플 추출 (오직 보정이나 리포트가 필요한 경우에만 추가 정보 조회 고려할 수 있으나 생략 가능)
             # 여기서는 status != 'In Sync'인 경우에만 나중에 UI에서 상세 조회하도록 유도
 
-            report.append({
-                "id": doc_id,
-                "title": stat["title"],
-                "url": stat["url"],
-                "total_chunks": total_chunks,
-                "target_chunks": indexed_count,
-                "drift_ratio": (total_chunks - indexed_count) / total_chunks if total_chunks > 0 else 0,
-                "status": status,
-                "missing_sample": "" # UI에서 필요 시 개별 조회
-            })
+            report.append(
+                {
+                    "id": doc_id,
+                    "title": stat["title"],
+                    "url": stat["url"],
+                    "total_chunks": total_chunks,
+                    "target_chunks": indexed_count,
+                    "drift_ratio": (total_chunks - indexed_count) / total_chunks if total_chunks > 0 else 0,
+                    "status": status,
+                    "missing_sample": "",  # UI에서 필요 시 개별 조회
+                }
+            )
 
         return report
 
@@ -115,6 +118,7 @@ class StorageIntegrityService:
             if source:
                 # URL에서 파일명 추출 시도 (trailing slash 처리 및 디코딩)
                 from urllib.parse import unquote
+
                 path = source.strip("/").split("/")[-1]
                 new_title = unquote(path.split("?")[0]) or "Untitled"
 
@@ -161,6 +165,7 @@ class StorageIntegrityService:
     async def get_cleaned_context(self, doc_id: str) -> str:
         """LLM에게 전달될 정제된 컨텍스트 미리보기"""
         from app.infrastructure.rag.nodes import RAGNodes
+
         chunks = self.primary_repo.get_chunks(doc_id)
         if not chunks:
             return "No chunks found."
@@ -203,7 +208,11 @@ class StorageIntegrityService:
                         source_name=rel.source, relationship_type=rel.relationship, target_name=rel.target
                     )
 
-            return {"success": True, "entities": len(semantic_data.entities or {}), "rels": len(semantic_data.relationships or [])}
+            return {
+                "success": True,
+                "entities": len(semantic_data.entities or {}),
+                "rels": len(semantic_data.relationships or []),
+            }
         except Exception as e:
             return {"success": False, "error": str(e)}
 

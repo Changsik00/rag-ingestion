@@ -1,5 +1,6 @@
 from typing import Any
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.domain.entities.job import IngestionJob
@@ -10,15 +11,15 @@ from app.use_cases.ingestion import IngestionService
 
 router = APIRouter()
 
+
 class ResumeRequest(BaseModel):
     input: dict[str, Any]
 
+
 @router.get("", response_model=list[IngestionJob])
-async def list_jobs(
-    limit: int = 50,
-    repo: JobRepository = Depends(get_job_repository)
-):
+async def list_jobs(limit: int = 50, repo: JobRepository = Depends(get_job_repository)):
     return repo.list_jobs(limit=limit)
+
 
 @router.get("/active/threads")
 async def list_active_threads(limit: int = 10, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
@@ -36,15 +37,14 @@ async def list_active_threads(limit: int = 10, adapter: LangGraphAdapter = Depen
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/{job_id}", response_model=IngestionJob)
-async def get_job(
-    job_id: str,
-    repo: JobRepository = Depends(get_job_repository)
-):
+async def get_job(job_id: str, repo: JobRepository = Depends(get_job_repository)):
     job = repo.get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
     return job
+
 
 @router.get("/{job_id}/status")
 async def get_job_status(job_id: str, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
@@ -54,6 +54,7 @@ async def get_job_status(job_id: str, adapter: LangGraphAdapter = Depends(get_la
         return {"status": status}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/{job_id}/trace")
 async def get_job_trace(job_id: str, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
@@ -69,6 +70,7 @@ async def get_job_trace(job_id: str, adapter: LangGraphAdapter = Depends(get_lan
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/{job_id}/resume")
 async def resume_job(job_id: str, request: ResumeRequest, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
     """Resume an interrupted job."""
@@ -77,6 +79,7 @@ async def resume_job(job_id: str, request: ResumeRequest, adapter: LangGraphAdap
         return {"status": "Resumed", "result_metadata": result.get("metadata", None)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/{job_id}/retry")
 async def retry_job(

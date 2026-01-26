@@ -19,7 +19,9 @@ try:
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Neo4j Chunks (Source)", stats["total_primary"])
         col2.metric("Chroma Chunks (Index)", stats["total_target"])
-        col3.metric("Missing (Drift)", missing_count, delta=-missing_count if missing_count > 0 else 0, delta_color="inverse")
+        col3.metric(
+            "Missing (Drift)", missing_count, delta=-missing_count if missing_count > 0 else 0, delta_color="inverse"
+        )
 
         drift_pct = stats["drift_ratio"] * 100
         col4.metric("Integrity Score", f"{100 - drift_pct:.1f}%")
@@ -39,6 +41,7 @@ st.divider()
 # --- 2. Document-Level Drift Report (Detailed Analysis) ---
 st.subheader("🔍 Document-Level Drift Analysis")
 st.info("어떤 문서가 유실되었는지, 어떤 내용이 누락되었는지 확인하세요.")
+
 
 @st.fragment
 def render_doc_table():
@@ -71,9 +74,9 @@ def render_doc_table():
                 "total_chunks": "Source",
                 "target_chunks": "Indexed",
                 "drift_ratio": st.column_config.ProgressColumn("Drift", format="%.2f", min_value=0, max_value=1),
-                "id": None
+                "id": None,
             },
-            use_container_width=True
+            use_container_width=True,
         )
 
         # Detailed View (Missing Samples)
@@ -86,8 +89,7 @@ def render_doc_table():
             display_to_id = dict(zip(df["display_name"], df["id"]))
 
             selected_display = st.selectbox(
-                "Select document to preview missing parts",
-                options=df["display_name"].tolist()
+                "Select document to preview missing parts", options=df["display_name"].tolist()
             )
 
             if selected_display:
@@ -116,7 +118,9 @@ def render_doc_table():
                     if st.button("Generate Preview", key=f"preview_btn_{doc_id}"):
                         with st.spinner("Cleaning context..."):
                             cleaned_ctx_res = api_client.get(f"/storage/documents/{doc_id}/preview-context")
-                            cleaned_ctx = cleaned_ctx_res.get("content") if cleaned_ctx_res else "Failed to load context."
+                            cleaned_ctx = (
+                                cleaned_ctx_res.get("content") if cleaned_ctx_res else "Failed to load context."
+                            )
                             st.text_area("Cleaned Content", value=cleaned_ctx, height=400)
 
                 with tab3:
@@ -125,7 +129,9 @@ def render_doc_table():
                         with st.spinner("LLM is extracting semantics..."):
                             res = api_client.post(f"/storage/documents/{doc_id}/enrich")
                             if res and res.get("success"):
-                                st.success(f"Successfully enriched: {res['entities']} entities, {res['rels']} relationships.")
+                                st.success(
+                                    f"Successfully enriched: {res['entities']} entities, {res['rels']} relationships."
+                                )
                             elif res:
                                 st.error(f"Enrichment failed: {res.get('error')}")
 
@@ -141,6 +147,7 @@ def render_doc_table():
     except Exception as e:
         st.error(f"Failed to load document report: {e}")
 
+
 render_doc_table()
 
 st.divider()
@@ -155,13 +162,19 @@ try:
         needs_sync = len(mismatch_docs) > 0
 
         button_type = "primary" if needs_sync else "secondary"
-        button_label = f"🚀 Run Global Sync (Fix {len(mismatch_docs)} Issues)" if needs_sync else "✅ Storage is Healthy"
+        button_label = (
+            f"🚀 Run Global Sync (Fix {len(mismatch_docs)} Issues)" if needs_sync else "✅ Storage is Healthy"
+        )
 
         if st.button(button_label, type=button_type, disabled=not needs_sync):
             with st.status("Performing Full Synchronization...", expanded=True) as status:
                 res = api_client.post("/storage/sync-all")
                 if res and res.get("success"):
-                    status.update(label=f"Sync Completed! {res.get('repaired_count', 0)} chunks fixed.", state="complete", expanded=False)
+                    status.update(
+                        label=f"Sync Completed! {res.get('repaired_count', 0)} chunks fixed.",
+                        state="complete",
+                        expanded=False,
+                    )
                     st.success("Synchronization finished successfully.")
                     st.rerun()
                 else:
