@@ -263,9 +263,9 @@
     - **Stdio/SSE Support**: 다양한 클라이언트 지원을 위한 표준 프로토콜 구현.
   * **완료**: 2026-01-22 (PR #31)
 
-* [ ] **Spec 029: Admin Agentic Workflow (LangGraph Integration)**
-  * [ ] **Goal**: Admin Dashboard(Streamlit)의 챗봇을 단순 Chain에서 "Agentic Workflow"로 업그레이드하여, 사용자의 의도(수집 vs 검색)를 파악하고 적절한 도구를 호출하게 함.
-  * [ ] **Features**:
+* [x] **Spec 029: Admin Agentic Workflow (LangGraph Integration)**
+  * [x] **Goal**: Admin Dashboard(Streamlit)의 챗봇을 단순 Chain에서 "Agentic Workflow"로 업그레이드하여, 사용자의 의도(수집 vs 검색)를 파악하고 적절한 도구를 호출하게 함.
+  * [x] **Features**:
     - **LangGraph Integration**: `4_RAG_Playground.py`에 LangGraph 기반 Agent 도입.
     - **Router Node**: 사용자 발화에서 URL 감지 시 수집 모드로, 질문 시 검색 모드로 분기.
     - **Tools Integration**: Spec 028에서 만든 `IngestionService`와 `RAGService`를 도구화.
@@ -283,9 +283,9 @@
     - Vector DB 조회 시 Metadata Filter 적용.
   * **완료**: 2026-01-22 (PR #33)
 
-* [ ] **Spec 032: Router & Intent Classifier (Decision Layer)**
-  * [ ] **Goal**: LLM을 사용하여 사용자의 의도(Intent)를 분류하고, 데이터 검색이 필요한지 여부와 어떤 필터를 적용할지 "결정(Decision)"하는 라우터 노드 구현.
-  * [ ] **Output**: `{"intent": "compare", "targets": ["doc_A", "doc_B"]}` 형태의 구조화된 데이터.
+* [x] **Spec 032: Router & Intent Classifier (Decision Layer)**
+  * [x] **Goal**: LLM을 사용하여 사용자의 의도(Intent)를 분류하고, 데이터 검색이 필요한지 여부와 어떤 필터를 적용할지 "결정(Decision)"하는 라우터 노드 구현.
+  * [x] **Output**: `{"intent": "compare", "targets": ["doc_A", "doc_B"]}` 형태의 구조화된 데이터.
   * **Reference**: [Design Guide 005: LLM RAG Strategy](docs/design_guides/005-llm-rag-strategy.md)
   * **우선순위**: High (Spec 031 이후 필수)
   * **Note**: Planning 중 (2026-01-23) - [Spec](specs/032-router-intent-classifier/spec.md), [Plan](specs/032-router-intent-classifier/plan.md)
@@ -295,18 +295,18 @@
   * [x] **Review Findings**: 시나리오 1~3 테스트를 통해 자동 필터링의 배타성, DB 메타데이터 불일치, Context 부재 시 LLM의 답변 성향 분석 완료. ([`rag_pipeline.md`](docs/architecture/rag_pipeline.md) TroubleShooting 섹션 참조)
   * **완료**: 2026-01-24 (PR #35)
 
-* [ ] **Spec 034: RAG Pipeline Recovery & Stability (Back To Baseline)**
-  * [ ] **Goal**: Spec 033 리뷰에서 발견된 검색 실패 시나리오를 해결하고 시스템 인프라(Checkpointer) 안정화.
-  * [ ] **Features**:
+* [x] **Spec 034: RAG Pipeline Recovery & Stability (Back To Baseline)**
+  * [x] **Goal**: Spec 033 리뷰에서 발견된 검색 실패 시나리오를 해결하고 시스템 인프라(Checkpointer) 안정화.
+  * [x] **Features**:
     - **Filter Fallback**: 필터 결과 0건 시 자동으로 Filter-less Global Search 수행.
     - **Empty Guard**: Context 부재 시 답변 거부 프롬프트 강화 (Hallucination 방지).
     - **Checkpointer Stability**: `checkpoints.sqlite` 파일 안정화 및 Playground 연동 수정.
   * **Priority**: Critical (Spec 033 후속)
 
-* [ ] **Spec 035: Transparent Hybrid Knowledge Strategy (RAG Resilience)**
+* [x] **Spec 035: Transparent Hybrid Knowledge Strategy (RAG Resilience)**
   * **Documentation**: [`docs/architecture/rag_pipeline.md`](docs/architecture/rag_pipeline.md#rag-evolution-from-strict-to-hybrid)
-  * [ ] **Goal**: "Strict RAG"의 한계를 극복하기 위해 DB 정보와 LLM 지식을 지능적으로 융합하고, 출처(Citation)를 투명하게 제공하여 신뢰도와 사용성을 동시에 확보.
-  * [ ] **Features**:
+  * [x] **Goal**: "Strict RAG"의 한계를 극복하기 위해 DB 정보와 LLM 지식을 지능적으로 융합하고, 출처(Citation)를 투명하게 제공하여 신뢰도와 사용성을 동시에 확보.
+  * [x] **Features**:
     - **Hybrid Reasoning**: DB 검색 결과와 LLM의 내부 지식을 결합한 답변 생성 로직.
     - **Granular Citations**: 답변 내 인라인 인덱스(`[1]`) 및 하단 주석(Reference) UI 구현.
     - **Knowledge Source Distinction**: 답변 내에서 "DB 근거"와 "LLM 보충" 정보를 시각적으로 구분하여 사용자에게 알림.
@@ -325,15 +325,25 @@
     - **Context Cleaning**: LLM 전달 전 불필요한 마크다운 요소(네비게이션, 표 등) 정제.
   * **완료**: 2026-01-25 (PR 생략 및 마무리 확인)
 
-* [ ] **Spec 038: Structural Decoupling (Streamlit & Backend Separation)**
+* [x] **Spec 038: Structural Decoupling (Streamlit & Backend Separation)**
   * **Goal**: Streamlit Admin UI와 Backend 비즈니스 로직을 완전히 격리하여 독립적 배포 및 확장성을 확보.
   * **Features**:
     - **Admin API Layer**: 정합성 관리용 전용 API 엔드포인트(`admin/integrity/*`) 및 RAG 플레이그라운드 API 구축.
     - **Thin Client Refactoring**: Streamlit 내부의 직접 DB 접근 및 비즈니스 로직 임포트 제거.
     - **Infrastructure Isolation**: Docker Compose 설정을 변경하여 Streamlit의 DB 접근 권한 박살(격리).
   * **우선순위**: High (아키텍처 부채 해결 및 운영 안정성 확보)
-  * **Note**: Planning (2026-01-25) - [Spec](specs/038-structural-decoupling/spec.md), [Plan](specs/038-structural-decoupling/plan.md), [Task](specs/038-structural-decoupling/task.md)
+  * **완료**: 2026-01-26
 
+* [/] **Spec 039: Advanced Scraper (Headless & Complex Layout Support)**
+  * **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
+  * **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락함.
+  * **Action**:
+    - `Playwright` 또는 `Firecrawl` 도입 (Headless Browser)
+    - Tiered Scraping Strategy 구현 (Trafilatura -> Headless Fallback)
+    - Clean Markdown 변환 및 Noise Filtering 강화
+  * **Priority**: High (Phase 4 핵심 기능)
+  * **Status**: Planning (2026-01-26)
+  * **Strategy**: [Design Guide 008](docs/design_guides/008-scrapper.md), [Design Guide 009](docs/design_guides/009-scapping-strategy.md)
 ---
 
 ### Phase 5+: Future Vision
@@ -390,10 +400,11 @@
   * Admin Dashboard (Streamlit) UI 테스트
   * 전체 워크플로우 검증 (Ingest → Store → Retrieve)
 
-* **[Tech] Google Semantic Chunking Upgrade**
-  * 현재 Recursive 방식 대신 Google의 AI 기반 Semantic Chunking 도입 검토
+* **[Tech] Semantic Chunking Upgrade**
+  * 현재 Recursive 방식 대신 Google or OpenAI의 AI 기반 Semantic Chunking 도입 검토
   * 문맥 보존 성능과 비용/속도 트레이드오프 분석 필요
   * Spec 019 이후 검색 품질 개선이 추가로 필요할 때 진행
+  * **Strategy**: [llm_strategy](docs/architecture/llm_strategy.md) (llm_strategy)
     
 * **[Feature] HITL Persistence & Notification**
   * **Strategy**: [Design Guide 002](docs/design_guides/002-data-storage-strategy.md) (JSONL/SQLite vs Postgres)
@@ -405,11 +416,6 @@
   * **Goal**: Mock이 아닌 실제 LLM과 상호작용하며 HITL 흐름을 검증하는 스크립트 작성 (`scripts/verify_hitl_real.py`).
   * **Scenario**: 실제 Gemini LLM 사용 -> 강제 오류 주입 -> Interrupt 확인 -> 수동 Resume -> 최종 결과 확인.
   * **Priority**: 품질 검증 단계에서 수행 권장.
-
-* **[Feature] Advanced Scraper (Headless & Complex Layout Support)** (Spec 036)
-  * **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락하는 현상 발생.
-  * **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
-  * **Priority**: Low (User requested move to Icebox - 2026-01-25)
 
 * **[Integration] n8n Workflow Automation**
   * **Goal**: 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템.
