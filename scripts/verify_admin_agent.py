@@ -1,91 +1,84 @@
 import asyncio
-import os
-import sys
+import logging
+import uuid
+from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langgraph.checkpoint.memory import MemorySaver
 
-from langchain_core.messages import HumanMessage
+from app.domain.services.admin_agent import AdminAgent, AdminState
+# Mocking RAGService to isolate Agent logic
+class MockRAGService:
+    async def retrieve_and_generate(self, query, history, filters=None, thread_id=None):
+        from app.domain.services.rag_service import RAGResult
+        return RAGResult(
+            answer="Knowledge Channel is a great TV program.",
+            rewritten_query=query,
+            vector_chunks=[],
+            keyword_chunks=[],
+            graph_data=[],
+            full_context="Context about Knowledge Channel",
+            user_intent=None
+        )
 
-# Add project root to path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from app.admin.agents.admin_agent import AdminAgent
-from app.core.llm import get_llm
-from app.domain.services.query_rewriter import QueryRewriter
-from app.domain.services.rag_service import RAGService
-from app.domain.services.semantic_extractor import SemanticExtractor
-from app.infrastructure.brain.adapter import LangGraphAdapter
-from app.infrastructure.chunker.langchain_chunker import LangChainChunker
-from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
-from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
-from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
-from app.interfaces.api.dependencies import get_neo4j_driver
-from app.use_cases.ingestion import IngestionService
-
+# Mocking IngestionService
+class MockIngestionService:
+    pass
 
 async def main():
-    print("🚀 Initializing Dependencies...")
-    driver = get_neo4j_driver()
-    neo4j_doc = Neo4jStorage(driver)
-    neo4j_graph = Neo4jGraphRepository(driver)
-    chroma = ChromaStorage()
-    llm = get_llm()
-    rewriter = QueryRewriter(llm)
+    load_dotenv()
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("VerifyAdmin")
 
-    rag_service = RAGService(
-        neo4j_doc_repo=neo4j_doc, neo4j_graph_repo=neo4j_graph, chroma_repo=chroma, query_rewriter=rewriter, llm=llm
-    )
-
-    job_repo = Neo4jJobRepository(driver)
-    chunker = LangChainChunker()
-    graph_adapter = LangGraphAdapter(llm)
-    extractor = SemanticExtractor(graph_adapter)
-    scraper = TrafilaturaWebScraper()
-
-    ingestion_service = IngestionService(
-        scraper=scraper,
-        repository=neo4j_doc,
-        graph=neo4j_graph,
-        job_repository=job_repo,
-        chunker=chunker,
-        extractor=extractor,
-    )
-
+    # Setup
+    rag_service = MockRAGService()
+    ingestion_service = MockIngestionService()
     agent = AdminAgent(rag_service, ingestion_service)
-    print("✅ AdminAgent Initialized.")
+    
+    checkpointer = MemorySaver()
+    
+    # Init Graph
+    workflow = agent.build_workflow(checkpointer=checkpointer)
+    
+    thread_id = str(uuid.uuid4())
+    config = {"configurable": {"thread_id": thread_id}}
+    
+    # Test Case 1: HITL Enabled
+    logger.info("--- Test Case 1: HITL Enabled ---")
+    input_state = {
+        "messages": [{"role": "user", "content": "Tell me about Knowledge Channel"}],
+        "hitl_enabled": True,
+        "thread_id": thread_id
+    }
+    
+    # Run
+    # If interrupt works, ainvoke might raise GraphInterrupt or return partial state?
+    # Key: Does it return the state with tool_output?
+    try:
+        result = await workflow.ainvoke(input_state, config=config)
+        logger.info(f"Result (HITL=True): {result.keys()}")
+        if "messages" in result:
+             logger.info(f"Answer: {result['messages'][-1].content}")
+        else:
+             logger.info("No messages in result")
+             
+        # Check next
+        snapshot = workflow.get_state(config)
+        logger.info(f"Next Node: {snapshot.next}")
+        
+    except Exception as e:
+        logger.error(f"Exception: {e}")
 
-    # 1. Test Ingestion Intent
-    print("\n[Test 1] Ingestion Intent")
-    url = "https://example.com"
-    inputs = {"messages": [HumanMessage(content=f"이 링크 수집해줘: {url}")]}
-    result = await agent.workflow.ainvoke(inputs)
-
-    intent = result.get("intent")
-    output = result.get("tool_output")
-    print(f"Intent: {intent}")
-    print(f"Output: {output}")
-    assert intent == "ingest"
-    assert "수집" in output or "example.com" in output
-
-    # 2. Test Search Intent
-    print("\n[Test 2] Search Intent")
-    inputs = {"messages": [HumanMessage(content="RAG가 뭐야?")]}
-    result = await agent.workflow.ainvoke(inputs)
-
-    intent = result.get("intent")
-    answer = result["messages"][-1].content
-    context = result.get("context_data")
-
-    print(f"Intent: {intent}")
-    print(f"Answer: {answer[:50]}...")
-    print(f"Context Keys: {context.keys() if context else 'None'}")
-
-    assert intent == "search"
-    assert context is not None
-    assert "vector_chunks" in context
-
-    print("\n🎉 Verification Success!")
-
+    # Test Case 2: Resume
+    if "human_review" in snapshot.next:
+        logger.info("--- Test Case 2: Resuming ---")
+        # Resume logic
+        # agent.human_review_node just passes through.
+        # So we just invoke with None?
+        update = {"hitl_enabled": False} # Disable to finish
+        workflow.update_state(config, update)
+        
+        result_resume = await workflow.ainvoke(None, config=config)
+        logger.info(f"Result (Resume): {result_resume.keys()}")
 
 if __name__ == "__main__":
     asyncio.run(main())

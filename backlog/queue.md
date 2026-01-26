@@ -352,6 +352,15 @@
   * **Status**: Planning (2026-01-27)
   * **Documents**: [Spec](specs/040-hitl-verification-script/spec.md), [Plan](specs/040-hitl-verification-script/plan.md), [Task](specs/040-hitl-verification-script/task.md)
 
+* [ ] **Spec 041: Admin HITL UI & Robustness (Follow-up)**
+  * **Goal**: HITL 모드에서 사용자가 직관적으로 "대기 상태"를 인지하고 제어(Resume/Approve)할 수 있는 UI를 구현하며, 구조적 안전장치를 강화함.
+  * **Features**:
+    - **Resume/Approve Button**: Streamlit Chat UI에 중단된 작업 재개 버튼 추가.
+    - **Waiting State Indicator**: 답변 생성 후 "검토 대기 중" 상태 시각화.
+    - **Architecture Documentation**: Checkpointer Collision Issue (`rag-{id}` namespace) 및 아키텍처 결정 기록.
+  * **Context**: Spec 040에서 발견된 "답변 후 중단" UX 혼동 및 Backend Checkpointer 충돌 이슈에 대한 후속 조치.
+  * **Priority**: High (UX 개선 및 유지보수성 확보)
+
 ---
 
 
