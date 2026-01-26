@@ -6,6 +6,7 @@ Mock을 사용하여 의존성을 격리하고 비즈니스 로직만 테스트�
 """
 
 from unittest.mock import Mock
+
 import pytest
 
 from app.domain.entities.job import IngestionJob, JobStatus
@@ -57,6 +58,7 @@ async def test_process_job_success():
 
     # Mock extractor to return None (no semantic data)
     import asyncio
+
     future = asyncio.Future()
     future.set_result(None)
     mock_extractor.extract.return_value = future

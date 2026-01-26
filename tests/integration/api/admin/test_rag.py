@@ -7,12 +7,14 @@ from app.interfaces.api.main import app
 
 client = TestClient(app)
 
+
 def test_rag_autocomplete():
     """GET /api/v1/admin/rag/documents/autocomplete 테스트"""
     response = client.get("/api/v1/admin/rag/documents/autocomplete?q=test")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
+
 
 @pytest.mark.asyncio
 async def test_rag_ask():
@@ -27,6 +29,7 @@ async def test_rag_ask():
         # 실제 LLM 호출이 막히면 500이 날 수 있으므로, 200/500 중 하나를 예상하거나 완벽한 Mocking 필요
         assert response.status_code in [200, 500]
 
+
 def test_graph_schema():
     """GET /api/v1/admin/graph/schema 테스트"""
     response = client.get("/api/v1/admin/graph/schema")
@@ -34,6 +37,7 @@ def test_graph_schema():
     data = response.json()
     assert "labels" in data
     assert "relationship_types" in data
+
 
 def test_graph_query_execution():
     """POST /api/v1/admin/graph/query 테스트"""

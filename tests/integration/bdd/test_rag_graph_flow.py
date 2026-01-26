@@ -40,9 +40,7 @@ class TestRAGGraphFlow:
         assert result.keyword_chunks is not None
 
     @pytest.mark.asyncio
-    async def test_compare_intent_auto_filtering(
-        self, real_rag_service, sample_documents
-    ):
+    async def test_compare_intent_auto_filtering(self, real_rag_service, sample_documents):
         """
         Given: 비교 질문 ("Claude와 GPT-4를 비교해줘") + 두 문서 존재
         When: RAG Graph 실행
@@ -63,9 +61,7 @@ class TestRAGGraphFlow:
         assert result.final_answer != ""
 
     @pytest.mark.asyncio
-    async def test_state_checkpoint_saving(
-        self, real_rag_service_with_checkpointer
-    ):
+    async def test_state_checkpoint_saving(self, real_rag_service_with_checkpointer):
         """
         Given: Thread ID 지정 + Checkpointer 활성화
         When: RAG Graph 실행
@@ -77,9 +73,7 @@ class TestRAGGraphFlow:
         thread_id = "test-checkpoint-123"
 
         # When
-        result = await real_rag_service_with_checkpointer.retrieve_and_generate(
-            query, history, thread_id=thread_id
-        )
+        result = await real_rag_service_with_checkpointer.retrieve_and_generate(query, history, thread_id=thread_id)
 
         # Then
         assert result.final_answer != ""

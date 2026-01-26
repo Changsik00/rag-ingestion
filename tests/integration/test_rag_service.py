@@ -36,9 +36,7 @@ async def test_rag_service_orchestration():
         "history": [],
         "manual_filters": None,
         "user_intent": UserIntent(
-            intent=IntentType.GENERAL_QUERY,
-            targets=[],
-            reasoning="General question for testing"
+            intent=IntentType.GENERAL_QUERY, targets=[], reasoning="General question for testing"
         ),
         "rewritten_query": "Rewritten Query",
         "auto_filters": None,
@@ -47,7 +45,7 @@ async def test_rag_service_orchestration():
         "keyword_chunks": [chunk_k],
         "graph_data": [{"source": "Elon", "relationship": "FOUNDED", "target": "Tesla"}],
         "full_context": "Mock context with Vector Content, Keyword Content, and Elon FOUNDED Tesla",
-        "final_answer": "Final Answer"
+        "final_answer": "Final Answer",
     }
 
     mock_graph.ainvoke = AsyncMock(return_value=mock_result_state)

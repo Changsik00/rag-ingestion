@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 """
 Integration Test: Intent Routing
 BDD 스타일로 Intent Classifier와 RAG Service의 통합을 검증한다.
@@ -43,7 +46,7 @@ async def test_intent_classifier_with_real_llm(llm_adapter):
     history = []
 
     # When
-    result = classifier.classify(query, history)
+    result = await classifier.classify(query, history)
 
     # Then
     assert result.intent == IntentType.COMPARE
@@ -72,7 +75,7 @@ async def test_intent_classifier_general_query_with_real_llm(llm_adapter):
     history = []
 
     # When
-    result = classifier.classify(query, history)
+    result = await classifier.classify(query, history)
 
     # Then
     assert result.intent == IntentType.GENERAL_QUERY
@@ -103,7 +106,7 @@ async def test_intent_classifier_with_history_context(llm_adapter):
     ]
 
     # When
-    result = classifier.classify(query, history)
+    result = await classifier.classify(query, history)
 
     # Then
     assert result.intent == IntentType.COMPARE
@@ -135,7 +138,7 @@ async def test_intent_classifier_summarize_with_pronoun(llm_adapter):
     ]
 
     # When
-    result = classifier.classify(query, history)
+    result = await classifier.classify(query, history)
 
     # Then
     assert result.intent == IntentType.SUMMARIZE
@@ -163,7 +166,7 @@ async def test_intent_classifier_filter_by_topic(llm_adapter):
     history = []
 
     # When
-    result = classifier.classify(query, history)
+    result = await classifier.classify(query, history)
 
     # Then
     assert result.intent == IntentType.FILTER_BY_TOPIC

@@ -31,9 +31,10 @@ def test_nodes_initialization():
 @pytest.mark.asyncio
 async def test_extract_metadata_node():
     """extract_metadata 노드가 LLM을 호출하고 State를 갱신하는지 검증"""
+    from unittest.mock import AsyncMock
+
     from app.infrastructure.brain.nodes import IngestionNodes
 
-    from unittest.mock import AsyncMock
     mock_llm = AsyncMock(spec=LLMInterface)
     mock_metadata = ExtractedMetadata(
         title="Test Title", summary="Test Summary", keywords=["test"], entities={}, language="en"

@@ -19,22 +19,14 @@ def test_merge_and_format_context_injects_explicit_ids():
         chroma_repo=Mock(),
         query_rewriter=Mock(),
         intent_classifier=Mock(),
-        llm=Mock()
+        llm=Mock(),
     )
 
     chunk1 = Chunk(
-        id="c1",
-        content="AI content 1",
-        parent_id="d1",
-        index=0,
-        metadata={"source": "src1", "title": "Title 1"}
+        id="c1", content="AI content 1", parent_id="d1", index=0, metadata={"source": "src1", "title": "Title 1"}
     )
     chunk2 = Chunk(
-        id="c2",
-        content="AI content 2",
-        parent_id="d2",
-        index=1,
-        metadata={"source": "src2", "title": "Title 2"}
+        id="c2", content="AI content 2", parent_id="d2", index=1, metadata={"source": "src2", "title": "Title 2"}
     )
 
     # When
