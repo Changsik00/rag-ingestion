@@ -44,6 +44,10 @@ class IngestionGraphBuilder:
 
         # Conditional Edge Logic
         def route_after_validation(state: IngestionState):
+            # 0. Check Forced HITL (Feature Flag)
+            if state.get("hitl_enabled"):
+                return "human_review"
+
             # If validation passed (no error), End.
             # If validation failed, go to logic resolver.
 

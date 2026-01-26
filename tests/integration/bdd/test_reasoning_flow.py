@@ -1,22 +1,22 @@
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 from app.domain.ingestion.state import IngestionState, ValidationFeedback
 from app.infrastructure.brain.graph import IngestionGraphBuilder
 
+
 @pytest.fixture
 def mock_llm():
     """
-    AsyncMock을 사용하여 이벤트 루프 에러를 방지하고 
+    AsyncMock을 사용하여 이벤트 루프 에러를 방지하고
     비동기 메서드 호출을 시뮬레이션합니다.
     """
     llm = AsyncMock()
     # extract_metadata 호출 시 반환될 기본값 설정
-    llm.extract_metadata.return_value = {
-        "title": "Test Title", 
-        "summary": "Test Summary"
-    }
+    llm.extract_metadata.return_value = {"title": "Test Title", "summary": "Test Summary"}
     return llm
+
 
 @pytest.mark.asyncio
 async def test_reasoning_flow_integration(mock_llm):
@@ -39,20 +39,12 @@ async def test_reasoning_flow_integration(mock_llm):
 
         # analyze_failure가 이미 실행되었다면, 루프를 종료하기 위해 성공으로 간주
         if "analyze_failure" in current_history:
-            return {
-                "steps_history": current_history + ["validate_content"], 
-                "error": None, 
-                "last_feedback": None
-            }
+            return {"steps_history": current_history + ["validate_content"], "error": None, "last_feedback": None}
 
         # 첫 호출 시 실패 발생
         return {
             "error": "Simulated Validation Error",
-            "last_feedback": ValidationFeedback(
-                source="validator", 
-                message="Field missing", 
-                target_fields=["summary"]
-            ),
+            "last_feedback": ValidationFeedback(source="validator", message="Field missing", target_fields=["summary"]),
             "steps_history": current_history + ["validate_content"],
         }
 
@@ -84,7 +76,7 @@ async def test_reasoning_flow_integration(mock_llm):
 
     # 6. 검증 (Assertion)
     history = final_state["steps_history"]
-    
+
     # 순서 보장 확인 (최소한 포함 여부 확인)
     assert "extract_metadata" in history
     assert "validate_content" in history

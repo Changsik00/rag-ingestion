@@ -118,8 +118,9 @@ async def main():
     # LangGraph merges updates. So if we start with `error` in input, it MIGHT persist?
     # Let's try starting with `error` and `retry_count` in initial input.
 
-    initial_input["error"] = "Simulated Critical Error for HITL"
-    initial_input["retry_count"] = 3
+    initial_input["hitl_enabled"] = True
+    # initial_input["error"] = "Simulated Critical Error for HITL"
+    # initial_input["retry_count"] = 3
 
     logger.info("▶️ Starting Graph Execution (Expect Interrupt)...")
 
@@ -137,7 +138,7 @@ async def main():
     logger.info(f"⏸️ Current Node: {snapshot.next}")
 
     if "human_review" in snapshot.next:
-        logger.info("✅ SUCCESS: Graph interrupted at 'human_review' as expected!")
+        logger.info("✅ SUCCESS: Graph interrupted at 'human_review' as expected (Toggle Works)!")
     else:
         logger.error(f"❌ FAILED: Graph did not stop at 'human_review'. Next: {snapshot.next}")
         return
@@ -149,9 +150,8 @@ async def main():
     # This simulates USER saying "I fixed it, proceed."
     # OR actually providing the correct metadata.
     updated_state = {
-        "error": None,
-        "retry_count": 0,  # Reset retry
-        "metadata": {"title": "Fixed Title", "summary": "Fixed Summary"},  # Injection
+        "hitl_enabled": False,  # Important: Turn off toggle to proceed
+        "metadata": {"title": "Verified Title via HITL"},  # Injection
     }
 
     graph.update_state(config, updated_state)
@@ -165,7 +165,7 @@ async def main():
     final_snapshot = graph.get_state(config)
     logger.info(f"🏁 Final Outcome: {final_snapshot.values.get('metadata')}")
 
-    if final_snapshot.values.get("metadata", {}).get("title") == "Fixed Title":
+    if final_snapshot.values.get("metadata", {}).get("title") == "Verified Title via HITL":
         logger.info("🎉 HITL Verification COMPLETE: Successfully resumed and secured data.")
     else:
         logger.info("⚠️ Verification Result ambiguous. Check logs.")

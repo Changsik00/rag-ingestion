@@ -100,3 +100,6 @@ class IngestionState(TypedDict):
 
     # Reasoning Context (Spec 023)
     backtracking_context: BacktrackingContext | None
+
+    # Feature Flags
+    hitl_enabled: bool

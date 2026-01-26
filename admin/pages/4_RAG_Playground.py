@@ -175,7 +175,11 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             filters = {"doc_id": selected_doc_ids} if selected_doc_ids else None
 
             # API Call
-            payload = {"message": prompt, "filters": filters}
+            payload = {
+                "message": prompt,
+                "filters": filters,
+                "hitl_enabled": st.session_state.hitl_enabled,
+            }
 
             res = api_client.post(f"/rag/sessions/{thread_id}/ask", json=payload)
 

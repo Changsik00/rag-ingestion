@@ -1,19 +1,19 @@
+import os
+
+import pytest
 from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+from app.domain.schemas.intent import IntentType
+from app.domain.services.intent_classifier import IntentClassifier
+from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
+
 load_dotenv()
 
 """
 Integration Test: Intent Routing
 BDD 스타일로 Intent Classifier와 RAG Service의 통합을 검증한다.
 """
-
-import os
-
-import pytest
-from langchain_google_genai import ChatGoogleGenerativeAI
-
-from app.domain.schemas.intent import IntentType
-from app.domain.services.intent_classifier import IntentClassifier
-from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
 
 
 @pytest.fixture

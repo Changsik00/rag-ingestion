@@ -16,6 +16,20 @@
 ## 📂 Proposed Changes
 <!-- Group by Component -->
 
+### [Core Domain]
+#### [MODIFY] `app/domain/ingestion/state.py`
+- `IngestionState`에 `hitl_enabled: bool` 필드 추가
+
+#### [MODIFY] `app/infrastructure/brain/graph.py`
+- `route_after_validation` 함수 수정: `hitl_enabled`가 True이면 검증 결과와 상관없이(혹은 성공 시에도) `human_review`로 분기하도록 로직 수정.
+
+### [API & Frontend]
+#### [MODIFY] `app/interfaces/api/v1/endpoints/admin/rag.py`
+- `ask_agent` 엔드포인트 payload에 `hitl_enabled` 파라미터 수신 및 `input_state`에 주입.
+
+#### [MODIFY] `admin/pages/4_RAG_Playground.py`
+- `st.toggle` 값을 API 호출 시 payload에 포함.
+
 ### [Tooling]
 #### [NEW] `scripts/verify_hitl_real.py`
 <!-- Korean: HITL 흐름 검증 스크립트 -->
