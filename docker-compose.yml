@@ -45,19 +45,16 @@ services:
   streamlit:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: admin/Dockerfile
     container_name: rag-admin
     ports:
       - "8501:8501"
     volumes:
-      - .:/app
-      - /app/.venv
+      - ./admin:/app/admin
     environment:
       - ADMIN_API_URL=http://rag-backend:8000/api/v1/admin
       - PYTHONPATH=/app
-    command: ["uv", "run", "streamlit", "run", "admin/dashboard.py"]
-    depends_on:
-      - backend
+    command: ["uv", "run", "streamlit", "run", "admin/dashboard.py", "--server.address=0.0.0.0", "--server.port=8501"]
 
 volumes:
   neo4j_data:
