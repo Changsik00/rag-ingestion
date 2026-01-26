@@ -34,12 +34,22 @@
 
 ## Task 4: Verification & Comparison Tooling
 ### 4-1. Comparison Utility
-- [ ] `scripts/compare_scrapers.py` 구현: Side-by-side 파일 저장 및 성능 리포트.
+- [ ] `scripts/compare_scrapers.py` 구현: CLI로 URL을 입력받아 각 엔진별 개별 결과 파일(.md) 저장 및 요약 통계 출력.
 - [ ] Commit: `tool(spec-039): add scraper comparison utility`
 
-## Task 5: Final Verification
-- [ ] Code Quality Check & Full test execution.
-- [ ] Create PR.
+## Task 5: Verification & PR Creation (Protocol Compliance)
+### 5-1. Pre-PR Quality Check
+- [ ] Code Quality: `uv run ruff check . --fix && uv run ruff format .`
+- [ ] Full Tests: `uv run pytest` (모든 테스트 통과 확인)
+- [ ] Commit: `chore(spec-039): final code quality and test verification`
+
+### 5-2. Documentation & Artifacts
+- [ ] Walkthrough 작성: `specs/039-advanced-scraper/walkthrough.md` (스크린샷/로그 포함)
+- [ ] PR Description 작성: `docs/protocols/templates/pr_description.md`를 복사하여 `specs/039-advanced-scraper/pr_description.md` 작성 (한글 사용)
+- [ ] Commit: `docs(spec-039): add walkthrough and pr description artifacts`
+
+### 5-3. Create Pull Request
+- [ ] PR 생성: `gh pr create --title "feat(spec-039): advanced scraper with pollution control" --body-file specs/039-advanced-scraper/pr_description.md`
 
 ## Summary
 **총 Task**: 7개 주요 세부 단계

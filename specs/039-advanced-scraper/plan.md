@@ -11,7 +11,7 @@
 - **Tiered Hybrid Scraper**: Trafilatura(Fast) -> Firecrawl(Semantic Advanced) -> Playwright(Custom Engine) 순의 계층적 구조.
 - **Pre-processor (Pollution Control)**: 마크다운 생성 직후 실행되는 정밀 정규식 정제 엔진 구축.
 - **Heuristic Quality Checker**: 스크래핑 결과의 '부실함'을 판단하는 전담 검증 클래스 도입.
-- **Comparator Tool**: `scripts/compare_scrapers.py`를 통해 성능 지표(길이, 시간, 메타데이터) 시각화.
+- **Comparator Tool**: `scripts/compare_scrapers.py`를 통해 특정 URL을 입력받아 각 스크래퍼별 결과 파일 생성 및 성능 지표 시각화.
 
 ## 📂 Proposed Changes
 
@@ -35,7 +35,7 @@
 ### [Utility]
 
 #### [NEW] `scripts/compare_scrapers.py`
-- Side-by-side 비교 및 성능 통계 리포트 생성 스크립트.
+- URL을 인자로 받아 `trafilatura_result.md`, `firecrawl_result.md` 등 독립된 결과 파일을 생성하고 메타데이터 대조 리포트 출력.
 
 ## 🧪 Verification Plan
 

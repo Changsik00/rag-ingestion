@@ -31,5 +31,5 @@
 ## ✅ Definition of Done
 1. **Pollution Free**: 위키 노이즈 및 구문 파편이 95% 이상 제거된 마크다운 생성.
 2. **Intelligent Fallback**: 4가지 트리거 조건에 따라 자동으로 Firecrawl 전환 검증.
-3. **Comparison Utility**: 동일 URL에 대해 두 스크래퍼의 결과를 비교 검증하는 도구 구현.
+3. **Comparison Utility**: 동일 URL(CLI 입력)에 대해 두 스크래퍼의 결과를 독립된 파일(.md, .txt 등)로 생성하여 사용자가 직접 비교할 수 있는 도구 구현.
 4. **Test Pass**: 단위/통합 테스트 100% 통과.
