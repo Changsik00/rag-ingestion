@@ -16,31 +16,31 @@
 
 ## Task 2: Advanced Scrapers (Firecrawl & Playwright)
 ### 2-1. Firecrawl Scraper
-- [ ] `FirecrawlWebScraper` 구현: 시맨틱 구조 보존 옵션 적용.
-- [ ] Commit: `feat(spec-039): implement firecrawl-based semantic scraper`
+- [x] `FirecrawlWebScraper` 구현: 시맨틱 구조 보존 옵션 적용.
+- [x] Commit: `feat(spec-039): implement firecrawl-based semantic scraper`
 
 ### 2-2. Playwright Scraper (Skeleton)
-- [ ] `PlaywrightWebScraper` 인터페이스 구현 (향후 확장을 위한 뼈대).
-- [ ] Commit: `feat(spec-039): add playwright scraper for custom extensions`
+- [x] `PlaywrightWebScraper` 인터페이스 구현 (향후 확장을 위한 뼈대).
+- [x] Commit: `feat(spec-039): add playwright scraper for custom extensions`
 
 ## Task 3: Intelligent Fallback & Quality Check
 ### 3-1. Quality Checker
-- [ ] `ScrapingQualityChecker` 구현: 300자 미만, JS Blocked 키워드, 구조 부실 탐지 루틴.
-- [ ] Commit: `feat(spec-039): implement heuristic quality checker for fallback triggers`
+- [x] `ScrapingQualityChecker` 구현: 300자 미만, JS Blocked 키워드, 구조 부실 탐지 루틴.
+- [x] Commit: `feat(spec-039): implement heuristic quality checker for fallback triggers`
 
 ### 3-2. Composite Controller
-- [ ] Trafilatura -> Firecrawl -> (Optional) Playwright 흐름 완성.
-- [ ] Commit: `feat(spec-039): complete tiered hybrid scraping workflow`
+- [x] Trafilatura -> Firecrawl -> (Optional) Playwright 흐름 완성.
+- [x] Commit: `feat(spec-039): complete tiered hybrid scraping workflow`
 
 ## Task 4: Verification & Comparison Tooling
 ### 4-1. Comparison Utility
-- [ ] `scripts/compare_scrapers.py` 구현: CLI로 URL을 입력받아 각 엔진별 개별 결과 파일(.md) 저장 및 요약 통계 출력.
-- [ ] Commit: `tool(spec-039): add scraper comparison utility`
+- [x] `scripts/compare_scrapers.py` 구현: CLI로 URL을 입력받아 각 엔진별 개별 결과 파일(.md) 저장 및 요약 통계 출력.
+- [x] Commit: `tool(spec-039): add scraper comparison utility`
 
 ## Task 5: Verification & PR Creation (Protocol Compliance)
 ### 5-1. Pre-PR Quality Check
-- [ ] Code Quality: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Full Tests: `uv run pytest` (모든 테스트 통과 확인)
+- [/] Code Quality: `uv run ruff check . --fix && uv run ruff format .`
+- [/] Full Tests: `uv run pytest` (모든 테스트 통과 확인)
 - [ ] Commit: `chore(spec-039): final code quality and test verification`
 
 ### 5-2. Documentation & Artifacts
