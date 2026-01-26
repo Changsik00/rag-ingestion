@@ -5,11 +5,17 @@ Contract tests for Scraper interface implementations.
 import pytest
 
 from app.infrastructure.scrapers.basic import BasicWebScraper
+from app.infrastructure.scrapers.composite_scraper import CompositeScraper
+from app.infrastructure.scrapers.firecrawl_scraper import FirecrawlWebScraper
+from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
 
 
 @pytest.fixture(
     params=[
         BasicWebScraper,
+        TrafilaturaWebScraper,
+        FirecrawlWebScraper,
+        CompositeScraper,
     ]
 )
 def scraper_class(request):
