@@ -67,9 +67,10 @@ async def test_process_job_handles_infrastructure_exception(service_deps):
 
     # Repo fails
     service_deps["repository"].save_with_chunks.side_effect = InfrastructureException("DB Connection Failed")
-    
+
     # Async Extractor Mock
     import asyncio
+
     future = asyncio.Future()
     future.set_result(None)
     service_deps["extractor"].extract.return_value = future
@@ -100,9 +101,10 @@ async def test_process_job_chunks_document(service_deps):
     job_id = "job-chunks"
     job = IngestionJob(id=job_id, source_url="http://chunk.com", status=JobStatus.PENDING)
     service_deps["job_repository"].get_job.return_value = job
-    
+
     # Async Extractor Mock
     import asyncio
+
     future = asyncio.Future()
     future.set_result(None)
     service_deps["extractor"].extract.return_value = future

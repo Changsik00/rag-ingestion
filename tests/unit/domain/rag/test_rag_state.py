@@ -25,9 +25,7 @@ def test_rag_graph_state_has_citations_field():
         "reasoning_log": [],
         "full_context": "",
         "final_answer": "",
-        "citations": [
-            {"index": 1, "source": "test_source", "url": "http://test.com", "title": "Test Title"}
-        ]
+        "citations": [{"index": 1, "source": "test_source", "url": "http://test.com", "title": "Test Title"}],
     }
 
     # Then: citations 필드에 접근 가능해야 함

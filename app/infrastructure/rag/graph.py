@@ -63,7 +63,4 @@ class RAGGraphBuilder:
 
         # 4. Compile
         # HITL 및 Checkpointer 설정 반영
-        return workflow.compile(
-            checkpointer=checkpointer,
-            interrupt_before=interrupt_before
-        )
+        return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)

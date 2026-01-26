@@ -25,6 +25,7 @@ def mock_llm():
 def mock_query_rewriter():
     """Mock Query Rewriter"""
     from unittest.mock import AsyncMock
+
     rewriter = AsyncMock()
     rewriter.rewrite.return_value = "재작성된 질문"
     return rewriter
@@ -34,12 +35,9 @@ def mock_query_rewriter():
 def mock_intent_classifier():
     """Mock Intent Classifier"""
     from unittest.mock import AsyncMock
+
     classifier = AsyncMock()
-    classifier.classify.return_value = UserIntent(
-        intent=IntentType.GENERAL_QUERY,
-        targets=[],
-        reasoning="일반 질문"
-    )
+    classifier.classify.return_value = UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="일반 질문")
     return classifier
 
 
@@ -55,11 +53,7 @@ def mock_repositories():
     chroma = Mock()
     chroma.search_mmr.return_value = []
 
-    return {
-        "neo4j_doc": neo4j_doc,
-        "neo4j_graph": neo4j_graph,
-        "chroma": chroma
-    }
+    return {"neo4j_doc": neo4j_doc, "neo4j_graph": neo4j_graph, "chroma": chroma}
 
 
 class TestRAGNodesClassifyIntent:
@@ -82,7 +76,7 @@ class TestRAGNodesClassifyIntent:
             chroma_repo=mock_repositories["chroma"],
             query_rewriter=mock_query_rewriter,
             intent_classifier=mock_intent_classifier,
-            llm=mock_llm
+            llm=mock_llm,
         )
 
         # Given
@@ -98,7 +92,7 @@ class TestRAGNodesClassifyIntent:
             "keyword_chunks": [],
             "graph_data": [],
             "full_context": "",
-            "final_answer": ""
+            "final_answer": "",
         }
 
         # When
@@ -131,7 +125,7 @@ class TestRAGNodesRouteDecision:
             chroma_repo=mock_repositories["chroma"],
             query_rewriter=mock_query_rewriter,
             intent_classifier=mock_intent_classifier,
-            llm=mock_llm
+            llm=mock_llm,
         )
 
         # Given
@@ -139,11 +133,7 @@ class TestRAGNodesRouteDecision:
             "query": "Claude와 GPT-4를 비교해줘",
             "history": [],
             "manual_filters": None,
-            "user_intent": UserIntent(
-                intent=IntentType.COMPARE,
-                targets=["claude", "gpt-4"],
-                reasoning="비교 요청"
-            ),
+            "user_intent": UserIntent(intent=IntentType.COMPARE, targets=["claude", "gpt-4"], reasoning="비교 요청"),
             "rewritten_query": "Claude AI와 GPT-4의 특징 비교",
             "auto_filters": None,
             "final_filters": None,
@@ -151,7 +141,7 @@ class TestRAGNodesRouteDecision:
             "keyword_chunks": [],
             "graph_data": [],
             "full_context": "",
-            "final_answer": ""
+            "final_answer": "",
         }
 
         # When
@@ -178,7 +168,7 @@ class TestRAGNodesRouteDecision:
             chroma_repo=mock_repositories["chroma"],
             query_rewriter=mock_query_rewriter,
             intent_classifier=mock_intent_classifier,
-            llm=mock_llm
+            llm=mock_llm,
         )
 
         # Given
@@ -187,11 +177,7 @@ class TestRAGNodesRouteDecision:
             "query": "Claude와 GPT-4를 비교해줘",
             "history": [],
             "manual_filters": manual_filters,
-            "user_intent": UserIntent(
-                intent=IntentType.COMPARE,
-                targets=["claude", "gpt-4"],
-                reasoning="비교 요청"
-            ),
+            "user_intent": UserIntent(intent=IntentType.COMPARE, targets=["claude", "gpt-4"], reasoning="비교 요청"),
             "rewritten_query": "Claude AI와 GPT-4의 특징 비교",
             "auto_filters": None,
             "final_filters": None,
@@ -199,7 +185,7 @@ class TestRAGNodesRouteDecision:
             "keyword_chunks": [],
             "graph_data": [],
             "full_context": "",
-            "final_answer": ""
+            "final_answer": "",
         }
 
         # When
@@ -229,7 +215,7 @@ class TestRAGNodesRetrieveHybrid:
             content="테스트 내용",
             parent_id="doc_1",
             index=0,
-            metadata={"source": "test.com", "title": "Test"}
+            metadata={"source": "test.com", "title": "Test"},
         )
 
         mock_repositories["chroma"].search_mmr.return_value = [mock_chunk]
@@ -244,7 +230,7 @@ class TestRAGNodesRetrieveHybrid:
             chroma_repo=mock_repositories["chroma"],
             query_rewriter=mock_query_rewriter,
             intent_classifier=mock_intent_classifier,
-            llm=mock_llm
+            llm=mock_llm,
         )
 
         # Given
@@ -252,11 +238,7 @@ class TestRAGNodesRetrieveHybrid:
             "query": "인공지능이 뭐야?",
             "history": [],
             "manual_filters": None,
-            "user_intent": UserIntent(
-                intent=IntentType.GENERAL_QUERY,
-                targets=[],
-                reasoning="일반 질문"
-            ),
+            "user_intent": UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="일반 질문"),
             "rewritten_query": "인공지능의 정의와 개념",
             "auto_filters": None,
             "final_filters": None,
@@ -264,7 +246,7 @@ class TestRAGNodesRetrieveHybrid:
             "keyword_chunks": [],
             "graph_data": [],
             "full_context": "",
-            "final_answer": ""
+            "final_answer": "",
         }
 
         # When
@@ -304,7 +286,7 @@ class TestRAGNodesGenerateAnswer:
             chroma_repo=mock_repositories["chroma"],
             query_rewriter=mock_query_rewriter,
             intent_classifier=mock_intent_classifier,
-            llm=mock_llm
+            llm=mock_llm,
         )
 
         # Given
@@ -313,18 +295,14 @@ class TestRAGNodesGenerateAnswer:
             content="AI는 인공지능을 의미합니다.",
             parent_id="doc_1",
             index=0,
-            metadata={"source": "test.com", "title": "AI 개념"}
+            metadata={"source": "test.com", "title": "AI 개념"},
         )
 
         state = {
             "query": "인공지능이 뭐야?",
             "history": [],
             "manual_filters": None,
-            "user_intent": UserIntent(
-                intent=IntentType.GENERAL_QUERY,
-                targets=[],
-                reasoning="일반 질문"
-            ),
+            "user_intent": UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="일반 질문"),
             "rewritten_query": "인공지능의 정의",
             "auto_filters": None,
             "final_filters": None,
@@ -332,7 +310,7 @@ class TestRAGNodesGenerateAnswer:
             "keyword_chunks": [],
             "graph_data": [{"source": "AI", "relationship": "IS_A", "target": "Technology"}],
             "full_context": "",
-            "final_answer": ""
+            "final_answer": "",
         }
 
         # When
@@ -364,7 +342,7 @@ class TestRAGNodesFallback:
             content="Fallback 결과",
             parent_id="doc_fallback",
             index=0,
-            metadata={"source": "fallback.com", "title": "Fallback"}
+            metadata={"source": "fallback.com", "title": "Fallback"},
         )
 
         # 1. 첫 번째 검색 (필터 있음) -> 빈 결과
@@ -379,7 +357,7 @@ class TestRAGNodesFallback:
             chroma_repo=mock_repositories["chroma"],
             query_rewriter=mock_query_rewriter,
             intent_classifier=mock_intent_classifier,
-            llm=mock_llm
+            llm=mock_llm,
         )
 
         # Given
@@ -396,7 +374,7 @@ class TestRAGNodesFallback:
             "graph_data": [],
             "fallback_triggered": False,
             "full_context": "",
-            "final_answer": ""
+            "final_answer": "",
         }
 
         # When
@@ -436,7 +414,7 @@ class TestRAGNodesPromptGuard:
             chroma_repo=mock_repositories["chroma"],
             query_rewriter=mock_query_rewriter,
             intent_classifier=mock_intent_classifier,
-            llm=mock_llm
+            llm=mock_llm,
         )
 
         state = {
@@ -451,7 +429,7 @@ class TestRAGNodesPromptGuard:
             "keyword_chunks": [],
             "graph_data": [],
             "full_context": "",
-            "final_answer": ""
+            "final_answer": "",
         }
 
         # When

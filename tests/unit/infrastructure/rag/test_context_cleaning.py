@@ -16,6 +16,7 @@ def test_clean_context_noise_removes_wiki_templates():
     assert "파일:image.jpg" not in cleaned
     assert "Some content" in cleaned
 
+
 def test_clean_context_noise_removes_excessive_newlines():
     nodes = RAGNodes(None, None, None, None, None, None)
     text = "Line 1\n\n\n\nLine 2"

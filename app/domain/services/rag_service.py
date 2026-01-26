@@ -49,11 +49,7 @@ class RAGService:
         self.graph = graph
 
     async def retrieve_and_generate(
-        self,
-        query: str,
-        history: list[dict],
-        filters: dict | None = None,
-        thread_id: str | None = None
+        self, query: str, history: list[dict], filters: dict | None = None, thread_id: str | None = None
     ) -> RAGResult:
         """
         RAG Pipeline 실행: Intent → Rewrite → Hybrid Search → Generate.
@@ -81,7 +77,7 @@ class RAGService:
             "keyword_chunks": [],
             "graph_data": [],
             "full_context": "",
-            "final_answer": ""
+            "final_answer": "",
         }
 
         # Config 설정 (Thread ID가 있으면 Checkpointer 사용)
@@ -111,5 +107,5 @@ class RAGService:
             graph_data=state.get("graph_data", []),
             full_context=state.get("full_context", ""),
             citations=state.get("citations", []),
-            user_intent=state.get("user_intent")
+            user_intent=state.get("user_intent"),
         )

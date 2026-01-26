@@ -11,13 +11,16 @@ from app.domain.services.storage_integrity_service import StorageIntegrityServic
 def mock_primary_repo():
     return MagicMock()
 
+
 @pytest.fixture
 def mock_target_repo():
     return MagicMock()
 
+
 @pytest.fixture
 def service(mock_primary_repo, mock_target_repo):
     return StorageIntegrityService(mock_primary_repo, mock_target_repo)
+
 
 def test_get_drfit_report_finds_missing_ids(service, mock_primary_repo, mock_target_repo):
     # Given
@@ -37,6 +40,7 @@ def test_get_drfit_report_finds_missing_ids(service, mock_primary_repo, mock_tar
     assert report["missing_count"] == 2
     assert report["missing_ids"] == {id2, id3}
 
+
 def test_get_document_drift_report_groups_by_document(service, mock_primary_repo, mock_target_repo):
     # Given
     doc_id = str(uuid4())
@@ -46,7 +50,7 @@ def test_get_document_drift_report_groups_by_document(service, mock_primary_repo
     # New optimized way: use get_document_stats
     mock_primary_repo.get_all_chunk_metadata.return_value = [
         {"id": chunk1.id, "parent_id": doc_id},
-        {"id": chunk2.id, "parent_id": doc_id}
+        {"id": chunk2.id, "parent_id": doc_id},
     ]
     mock_primary_repo.get_all_chunk_ids.return_value = {chunk1.id, chunk2.id}
     mock_primary_repo.get_document_stats.return_value = [
@@ -66,6 +70,7 @@ def test_get_document_drift_report_groups_by_document(service, mock_primary_repo
     assert report["total_chunks"] == 2
     assert report["target_chunks"] == 1
     assert report["drift_ratio"] == 0.5
+
 
 def test_propagate_document_metadata_updates_chunks(service, mock_primary_repo):
     # Given

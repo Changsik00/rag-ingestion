@@ -41,6 +41,7 @@ def test_invalid_url_format_returns_422():
 
 
 @pytest.mark.integration
+@pytest.mark.expensive
 def test_url_404_fails_job():
     """
     Given: 존재하지 않는 URL (404)로 수집 요청하고

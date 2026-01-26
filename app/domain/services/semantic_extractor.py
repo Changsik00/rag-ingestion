@@ -36,6 +36,7 @@ class SemanticExtractor:
             try:
                 # adapter methods are now async
                 import asyncio
+
                 if asyncio.iscoroutinefunction(self.llm.extract_metadata):
                     return await self.llm.extract_metadata(text, thread_id=thread_id)
                 else:

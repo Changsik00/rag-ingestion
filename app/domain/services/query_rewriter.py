@@ -63,11 +63,12 @@ Your task is to REWRITE the "Follow Up Input" into a standalone question that is
             logger.info("Rewriting query with context...")
             # Handle both sync and async adapters
             import asyncio
+
             if hasattr(self.llm, "generate") and asyncio.iscoroutinefunction(self.llm.generate):
                 raw_rewritten = await self.llm.generate(prompt)
             else:
                 raw_rewritten = self.llm.generate(prompt)
-            
+
             rewritten_query = raw_rewritten.strip()
 
             # 후처리: LLM이 가끔 "Standalone Question: " 등을 포함할 수 있음

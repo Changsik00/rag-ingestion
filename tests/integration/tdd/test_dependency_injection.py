@@ -86,7 +86,7 @@ def test_environment_variable_based_initialization():
 
     # When: Dependencies are initialized
     driver = get_neo4j_driver()
-    repository = get_repository()
+    repository = get_repository(driver)
 
     # Then: They use the environment variables
     # (We can't easily verify this without accessing internals,

@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     # LLM & Embedding
     GEMINI_API_KEY: str
+    FIRECRAWL_API_KEY: str | None = None
 
     # Chunking Strategy
     CHUNK_SIZE: int = 1000

@@ -113,8 +113,10 @@ class ChromaStorage(DocumentRepository):
                 is_rate_limit = "429" in str(e) or "quota" in str(e).lower()
 
                 if attempt < max_retries - 1 and (is_rate_limit or "retry" in str(e).lower()):
-                    delay = (base_delay ** attempt) + random.uniform(0, 1)
-                    logger.warning(f"ChromaDB save failed (attempt {attempt+1}/{max_retries}). Retrying in {delay:.2f}s... Error: {e}")
+                    delay = (base_delay**attempt) + random.uniform(0, 1)
+                    logger.warning(
+                        f"ChromaDB save failed (attempt {attempt + 1}/{max_retries}). Retrying in {delay:.2f}s... Error: {e}"
+                    )
                     time.sleep(delay)
                     continue
 
@@ -371,6 +373,7 @@ class ChromaStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"MMR search logic failed: {e}")
             return self.search(query, limit, filters=filters)
+
     def get_all_chunk_ids(self) -> set[str]:
         """ChromaDB의 모든 청크 ID를 가져옵니다."""
         try:
@@ -380,6 +383,7 @@ class ChromaStorage(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to get all chunk IDs from ChromaDB: {e}")
             return set()
+
     def get_document_stats(self) -> list[dict]:
         """ChromaDB의 문서별 통계 (Chroma는 Chunk 중심이므로 기본 정보만 반환)"""
         try:

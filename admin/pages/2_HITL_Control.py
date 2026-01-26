@@ -23,13 +23,7 @@ else:
     for t in threads:
         t_id = t["thread_id"]
         # Basic info from list
-        data.append(
-            {
-                "Thread ID": t_id,
-                "Checkpoint ID": t["checkpoint_id"],
-                "Metadata": str(t.get("metadata", {}))
-            }
-        )
+        data.append({"Thread ID": t_id, "Checkpoint ID": t["checkpoint_id"], "Metadata": str(t.get("metadata", {}))})
 
     df = pd.DataFrame(data)
     st.dataframe(df, use_container_width=True)

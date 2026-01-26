@@ -21,7 +21,7 @@ from app.domain.services.semantic_extractor import SemanticExtractor
 from app.domain.services.storage_integrity_service import StorageIntegrityService
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
-from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
+from app.infrastructure.scrapers.composite_scraper import CompositeScraper
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
@@ -37,7 +37,7 @@ from app.use_cases.ingestion import IngestionService
 # Scraper 의존성 (웹 페이지 스크래핑)
 @lru_cache
 def get_scraper() -> ScraperInterface:
-    return TrafilaturaWebScraper()
+    return CompositeScraper()
 
 
 # Neo4j Driver 의존성 (모든 Neo4j 저장소가 공유하는 단일 Driver)
@@ -108,7 +108,9 @@ async def get_checkpointer() -> AsyncSqliteSaver:
 
 
 # Semantic Extractor 의존성 (LLM 기반 메타데이터 추출)
-async def get_semantic_extractor(checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)]) -> SemanticExtractor:
+async def get_semantic_extractor(
+    checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
+) -> SemanticExtractor:
     llm_adapter = get_llm()  # LangChainLLMAdapter를 반환
     # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
     # Spec 024: Checkpointer 주입
@@ -193,7 +195,7 @@ def get_rag_nodes(
         chroma_repo=chroma_repo,
         query_rewriter=query_rewriter,
         intent_classifier=intent_classifier,
-        llm=llm_adapter
+        llm=llm_adapter,
     )
 
 

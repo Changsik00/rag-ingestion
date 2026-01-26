@@ -5,7 +5,7 @@ Spec 035: Transparent Hybrid Knowledge Strategy (BDD Integration Tests)
 기존의 순환 참조식 MOCK을 제거하고, 지저분한 위키피디아 데이터를 시뮬레이션하여 검증합니다.
 """
 
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
@@ -35,8 +35,9 @@ def mock_dependencies():
         "chroma": chroma,
         "rewriter": AsyncMock(),
         "intent_classifier": AsyncMock(),
-        "llm": llm
+        "llm": llm,
     }
+
 
 @pytest.fixture
 def hybrid_rag_service(mock_dependencies):
@@ -46,11 +47,12 @@ def hybrid_rag_service(mock_dependencies):
         chroma_repo=mock_dependencies["chroma"],
         query_rewriter=mock_dependencies["rewriter"],
         intent_classifier=mock_dependencies["intent_classifier"],
-        llm=mock_dependencies["llm"]
+        llm=mock_dependencies["llm"],
     )
     builder = RAGGraphBuilder(nodes)
     graph = builder.build()
     return RAGService(graph)
+
 
 @pytest.mark.asyncio
 async def test_scenario_realistic_wikipedia_and_multiple_citations(hybrid_rag_service, mock_dependencies):
@@ -69,16 +71,32 @@ async def test_scenario_realistic_wikipedia_and_multiple_citations(hybrid_rag_se
 | 2002 | 팰컨 1 | 실패 |
 | 2008 | 팰컨 1 | 성공 |
 SpaceX는 일론 머스크가 설립한 우주 탐사 기업입니다."""
-    chunk_1 = Chunk(id=str(uuid4()), content=content_1, parent_id=str(uuid4()), index=0,
-                    metadata={"source": "wikipedia.org", "title": "SpaceX History", "url": "https://ko.wikipedia.org/wiki/SpaceX"})
+    chunk_1 = Chunk(
+        id=str(uuid4()),
+        content=content_1,
+        parent_id=str(uuid4()),
+        index=0,
+        metadata={"source": "wikipedia.org", "title": "SpaceX History", "url": "https://ko.wikipedia.org/wiki/SpaceX"},
+    )
 
     # Chunk 2: Extra noise
     content_2 = """### 테슬라와의 관계
 일론 머스크는 테슬라의 CEO이기도 하며, 자신의 개인 제트기를 이용해 이동합니다.[1] Icons8_flat_search.svg/20px-Icons8... 이 부분은 무시하십시오."""
-    chunk_2 = Chunk(id=str(uuid4()), content=content_2, parent_id=str(uuid4()), index=1,
-                    metadata={"source": "wikipedia.org", "title": "Elon Musk Bio", "url": "https://ko.wikipedia.org/wiki/Elon_Musk"})
+    chunk_2 = Chunk(
+        id=str(uuid4()),
+        content=content_2,
+        parent_id=str(uuid4()),
+        index=1,
+        metadata={
+            "source": "wikipedia.org",
+            "title": "Elon Musk Bio",
+            "url": "https://ko.wikipedia.org/wiki/Elon_Musk",
+        },
+    )
 
-    mock_dependencies["intent_classifier"].classify.return_value = UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="Test")
+    mock_dependencies["intent_classifier"].classify.return_value = UserIntent(
+        intent=IntentType.GENERAL_QUERY, targets=[], reasoning="Test"
+    )
     mock_dependencies["rewriter"].rewrite.return_value = query
     mock_dependencies["chroma"].search_mmr.return_value = [chunk_1, chunk_2]
 
@@ -87,7 +105,9 @@ SpaceX는 일론 머스크가 설립한 우주 탐사 기업입니다."""
     def llm_side_effect(prompt):
         assert "SpaceX는 일론 머스크가 설립" in prompt
         assert "테슬라의 CEO이기도 하며" in prompt
-        return Mock(content="일론 머스크는 SpaceX를 설립하여 2008년 팰컨 1 발사에 성공했습니다[1]. 또한 그는 테슬라의 CEO로서 자신의 개인 제트기를 사용합니다[2].")
+        return Mock(
+            content="일론 머스크는 SpaceX를 설립하여 2008년 팰컨 1 발사에 성공했습니다[1]. 또한 그는 테슬라의 CEO로서 자신의 개인 제트기를 사용합니다[2]."
+        )
 
     mock_dependencies["llm"].generate.side_effect = llm_side_effect
 
@@ -108,6 +128,7 @@ SpaceX는 일론 머스크가 설립한 우주 탐사 기업입니다."""
     assert citation_2["title"] == "Elon Musk Bio"
     assert "Elon_Musk" in citation_2["url"]
 
+
 @pytest.mark.asyncio
 async def test_scenario_hallucinated_citation_protection(hybrid_rag_service, mock_dependencies):
     """
@@ -118,10 +139,17 @@ async def test_scenario_hallucinated_citation_protection(hybrid_rag_service, moc
     """
     # 1. Given
     query = "테슬라의 모델 라인업은?"
-    chunk = Chunk(id=str(uuid4()), content="테슬라는 모델 S, 3, X, Y를 판매합니다.", parent_id=str(uuid4()), index=0,
-                  metadata={"source": "tesla.com", "title": "Models"})
+    chunk = Chunk(
+        id=str(uuid4()),
+        content="테슬라는 모델 S, 3, X, Y를 판매합니다.",
+        parent_id=str(uuid4()),
+        index=0,
+        metadata={"source": "tesla.com", "title": "Models"},
+    )
 
-    mock_dependencies["intent_classifier"].classify.return_value = UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="Test")
+    mock_dependencies["intent_classifier"].classify.return_value = UserIntent(
+        intent=IntentType.GENERAL_QUERY, targets=[], reasoning="Test"
+    )
     mock_dependencies["rewriter"].rewrite.return_value = query
     mock_dependencies["chroma"].search_mmr.return_value = [chunk]
 
@@ -140,6 +168,7 @@ async def test_scenario_hallucinated_citation_protection(hybrid_rag_service, moc
     assert result.citations[0]["index"] == 1
     assert all(c["index"] != 99 for c in result.citations)
 
+
 @pytest.mark.asyncio
 async def test_scenario_pure_llm_fallback_no_citation(hybrid_rag_service, mock_dependencies):
     """
@@ -153,7 +182,9 @@ async def test_scenario_pure_llm_fallback_no_citation(hybrid_rag_service, mock_d
     mock_dependencies["chroma"].search_mmr.return_value = []
     mock_dependencies["neo4j_doc"].search.return_value = []
 
-    mock_dependencies["intent_classifier"].classify.return_value = UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="Test")
+    mock_dependencies["intent_classifier"].classify.return_value = UserIntent(
+        intent=IntentType.GENERAL_QUERY, targets=[], reasoning="Test"
+    )
     mock_dependencies["rewriter"].rewrite.return_value = query
 
     # LLM answer without citations
