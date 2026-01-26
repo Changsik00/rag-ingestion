@@ -8,6 +8,7 @@ feat(spec-040): real-world hitl verification script & toggle fix
 1. **Toggle Logic**: `route_after_validation` 함수에서 `hitl_enabled=True`일 경우 강제로 `human_review`로 분기하는 로직을 추가했습니다.
 2. **Real-World Verification**: 검증 스크립트가 토글을 켰을 때 정상적으로 Interrupt 되는지 확인합니다.
 3. **Full-Stack Update**: Frontend(Streamlit) -> API(FastAPI) -> Backend(LangGraph) -> State까지 데이터 흐름이 연결되었습니다.
+4. **Collision Fix**: `AdminAgent`와 내부 `RAGService` 간 Checkpointer ID 충돌 방지를 위해 Thread ID Namespace(`rag-*`)를 적용했습니다.
 
 ## 🧪 Verification
 ### Automated Tests
@@ -36,7 +37,7 @@ uv run python scripts/verify_hitl_real.py
 ### 🛠 Modified Files
 - `app/domain/ingestion/state.py`: `hitl_enabled` 필드 추가
 - `app/infrastructure/brain/graph.py`: Routing 로직에 토글 체크 추가 (Ingestion)
-- `app/domain/services/admin_agent.py`: Routing 로직에 토글 체크 추가 (Chat)
+- `app/domain/services/admin_agent.py`: Routing 로직에 토글 체크 추가 및 Thread ID 충돌 수정
 - `app/interfaces/api/v1/endpoints/admin/rag.py`: API Payload 처리 추가
 - `admin/pages/4_RAG_Playground.py`: API 호출 시 토글 값 전달
 
