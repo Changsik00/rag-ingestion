@@ -15,8 +15,8 @@ ENV UV_LINK_MODE=copy
 # 의존성 설치 (uv 사용)
 RUN uv sync --frozen --no-dev
 
-# 소스 코드 복사
-COPY . .
+# 소스 코드 복사 (Lean build)
+COPY app/ ./app/
 
 # FastAPI 실행
 CMD ["uv", "run", "uvicorn", "app.interfaces.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

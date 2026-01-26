@@ -24,7 +24,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.backend
     container_name: rag-backend
     ports:
       - "8000:8000"
@@ -45,7 +45,7 @@ services:
   streamlit:
     build:
       context: .
-      dockerfile: admin/Dockerfile
+      dockerfile: Dockerfile.admin
     container_name: rag-admin
     ports:
       - "8501:8501"
