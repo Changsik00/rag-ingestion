@@ -1,5 +1,4 @@
 import logging
-import re
 
 import trafilatura
 
@@ -14,6 +13,11 @@ class TrafilaturaWebScraper(ScraperInterface):
     Intelligent Web Scraper using Trafilatura.
     Extracts only the main content (article) and metadata, removing ads and noise.
     """
+
+    def __init__(self):
+        from app.infrastructure.scrapers.cleaner import MarkdownCleaner
+
+        self.cleaner = MarkdownCleaner()
 
     def scrape(self, url: str) -> IngestResponse:
         logger.info(f"Scraping URL with Trafilatura: {url}")
@@ -57,17 +61,16 @@ class TrafilaturaWebScraper(ScraperInterface):
             if not meta_dict.get("title") or meta_dict["title"].lower() == "none":
                 # URL에서 마지막 부분 추출 (e.g. /Elon_Musk -> Elon Musk)
                 from urllib.parse import urlparse
-                path = urlparse(url).path.strip('/')
+
+                path = urlparse(url).path.strip("/")
                 if path:
-                    fallback_title = path.split('/')[-1].replace('_', ' ').replace('-', ' ').title()
+                    fallback_title = path.split("/")[-1].replace("_", " ").replace("-", " ").title()
                     meta_dict["title"] = fallback_title
                 else:
                     meta_dict["title"] = "Untitled Document"
 
-            # [Spec 037] Context Cleaning: 지저분한 위키피디아 navbox나 빈 표 제거
-            # Trafilatura가 가끔 추출하는 불필요한 마바크다운 패턴 정제
-            markdown_content = re.sub(r'\|\s*\|\s*\|\n\| --- \| --- \| --- \|\n\| \| \| \|', '', markdown_content) # 빈 표 제거
-            markdown_content = re.sub(r'\[\s*\]\(\s*\)', '', markdown_content) # 빈 링크 제거
+            # [Spec 039] Specialized Cleaning (Pollution Control)
+            markdown_content = self.cleaner.clean(markdown_content)
 
             return IngestResponse(url=url, markdown=markdown_content, metadata=meta_dict)
 
