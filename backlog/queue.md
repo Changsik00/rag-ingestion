@@ -334,7 +334,7 @@
   * **우선순위**: High (아키텍처 부채 해결 및 운영 안정성 확보)
   * **완료**: 2026-01-26
 
-* [/] **Spec 039: Advanced Scraper (Headless & Complex Layout Support)**
+* [x] **Spec 039: Advanced Scraper (Headless & Complex Layout Support)**
   * **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
   * **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락함.
   * **Action**:
@@ -344,7 +344,25 @@
   * **Priority**: High (Phase 4 핵심 기능)
   * **Status**: Planning (2026-01-26)
   * **Strategy**: [Design Guide 008](docs/design_guides/008-scrapper.md), [Design Guide 009](docs/design_guides/009-scapping-strategy.md)
+
+* [ ] **Spec 040: Real-World HITL Verification Script**
+  * **Goal**: Mock이 아닌 실제 LLM과 상호작용하며 HITL 흐름을 검증하는 스크립트 작성 (`scripts/verify_hitl_real.py`).
+  * **Scenario**: 실제 Gemini LLM 사용 -> 강제 오류 주입 -> Interrupt 확인 -> 수동 Resume -> 최종 결과 확인.
+  * **Priority**: 품질 검증 단계에서 수행 권장.
+  * **Status**: Planning (2026-01-27)
+  * **Documents**: [Spec](specs/040-hitl-verification-script/spec.md), [Plan](specs/040-hitl-verification-script/plan.md), [Task](specs/040-hitl-verification-script/task.md)
+
+* [ ] **Spec 041: Admin HITL UI & Robustness (Follow-up)**
+  * **Goal**: HITL 모드에서 사용자가 직관적으로 "대기 상태"를 인지하고 제어(Resume/Approve)할 수 있는 UI를 구현하며, 구조적 안전장치를 강화함.
+  * **Features**:
+    - **Resume/Approve Button**: Streamlit Chat UI에 중단된 작업 재개 버튼 추가.
+    - **Waiting State Indicator**: 답변 생성 후 "검토 대기 중" 상태 시각화.
+    - **Architecture Documentation**: Checkpointer Collision Issue (`rag-{id}` namespace) 및 아키텍처 결정 기록.
+  * **Context**: Spec 040에서 발견된 "답변 후 중단" UX 혼동 및 Backend Checkpointer 충돌 이슈에 대한 후속 조치.
+  * **Priority**: High (UX 개선 및 유지보수성 확보)
+
 ---
+
 
 ### Phase 5+: Future Vision
 
@@ -412,10 +430,7 @@
   * **Notification**: `humne_review` 진입 시 Slack/Email 알림 발송
   * **Priority**: Spec 022 완료 후 운영 단계에서 필요 시 진행
 
-* **[Tooling] Real-World HITL Verification Script**
-  * **Goal**: Mock이 아닌 실제 LLM과 상호작용하며 HITL 흐름을 검증하는 스크립트 작성 (`scripts/verify_hitl_real.py`).
-  * **Scenario**: 실제 Gemini LLM 사용 -> 강제 오류 주입 -> Interrupt 확인 -> 수동 Resume -> 최종 결과 확인.
-  * **Priority**: 품질 검증 단계에서 수행 권장.
+
 
 * **[Integration] n8n Workflow Automation**
   * **Goal**: 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템.

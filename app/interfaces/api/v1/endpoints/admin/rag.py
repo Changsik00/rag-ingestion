@@ -32,6 +32,7 @@ async def ask_agent(
     """Admin Agent에게 질문을 던지고 결과를 반환 (HITL 지원 가능)"""
     message = payload.get("message")
     filters = payload.get("filters")
+    hitl_enabled = payload.get("hitl_enabled", False)
 
     if not message:
         raise HTTPException(status_code=400, detail="Message is required")
@@ -42,7 +43,12 @@ async def ask_agent(
         workflow = agent.build_workflow(checkpointer=checkpointer)
 
         # input state 구성
-        input_state = {"messages": [{"role": "user", "content": message}], "filters": filters, "thread_id": id}
+        input_state = {
+            "messages": [{"role": "user", "content": message}],
+            "filters": filters,
+            "thread_id": id,
+            "hitl_enabled": hitl_enabled,
+        }
 
         # 마지막 노드 결과 반환
         result = await workflow.ainvoke(input_state, config=config)

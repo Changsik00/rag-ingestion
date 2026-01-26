@@ -54,11 +54,11 @@ class FirecrawlWebScraper(ScraperInterface):
                     metadata = m.model_dump()
                 else:
                     metadata = dict(m)
-            
+
             # [Spec 039] 404/Error Detection (Anti-Fallback-Pollution)
             # Support both camelCase (old/raw) and snake_case (v4 client)
             status_code = metadata.get("status_code") or metadata.get("statusCode") or metadata.get("status")
-            
+
             error_code = None
             if status_code and isinstance(status_code, (int, float, str)):
                 try:
@@ -67,12 +67,12 @@ class FirecrawlWebScraper(ScraperInterface):
                         error_code = sc
                 except (ValueError, TypeError):
                     pass
-            
+
             if error_code:
                 raise ValueError(f"Firecrawl returned failure status code: {error_code}")
 
             markdown_content = result.markdown if hasattr(result, "markdown") else ""
-            
+
             # 3. Clean Markdown (Pollution Control)
             markdown_content = self.cleaner.clean(markdown_content)
 
