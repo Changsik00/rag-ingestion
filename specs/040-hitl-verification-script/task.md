@@ -26,8 +26,15 @@
 
 ## Task 6: HITL Feedback Loop Logic
 - [x] AdminAgent Graph Loop 구현: `human_review` -> `router` (if feedback)
+
 - [x] `resume_session` API 수정: Feedback -> Update State -> Resume
-- [ ] Feedback Loop 검증 (UI Test)
+- [x] Feedback Loop 검증 (UI Test)
+
+## Task 7: HITL UI Refinement & Design Logic
+- [x] UI 버그 수정: Confirm 시 메시지 중복 생성 방지 (Update only)
+- [x] UI 버그 수정: Revise 시 Debug Info(Context, Intent) 누락 해결
+- [x] User Communication: HITL Design Pattern (Review vs Permission) 설명
+
 
 ---
 

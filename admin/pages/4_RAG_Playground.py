@@ -120,29 +120,6 @@ for message in st.session_state.messages:
                             if res:
                                 # Update status of current message to prevent duplicate buttons
                                 message["status"] = "completed"
-                                # Append new response
-                                # Resume API format check needed. Assuming it returns typical chat response structure or we fetch trace.
-                                # For now, let's assume it returns a dict with 'result' which is valid output.
-                                # Actually admin/rag.py resume returns {"status": "Resumed", "result": result}
-                                # result is from adapter.resume -> updates the state. 
-                                # We should probably fetch the new message or just rerun to let the loop show it if we add it here.
-                                
-                                # Simplified: Just rerun, but we need to fetch the new answer.
-                                # Let's manually append a placeholder or fetch result messages.
-                                # The current API resume returns 'result' which is the output of ainvoke/resume.
-                                # result = {'messages': [AIMessage...]}
-                                
-                                result_data = res.get("result", {})
-                                answer_text = "Resumed."
-                                if result_data and "messages" in result_data:
-                                     # Extract last AI message
-                                     msgs = result_data["messages"]
-                                     if msgs and isinstance(msgs[-1], dict): # if dict
-                                         answer_text = msgs[-1].get("content", "")
-                                     elif msgs: # if object
-                                         answer_text = msgs[-1].content
-                                
-                                st.session_state.messages.append({"role": "assistant", "content": answer_text, "status": "completed"})
                                 st.rerun()
                         except Exception as e:
                             st.error(f"Failed to resume: {e}")
@@ -153,18 +130,37 @@ for message in st.session_state.messages:
                          if feedback:
                             try:
                                 res = api_client.post(f"/rag/sessions/{thread_id}/resume", json={"input": feedback})
-                                # Similar handling as Approve
+                                # Mark previous draft as replaced/completed
                                 message["status"] = "completed"
+                                
                                 result_data = res.get("result", {})
                                 answer_text = "Resumed with feedback."
-                                if result_data and "messages" in result_data:
-                                     msgs = result_data["messages"]
-                                     if msgs:
-                                         # Check type (dict or object)
-                                         m = msgs[-1]
-                                         answer_text = m.get("content") if isinstance(m, dict) else m.content
+                                
+                                # Extract content and debug info
+                                msgs = result_data.get("messages", [])
+                                if msgs:
+                                    last_msg = msgs[-1]
+                                    answer_text = last_msg.get("content") if isinstance(last_msg, dict) else last_msg.content
 
-                                st.session_state.messages.append({"role": "assistant", "content": answer_text, "status": "completed"})
+                                context_data = result_data.get("context_data", {})
+                                debug_intent = None
+                                if context_data and context_data.get("user_intent"):
+                                    ui = context_data["user_intent"]
+                                    debug_intent = {
+                                        "intent": ui.get("intent") if isinstance(ui, dict) else getattr(ui, "intent", "N/A"),
+                                        "targets": ui.get("targets") if isinstance(ui, dict) else getattr(ui, "targets", []),
+                                        "reasoning": ui.get("reasoning") if isinstance(ui, dict) else getattr(ui, "reasoning", ""),
+                                    }
+
+                                st.session_state.messages.append({
+                                    "role": "assistant", 
+                                    "content": answer_text, 
+                                    "status": res.get("status", "completed"),
+                                    "debug_info": context_data,
+                                    "debug_intent": debug_intent,
+                                    "debug_rewrite": {"original": feedback, "rewritten": context_data.get("rewritten_query")},
+                                    "debug_prompt": context_data.get("full_context", ""),
+                                })
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Failed to resume: {e}")
