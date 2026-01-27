@@ -21,6 +21,7 @@ from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphReposito
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("VerifyHITL")
 
+
 def get_real_services():
     """
     Initialize REAL services for the Admin Agent.
@@ -32,11 +33,12 @@ def get_real_services():
     # Neo4j Driver needs to be created or passed. Neo4jStorage takes a driver.
     # But usually DI handles this. Here we need to create it manually.
     from neo4j import GraphDatabase
+
     driver = GraphDatabase.driver(settings.NEO4J_URI, auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD))
 
     _neo4j_doc_repo = Neo4jStorage(driver=driver)
     _neo4j_graph_repo = Neo4jGraphRepository(driver=driver)
-    _chroma_repo = ChromaStorage() # Assuming it connects to persistent dir
+    _chroma_repo = ChromaStorage()  # Assuming it connects to persistent dir
 
     # 2. LLM Components
     _llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0, google_api_key=settings.GEMINI_API_KEY)
@@ -56,8 +58,9 @@ def get_real_services():
     class MockRAGService:
         async def retrieve_and_generate(self, query, history, filters=None, thread_id=None):
             logger.info(f"[MockRAG] Processing query: {query}")
-            await asyncio.sleep(1) # Simulate delay
+            await asyncio.sleep(1)  # Simulate delay
             from app.domain.services.rag_service import RAGResult
+
             return RAGResult(
                 answer="This is a real LLM response from Admin Agent context, but the RAG retrieval was mocked.",
                 rewritten_query=query,
@@ -65,23 +68,26 @@ def get_real_services():
                 keyword_chunks=[],
                 graph_data=[],
                 full_context="Mock Context",
-                user_intent=None
+                user_intent=None,
             )
 
     class MockIngestionService:
         def create_job(self, url):
             logger.info(f"[MockIngestion] Create job for {url}")
+
             # Return dummy job object
             class DummyJob:
                 job_id = "job-123"
+
             return DummyJob()
 
         def process_job(self, job_id):
-             logger.info(f"[MockIngestion] Processing {job_id}")
+            logger.info(f"[MockIngestion] Processing {job_id}")
 
         class MockJobRepo:
             def get_job(self, job_id):
                 from app.domain.entities.job import Job, JobStatus
+
                 return Job(id=job_id, url="http://dummy.com", status=JobStatus.COMPLETED, docs_ids=["doc-1"])
 
         job_repository = MockJobRepo()
@@ -90,6 +96,7 @@ def get_real_services():
     ingestion_service = MockIngestionService()
 
     return rag_service, ingestion_service
+
 
 async def main():
     load_dotenv()
@@ -117,7 +124,7 @@ async def main():
                 break
 
             hitl_input = input("   Enable HITL? (y/n, default n): ").strip().lower()
-            hitl_enabled = hitl_input == 'y'
+            hitl_enabled = hitl_input == "y"
 
             print(f"   (Settings: HITL={'ON' if hitl_enabled else 'OFF'})")
 
@@ -125,10 +132,10 @@ async def main():
             inputs = {
                 "messages": [HumanMessage(content=user_input)],
                 "hitl_enabled": hitl_enabled,
-                "intent": "", # Let router decide
+                "intent": "",  # Let router decide
                 "tool_output": "",
                 "context_data": {},
-                "filters": None
+                "filters": None,
             }
 
             print("🤖 Agent Running...")
@@ -158,7 +165,7 @@ async def main():
                 print("▶️  Resuming Agent...")
                 # Invoke with None to resume
                 async for event in workflow.astream(None, config=config):
-                     for key, value in event.items():
+                    for key, value in event.items():
                         print(f"   -> Node: {key}")
 
             # Final Result
@@ -170,6 +177,7 @@ async def main():
         except Exception as e:
             logger.error(f"Error: {e}", exc_info=True)
             break
+
 
 if __name__ == "__main__":
     asyncio.run(main())

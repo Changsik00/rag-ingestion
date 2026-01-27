@@ -363,12 +363,14 @@
   * **Status**: Completed (Merged)
   * **Documents**: [Spec](specs/041-hitl-ui-robustness/spec.md), [Plan](specs/041-hitl-ui-robustness/plan.md), [Task](specs/041-hitl-ui-robustness/task.md)
 
-* [ ] **Spec 042: DB Reset Architecture & Admin UI**
+* [x] **Spec 042: DB Reset Architecture & Admin UI**
   * **Goal**: 개발 및 테스트 과정에서 오염된 데이터를 쉽게 초기화할 수 있도록 Admin UI에서 "DB Reset" 기능을 제공한다.
   * **Scope**: 
     - `POST /admin/integrity/reset` API 구현 (Neo4j, Chroma, SQLite, GraphState 초기화)
     - Admin UI에 "Danger Zone" 추가 및 초기화 버튼 연동.
     - **UI Persistence**: Streamlit 새로고침 시 대화 이력 및 상태 유지 구현 (History Reload).
+  * **완료**: 2026-01-27
+  * **Design Guide**: (Spec 042 Artifacts)
   * **Priority**: High (데이터 꼬임 현상 해결)
 
 ---

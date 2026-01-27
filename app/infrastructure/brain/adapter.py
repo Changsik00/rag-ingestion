@@ -98,3 +98,24 @@ class LangGraphAdapter:
         async for t in self.graph.checkpointer.alist(None, limit=limit):
             threads.append(t)
         return threads
+
+    async def reset_checkpoints(self):
+        """Reset the checkpointer (SQLite) by clearing all state data."""
+        from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+        if self.graph.checkpointer and isinstance(self.graph.checkpointer, AsyncSqliteSaver):
+            try:
+                # AsyncSqliteSaver has .conn attribute which is aiosqlite connection
+                async with self.graph.checkpointer.conn.execute("DELETE FROM checkpoints") as _:
+                    pass
+                async with self.graph.checkpointer.conn.execute("DELETE FROM checkpoint_blobs") as _:
+                    pass
+                async with self.graph.checkpointer.conn.execute("DELETE FROM checkpoint_writes") as _:
+                    pass
+                await self.graph.checkpointer.conn.commit()
+                logger.warning("LangGraph Adapter: Checkpoints have been reset (SQLite tables cleared).")
+            except Exception as e:
+                logger.error(f"Failed to reset LangGraph checkpoints: {e}")
+                # Don't raise, just log. It might be empty or locked.
+        else:
+            logger.info("LangGraph Adapter: No AsyncSqliteSaver checkpointer found to reset.")
