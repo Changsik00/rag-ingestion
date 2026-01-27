@@ -2,6 +2,8 @@ import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.chroma import ChromaStorage
+from app.infrastructure.brain.adapter import LangGraphAdapter
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 @pytest.fixture
 def mock_neo4j_driver():
@@ -54,3 +56,45 @@ def test_chroma_reset_collection(mock_http_client, mock_embeddings, mock_setting
     # Let's assume implementation will do delete then create.
     client_instance.delete_collection.assert_called_with(name="documents")
     client_instance.get_or_create_collection.assert_called()
+
+@pytest.mark.asyncio
+async def test_langgraph_adapter_reset_checkpoints():
+    # Given
+    mock_llm = MagicMock()
+    mock_checkpointer = AsyncMock(spec=AsyncSqliteSaver)
+    # Mock the connection attribute
+    # aiosqlite conn.execute returns an IDLE cursor which is an async context manager.
+    # It is NOT awaited directly. So execute should be a MagicMock, not AsyncMock.
+    mock_conn = MagicMock()
+    mock_checkpointer.conn = mock_conn
+
+    # Setup execute to return an async context manager
+    mock_cursor_ctx = AsyncMock()
+    mock_cursor_ctx.__aenter__.return_value = MagicMock() 
+    mock_cursor_ctx.__aexit__.return_value = None
+    
+    mock_conn.execute.return_value = mock_cursor_ctx
+    
+    # Commit is an async method in aiosqlite
+    mock_conn.commit = AsyncMock()
+    
+    adapter = LangGraphAdapter(llm=mock_llm, checkpointer=mock_checkpointer)
+    
+    # When
+    await adapter.reset_checkpoints()
+    
+    # Then
+    # We expect raw SQL execution on the connection
+    # Note: AsyncSqliteSaver uses `async with self.conn.executemany(...)` or similar.
+    # We verify that standard DELETE queries were executed.
+    assert mock_conn.execute.call_count >= 1
+    call_args_list = mock_conn.execute.call_args_list
+    
+    # Check if critical tables are cleared
+    executed_sqls = [args[0] for args, _ in call_args_list]
+    assert any("DELETE FROM checkpoints" in sql for sql in executed_sqls)
+    assert any("DELETE FROM checkpoint_blobs" in sql for sql in executed_sqls)
+    assert any("DELETE FROM checkpoint_writes" in sql for sql in executed_sqls)
+    
+    # Ensure commit was called
+    mock_conn.commit.assert_called()
