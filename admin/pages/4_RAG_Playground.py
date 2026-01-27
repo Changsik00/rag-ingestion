@@ -292,23 +292,7 @@ with st.sidebar:
         )
         st.session_state.hitl_enabled = hitl_enabled
 
-    # --- [Spec 042] Danger Zone ---
-    st.divider()
-    with st.expander("🚨 Danger Zone", expanded=False):
-        st.caption("Destructive actions for system administration.")
-        if st.button("💣 RESET ALL SYSTEM DATA", type="primary", use_container_width=True):
-            try:
-                confirm = True  # Simple button for now, usually needs modal confirmation but Streamlit limited
-                if confirm:
-                    res = api_client.post("/api/v1/admin/integrity/reset")
-                    if res and res.get("status") == "success":
-                        st.success("✅ System Reset Successful! All data has been wiped.")
-                        st.session_state.messages = []
-                        st.rerun()
-                    else:
-                        st.error(f"Reset Failed: {res}")
-            except Exception as e:
-                st.error(f"Reset Failed: {e}")
+
 
 
 # --- Input Handling ---
