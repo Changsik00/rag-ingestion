@@ -229,3 +229,23 @@ async def get_admin_agent(
 @lru_cache
 def get_feedback_service() -> FeedbackService:
     return FeedbackService()
+
+
+# Integrity Service 의존성 (Spec 042)
+async def get_integrity_service(
+    driver: Annotated[Driver, Depends(get_neo4j_driver)],
+    checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
+) -> Any:
+    from app.application.admin.integrity_service import IntegrityService
+
+    neo4j_storage = Neo4jStorage(driver)
+    chroma_storage = ChromaStorage()
+    # 어댑터 생성 (Checkpointer 리셋용)
+    llm_adapter = get_llm()
+    langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
+
+    return IntegrityService(
+        neo4j_storage=neo4j_storage,
+        chroma_storage=chroma_storage,
+        langgraph_adapter=langgraph_adapter,
+    )
