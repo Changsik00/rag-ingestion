@@ -21,6 +21,7 @@ class ChromaStorage(DocumentRepository):
 
         host = settings.CHROMA_HOST
         port = settings.CHROMA_PORT
+        self.batch_size = settings.CHROMA_BATCH_SIZE
         self.client = chromadb.HttpClient(host=host, port=port)
 
         # Gemini Embedding API 설정
@@ -107,37 +108,54 @@ class ChromaStorage(DocumentRepository):
         import random
         import time
 
-        ids = [str(chunk.id) for chunk in chunks]
-        documents = [chunk.content for chunk in chunks]
+        # Prepare data for all chunks
+        all_ids = [str(chunk.id) for chunk in chunks]
+        all_documents = [chunk.content for chunk in chunks]
+        all_metadatas = []
 
-        metadatas = []
         for chunk in chunks:
             meta = self._flatten_metadata(chunk.metadata)
             meta["parent_id"] = str(chunk.parent_id)
             meta["index"] = chunk.index
-            metadatas.append(meta)
+            # ChromaDB often issues with None, ensure parent_id is string
+            all_metadatas.append(meta)
 
-        max_retries = 3
-        base_delay = 2  # seconds
+        total_chunks = len(chunks)
+        if total_chunks == 0:
+            return
 
-        for attempt in range(max_retries):
-            try:
-                self.collection.add(ids=ids, documents=documents, metadatas=metadatas)
-                return  # Success
-            except Exception as e:
-                # 429 (Rate Limit) 또는 기타 일시적 오류 대응
-                is_rate_limit = "429" in str(e) or "quota" in str(e).lower()
+        # Process in batches
+        for i in range(0, total_chunks, self.batch_size):
+            batch_ids = all_ids[i : i + self.batch_size]
+            batch_documents = all_documents[i : i + self.batch_size]
+            batch_metas = all_metadatas[i : i + self.batch_size]
 
-                if attempt < max_retries - 1 and (is_rate_limit or "retry" in str(e).lower()):
-                    delay = (base_delay**attempt) + random.uniform(0, 1)
-                    logger.warning(
-                        f"ChromaDB save failed (attempt {attempt + 1}/{max_retries}). Retrying in {delay:.2f}s... Error: {e}"
-                    )
-                    time.sleep(delay)
-                    continue
+            current_batch_count = (i // self.batch_size) + 1
+            total_batches = (total_chunks + self.batch_size - 1) // self.batch_size
 
-                logger.error(f"Failed to save chunks to ChromaDB after {max_retries} attempts: {e}")
-                raise InfrastructureException(f"Failed to save chunks to ChromaDB: {e}") from e
+            logger.info(f"Saving batch {current_batch_count}/{total_batches} ({len(batch_ids)} chunks)...")
+
+            max_retries = 3
+            base_delay = 2  # seconds
+
+            for attempt in range(max_retries):
+                try:
+                    self.collection.add(ids=batch_ids, documents=batch_documents, metadatas=batch_metas)
+                    break  # Batch Success, move to next batch
+                except Exception as e:
+                    # 429 (Rate Limit) or other errors
+                    is_rate_limit = "429" in str(e) or "quota" in str(e).lower()
+
+                    if attempt < max_retries - 1 and (is_rate_limit or "retry" in str(e).lower()):
+                        delay = (base_delay**attempt) + random.uniform(0, 1)
+                        logger.warning(
+                            f"ChromaDB batch save failed (attempt {attempt + 1}/{max_retries}). Retrying in {delay:.2f}s... Error: {e}"
+                        )
+                        time.sleep(delay)
+                        continue
+
+                    logger.error(f"Failed to save batch to ChromaDB after {max_retries} attempts: {e}")
+                    raise InfrastructureException(f"Failed to save chunks batch to ChromaDB: {e}") from e
 
     def get(self, doc_id: UUID) -> Document | None:
         try:
