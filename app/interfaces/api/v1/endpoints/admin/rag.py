@@ -218,6 +218,8 @@ async def resume_session(
                 "intent": result.get("intent"),
             }
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/sessions/{id}/reset")
