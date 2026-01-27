@@ -3,173 +3,173 @@ import logging
 import uuid
 
 from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 
-from app.infrastructure.brain.graph import IngestionGraphBuilder
-from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
+# App Modules (Real)
+from app.core.config import get_settings
+from app.domain.services.admin_agent import AdminAgent
+from app.infrastructure.storage.chroma import ChromaStorage
+from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 
-# Logging Setup
+# from app.infrastructure.brain.intent_classifier import IntentClassifier
+# from app.infrastructure.brain.query_rewriter import QueryRewriter
+
+# Configure Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("VerifyHITL")
 
+def get_real_services():
+    """
+    Initialize REAL services for the Admin Agent.
+    Note: Using real DB connections (Neo4j, Chroma) but Read-Only mostly.
+    """
+    settings = get_settings()
+
+    # 1. Repositories
+    # Neo4j Driver needs to be created or passed. Neo4jStorage takes a driver.
+    # But usually DI handles this. Here we need to create it manually.
+    from neo4j import GraphDatabase
+    driver = GraphDatabase.driver(settings.NEO4J_URI, auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD))
+
+    neo4j_doc_repo = Neo4jStorage(driver=driver)
+    neo4j_graph_repo = Neo4jGraphRepository(driver=driver)
+    chroma_repo = ChromaStorage() # Assuming it connects to persistent dir
+
+    # 2. LLM Components
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0, google_api_key=settings.GEMINI_API_KEY)
+    # adapter = LangChainLLMAdapter(llm) # Not strictly needed if mocking RAG
+
+    # intent_classifier = IntentClassifier(llm=adapter if hasattr(adapter, 'ainvoke') else llm)
+    # query_rewriter = QueryRewriter(llm=adapter if hasattr(adapter, 'ainvoke') else llm)
+
+    # 3. Services
+    # Note: Using Mock RAG graph builder?? No, let's try to use RAGService as is if possible.
+    # But RAGService now requires RAGGraphBuilder (Spec 033).
+    # Since we are testing *AdminAgent* HITL, we can mock RAGService to avoid complexity
+    # OR use real one if easy.
+    # Let's start with a Mock RAG Service for simplicity in testing AdminAgent's HITL logic first,
+    # as defined in the plan "Minimal Dependencies".
+
+    class MockRAGService:
+        async def retrieve_and_generate(self, query, history, filters=None, thread_id=None):
+            logger.info(f"[MockRAG] Processing query: {query}")
+            await asyncio.sleep(1) # Simulate delay
+            from app.domain.services.rag_service import RAGResult
+            return RAGResult(
+                answer="This is a real LLM response from Admin Agent context, but the RAG retrieval was mocked.",
+                rewritten_query=query,
+                vector_chunks=[],
+                keyword_chunks=[],
+                graph_data=[],
+                full_context="Mock Context",
+                user_intent=None
+            )
+
+    class MockIngestionService:
+        def create_job(self, url):
+            logger.info(f"[MockIngestion] Create job for {url}")
+            # Return dummy job object
+            class DummyJob:
+                job_id = "job-123"
+            return DummyJob()
+
+        def process_job(self, job_id):
+             logger.info(f"[MockIngestion] Processing {job_id}")
+
+        class MockJobRepo:
+            def get_job(self, job_id):
+                from app.domain.entities.job import Job, JobStatus
+                return Job(id=job_id, url="http://dummy.com", status=JobStatus.COMPLETED, docs_ids=["doc-1"])
+
+        job_repository = MockJobRepo()
+
+    rag_service = MockRAGService()
+    ingestion_service = MockIngestionService()
+
+    return rag_service, ingestion_service
 
 async def main():
-    """
-    Real-World HITL Verification Script
-
-    Scenario:
-    1. Initialize Graph with Real LLM (Gemini)
-    2. Start Ingestion with a prompt designed to FAIL (or force max_retries).
-    3. Detect Interrupt (at 'human_review').
-    4. Simulate Human Intervention (Resume).
-    5. Verify Final Success.
-    """
     load_dotenv()
 
-    # 1. Setup Resource
-    logger.info("🚀 Starting HITL Real-World Verification...")
-    # Initialize Real LLM (Gemini via LangChain)
-    google_llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0)
-    llm = LangChainLLMAdapter(llm=google_llm)
+    print("--- 🚀 Spec 040: Real-World HITL Verification Script ---")
 
-    builder = IngestionGraphBuilder(llm=llm)
+    # 1. Setup
     checkpointer = MemorySaver()
+    rag_service, ingestion_service = get_real_services()
 
-    # Compile Graph with Checkpointer
-    graph = builder.build(checkpointer=checkpointer)
+    agent = AdminAgent(rag_service, ingestion_service)
+    workflow = agent.build_workflow(checkpointer=checkpointer)
 
-    # 2. Config & Input
-    thread_id = str(uuid.uuid4())
+    # 2. Config
+    thread_id = f"test-hitl-{uuid.uuid4().hex[:6]}"
     config = {"configurable": {"thread_id": thread_id}}
+    print(f"🧵 Thread ID: {thread_id}")
 
-    # Intentionally bad content to trigger validation failure -> retry -> hitl
-    # But for guaranteed HITL without wasting tokens on retries, we might want to
-    # force state.retry_count close to max_retries if possible,
-    # but here let's just use strict logic or assume the graph handles retries.
-    # To quickly trigger HITL, we can inject a state that already has errors if we were manually setting it,
-    # but here we start from scratch.
+    # 3. Interactive Loop
+    while True:
+        try:
+            user_input = input("\n👤 User (q/exit to quit): ").strip()
+            if user_input.lower() in ["q", "exit"]:
+                print("👋 Exiting...")
+                break
 
-    # Let's try to trigger a "Critical Error" if possible, or just rely on failing extraction.
-    # We will provide content that is CLEARLY NOT matching expectation if we had strict validation.
-    # Since we don't have real strictly strict validation implemented in `validate_content` (it's placeholder),
-    # we might need to rely on the fact that `validate_content` is currently a pass-through in the provided code.
-    # WAIT: `validate_content` in `nodes.py` lines 114-128 is a placeholder/pass-through.
-    # It does NOT return an error. So it will NEVER go to `analyze_failure` or `human_review` by default logic
-    # unless we force it or unless the placeholder was updated.
+            hitl_input = input("   Enable HITL? (y/n, default n): ").strip().lower()
+            hitl_enabled = hitl_input == 'y'
 
-    # Checking `nodes.py` again...
-    # `validate_content` returns `{"steps_history": ...}` only.
-    # `route_after_validation` checks `state.get("error")`.
+            print(f"   (Settings: HITL={'ON' if hitl_enabled else 'OFF'})")
 
-    # ISSUE: Without a real validator, we cannot naturally trigger HITL via failure.
-    # WORKAROUND: We will uses `graph.update_state` to FORCE inject an error state
-    # mid-flight or just start with an error state?
-    # No, let's start normally, but since we cannot trigger validation failure properly with current code,
-    # we will rely on a "Mock Validator" override or just acknowledge this script verifies the MECHANISM
-    # assuming validation CAN fail.
+            # Prepare Input
+            inputs = {
+                "messages": [HumanMessage(content=user_input)],
+                "hitl_enabled": hitl_enabled,
+                "intent": "", # Let router decide
+                "tool_output": "",
+                "context_data": {},
+                "filters": None
+            }
 
-    # Let's override the `validate_content` node for this script OR just manually update state
-    # to simulate a failure happened.
+            print("🤖 Agent Running...")
+            async for event in workflow.astream(inputs, config=config):
+                # Basic logging
+                for key, value in event.items():
+                    print(f"   -> Node: {key}")
 
-    logger.info(f"🆔 Thread ID: {thread_id}")
+            # Check for Interrupt
+            snapshot = workflow.get_state(config)
+            if snapshot.next:
+                print(f"⏸️  Agent Paused! Next Node: {snapshot.next}")
+                print("   (Waiting for human review/feedback...)")
 
-    initial_input = {
-        "raw_content": "This is some random text that should definitely fail validation if we had one.",
-        "url": "http://test.com/hitl-verify",
-        "retry_count": 0,
-        "max_retries": 1,  # Low max_retries to hit limit quickly
-    }
+                feedback = input("\n👤 Feedback (Enter to approve, or type text): ").strip()
+                if not feedback:
+                    feedback = "Approved"
 
-    # We need to simulate a failure in validation.
-    # Since `validate_content` is a placeholder, we can't trigger it naturally.
-    # Hack: We will run the graph, but we know it will pass validation.
-    # This implies the current codebase might NOT be ready for full E2E HITL testing
-    # without a real validator.
+                print(f"   Sending Feedback: '{feedback}'")
 
-    # However, Goal is "verify HITL flow".
-    # Let's use `graph.update_state` to INSERT a failure right after start
-    # OR we can update the graph definition in the script (monkey patch)?
+                # Resume
+                # Update state with feedback as a user message (or tool output depending on logic)
+                # AdminAgent.human_review_node is a pass-through, so we might just need to proceed.
+                # Usually we update messages.
+                workflow.update_state(config, {"messages": [HumanMessage(content=feedback)]})
 
-    # Better approach:
-    # Run the graph. It will likely succeed the first pass.
-    # Then we manually inject a "Critical Error" state and resume?
-    # No, that's not natural flow.
+                print("▶️  Resuming Agent...")
+                # Invoke with None to resume
+                async for event in workflow.astream(None, config=config):
+                     for key, value in event.items():
+                        print(f"   -> Node: {key}")
 
-    # Let's look at `nodes.py` again.
-    # If we really want to verify HITL, we need getting to `human_review`.
-    # `route_after_validation` goes to `human_review` if:
-    # 1. state.get("error") exists AND (retry >= max OR error is critical)
+            # Final Result
+            final_snapshot = workflow.get_state(config)
+            if final_snapshot.values.get("messages"):
+                last_msg = final_snapshot.values["messages"][-1]
+                print(f"\n🏁 Final Answer: {last_msg.content}")
 
-    # Let's start the graph with a pre-set error? No, extract_metadata will overwrite/ignore?
-    # Extract metadata takes `state`.
-
-    # Proposed Solution for Script:
-    # 1. Start execution.
-    # 2. It pauses? No, it goes directly to END if no error.
-    #
-    # Forced Interrupt Strategy:
-    # We will use `input` that ALREADY has "retry_count": 3 (max).
-    # And we need `error` in state.
-    # But `extract_metadata` runs first.
-    # Then `validate_content`.
-    # `validate_content` preserves existing keys?
-    # `nodes.py`: `validate_content` returns `{"steps_history": ...}`.
-    # LangGraph merges updates. So if we start with `error` in input, it MIGHT persist?
-    # Let's try starting with `error` and `retry_count` in initial input.
-
-    initial_input["hitl_enabled"] = True
-    # initial_input["error"] = "Simulated Critical Error for HITL"
-    # initial_input["retry_count"] = 3
-
-    logger.info("▶️ Starting Graph Execution (Expect Interrupt)...")
-
-    # Run until interrupt
-    # We use `stream` or `ainvoke`. `ainvoke` will raise GraphInterrupt if interrupted?
-    # Or return partial state?
-    # Recommended way: use stream with `stream_mode="values"` or just iterated.
-
-    async for event in graph.astream(initial_input, config):
-        logger.info(f"🔄 Step: {list(event.keys())}")
-        pass
-
-    # Check current state (snapshot)
-    snapshot = graph.get_state(config)
-    logger.info(f"⏸️ Current Node: {snapshot.next}")
-
-    if "human_review" in snapshot.next:
-        logger.info("✅ SUCCESS: Graph interrupted at 'human_review' as expected (Toggle Works)!")
-    else:
-        logger.error(f"❌ FAILED: Graph did not stop at 'human_review'. Next: {snapshot.next}")
-        return
-
-    # 3. Simulate Human Review (Resume)
-    logger.info("👤 Simulating Human Intervention (Resume)...")
-
-    # Update state to fix the "error" (Clear error, reset retries)
-    # This simulates USER saying "I fixed it, proceed."
-    # OR actually providing the correct metadata.
-    updated_state = {
-        "hitl_enabled": False,  # Important: Turn off toggle to proceed
-        "metadata": {"title": "Verified Title via HITL"},  # Injection
-    }
-
-    graph.update_state(config, updated_state)
-    logger.info("✏️ State Updated. Resuming...")
-
-    # Resume
-    async for event in graph.astream(None, config):
-        logger.info(f"🔄 Step (After Resume): {list(event.keys())}")
-
-    # Final Check
-    final_snapshot = graph.get_state(config)
-    logger.info(f"🏁 Final Outcome: {final_snapshot.values.get('metadata')}")
-
-    if final_snapshot.values.get("metadata", {}).get("title") == "Verified Title via HITL":
-        logger.info("🎉 HITL Verification COMPLETE: Successfully resumed and secured data.")
-    else:
-        logger.info("⚠️ Verification Result ambiguous. Check logs.")
-
+        except Exception as e:
+            logger.error(f"Error: {e}", exc_info=True)
+            break
 
 if __name__ == "__main__":
     asyncio.run(main())
