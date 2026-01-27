@@ -15,6 +15,7 @@ Implement a verification script (`scripts/verify_hitl_real.py`) that uses real L
 ### Automated Checks
 - **Linting**: Passed `ruff check` & `format`.
 - **Syntax**: Passed `python -m py_compile`.
+- **Regression**: Passed `pytest -v` (Full Test Suite).
 
 ### Manual Scenarios
 

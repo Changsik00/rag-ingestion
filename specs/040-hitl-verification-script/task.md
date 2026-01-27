@@ -13,23 +13,23 @@
 ## Task 1: Environment & Skeleton Setup
 
 ### 1-1. Script Skeleton
-- [ ] `scripts/verify_hitl_real.py` 파일 생성
-- [ ] 기본 Imports 및 `load_dotenv()` 설정
-- [ ] **Commit**: `chore(spec-040): create script skeleton`
+- [x] `scripts/verify_hitl_real.py` 파일 생성
+- [x] 기본 Imports 및 `load_dotenv()` 설정
+- [x] **Commit**: `chore(spec-040): create script skeleton`
 
 ### 1-2. Real Component Integration
-- [ ] `ChatGoogleGenerativeAI`, `AdminAgent`, `MemorySaver` 초기화
-- [ ] **Test Execution**: 단순 Hello World 질문응답 확인
-- [ ] **Commit**: `feat(spec-040): setup real agent components`
+- [x] `ChatGoogleGenerativeAI`, `AdminAgent`, `MemorySaver` 초기화
+- [x] **Test Execution**: 단순 Hello World 질문응답 확인
+- [x] **Commit**: `feat(spec-040): setup real agent components`
 
 ---
 
 ## Task 2: Interactive HITL Logic Implementation
 
 ### 2-1. Streaming & Toggle Logic
-- [ ] `hitl_enabled` 입력(Toggle) 처리 로직 추가
-- [ ] `workflow.astream()` 호출 시 `hitl_enabled` state 전달
-- [ ] **Commit**: `feat(spec-040): implement hitl toggle and streaming`
+- [x] `hitl_enabled` 입력(Toggle) 처리 로직 추가
+- [x] `workflow.astream()` 호출 시 `hitl_enabled` state 전달
+- [x] **Commit**: `feat(spec-040): implement hitl toggle and streaming`
 
 ### 2-2. Interrupt & Resume
 - [x] `snapshot.next` 확인하여 Interrupt 감지 및 알림
