@@ -1,51 +1,26 @@
-feat(spec-040): real-world hitl verification script & toggle fix
+# Check List
 
-## 📋 Summary
-1. **HITL Verification Script**: 실제 LLM 및 LangGraph 로직 상에서 HITL 흐름(Interrupt -> Resume)을 검증하는 스크립트 `scripts/verify_hitl_real.py`를 추가했습니다.
-2. **Admin HITL Toggle Fix**: Admin UI의 "Enable HITL" 토글이 실제 작동하지 않던 문제를 수정했습니다. `IngestionState`에 `hitl_enabled` 필드를 추가하고, Graph 및 API 전반에 연동했습니다.
+- [x] 적절한 제목으로 PR을 생성했나요?
+- [x] 변경 사항에 대한 테스트(Automated/Manual)를 수행했나요?
+- [x] 문서(spec, plan, task, walkthrough)를 포함했나요?
 
-## 🎯 Key Review Points
-1. **Toggle Logic**: `route_after_validation` 함수에서 `hitl_enabled=True`일 경우 강제로 `human_review`로 분기하는 로직을 추가했습니다.
-2. **Real-World Verification**: 검증 스크립트가 토글을 켰을 때 정상적으로 Interrupt 되는지 확인합니다.
-3. **Full-Stack Update**: Frontend(Streamlit) -> API(FastAPI) -> Backend(LangGraph) -> State까지 데이터 흐름이 연결되었습니다.
-4. **Collision Fix**: `AdminAgent`와 내부 `RAGService` 간 Checkpointer ID 충돌 방지를 위해 Thread ID Namespace(`rag-*`)를 적용했습니다.
+## Summary
+Spec 040 "Real-World HITL Verification Script" 구현 PR입니다.
+Mock 객체에 의존하던 기존 테스트의 한계를 극복하고, 실제 LLM(Gemini)과 AdminAgent 로직을 사용하여 "Human-in-the-loop(HITL)" 메커니즘을 검증하는 독립 스크립트를 추가했습니다.
 
-## 🧪 Verification
-### Automated Tests
-```bash
-uv run python scripts/verify_hitl_real.py
-```
+## Changes
 
-### Manual Verification
-#### 1. Script Verification
-1. 위 명령어를 실행합니다.
-2. 로그 출력에서 다음 항목을 확인합니다:
-   - `✅ SUCCESS: Graph interrupted at 'human_review' as expected (Toggle Works)!`
-   - `🎉 HITL Verification COMPLETE`
+### 1. Verification Script (`scripts/verify_hitl_real.py`)
+- **Real Component Init**: `Neo4jStorage`, `ChromaStorage`, `AdminAgent` 등 실제 컴포넌트를 초기화하여 환경 호환성을 확인합니다.
+- **Interactive CLI**: 사용자로부터 입력을 받고, 스트리밍 응답을 출력하는 CLI 환경을 구축했습니다.
+- **HITL Toggle**: 사용자가 HITL 활성화 여부(y/n)를 선택할 수 있게 하여, Admin UI의 토글 기능을 시뮬레이션했습니다.
+- **Mock Service Injection**: AdminAgent의 HITL 로직 검증에 집중하기 위해 검색 서비스(`RAGService`)는 부분적으로 Mocking하여 실행 속도와 격리성을 확보했습니다.
 
-#### 2. Admin UI Verification
-1. `uv run streamlit run admin/0_Job_Queue.py` 실행
-2. **RAG Playground** 메뉴 이동
-3. **Advanced Settings** > **Enable HITL Review** 토글 활성화
-4. 질문 입력 후 "Thinking..." 단계에서 멈추는지(Status가 complete로 변하지 않는지) 확인 (현재는 Stop UI가 없으므로 로그나 상태로 확인)
+### 2. Documentation (`specs/040-hitl-verification-script/`)
+- `spec.md`, `plan.md`, `task.md`: 구현 계획 및 검증 시나리오 상세화.
+- `walkthrough.md`: 시나리오 A(HITL OFF) 및 B(HITL ON) 검증 결과 및 로그 스크린샷 포함.
 
-## 📦 Files Changed
-
-### 🆕 New Files
-- `scripts/verify_hitl_real.py`: HITL 검증 스크립트 (Updated)
-
-### 🛠 Modified Files
-- `app/domain/ingestion/state.py`: `hitl_enabled` 필드 추가
-- `app/infrastructure/brain/graph.py`: Routing 로직에 토글 체크 추가 (Ingestion)
-- `app/domain/services/admin_agent.py`: Routing 로직에 토글 체크 추가 및 Thread ID 충돌 수정
-- `app/interfaces/api/v1/endpoints/admin/rag.py`: API Payload 처리 추가
-- `admin/pages/4_RAG_Playground.py`: API 호출 시 토글 값 전달
-
-### 🗑 Deleted Files
-- 없음
-
-**Total:** 5 files changed
-
-## ✅ Definition of Done
-- [x] 스크립트 실행 시 HITL 시나리오(Interrupt -> Resume)가 에러 없이 완주됨
-- [x] Admin HITL Toggle 정상 작동 (Script 검증 완료)
+## Test Results
+`scripts/verify_hitl_real.py` 실행을 통해 다음 시나리오를 통과했습니다.
+- **Scenario A (HITL OFF)**: 질문 -> 검색 -> 답변 (Non-stop) ✅
+- **Scenario B (HITL ON)**: 질문 -> 검색 -> **PAUSE** -> 사용자 피드백(Approved) -> **RESUME** -> 답변 ✅
