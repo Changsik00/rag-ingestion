@@ -57,7 +57,7 @@ async def ask_agent(
         # 상태 확인 (HITL 중단 여부 체크)
         snapshot = await workflow.aget_state(config)
         next_steps = snapshot.next
-
+        
         status = "completed"
         if next_steps:
             status = "paused"
@@ -124,6 +124,7 @@ async def resume_session(
     try:
         # Resume (State update or command)
         # LangGraph 0.2+ style: workflow.ainvoke(Command(resume=v), config) to resume from interrupt
+        from langgraph.types import Command
 
         # 1. Rebuild Workflow
         # checkpointer is required for resume
@@ -131,7 +132,7 @@ async def resume_session(
         config = {"configurable": {"thread_id": id}}
 
         # 2. Invoke with Command(resume=...)
-        # The value passed to resume become the result of the interrupted node/edge?
+        # The value passed to resume become the result of the interrupted node/edge? 
         # For 'human_review' edge interruption or node interruption?
         # If we interrupted using interrupt_before=["human_review"], we are BEFORE the node.
         # But wait, AdminAgent logic uses conditional edge to "human_review".
@@ -139,34 +140,34 @@ async def resume_session(
         # So we are paused right before 'human_review' node executes.
         # If we send a Command(resume="Approved"), LangGraph will continue execution.
         # However, ainvoke might need None as input if we just want to proceed, OR updates if we want to change state.
-
+        
         # If we use `Command(resume="value")`, this value is returned by the `interrupt` call inside a node.
         # BUT we are using `interrupt_before`.
         # When using `interrupt_before`, we usually just invoke with None to proceed, OR invoke with state update to change state.
         # To pass feedback, we likely want to update the state (e.g. `tool_output` or `messages`) before proceeding.
-
+        
         # Let's try invoke(None) first, but wait, the user provided input (e.g. "Approved" or feedback).
         # We should probably update the state with this feedback.
         # AdminState has 'tool_output'. Let's update that? Or add a message?
-
+        
         # 2. Handle Feedback vs Approval
         if user_input and user_input != "Approved":
             # Feedback provided: Add as HumanMessage to state
             from langchain_core.messages import HumanMessage
-
+            
             feedback_msg = HumanMessage(content=user_input)
             await workflow.aupdate_state(config, {"messages": [feedback_msg]})
-
+            
             # Resume execution (will route to router due to new message)
             result = await workflow.ainvoke(None, config=config)
         else:
             # Approval: Just resume (will route to END)
             result = await workflow.ainvoke(None, config=config)
-
+        
         # Status Check to ensure it finished or paused again
         snapshot = await workflow.aget_state(config)
         next_steps = snapshot.next
-
+        
         status = "completed"
         if next_steps:
             status = "paused"
@@ -176,12 +177,12 @@ async def resume_session(
             output_messages.append({"role": msg.type, "content": msg.content})
 
         return {
-            "status": status,
+            "status": status, 
             "result": {
                 "messages": output_messages,
                 "context_data": result.get("context_data"),
                 "intent": result.get("intent"),
-            },
+            }
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

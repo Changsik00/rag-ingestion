@@ -351,6 +351,7 @@
   * **Priority**: 품질 검증 단계에서 수행 권장.
   * **Status**: Planning (2026-01-27)
   * **Documents**: [Spec](specs/040-hitl-verification-script/spec.md), [Plan](specs/040-hitl-verification-script/plan.md), [Task](specs/040-hitl-verification-script/task.md)
+  * **완료**: 2026-01-27 (Merged in main)
 
 * [ ] **Spec 041: Admin HITL UI & Robustness (Follow-up)**
   * **Goal**: HITL 모드에서 사용자가 직관적으로 "대기 상태"를 인지하고 제어(Resume/Approve)할 수 있는 UI를 구현하며, 구조적 안전장치를 강화함.
@@ -360,6 +361,9 @@
     - **Architecture Documentation**: Checkpointer Collision Issue (`rag-{id}` namespace) 및 아키텍처 결정 기록.
   * **Context**: Spec 040에서 발견된 "답변 후 중단" UX 혼동 및 Backend Checkpointer 충돌 이슈에 대한 후속 조치.
   * **Priority**: High (UX 개선 및 유지보수성 확보)
+  * **Status**: In Progress (Recovered from collision)
+  * **Branch**: `feature/spec-041-hitl-ui-robustness`
+  * **Documents**: [Spec](specs/041-hitl-ui-robustness/spec.md), [Plan](specs/041-hitl-ui-robustness/plan.md), [Task](specs/041-hitl-ui-robustness/task.md)
 
 * [x] **Spec 042: DB Reset Architecture & Admin UI**
   * **Goal**: 개발 및 테스트 과정에서 오염된 데이터를 쉽게 초기화할 수 있도록 Admin UI에서 "DB Reset" 기능을 제공한다.
