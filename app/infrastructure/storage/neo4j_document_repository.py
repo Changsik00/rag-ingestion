@@ -19,6 +19,16 @@ class Neo4jStorage(DocumentRepository):
     def close(self):
         self.driver.close()
 
+    def reset_database(self) -> None:
+        """모든 데이터(Node, Relationship)를 삭제하여 DB를 초기화합니다. (주의: 복구 불가)"""
+        try:
+            with self.driver.session() as session:
+                session.run("MATCH (n) DETACH DELETE n")
+            logger.warning("Neo4j Database has been reset (All nodes and relationships deleted).")
+        except Exception as e:
+            logger.error(f"Failed to reset Neo4j database: {e}")
+            raise InfrastructureException(f"Failed to reset Neo4j database: {e}") from e
+
     def _flatten_metadata(self, metadata: dict) -> dict:
         """Neo4j 호환을 위해 메타데이터 평탄화"""
         flattened = {}

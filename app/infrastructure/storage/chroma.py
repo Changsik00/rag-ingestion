@@ -41,7 +41,21 @@ class ChromaStorage(DocumentRepository):
 
         gemini_ef = GeminiEmbeddingFunction()
 
-        self.collection = self.client.get_or_create_collection(name="documents", embedding_function=gemini_ef)
+        self.embedding_function = gemini_ef
+
+        self.collection = self.client.get_or_create_collection(name="documents", embedding_function=self.embedding_function)
+
+    def reset_collection(self) -> None:
+        """컬렉션을 삭제하고 재생성하여 데이터를 초기화합니다."""
+        try:
+            self.client.delete_collection(name="documents")
+            self.collection = self.client.get_or_create_collection(
+                name="documents", embedding_function=self.embedding_function
+            )
+            logger.warning("ChromaDB Collection 'documents' has been reset.")
+        except Exception as e:
+            logger.error(f"Failed to reset ChromaDB collection: {e}")
+            raise InfrastructureException(f"Failed to reset ChromaDB collection: {e}") from e
 
     def _flatten_metadata(self, metadata: dict) -> dict:
         flattened = {}
