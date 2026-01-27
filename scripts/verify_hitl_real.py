@@ -34,12 +34,12 @@ def get_real_services():
     from neo4j import GraphDatabase
     driver = GraphDatabase.driver(settings.NEO4J_URI, auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD))
 
-    neo4j_doc_repo = Neo4jStorage(driver=driver)
-    neo4j_graph_repo = Neo4jGraphRepository(driver=driver)
-    chroma_repo = ChromaStorage() # Assuming it connects to persistent dir
+    _neo4j_doc_repo = Neo4jStorage(driver=driver)
+    _neo4j_graph_repo = Neo4jGraphRepository(driver=driver)
+    _chroma_repo = ChromaStorage() # Assuming it connects to persistent dir
 
     # 2. LLM Components
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0, google_api_key=settings.GEMINI_API_KEY)
+    _llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0, google_api_key=settings.GEMINI_API_KEY)
     # adapter = LangChainLLMAdapter(llm) # Not strictly needed if mocking RAG
 
     # intent_classifier = IntentClassifier(llm=adapter if hasattr(adapter, 'ainvoke') else llm)

@@ -1,29 +1,31 @@
-# Spec-040: Real-World HITL Verification Script
+# Spec 040: Real-World HITL Verification Script
 
 ## 📋 배경 및 문제 정의 (Background & Problem)
-<!-- Korean: Why is this needed? What is the current problem? -->
-현재 HITL(Human-in-the-loop) 기능은 `checkpoints.sqlite`와 연동되어 구현되어 있으나, 이를 검증하기 위해서는 복잡한 UI 조작이나 수동 테스트가 필요함.
-특히 실제 LLM(Gemini)과의 상호작용 상황에서 Interrupt가 정상적으로 발생하고, Resume이 정확히 동작하는지 검증하는 자동화된 스크립트가 부재함.
-따라서, Mock이 아닌 실제 LLM 환경에서 HITL 전체 흐름(Interrupt -> Resume)을 검증할 수 있는 CLI 스크립트가 필요함.
+
+### 현재 상황
+**Spec 022**를 통해 HITL 메커니즘을 구현했고, Admin Dashboard에는 이미 `HITL 활성화` 토글 버튼이 존재합니다. 그러나 현재 검증 스크립트(`scripts/verify_admin_agent.py`)는 Mock 객체를 사용하며, 실제 LLM과 연동된 상태에서 이 토글의 작동 여부(ON일 때 멈추고, OFF일 때 통과하는지)를 확실하게 보장하지 못하고 있습니다.
+
+### 해결 방안
+Mock이 아닌 **실제 LLM(Gemini Pro)과 AdminAgent**를 사용하는 스크립트(`scripts/verify_hitl_real.py`)를 작성합니다.
+특히 **사용자가 "HITL 모드"를 켰을 때와 껐을 때 Agent의 행동이 달라지는지**를 중점적으로 검증하여, Admin UI의 버튼이 실제 백엔드 로직에 올바르게 반영될 수 있음을 증명합니다.
 
 ## 🎯 요구사항 (Requirements)
 
 ### Functional Requirements
-1. **Verification Script**: `scripts/verify_hitl_real.py` 작성
-2. **Scenario Execution**:
-    - LangGraph 인스턴스 초기화 (Checkpointer 포함)
-    - 실제 Gemini LLM과 상호작용 시작
-    - 강제 Interrupt 유발 (또는 Interrupt가 발생하는 시나리오 명시적 트리거)
-    - `interrupt` 상태 감지 및 로그 출력
-    - 사용자 입력 또는 자동화된 `resume` 명령 전송
-    - 최종 실행 완료 및 결과 확인
-3. **Logging**: 각 단계별 상태(State Snapshot) 및 결과 로깅
+1.  **HITL Toggle Verification**:
+    - 스크립트 실행 시 HITL 모드 ON/OFF를 선택할 수 있어야 함.
+    - **OFF**: 중단 없이 질문 -> 답변 전 과정이 자동 실행되어야 함.
+    - **ON**: 답변 생성 직전/직후(로직에 따라) `interrupt`가 발생하고 사용자의 승인을 기다려야 함.
+2.  **Real LLM Integration**: 
+    - `ChatGoogleGenerativeAI` 사용.
+3.  **Interactive Resume**:
+    - 중단 상태에서 사용자 피드백(텍스트) 입력 시 `update_state`를 통해 반영되고 진행이 재개되어야 함.
 
 ### Non-Functional Requirements
-1. **Security**: 실제 API Key 사용 시 로깅에 Key가 노출되지 않도록 주의
-2. **Independence**: 다른 테스트나 DB 상태에 영구적인 영향을 주지 않도록 독립된 Thread ID 사용 권장
+1.  **Safety**: 과금 방지(무한 루프 제한).
+2.  **Simplicity**: 복잡한 웹 서버 없이 단일 스크립트로 동작.
 
 ## ✅ Definition of Done
-1. `python scripts/verify_hitl_real.py` 실행 시 에러 없이 시나리오 완주
-2. Interrupt 발생 및 Resume 로그 확인 가능
-3. 최종 결과가 정상적으로 생성됨 확인
+1.  `scripts/verify_hitl_real.py` 실행 가능.
+2.  **Scenario 1 (HITL OFF)**: 질문 입력 시 멈춤 없이 최종 답변 출력.
+3.  **Scenario 2 (HITL ON)**: 질문 입력 시 "Paused" 상태 진입 -> 사용자 입력 -> 최종 답변 출력.
