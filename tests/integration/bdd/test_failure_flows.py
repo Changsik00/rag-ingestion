@@ -132,13 +132,18 @@ def test_llm_failure_still_saves_document():
     # But if I construct IngestionService, I need a JobRepository instance.
     real_job_repo_instance = get_job_repository(driver)
     real_graph_repo_instance = get_graph_repository(driver)
-    real_scraper_instance = get_scraper()
-
-    # Since I cannot easily use Depends inside the lambda assignment, I prepare the instance.
+    # Mock Scraper to avoid network dependency
+    mock_scraper = Mock()
+    from app.schemas.ingest import IngestResponse
+    # Use generic Any or simple dict for Pydantic model construction if needed, 
+    # but IngestResponse expects url=HttpUrl. Pydantic handles string conversion.
+    mock_scraper.scrape.return_value = IngestResponse(
+        url="https://httpbin.org/html", 
+        markdown="# Dummy Content",
+        metadata={}
+    )
 
     # Mock Extractor wrapping Mock LLM
-    # We need a proper SemanticExtractor instance that uses our mock LLM, OR just a mock extractor.
-    # Let's use mock extractor directly to be safe.
     mock_extractor = Mock()
     mock_extractor.extract.side_effect = Exception("LLM API quota exceeded")
 
@@ -147,7 +152,7 @@ def test_llm_failure_still_saves_document():
     mock_chunker.chunk_document.return_value = []  # Return empty chunks as fallback
 
     service_instance = IngestionService(
-        scraper=real_scraper_instance,
+        scraper=mock_scraper,
         repository=mock_repo,  # The mock we want to verify
         graph=real_graph_repo_instance,
         job_repository=real_job_repo_instance,
@@ -178,7 +183,7 @@ def test_llm_failure_still_saves_document():
         # Then: Job 상태 - Extraction 실패는 Job 실패가 아님 (Warning Logged) -> COMPLETED여야 함
         # If Neo4j is down, real_job_repo methods might fail.
         # But earlier test runs suggested Neo4j IS running.
-        assert job["status"] == "COMPLETED"
+        assert job["status"] == "COMPLETED", f"Job failed with error: {job.get('error_message')}"
 
         # Then: Document 저장이 호출되었는지 확인
         mock_repo.save_with_chunks.assert_called()

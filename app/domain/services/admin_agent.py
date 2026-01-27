@@ -2,7 +2,7 @@ import logging
 import re
 from typing import Annotated, Any, Literal, TypedDict
 
-from langchain_core.messages import AIMessage, AnyMessage
+from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, StateGraph, add_messages
@@ -62,7 +62,16 @@ class AdminAgent:
             return END
 
         workflow.add_conditional_edges("search", route_after_search, {"human_review": "human_review", END: END})
-        workflow.add_edge("human_review", END)
+        
+        # Feedback Loop Logic
+        def route_after_review(state: AdminState):
+            messages = state.get("messages", [])
+            if messages and isinstance(messages[-1], HumanMessage):
+                logger.info("🔄 Feedback detected, looping back to router.")
+                return "router"
+            return END
+
+        workflow.add_conditional_edges("human_review", route_after_review, {"router": "router", END: END})
 
         # Default interrupt if checkpointer is provided
         if checkpointer and not interrupt_before:
