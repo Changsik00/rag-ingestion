@@ -18,10 +18,10 @@
 
 ## Task 2: Neo4j Repository Extension
 ### 2-1. Graph Traversal Logic
-- [ ] Test Case 작성: `tests/integration/test_neo4j_graph_retrieval.py`
-- [ ] `app/infrastructure/store/neo4j_document_repository.py` 수정: `find_subgraph_by_entities` 구현
-- [ ] Test 실행 및 Pass 확인 (실제 Neo4j 컨테이너 연동)
-- [ ] Commit: `feat(spec-044): implement subgraph retrieval by entities`
+- [x] Test Case 작성: `tests/integration/test_neo4j_graph_retrieval.py`
+- [x] `app/infrastructure/store/neo4j_document_repository.py` 수정: `find_subgraph_by_entities` 구현
+- [x] Test 실행 및 Pass 확인 (실제 Neo4j 컨테이너 연동)
+- [x] Commit: `feat(spec-044): implement subgraph retrieval by entities`
 
 ## Task 3: RAG Service Integration
 ### 3-1. Logic Wiring
