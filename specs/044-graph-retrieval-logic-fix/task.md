@@ -14,7 +14,7 @@
 - [x] `app/infrastructure/brain/nodes.py` 수정: `IntentResult` 모델에 `entities` 필드 추가
 - [x] Prompt 템플릿 수정: 고유명사 추출 지시 추가
 - [x] Test 실행 및 Pass 확인
-- [ ] Commit: `feat(spec-044): add entity extraction to intent classifier`
+- [x] Commit: `feat(spec-044): add entity extraction to intent classifier`
 
 ## Task 2: Neo4j Repository Extension
 ### 2-1. Graph Traversal Logic
