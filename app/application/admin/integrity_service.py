@@ -1,7 +1,6 @@
 import logging
 from typing import NamedTuple
 
-from app.core.exceptions import ApplicationException
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage

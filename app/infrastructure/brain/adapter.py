@@ -118,4 +118,4 @@ class LangGraphAdapter:
                 logger.error(f"Failed to reset LangGraph checkpoints: {e}")
                 # Don't raise, just log. It might be empty or locked.
         else:
-             logger.info("LangGraph Adapter: No AsyncSqliteSaver checkpointer found to reset.")
+            logger.info("LangGraph Adapter: No AsyncSqliteSaver checkpointer found to reset.")

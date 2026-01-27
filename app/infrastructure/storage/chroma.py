@@ -43,7 +43,9 @@ class ChromaStorage(DocumentRepository):
 
         self.embedding_function = gemini_ef
 
-        self.collection = self.client.get_or_create_collection(name="documents", embedding_function=self.embedding_function)
+        self.collection = self.client.get_or_create_collection(
+            name="documents", embedding_function=self.embedding_function
+        )
 
     def reset_collection(self) -> None:
         """컬렉션을 삭제하고 재생성하여 데이터를 초기화합니다."""

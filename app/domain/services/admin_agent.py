@@ -54,7 +54,7 @@ class AdminAgent:
         workflow.add_conditional_edges("router", self.route_logic, {"ingest": "ingest", "search": "search"})
 
         workflow.add_edge("ingest", "search")  # 수집 완료 후 요약을 위해 검색 노드로 이동
-        
+
         # Conditional Edge after Search: Check HITL
         def route_after_search(state: AdminState):
             if state.get("hitl_enabled"):
@@ -62,7 +62,7 @@ class AdminAgent:
             return END
 
         workflow.add_conditional_edges("search", route_after_search, {"human_review": "human_review", END: END})
-        
+
         # Feedback Loop Logic
         def route_after_review(state: AdminState):
             messages = state.get("messages", [])

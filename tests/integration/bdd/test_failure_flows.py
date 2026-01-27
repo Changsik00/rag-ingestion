@@ -103,7 +103,6 @@ def test_llm_failure_still_saves_document():
         get_ingestion_service,
         get_job_repository,
         get_neo4j_driver,
-        get_scraper,
     )
     from app.use_cases.ingestion import IngestionService
 
@@ -135,12 +134,11 @@ def test_llm_failure_still_saves_document():
     # Mock Scraper to avoid network dependency
     mock_scraper = Mock()
     from app.schemas.ingest import IngestResponse
-    # Use generic Any or simple dict for Pydantic model construction if needed, 
+
+    # Use generic Any or simple dict for Pydantic model construction if needed,
     # but IngestResponse expects url=HttpUrl. Pydantic handles string conversion.
     mock_scraper.scrape.return_value = IngestResponse(
-        url="https://httpbin.org/html", 
-        markdown="# Dummy Content",
-        metadata={}
+        url="https://httpbin.org/html", markdown="# Dummy Content", metadata={}
     )
 
     # Mock Extractor wrapping Mock LLM
