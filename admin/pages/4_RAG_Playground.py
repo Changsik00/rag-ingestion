@@ -1,4 +1,5 @@
 import streamlit as st
+import uuid
 
 from admin.utils.api_client import get_api_client
 
@@ -88,14 +89,56 @@ def render_debug_ui(message):
             st.code(prompt_info, language="text")
 
 
-# Initialize Session State
+# --- [Spec 042] Session Persistence ---
+def get_thread_id():
+    """URL Query Param에서 thread_id를 가져오거나 새로 생성"""
+    query_params = st.query_params
+    t_id = query_params.get("thread_id")
+    if not t_id:
+        # 새로 생성
+        if "thread_id_seed" not in st.session_state:
+             st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
+        t_id_seed = st.session_state.thread_id_seed
+        t_id = f"playground-{t_id_seed}"
+        # URL 업데이트
+        st.query_params["thread_id"] = t_id
+    else:
+        # URL에 있으면 session state 동기화
+        if "thread_id_seed" not in st.session_state:
+             st.session_state.thread_id_seed = t_id.replace("playground-", "")
+    return t_id
+
+def load_history(thread_id):
+    """백엔드에서 대화 이력을 불러와 세션 상태 복원"""
+    if "messages" not in st.session_state or not st.session_state.messages:
+        try:
+            res = api_client.get(f"/rag/sessions/{thread_id}/trace")
+            if res and res.get("messages"):
+                restored_msgs = []
+                for m in res["messages"]:
+                    role = "user" if m["role"] == "human" else "assistant"
+                    # Backwards compatibility map 'ai' to 'assistant'
+                    if m["role"] == "ai": role = "assistant"
+                    
+                    restored_msgs.append({
+                        "role": role,
+                        "content": m["content"],
+                        "status": "completed", # assume history is completed
+                        # Restore debug info if available in values (complex, skipping for MVP)
+                    })
+                st.session_state.messages = restored_msgs
+                if restored_msgs:
+                    st.toast(f"Restored {len(restored_msgs)} messages from history.")
+        except Exception as e:
+            st.warning(f"Failed to load history: {e}")
+
+# Apply Persistence
+current_thread_id = get_thread_id()
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
-if "thread_id_seed" not in st.session_state:
-    import uuid
-
-    st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
+    # Load history only on first init
+    load_history(current_thread_id)
 
 if "hitl_enabled" not in st.session_state:
     st.session_state.hitl_enabled = False
@@ -111,12 +154,11 @@ for message in st.session_state.messages:
             if message.get("status") == "paused" and message == st.session_state.messages[-1]:
                 st.warning("⚠️ This is a DRAFT. Confirm to finalize or provide feedback to revise.")
                 col1, col2 = st.columns([1, 3])
-                thread_id = f"playground-{st.session_state.thread_id_seed}"
                 
                 with col1:
                     if st.button("✅ Confirm & Finalize", key=f"resume_{len(st.session_state.messages)}", help="Approve this draft as the final answer."):
                         try:
-                            res = api_client.post(f"/rag/sessions/{thread_id}/resume", json={"input": "Approved"})
+                            res = api_client.post(f"/rag/sessions/{current_thread_id}/resume", json={"input": "Approved"})
                             if res:
                                 # Update status of current message to prevent duplicate buttons
                                 message["status"] = "completed"
@@ -129,7 +171,7 @@ for message in st.session_state.messages:
                     if st.button("🛠️ Revise & Continue", key=f"feed_btn_{len(st.session_state.messages)}", help="Send feedback to the agent for revision."):
                          if feedback:
                             try:
-                                res = api_client.post(f"/rag/sessions/{thread_id}/resume", json={"input": feedback})
+                                res = api_client.post(f"/rag/sessions/{current_thread_id}/resume", json={"input": feedback})
                                 # Mark previous draft as replaced/completed
                                 message["status"] = "completed"
                                 
@@ -199,16 +241,14 @@ with st.sidebar:
             st.rerun()
 
         if st.button("🔄 New Conversation (Reset Thread)", use_container_width=True):
-            import uuid
-
             st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
+            st.query_params["thread_id"] = f"playground-{st.session_state.thread_id_seed}"
             st.session_state.messages = []
             st.rerun()
-
+        
         st.divider()
         st.subheader("🚦 HITL Control")
-        thread_id = f"playground-{st.session_state.thread_id_seed}"
-        st.info(f"**Thread ID**: `{thread_id}`")
+        st.info(f"**Thread ID**: `{current_thread_id}`")
 
         hitl_enabled = st.toggle(
             "Enable HITL Review",
@@ -216,6 +256,25 @@ with st.sidebar:
             help="If enabled, the pipeline will stop before generating the final answer for your review.",
         )
         st.session_state.hitl_enabled = hitl_enabled
+
+    # --- [Spec 042] Danger Zone ---
+    st.divider()
+    with st.expander("🚨 Danger Zone", expanded=False):
+        st.caption("Destructive actions for system administration.")
+        if st.button("💣 RESET ALL SYSTEM DATA", type="primary", use_container_width=True):
+            try:
+                confirm = True # Simple button for now, usually needs modal confirmation but Streamlit limited
+                if confirm:
+                     res = api_client.post("/api/v1/admin/integrity/reset")
+                     if res and res.get("status") == "success":
+                         st.success("✅ System Reset Successful! All data has been wiped.")
+                         st.session_state.messages = []
+                         st.rerun()
+                     else:
+                         st.error(f"Reset Failed: {res}")
+            except Exception as e:
+                st.error(f"Reset Failed: {e}")
+
 
 # --- Input Handling ---
 if prompt := st.chat_input("Ask a question regarding the ingested content..."):
@@ -229,7 +288,6 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
     with st.chat_message("assistant"):
         status_container = st.status("Thinking (Agentic API)...", expanded=True)
         try:
-            thread_id = f"playground-{st.session_state.thread_id_seed}"
             filters = {"doc_id": selected_doc_ids} if selected_doc_ids else None
 
             # API Call
@@ -239,7 +297,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 "hitl_enabled": st.session_state.hitl_enabled,
             }
 
-            res = api_client.post(f"/rag/sessions/{thread_id}/ask", json=payload)
+            res = api_client.post(f"/rag/sessions/{current_thread_id}/ask", json=payload)
 
             if res:
                 # Check for HITL pause (This depends on how the backend returns
@@ -329,3 +387,4 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "assis
                 "/rag/feedback", json={"query": last_user_msg, "response": last_bot_msg, "feedback": "negative"}
             )
             st.toast("Feedback recorded.")
+
