@@ -186,3 +186,31 @@ except Exception as e:
     st.error(f"Failed to prepare recovery actions: {e}")
 
 st.caption("Tip: Global Sync는 데이터 양에 따라 시간이 소요될 수 있습니다.")
+
+st.divider()
+
+# --- [Spec 042] Danger Zone (Integrity Reset) ---
+with st.expander("🚨 Danger Zone", expanded=False):
+    st.caption("System Reset: 모든 데이터(Vector DB, Graph DB, Checkpoints)를 초기화합니다.")
+
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.warning(
+            "⚠️ 주의: 이 작업은 되돌릴 수 없습니다. 모든 수집된 문서, 그래프 관계, 대화 이력이 영구적으로 삭제됩니다."
+        )
+    with col2:
+        if st.button("💣 RESET ALL DATA", type="primary", use_container_width=True, help="Click to wipe all data."):
+            try:
+                # Correct API Path: /integrity/reset (relative to base URL /api/v1/admin)
+                res = api_client.post("/integrity/reset")
+                if res and res.get("status") == "success":
+                    st.toast("✅ System Reset Successful!", icon="🗑️")
+                    st.success("System has been fully reset. Please re-ingest data.")
+                    # Optional: Clear local session state related to data
+                    st.session_state.pop("messages", None)
+                    st.session_state.pop("thread_id_seed", None)
+                    st.rerun()
+                else:
+                    st.error(f"Reset Failed: {res}")
+            except Exception as e:
+                st.error(f"Reset Failed: {e}")
