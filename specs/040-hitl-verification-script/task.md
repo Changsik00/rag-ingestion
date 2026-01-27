@@ -56,7 +56,15 @@
 - [ ] Create PR: `gh pr create --title "test(spec-040): add real-world hitl verification script" --body-file specs/040-hitl-verification-script/pr_description.md`
 
 
+
+## Task 5: HITL UX Improvement
+- [x] UI 문구 및 스타일 개선 ("Agent Paused" -> "Review Draft Response")
+- [x] "승인" 버튼 명확화 ("Approve" -> "Confirm & Finalize")
+- [ ] 사용자 피드백 반영 및 커밋
+
 ---
+
+
 
 ## Summary
 **총 Task**: 4개 카테고리 (7개 세부 항목)

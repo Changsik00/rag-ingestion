@@ -109,12 +109,12 @@ for message in st.session_state.messages:
             
             # HITL Resume UI (Only for the latest paused message)
             if message.get("status") == "paused" and message == st.session_state.messages[-1]:
-                st.info("✋ HITL Paused: Waiting for approval.")
+                st.warning("⚠️ This is a DRAFT. Confirm to finalize or provide feedback to revise.")
                 col1, col2 = st.columns([1, 3])
                 thread_id = f"playground-{st.session_state.thread_id_seed}"
                 
                 with col1:
-                    if st.button("✅ Approve", key=f"resume_{len(st.session_state.messages)}"):
+                    if st.button("✅ Confirm & Finalize", key=f"resume_{len(st.session_state.messages)}", help="Approve this draft as the final answer."):
                         try:
                             res = api_client.post(f"/rag/sessions/{thread_id}/resume", json={"input": "Approved"})
                             if res:
@@ -148,8 +148,8 @@ for message in st.session_state.messages:
                             st.error(f"Failed to resume: {e}")
 
                 with col2:
-                    feedback = st.text_input("Feedback", placeholder="Type output modification...", key=f"feed_{len(st.session_state.messages)}")
-                    if st.button("Submit Feedback", key=f"feed_btn_{len(st.session_state.messages)}"):
+                    feedback = st.text_input("Feedback", placeholder="Request changes or provide corrections...", key=f"feed_{len(st.session_state.messages)}")
+                    if st.button("🛠️ Revise & Continue", key=f"feed_btn_{len(st.session_state.messages)}", help="Send feedback to the agent for revision."):
                          if feedback:
                             try:
                                 res = api_client.post(f"/rag/sessions/{thread_id}/resume", json={"input": feedback})
@@ -263,8 +263,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 status_container.write(f"🎯 Intent: **{intent.upper()}**")
                 
                 if status == "paused":
-                    status_container.update(label="✋ Agent Paused for HITL Review", state="running", expanded=True)
-                    st.warning("Agent execution paused. Waiting for your approval.")
+                    status_container.update(label="👀 Review Draft Response (HITL)", state="running", expanded=True)
+                    st.info("The agent has generated a **Draft Response**. Please review and confirm to finalize.")
                 else:
                     status_container.update(label="RAG Search Completed", state="complete", expanded=False)
 
