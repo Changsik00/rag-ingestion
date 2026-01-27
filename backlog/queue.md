@@ -371,6 +371,18 @@
   * **Design Guide**: (Spec 042 Artifacts)
   * **Priority**: High (데이터 꼬임 현상 해결)
 
+* [ ] **Spec 043: Robust Ingestion (Chroma Batching)**
+  * **Problem**: '일론 머스크' 등 대형 문서(Chunk ~159개) 수집 시 ChromaDB 저장 단계에서 전체 실패(0건 저장) 발생.
+  * **Cause**: 한 번에 너무 많은 청크를 임베딩/저장하려다 API Timeout 또는 Rate Limit 발생 추정.
+  * **Goal**: `ChromaStorage.save_chunks`에 배치(Batch size=20) 로직을 도입하여 안정성 확보.
+  * **Priority**: Critical (Data Drift 해결)
+
+* [ ] **Spec 044: Graph Retrieval Logic Fix (Entity-based Search)**
+  * **Problem**: "일론과 트위터의 관계는?" 같은 질문 시 Graph DB에서 검색이 되지 않음.
+  * **Cause**: `RAGNodes.retrieve_hybrid`가 질문 문장 전체를 Graph에 검색하기 때문.
+  * **Goal**: `IntentClassifier`에서 Entity를 추출하고, 이를 기반으로 Graph를 조회하도록 수정.
+  * **Priority**: High (Retrieval Quality Fix)
+
 ---
 
 
