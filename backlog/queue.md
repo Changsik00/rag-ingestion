@@ -360,6 +360,8 @@
     - **Architecture Documentation**: Checkpointer Collision Issue (`rag-{id}` namespace) 및 아키텍처 결정 기록.
   * **Context**: Spec 040에서 발견된 "답변 후 중단" UX 혼동 및 Backend Checkpointer 충돌 이슈에 대한 후속 조치.
   * **Priority**: High (UX 개선 및 유지보수성 확보)
+  * **Status**: Completed (Merged)
+  * **Documents**: [Spec](specs/041-hitl-ui-robustness/spec.md), [Plan](specs/041-hitl-ui-robustness/plan.md), [Task](specs/041-hitl-ui-robustness/task.md)
 
 ---
 
