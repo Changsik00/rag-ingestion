@@ -106,6 +106,68 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
         if message["role"] == "assistant":
             render_debug_ui(message)
+            
+            # HITL Resume UI (Only for the latest paused message)
+            if message.get("status") == "paused" and message == st.session_state.messages[-1]:
+                st.info("✋ HITL Paused: Waiting for approval.")
+                col1, col2 = st.columns([1, 3])
+                thread_id = f"playground-{st.session_state.thread_id_seed}"
+                
+                with col1:
+                    if st.button("✅ Approve", key=f"resume_{len(st.session_state.messages)}"):
+                        try:
+                            res = api_client.post(f"/rag/sessions/{thread_id}/resume", json={"input": "Approved"})
+                            if res:
+                                # Update status of current message to prevent duplicate buttons
+                                message["status"] = "completed"
+                                # Append new response
+                                # Resume API format check needed. Assuming it returns typical chat response structure or we fetch trace.
+                                # For now, let's assume it returns a dict with 'result' which is valid output.
+                                # Actually admin/rag.py resume returns {"status": "Resumed", "result": result}
+                                # result is from adapter.resume -> updates the state. 
+                                # We should probably fetch the new message or just rerun to let the loop show it if we add it here.
+                                
+                                # Simplified: Just rerun, but we need to fetch the new answer.
+                                # Let's manually append a placeholder or fetch result messages.
+                                # The current API resume returns 'result' which is the output of ainvoke/resume.
+                                # result = {'messages': [AIMessage...]}
+                                
+                                result_data = res.get("result", {})
+                                answer_text = "Resumed."
+                                if result_data and "messages" in result_data:
+                                     # Extract last AI message
+                                     msgs = result_data["messages"]
+                                     if msgs and isinstance(msgs[-1], dict): # if dict
+                                         answer_text = msgs[-1].get("content", "")
+                                     elif msgs: # if object
+                                         answer_text = msgs[-1].content
+                                
+                                st.session_state.messages.append({"role": "assistant", "content": answer_text, "status": "completed"})
+                                st.rerun()
+                        except Exception as e:
+                            st.error(f"Failed to resume: {e}")
+
+                with col2:
+                    feedback = st.text_input("Feedback", placeholder="Type output modification...", key=f"feed_{len(st.session_state.messages)}")
+                    if st.button("Submit Feedback", key=f"feed_btn_{len(st.session_state.messages)}"):
+                         if feedback:
+                            try:
+                                res = api_client.post(f"/rag/sessions/{thread_id}/resume", json={"input": feedback})
+                                # Similar handling as Approve
+                                message["status"] = "completed"
+                                result_data = res.get("result", {})
+                                answer_text = "Resumed with feedback."
+                                if result_data and "messages" in result_data:
+                                     msgs = result_data["messages"]
+                                     if msgs:
+                                         # Check type (dict or object)
+                                         m = msgs[-1]
+                                         answer_text = m.get("content") if isinstance(m, dict) else m.content
+
+                                st.session_state.messages.append({"role": "assistant", "content": answer_text, "status": "completed"})
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Failed to resume: {e}")
 
 # --- Sidebar: Knowledge Source ---
 with st.sidebar:
@@ -196,9 +258,15 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 
                 context_data = res.get("context_data", {})
                 intent = res.get("intent", "search")
+                status = res.get("status", "completed")
 
                 status_container.write(f"🎯 Intent: **{intent.upper()}**")
-                status_container.update(label="RAG Search Completed", state="complete", expanded=False)
+                
+                if status == "paused":
+                    status_container.update(label="✋ Agent Paused for HITL Review", state="running", expanded=True)
+                    st.warning("Agent execution paused. Waiting for your approval.")
+                else:
+                    status_container.update(label="RAG Search Completed", state="complete", expanded=False)
 
                 st.markdown(answer)
 
@@ -228,6 +296,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     {
                         "role": "assistant",
                         "content": answer,
+                        "status": status,
                         "debug_info": context_data,
                         "debug_intent": debug_intent,
                         "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")},

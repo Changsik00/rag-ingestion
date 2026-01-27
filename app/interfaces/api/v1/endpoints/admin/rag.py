@@ -51,14 +51,29 @@ async def ask_agent(
         }
 
         # 마지막 노드 결과 반환
+        # ainvoke는 실행이 중단되거나 완료될 때까지 실행됨
         result = await workflow.ainvoke(input_state, config=config)
+
+        # 상태 확인 (HITL 중단 여부 체크)
+        snapshot = await workflow.aget_state(config)
+        next_steps = snapshot.next
+        
+        status = "completed"
+        if next_steps:
+            status = "paused"
 
         # AIMessage 객체를 직렬화 가능한 형식으로 변환
         output_messages = []
         for msg in result.get("messages", []):
             output_messages.append({"role": msg.type, "content": msg.content})
 
-        return {"messages": output_messages, "context_data": result.get("context_data"), "intent": result.get("intent")}
+        return {
+            "messages": output_messages,
+            "context_data": result.get("context_data"),
+            "intent": result.get("intent"),
+            "status": status,
+            "next": next_steps,
+        }
     except Exception as e:
         import traceback
 
