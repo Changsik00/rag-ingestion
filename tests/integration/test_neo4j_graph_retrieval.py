@@ -75,6 +75,7 @@ def test_find_shortest_path(graph_repo):
     3. Verify result contains A->B and B->C
     """
     from uuid import uuid4
+
     suffix = uuid4().hex[:6]
     name_a = f"A_{suffix}"
     name_b = f"B_{suffix}"
@@ -99,9 +100,9 @@ def test_find_shortest_path(graph_repo):
     # Assert
     assert len(results) >= 2
     # Verify path continuity
-    sources = set(r['source'] for r in results)
-    targets = set(r['target'] for r in results)
-    
+    sources = set(r["source"] for r in results)
+    targets = set(r["target"] for r in results)
+
     assert name_a in sources
     assert name_b in sources  # B is source of B->C
     assert name_b in targets  # B is target of A->B

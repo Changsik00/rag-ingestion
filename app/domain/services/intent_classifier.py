@@ -109,13 +109,14 @@ Your task is to analyze the user's query and determine:
 2. Analyze the current query.
 3. Identify specific targets (document names, URLs, entity names) if mentioned.
 4. Extract key entities (people, organizations, locations) for Graph Search.
+   - Include English names or aliases if the entity is famous (e.g., "일론" -> ["일론", "Elon Musk"]).
 5. Output ONLY a valid JSON object with this structure:
 
 ```json
 {{
   "intent": "one of [general_query, compare, summarize, filter_by_topic]",
   "targets": ["list", "of", "specific", "targets"],
-  "entities": ["list", "of", "extracted", "entities"],
+  "entities": ["list", "of", "extracted", "entities", "and", "aliases"],
   "reasoning": "brief explanation of your decision"
 }}
 ```

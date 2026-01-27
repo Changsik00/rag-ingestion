@@ -148,7 +148,7 @@ class RAGNodes:
         rewritten_query = state.get("rewritten_query") or state["query"]
         user_intent = state.get("user_intent")
         final_filters = state.get("final_filters")
-        
+
         # [Spec 044] Extract entities for Graph Search
         entities = getattr(user_intent, "entities", []) if user_intent else []
 
@@ -349,7 +349,7 @@ class RAGNodes:
         # [Spec 044] Entity Based Search
         if entities and len(entities) > 0:
             return self.neo4j_graph_repo.find_shortest_path(entities)
-        
+
         # Fallback: Keyword-based Subgraph (Legacy)
         return self.neo4j_graph_repo.get_subgraph([query])
 

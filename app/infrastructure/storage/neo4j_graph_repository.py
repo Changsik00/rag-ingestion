@@ -141,9 +141,12 @@ class Neo4jGraphRepository:
 
         triples = []
         # Query: Find shortest path between any pair of entities in the list
+        # Relaxed matching: Use CONTAINS and toLower for partial/case-insensitive match
         query = """
         MATCH (start:Entity), (end:Entity)
-        WHERE start.name IN $names AND end.name IN $names AND start <> end
+        WHERE (ANY(name IN $names WHERE toLower(start.name) CONTAINS toLower(name)) OR start.name IN $names)
+          AND (ANY(name IN $names WHERE toLower(end.name) CONTAINS toLower(name)) OR end.name IN $names)
+          AND start <> end
         MATCH p = shortestPath((start)-[*]-(end))
         WITH p
         UNWIND relationships(p) AS r
@@ -154,7 +157,7 @@ class Neo4jGraphRepository:
         with self.driver.session() as session:
             results = session.run(query, names=entity_names)
             unique_triples = set()
-            
+
             for record in results:
                 triple_key = (record["source"], record["relationship"], record["target"])
                 if triple_key not in unique_triples:
