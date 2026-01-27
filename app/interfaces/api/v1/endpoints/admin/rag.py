@@ -150,53 +150,19 @@ async def resume_session(
         # We should probably update the state with this feedback.
         # AdminState has 'tool_output'. Let's update that? Or add a message?
         
-        update_values = {}
-        if user_input:
-             # Add as a human message or tool output
-             # If "Approved", maybe just proceed.
-             # If feedback, maybe add as message?
-             # For simpler logic consistent with current graph:
-             # Just logs or no-op since 'human_review' node just returns dummy.
-             pass
-
-        # If we just want to resume execution of 'human_review' node:
-        # workflow.ainvoke(None, config)
-        
-        # But wait, the error "Expected dict, got Approved" suggests someone tried to use "Approved" as state?
-        # Ah, the previous code was: await adapter.resume(id, user_input)
-        # adapter.resume called: self.graph.ainvoke(input_data, config)  <-- Here input_data was "Approved" string.
-        # And graph.ainvoke expects State (dict), hence the error!
-        
-        # So the fix is indeed to use the correct invoke call.
-        # We will use Command(resume=user_input) if we were using interrupt function.
-        # But here we use interrupt_before. 
-        # So we should invoke with Command(resume=...) is valid ONLY if we are at an interrupt() call.
-        # If checks strictly interrupt_before, we should invoke with new state (dict) or None.
-        
-        # Let's verify AdminAgent behavior. 
-        # If we want to allow modifying state (feedback):
-        # We can pass a dict to update state. 
-        # For now, let's just pass None (or empty dict) to resume if we assume "Approved" means "Go ahead".
-        # If we want to record the feedback, we should pass it as state update.
-        
-        resume_payload = None
+        # 2. Handle Feedback vs Approval
         if user_input and user_input != "Approved":
-             # Treat as feedback/correction? 
-             # For now, AdminAgent doesn't have explicit feedback handling logic in human_review node.
-             # It just passes through.
-             pass
-        
-        # To resume from interrupt_before, we usually just call invoke with Command or None.
-        # LangGraph 0.2: If interrupted before a node, invoke(None, config) runs the node.
-        # Let's try invoke(None) to just resume. 
-        # BUT if we want to support the user input:
-        # We can update state.
-        
-        # Fix: Send None to simple resume, or Command if we need to pass value to interrupt (not used here).
-        # Since we used interrupt_before, we likely just need to proceed.
-        # To avoid "Expected dict" error, we must pass None or a Dict.
-        
-        result = await workflow.ainvoke(None, config=config)
+            # Feedback provided: Add as HumanMessage to state
+            from langchain_core.messages import HumanMessage
+            
+            feedback_msg = HumanMessage(content=user_input)
+            workflow.update_state(config, {"messages": [feedback_msg]})
+            
+            # Resume execution (will route to router due to new message)
+            result = await workflow.ainvoke(None, config=config)
+        else:
+            # Approval: Just resume (will route to END)
+            result = await workflow.ainvoke(None, config=config)
         
         # Status Check to ensure it finished or paused again
         snapshot = await workflow.aget_state(config)

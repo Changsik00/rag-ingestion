@@ -24,6 +24,13 @@
 
 ---
 
+## Task 6: HITL Feedback Loop Logic
+- [x] AdminAgent Graph Loop 구현: `human_review` -> `router` (if feedback)
+- [x] `resume_session` API 수정: Feedback -> Update State -> Resume
+- [ ] Feedback Loop 검증 (UI Test)
+
+---
+
 ## Task 2: Interactive HITL Logic Implementation
 
 ### 2-1. Streaming & Toggle Logic
@@ -60,7 +67,7 @@
 ## Task 5: HITL UX Improvement
 - [x] UI 문구 및 스타일 개선 ("Agent Paused" -> "Review Draft Response")
 - [x] "승인" 버튼 명확화 ("Approve" -> "Confirm & Finalize")
-- [ ] 사용자 피드백 반영 및 커밋
+- [x] 사용자 피드백 반영 및 커밋
 
 ---
 
