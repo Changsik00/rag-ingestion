@@ -49,9 +49,16 @@ def get_neo4j_driver() -> Driver:
 
 # Document Repository 의존성 (CompositeStorage: Neo4j + ChromaDB)
 @lru_cache
-def get_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> DocumentRepository:
+def get_chroma_storage() -> ChromaStorage:
+    return ChromaStorage()
+
+
+@lru_cache
+def get_repository(
+    driver: Annotated[Driver, Depends(get_neo4j_driver)],
+    chroma_storage: Annotated[ChromaStorage, Depends(get_chroma_storage)],
+) -> DocumentRepository:
     neo4j_storage = Neo4jStorage(driver)
-    chroma_storage = ChromaStorage()
     return CompositeStorage(neo4j_storage, chroma_storage)
 
 
@@ -63,10 +70,12 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 
 # Storage Integrity Service 의존성
 @lru_cache
-def get_storage_integrity_service(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> StorageIntegrityService:
+def get_storage_integrity_service(
+    driver: Annotated[Driver, Depends(get_neo4j_driver)],
+    chroma_storage: Annotated[ChromaStorage, Depends(get_chroma_storage)],
+) -> StorageIntegrityService:
     primary_repo = Neo4jStorage(driver)
-    target_repo = ChromaStorage()
-    return StorageIntegrityService(primary_repo, target_repo)
+    return StorageIntegrityService(primary_repo, chroma_storage)
 
 
 # Checkpointer 의존성 (HITL Persistence)
@@ -181,12 +190,12 @@ def get_rag_nodes(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     query_rewriter: Annotated[QueryRewriter, Depends(get_query_rewriter)],
     intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
+    chroma_repo: Annotated[ChromaStorage, Depends(get_chroma_storage)],
 ):
     from app.infrastructure.rag.nodes import RAGNodes
 
     neo4j_doc_repo = Neo4jStorage(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
-    chroma_repo = ChromaStorage()
     llm_adapter = get_llm()
 
     return RAGNodes(
@@ -235,11 +244,11 @@ def get_feedback_service() -> FeedbackService:
 async def get_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
+    chroma_storage: Annotated[ChromaStorage, Depends(get_chroma_storage)],
 ) -> Any:
     from app.application.admin.integrity_service import IntegrityService
 
     neo4j_storage = Neo4jStorage(driver)
-    chroma_storage = ChromaStorage()
     # 어댑터 생성 (Checkpointer 리셋용)
     llm_adapter = get_llm()
     langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
