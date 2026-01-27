@@ -70,6 +70,12 @@
 - [ ] Create PR: `gh pr create --title "test(spec-040): add real-world hitl verification script" --body-file specs/040-hitl-verification-script/pr_description.md`
 
 
+- [x] User Communication: HITL Design Pattern (Review vs Permission) 설명
+
+## Task 8: Documentation (HITL & Architecture)
+- [x] Document: HITL Strategy (Draft Review vs Permission)
+- [x] Document: State Management & Persistence (Memory vs SQLite)
+- [x] Document: Core Logic (AdminAgent, RAGService)
 
 ## Task 5: HITL UX Improvement
 - [x] UI 문구 및 스타일 개선 ("Agent Paused" -> "Review Draft Response")
