@@ -25,14 +25,14 @@
 
 ## Task 3: RAG Service Integration
 ### 3-1. Logic Wiring
-- [ ] `app/domain/rag/service.py` 수정: Intent 결과의 Entity를 사용하여 Graph 조회 및 Context 병합
-- [ ] Test 실행: End-to-End 로직 검증 (`test_rag_flow.py` 등)
-- [ ] Commit: `feat(spec-044): integrate graph context into rag pipeline`
+- [x] `app/domain/rag/service.py` 수정: Intent 결과의 Entity를 사용하여 Graph 조회 및 Context 병합
+- [x] Test 실행: End-to-End 로직 검증 (`test_rag_flow.py` 등)
+- [x] Commit: `feat(spec-044): integrate graph context into rag pipeline`
 
 ## Task 4: PR Creation
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
-- [ ] Create PR: `gh pr create --title "feat(spec-044): graph retrieval logic fix" ...`
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Test Suite 실행: `uv run pytest` (전체 테스트 확인)
+- [x] PR 생성: `gh pr create` (Body는 `specs/044-graph-retrieval-logic-fix/pr_description.md` 내용 사용)
 
 ## Summary
 **총 Task**: 3개 (주요 개발) + PR
