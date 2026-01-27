@@ -156,7 +156,7 @@ async def resume_session(
             from langchain_core.messages import HumanMessage
             
             feedback_msg = HumanMessage(content=user_input)
-            workflow.update_state(config, {"messages": [feedback_msg]})
+            await workflow.aupdate_state(config, {"messages": [feedback_msg]})
             
             # Resume execution (will route to router due to new message)
             result = await workflow.ainvoke(None, config=config)
