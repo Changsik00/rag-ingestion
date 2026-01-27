@@ -380,15 +380,12 @@
    Critical (Data Drift 해결)
    2026-01-28 (Singleton Fix 포함)
 
-* [ ] **Spec 044: Graph Retrieval Logic Fix (Entity-based Search)**
-  * **Problem**: "일론과 트위터의 관계는?" 같은 질문 시 Graph DB에서 검색이 되지 않음.
-  * **Cause**: `RAGNodes.retrieve_hybrid`가 질문 문장 전체를 Graph에 검색하기 때문 (Vector Like Search). Neo4j에는 "일론", "트위터" 노드는 있어도 "일론과 트위터의 관계는?"이라는 노드는 없음.
-  * **Goal**: `IntentClassifier`에서 Entity를 추출하고, 이를 기반으로 Graph를 조회하도록 수정.
-  * **Solution Plan**:
-    1.  **Intent Classifier**: 질문에서 Entity 추출 (예: `['일론 머스크', '트위터']`).
-    2.  **Graph Traversal**: 추출된 두 Entity 노드 사이의 관계(`RELATIONSHIP`)를 Cypher Query로 탐색.
-    3.  **Context Injection**: "일론 머스크 --[ACQUIRED]--> 트위터" 정보를 텍스트로 변환하여 LLM에 제공.
-   High (Retrieval Quality Fix)
+* [x] **Spec 044: Graph Retrieval Logic Fix (Entity-based Search)**
+  * **Status**: PR Created (Review)
+  * **Artifacts**: [Design Guide](docs/design_guides/010-graph-retrieval-logic.md), [Spec](specs/044-graph-retrieval-logic-fix/spec.md), [Plan](specs/044-graph-retrieval-logic-fix/plan.md), [Task](specs/044-graph-retrieval-logic-fix/task.md)
+  * **Problem**: "일론과 트위터의 관계는?" 같은 질문 시 Entity 기반 검색이 되지 않아 답변 품질 저하.
+  * **Solution**: `IntentClassifier`에서 Entity 추출 및 Neo4j Shortest Path (`find_shortest_path`) 구현으로 관계 정보 주입.
+  * **PR**: `feat(spec-044): graph retrieval logic fix`
 
 
 ---
