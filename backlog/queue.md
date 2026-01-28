@@ -349,7 +349,7 @@
   * **Goal**: Mock이 아닌 실제 LLM과 상호작용하며 HITL 흐름을 검증하는 스크립트 작성 (`scripts/verify_hitl_real.py`).
   * **Scenario**: 실제 Gemini LLM 사용 -> 강제 오류 주입 -> Interrupt 확인 -> 수동 Resume -> 최종 결과 확인.
    품질 검증 단계에서 수행 권장.
-  * **Status**: Planning (2026-01-27)
+  * **Status**: Completed (Merged)
   * **Documents**: [Spec](specs/040-hitl-verification-script/spec.md), [Plan](specs/040-hitl-verification-script/plan.md), [Task](specs/040-hitl-verification-script/task.md)
 
 * [x] **Spec 041: Admin HITL UI & Robustness (Follow-up)**
@@ -381,7 +381,7 @@
    2026-01-28 (Singleton Fix 포함)
 
 * [x] **Spec 044: Graph Retrieval Logic Fix (Entity-based Search)**
-  * **Status**: PR Created (Review)
+  * **Status**: Completed (Merged)
   * **Artifacts**: [Design Guide](docs/design_guides/010-graph-retrieval-logic.md), [Spec](specs/044-graph-retrieval-logic-fix/spec.md), [Plan](specs/044-graph-retrieval-logic-fix/plan.md), [Task](specs/044-graph-retrieval-logic-fix/task.md)
   * **Problem**: "일론과 트위터의 관계는?" 같은 질문 시 Entity 기반 검색이 되지 않아 답변 품질 저하.
   * **Solution**: `IntentClassifier`에서 Entity 추출 및 Neo4j Shortest Path (`find_shortest_path`) 구현으로 관계 정보 주입.
