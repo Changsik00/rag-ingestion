@@ -229,8 +229,62 @@ for message in st.session_state.messages:
                                 st.error(f"Failed to resume: {e}")
 
                     with col_cancel:
-                         if st.form_submit_button("🔁 Request Re-generation"):
-                             pass
+                        if st.form_submit_button("🔁 Request Re-generation"):
+                            try:
+                                res = api_client.post(
+                                    f"/rag/sessions/{current_thread_id}/resume",
+                                    json={"input": "Regenerate please (User requested re-generation)"},
+                                )
+                                if res:
+                                    message["status"] = "completed"
+
+                                    result_data = res.get("result", {})
+                                    answer_text = "Regenerated Response:"
+
+                                    msgs = result_data.get("messages", [])
+                                    if msgs:
+                                        last_msg = msgs[-1]
+                                        answer_text = (
+                                            last_msg.get("content")
+                                            if isinstance(last_msg, dict)
+                                            else last_msg.content
+                                        )
+
+                                    context_data = result_data.get("context_data") or {}
+                                    debug_intent = None
+                                    if context_data and context_data.get("user_intent"):
+                                        ui = context_data["user_intent"]
+                                        debug_intent = {
+                                            "intent": ui.get("intent")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "intent", "N/A"),
+                                            "targets": ui.get("targets")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "targets", []),
+                                            "reasoning": ui.get("reasoning")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "reasoning", ""),
+                                        }
+
+                                    st.session_state.messages.append(
+                                        {
+                                            "role": "assistant",
+                                            "content": answer_text,
+                                            "status": res.get("status", "completed"),
+                                            "debug_info": context_data,
+                                            "debug_intent": debug_intent,
+                                            "debug_rewrite": {
+                                                "original": "Regenerate Request",
+                                                "rewritten": context_data.get("rewritten_query"),
+                                            },
+                                            "debug_prompt": context_data.get("full_context", ""),
+                                            "is_clarification": res.get("is_clarification", False),
+                                            "draft_content": res.get("draft_content"),
+                                        }
+                                    )
+                                    st.rerun()
+                            except Exception as e:
+                                st.error(f"Failed to regenerate: {e}")
 
                 st.divider()
 
