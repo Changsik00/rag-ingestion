@@ -10,18 +10,18 @@
 
 ## Task 1: Backend Implementation (AdminAgent)
 ### 1-1. State Schema & Ambiguity Detection
-- [ ] Test Case 작성: `tests/unit/test_admin_agent_clarification.py` (State 검증)
-- [ ] `app/domain/services/admin_agent.py` 수정: `AdminState`에 `draft_content`, `is_clarification` 추가
-- [ ] `router_node` 수정: 프롬프트에 Missing Slot 감지 로직 추가
-- [ ] Test 실행 및 Pass 확인: `uv run pytest tests/unit/test_admin_agent_clarification.py`
-- [ ] Commit: `feat(spec-045): update admin state and router for clarification`
+- [x] Test Case 작성: `tests/unit/test_admin_agent_clarification.py` (State 검증)
+- [x] `app/domain/services/admin_agent.py` 수정: `AdminState`에 `draft_content`, `is_clarification` 추가
+- [x] `router_node` 수정: 프롬프트에 Missing Slot 감지 로직 추가
+- [x] Test 실행 및 Pass 확인: `uv run pytest tests/unit/test_admin_agent_clarification.py`
+- [x] Commit: `feat(spec-045): update admin state and router for clarification`
 
 ### 1-2. Clarify Node & Graph Wiring
-- [ ] `clarify_node` 구현: 역질문 메시지 생성 로직
-- [ ] `build_workflow` 수정: `router` -> `clarify` (Conditional Edge) 연결
-- [ ] `clarify` -> `END` 연결 (Interrupt 설정)
-- [ ] Test 실행: Graph Routing 검증
-- [ ] Commit: `feat(spec-045): implement clarify node and graph wiring`
+- [x] `clarify_node` 구현: 역질문 메시지 생성 로직
+- [x] `build_workflow` 수정: `router` -> `clarify` (Conditional Edge) 연결
+- [x] `clarify` -> `END` 연결 (Interrupt 설정)
+- [x] Test 실행: Graph Routing 검증
+- [x] Commit: `feat(spec-045): implement clarify node and graph wiring`
 
 ## Task 2: Frontend Implementation (Playground)
 ### 2-1. Draft Editor (Canvas) & Clarification UI

@@ -73,6 +73,10 @@ async def ask_agent(
             "intent": result.get("intent"),
             "status": status,
             "next": next_steps,
+            # Spec 045
+            "draft_content": result.get("draft_content"),
+            "is_clarification": result.get("is_clarification"),
+            "missing_slots": result.get("missing_slots"),
         }
     except Exception as e:
         import traceback
@@ -181,6 +185,9 @@ async def resume_session(
                 "messages": output_messages,
                 "context_data": result.get("context_data"),
                 "intent": result.get("intent"),
+                "draft_content": result.get("draft_content"),
+                "is_clarification": result.get("is_clarification"),
+                "missing_slots": result.get("missing_slots"),
             },
         }
     except Exception as e:

@@ -158,89 +158,85 @@ for message in st.session_state.messages:
 
             # HITL Resume UI (Only for the latest paused message)
             if message.get("status") == "paused" and message == st.session_state.messages[-1]:
-                st.warning("⚠️ This is a DRAFT. Confirm to finalize or provide feedback to revise.")
-                col1, col2 = st.columns([1, 3])
-
-                with col1:
-                    if st.button(
-                        "✅ Confirm & Finalize",
-                        key=f"resume_{len(st.session_state.messages)}",
-                        help="Approve this draft as the final answer.",
-                    ):
-                        try:
-                            res = api_client.post(
-                                f"/rag/sessions/{current_thread_id}/resume", json={"input": "Approved"}
-                            )
-                            if res:
-                                # Update status of current message to prevent duplicate buttons
-                                message["status"] = "completed"
-                                st.rerun()
-                        except Exception as e:
-                            st.error(f"Failed to resume: {e}")
-
-                with col2:
-                    feedback = st.text_input(
-                        "Feedback",
-                        placeholder="Request changes or provide corrections...",
-                        key=f"feed_{len(st.session_state.messages)}",
-                    )
-                    if st.button(
-                        "🛠️ Revise & Continue",
-                        key=f"feed_btn_{len(st.session_state.messages)}",
-                        help="Send feedback to the agent for revision.",
-                    ):
-                        if feedback:
+                # Spec 045: Canvas / Draft Editor
+                st.info("📝 **Draft Mode**: You can edit the agent's response directly before finalizing.")
+                
+                # Use draft_content if available, else current message content
+                draft_text = message.get("draft_content") or message.get("content", "")
+                
+                with st.form(key=f"draft_form_{len(st.session_state.messages)}"):
+                    edited_content = st.text_area("Edit Draft", value=draft_text, height=300)
+                    
+                    col_confirm, col_cancel = st.columns([1, 1])
+                    with col_confirm:
+                        if st.form_submit_button("✅ Confirm & Finalize"):
                             try:
+                                if edited_content != draft_text:
+                                    payload_input = f"User edited the draft to:\n\n{edited_content}"
+                                else:
+                                    payload_input = "Approved"
+                                    
                                 res = api_client.post(
-                                    f"/rag/sessions/{current_thread_id}/resume", json={"input": feedback}
+                                    f"/rag/sessions/{current_thread_id}/resume", json={"input": payload_input}
                                 )
-                                # Mark previous draft as replaced/completed
-                                message["status"] = "completed"
+                                if res:
+                                    message["status"] = "completed"
+                                    
+                                    result_data = res.get("result", {})
+                                    answer_text = "Resumed with feedback."
+                                    
+                                    msgs = result_data.get("messages", [])
+                                    if msgs:
+                                        last_msg = msgs[-1]
+                                        answer_text = (
+                                            last_msg.get("content") if isinstance(last_msg, dict) else last_msg.content
+                                        )
 
-                                result_data = res.get("result", {})
-                                answer_text = "Resumed with feedback."
+                                    context_data = result_data.get("context_data", {})
+                                    debug_intent = None
+                                    if context_data and context_data.get("user_intent"):
+                                        ui = context_data["user_intent"]
+                                        debug_intent = {
+                                            "intent": ui.get("intent")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "intent", "N/A"),
+                                            "targets": ui.get("targets")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "targets", []),
+                                            "reasoning": ui.get("reasoning")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "reasoning", ""),
+                                        }
 
-                                # Extract content and debug info
-                                msgs = result_data.get("messages", [])
-                                if msgs:
-                                    last_msg = msgs[-1]
-                                    answer_text = (
-                                        last_msg.get("content") if isinstance(last_msg, dict) else last_msg.content
+                                    st.session_state.messages.append(
+                                        {
+                                            "role": "assistant",
+                                            "content": answer_text,
+                                            "status": res.get("status", "completed"),
+                                            "debug_info": context_data,
+                                            "debug_intent": debug_intent,
+                                            "debug_rewrite": {
+                                                "original": payload_input,
+                                                "rewritten": context_data.get("rewritten_query"),
+                                            },
+                                            "debug_prompt": context_data.get("full_context", ""),
+                                            "is_clarification": res.get("is_clarification", False),
+                                            "draft_content": res.get("draft_content"),
+                                        }
                                     )
-
-                                context_data = result_data.get("context_data", {})
-                                debug_intent = None
-                                if context_data and context_data.get("user_intent"):
-                                    ui = context_data["user_intent"]
-                                    debug_intent = {
-                                        "intent": ui.get("intent")
-                                        if isinstance(ui, dict)
-                                        else getattr(ui, "intent", "N/A"),
-                                        "targets": ui.get("targets")
-                                        if isinstance(ui, dict)
-                                        else getattr(ui, "targets", []),
-                                        "reasoning": ui.get("reasoning")
-                                        if isinstance(ui, dict)
-                                        else getattr(ui, "reasoning", ""),
-                                    }
-
-                                st.session_state.messages.append(
-                                    {
-                                        "role": "assistant",
-                                        "content": answer_text,
-                                        "status": res.get("status", "completed"),
-                                        "debug_info": context_data,
-                                        "debug_intent": debug_intent,
-                                        "debug_rewrite": {
-                                            "original": feedback,
-                                            "rewritten": context_data.get("rewritten_query"),
-                                        },
-                                        "debug_prompt": context_data.get("full_context", ""),
-                                    }
-                                )
-                                st.rerun()
+                                    st.rerun()
                             except Exception as e:
                                 st.error(f"Failed to resume: {e}")
+                                
+                    with col_cancel:
+                         if st.form_submit_button("🔁 Request Re-generation"):
+                             pass
+
+                st.divider()
+
+            # Spec 045: Clarification UI
+            if message.get("is_clarification"):
+                st.warning(f"⚠️ **Clarification Needed**: {message['content']}")
 
 # --- Sidebar: Knowledge Source ---
 with st.sidebar:
@@ -374,6 +370,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                         "debug_intent": debug_intent,
                         "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")},
                         "debug_prompt": context_data.get("full_context", ""),
+                        "is_clarification": res.get("is_clarification", False),
+                        "draft_content": res.get("draft_content"),
                     }
                 )
                 st.rerun()
