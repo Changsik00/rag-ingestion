@@ -10,6 +10,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from app.core.config import get_settings
 from app.interfaces.mcp.server import ingest_url, search_knowledge_base
 
 # Load Env
@@ -44,7 +45,7 @@ async def main():
         print("Error: GEMINI_API_KEY not found in .env")
         return
 
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0, google_api_key=gemini_key)
+    llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=gemini_key)
 
     # 2. Bind Tools
     tools = [agent_ingest_url, agent_search]

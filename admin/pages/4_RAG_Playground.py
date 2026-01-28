@@ -1,4 +1,5 @@
 import uuid
+import time
 
 import streamlit as st
 
@@ -152,95 +153,158 @@ if "hitl_enabled" not in st.session_state:
 # --- Chat Interface (History Loop) ---
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        # Decide whether to show default chat bubble
+        is_draft = message.get("status") == "paused"
+        is_clarification = message.get("is_clarification", False)
+
+        # Only render standard bubble if it's NOT a draft (HITL) and NOT a clarification request
+        if not is_draft and not is_clarification:
+             st.markdown(message["content"])
         if message["role"] == "assistant":
             render_debug_ui(message)
 
             # HITL Resume UI (Only for the latest paused message)
             if message.get("status") == "paused" and message == st.session_state.messages[-1]:
-                st.warning("⚠️ This is a DRAFT. Confirm to finalize or provide feedback to revise.")
-                col1, col2 = st.columns([1, 3])
+                # Spec 045: Canvas / Draft Editor
+                st.info("📝 **Draft Mode**: You can edit the agent's response directly before finalizing.")
 
-                with col1:
-                    if st.button(
-                        "✅ Confirm & Finalize",
-                        key=f"resume_{len(st.session_state.messages)}",
-                        help="Approve this draft as the final answer.",
-                    ):
-                        try:
-                            res = api_client.post(
-                                f"/rag/sessions/{current_thread_id}/resume", json={"input": "Approved"}
-                            )
-                            if res:
-                                # Update status of current message to prevent duplicate buttons
-                                message["status"] = "completed"
-                                st.rerun()
-                        except Exception as e:
-                            st.error(f"Failed to resume: {e}")
+                # Use draft_content if available, else current message content
+                draft_text = message.get("draft_content") or message.get("content", "")
 
-                with col2:
-                    feedback = st.text_input(
-                        "Feedback",
-                        placeholder="Request changes or provide corrections...",
-                        key=f"feed_{len(st.session_state.messages)}",
-                    )
-                    if st.button(
-                        "🛠️ Revise & Continue",
-                        key=f"feed_btn_{len(st.session_state.messages)}",
-                        help="Send feedback to the agent for revision.",
-                    ):
-                        if feedback:
+                with st.form(key=f"draft_form_{len(st.session_state.messages)}"):
+                    edited_content = st.text_area("Edit Draft", value=draft_text, height=300)
+
+                    col_confirm, col_cancel = st.columns([1, 1])
+                    with col_confirm:
+                        if st.form_submit_button("✅ Confirm & Finalize"):
                             try:
+                                if edited_content != draft_text:
+                                    payload_input = f"User edited the draft to:\n\n{edited_content}"
+                                else:
+                                    payload_input = "Approved"
+
                                 res = api_client.post(
-                                    f"/rag/sessions/{current_thread_id}/resume", json={"input": feedback}
+                                    f"/rag/sessions/{current_thread_id}/resume", json={"input": payload_input}
                                 )
-                                # Mark previous draft as replaced/completed
-                                message["status"] = "completed"
+                                if res:
+                                    message["status"] = "completed"
 
-                                result_data = res.get("result", {})
-                                answer_text = "Resumed with feedback."
+                                    result_data = res.get("result", {})
+                                    answer_text = "Resumed with feedback."
 
-                                # Extract content and debug info
-                                msgs = result_data.get("messages", [])
-                                if msgs:
-                                    last_msg = msgs[-1]
-                                    answer_text = (
-                                        last_msg.get("content") if isinstance(last_msg, dict) else last_msg.content
+                                    msgs = result_data.get("messages", [])
+                                    if msgs:
+                                        last_msg = msgs[-1]
+                                        answer_text = (
+                                            last_msg.get("content") if isinstance(last_msg, dict) else last_msg.content
+                                        )
+
+                                    context_data = result_data.get("context_data") or {}
+                                    debug_intent = None
+                                    if context_data and context_data.get("user_intent"):
+                                        ui = context_data["user_intent"]
+                                        debug_intent = {
+                                            "intent": ui.get("intent")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "intent", "N/A"),
+                                            "targets": ui.get("targets")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "targets", []),
+                                            "reasoning": ui.get("reasoning")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "reasoning", ""),
+                                        }
+
+                                    st.session_state.messages.append(
+                                        {
+                                            "role": "assistant",
+                                            "content": answer_text,
+                                            "status": res.get("status", "completed"),
+                                            "debug_info": context_data,
+                                            "debug_intent": debug_intent,
+                                            "debug_rewrite": {
+                                                "original": payload_input,
+                                                "rewritten": context_data.get("rewritten_query"),
+                                            },
+                                            "debug_prompt": context_data.get("full_context", ""),
+                                            "is_clarification": res.get("is_clarification", False),
+                                            "draft_content": res.get("draft_content"),
+                                        }
                                     )
-
-                                context_data = result_data.get("context_data", {})
-                                debug_intent = None
-                                if context_data and context_data.get("user_intent"):
-                                    ui = context_data["user_intent"]
-                                    debug_intent = {
-                                        "intent": ui.get("intent")
-                                        if isinstance(ui, dict)
-                                        else getattr(ui, "intent", "N/A"),
-                                        "targets": ui.get("targets")
-                                        if isinstance(ui, dict)
-                                        else getattr(ui, "targets", []),
-                                        "reasoning": ui.get("reasoning")
-                                        if isinstance(ui, dict)
-                                        else getattr(ui, "reasoning", ""),
-                                    }
-
-                                st.session_state.messages.append(
-                                    {
-                                        "role": "assistant",
-                                        "content": answer_text,
-                                        "status": res.get("status", "completed"),
-                                        "debug_info": context_data,
-                                        "debug_intent": debug_intent,
-                                        "debug_rewrite": {
-                                            "original": feedback,
-                                            "rewritten": context_data.get("rewritten_query"),
-                                        },
-                                        "debug_prompt": context_data.get("full_context", ""),
-                                    }
-                                )
-                                st.rerun()
+                                    st.rerun()
                             except Exception as e:
                                 st.error(f"Failed to resume: {e}")
+
+                    with col_cancel:
+                        if st.form_submit_button("🔁 Request Re-generation"):
+                            # Find the last user message to re-submit (Retry logic)
+                            last_user_query = "Regenerate"
+                            for msg in reversed(st.session_state.messages):
+                                if msg["role"] == "user":
+                                    last_user_query = msg["content"]
+                                    break
+                            
+                            try:
+                                res = api_client.post(
+                                    f"/rag/sessions/{current_thread_id}/resume",
+                                    json={"input": last_user_query},
+                                )
+                                if res:
+                                    message["status"] = "completed"
+
+                                    result_data = res.get("result", {})
+                                    answer_text = "Regenerated Response:"
+
+                                    msgs = result_data.get("messages", [])
+                                    if msgs:
+                                        last_msg = msgs[-1]
+                                        answer_text = (
+                                            last_msg.get("content")
+                                            if isinstance(last_msg, dict)
+                                            else last_msg.content
+                                        )
+
+                                    context_data = result_data.get("context_data") or {}
+                                    debug_intent = None
+                                    if context_data and context_data.get("user_intent"):
+                                        ui = context_data["user_intent"]
+                                        debug_intent = {
+                                            "intent": ui.get("intent")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "intent", "N/A"),
+                                            "targets": ui.get("targets")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "targets", []),
+                                            "reasoning": ui.get("reasoning")
+                                            if isinstance(ui, dict)
+                                            else getattr(ui, "reasoning", ""),
+                                        }
+
+                                    st.session_state.messages.append(
+                                        {
+                                            "role": "assistant",
+                                            "content": answer_text,
+                                            "status": res.get("status", "completed"),
+                                            "debug_info": context_data,
+                                            "debug_intent": debug_intent,
+                                            "debug_rewrite": {
+                                                "original": f"Retry: {last_user_query}",
+                                                "rewritten": context_data.get("rewritten_query"),
+                                            },
+                                            "debug_prompt": context_data.get("full_context", ""),
+                                            "is_clarification": res.get("is_clarification", False),
+                                            "draft_content": res.get("draft_content"),
+                                        }
+                                    )
+                                    st.rerun()
+                            except Exception as e:
+                                st.error(f"Failed to regenerate: {e}")
+
+                st.divider()
+
+            # Spec 045: Clarification UI
+            if message.get("is_clarification"):
+                st.warning(f"⚠️ **Clarification Needed**: {message['content']}")
 
 # --- Sidebar: Knowledge Source ---
 with st.sidebar:
@@ -271,9 +335,15 @@ with st.sidebar:
     st.divider()
 
     with st.expander("🛠️ Advanced Settings", expanded=False):
-        if st.button("🗑️ Clear Chat History", use_container_width=True):
-            st.session_state.messages = []
-            st.rerun()
+        if st.button("🗑️ Delete Thread History", use_container_width=True):
+            try:
+                api_client.post(f"/rag/sessions/{current_thread_id}/reset")
+                st.session_state.messages = []
+                st.toast("Conversation history deleted from server.")
+                time.sleep(1) # Give toast time to show
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to clear history: {e}")
 
         if st.button("🔄 New Conversation (Reset Thread)", use_container_width=True):
             st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
@@ -329,7 +399,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     # Last AI message
                     answer = next((m["content"] for m in reversed(res["messages"]) if m["role"] == "ai"), answer)
 
-                context_data = res.get("context_data", {})
+                context_data = res.get("context_data") or {}
                 intent = res.get("intent", "search")
                 status = res.get("status", "completed")
 
@@ -374,6 +444,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                         "debug_intent": debug_intent,
                         "debug_rewrite": {"original": prompt, "rewritten": context_data.get("rewritten_query")},
                         "debug_prompt": context_data.get("full_context", ""),
+                        "is_clarification": res.get("is_clarification", False),
+                        "draft_content": res.get("draft_content"),
                     }
                 )
                 st.rerun()

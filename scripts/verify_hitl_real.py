@@ -41,7 +41,7 @@ def get_real_services():
     _chroma_repo = ChromaStorage()  # Assuming it connects to persistent dir
 
     # 2. LLM Components
-    _llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0, google_api_key=settings.GEMINI_API_KEY)
+    _llm = ChatGoogleGenerativeAI(model=settings.GEMINI_MODEL_NAME, temperature=0, google_api_key=settings.GEMINI_API_KEY)
     # adapter = LangChainLLMAdapter(llm) # Not strictly needed if mocking RAG
 
     # intent_classifier = IntentClassifier(llm=adapter if hasattr(adapter, 'ainvoke') else llm)

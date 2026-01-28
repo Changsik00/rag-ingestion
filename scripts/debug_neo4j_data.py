@@ -1,4 +1,5 @@
 import os
+
 from neo4j import GraphDatabase
 
 # Environment variables (defaulting to docker-compose values if not set)
@@ -11,7 +12,7 @@ def debug_print(msg):
 
 def inspect_graph():
     driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
-    
+
     with driver.session() as session:
         # 1. Check for Nodes
         debug_print("Checking for 'Elon' and 'Twitter' entities...")
@@ -39,7 +40,7 @@ def inspect_graph():
             if not rels:
                 debug_print("❌ No direct relationships found.")
             else:
-                debug_print(f"✅ Found relationships:\n" + "\n".join(rels))
+                debug_print("✅ Found relationships:\n" + "\n".join(rels))
 
         # 3. Check for Paths (up to 2 hops)
             debug_print("Checking for paths (up to 2 hops)...")
@@ -53,7 +54,7 @@ def inspect_graph():
             if not paths:
                 debug_print("❌ No paths found (up to 2 hops).")
             else:
-                debug_print(f"✅ Found paths:\n" + "\n".join(paths))
+                debug_print("✅ Found paths:\n" + "\n".join(paths))
 
     driver.close()
 

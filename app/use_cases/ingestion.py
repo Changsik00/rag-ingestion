@@ -127,7 +127,7 @@ class IngestionService:
             for rel in semantic_data.relationships:
                 try:
                     logger.debug(f"Processing relationship: {rel.source} -[{rel.relationship}]-> {rel.target}")
-                    
+
                     # 누락된 Entity 생성
                     if rel.source not in all_entity_names:
                         self.graph.save_entity(rel.source, rel.source_type)

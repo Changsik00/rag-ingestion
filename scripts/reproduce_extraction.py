@@ -1,12 +1,11 @@
-import asyncio
 import os
+
 from dotenv import load_dotenv
 
 # Load .env file explicitly
 load_dotenv()
 
 from app.core.config import get_settings
-from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
 from app.core.llm import LLMFactory
 
 settings = get_settings()
@@ -24,14 +23,14 @@ async def test_extraction():
         adapter = LLMFactory.get_llm_adapter()
         print("Extracting metadata...")
         result = adapter.extract_metadata(TEST_TEXT)
-        
+
         if result:
             print("\n=== Extraction Result ===")
             print(f"Entities: {result.entities}")
             print(f"Relationships: {result.relationships}")
         else:
             print("Extraction failed (returned None).")
-            
+
     except Exception as e:
         print(f"Error: {e}")
 

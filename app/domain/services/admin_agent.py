@@ -25,6 +25,10 @@ class AdminState(TypedDict):
     filters: dict | None  # RAG 필터링용
     thread_id: str | None  # Thread ID (Spec 034)
     hitl_enabled: bool  # HITL Toggle Status
+    # Spec 045: Interactive Refinement
+    draft_content: str | None
+    is_clarification: bool
+    missing_slots: list[str]
 
 
 class AdminAgent:
@@ -37,7 +41,7 @@ class AdminAgent:
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash-exp", temperature=0, google_api_key=get_settings().GEMINI_API_KEY
+            model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=get_settings().GEMINI_API_KEY
         )
 
     def build_workflow(self, checkpointer: Any = None, interrupt_before: list[str] | None = None):
@@ -48,10 +52,19 @@ class AdminAgent:
         workflow.add_node("ingest", self.ingest_node)
         workflow.add_node("search", self.search_node)
         workflow.add_node("human_review", self.human_review_node)
+        workflow.add_node("clarify", self.clarify_node)  # Spec 045
 
         workflow.set_entry_point("router")
 
-        workflow.add_conditional_edges("router", self.route_logic, {"ingest": "ingest", "search": "search"})
+        workflow.add_conditional_edges(
+            "router",
+            self.route_logic,
+            {
+                "ingest": "ingest",
+                "search": "search",
+                "clarify": "clarify",  # Spec 045
+            },
+        )
 
         workflow.add_edge("ingest", "search")  # 수집 완료 후 요약을 위해 검색 노드로 이동
 
@@ -73,35 +86,93 @@ class AdminAgent:
 
         workflow.add_conditional_edges("human_review", route_after_review, {"router": "router", END: END})
 
+        # Clarification Loop Logic
+        # 사용자가 답변을 주면 router로 다시 보냄
+        workflow.add_edge("clarify", END)
+
         # Default interrupt if checkpointer is provided
         if checkpointer and not interrupt_before:
+            # Spec 045: Clarify node also requires user input (interrupt)
+            # But technically, we interrupt AFTER clarify node prints the question
+            # So the user sees the question and the graph stops at END.
+            # Next user input restarts from 'router' (if configured correctly via thread)
+            # OR we loop back to END and wait for new input which restarts graph.
+            # Actually standard generic chat pattern: Node -> Output -> END -> User Input -> Router.
+            # However, for HITL 'human_review' we specifically pause BEFORE it or AFTER it?
+            # Existing logic: interrupt_before=["human_review"] means we stop BEFORE entering human_review?
+            # No, user said "human_review" node is pass-through.
+            # Let's stick to existing pattern: interrupt_before=["human_review"]
+            # For clarification, we don't strictly need interrupt logic if we output question and go to END.
+            # User input will trigger next run starting at 'router'.
             interrupt_before = ["human_review"]
 
         return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
-    def route_logic(self, state: AdminState) -> Literal["ingest", "search"]:
+    def route_logic(self, state: AdminState) -> Literal["ingest", "search", "clarify"]:
         return state["intent"]
 
     def human_review_node(self, state: AdminState) -> dict:
         """HITL Review Node (Pass-through)"""
         return {"tool_output": "Human Review Completed"}
 
+    def clarify_node(self, state: AdminState) -> dict:
+        """사용자에게 역질문을 하는 노드 (LLM 기반 다국어 지원)"""
+        missing_slots = state.get("missing_slots", [])
+        messages = state.get("messages", [])
+        last_user_msg = messages[-1].content if messages else ""
+
+        prompt = ChatPromptTemplate.from_template(
+            """
+            You are a helpful assistant. The user's intent is ambiguous or missing critical information.
+            Your task is to ask a clarifying question to get the missing information.
+
+            Missing Information: {missing_slots}
+            User Input: {input}
+
+            Guidelines:
+            1. If 'url' is missing, ask the user to provide the URL to ingest or summarize.
+            2. If 'topic' is missing, ask the user what topic they want to search for.
+            3. If specific slots are not clear, politely ask for clarification.
+            4. **IMPORTANT**: Respond in the SAME LANGUAGE as the User Input.
+
+            Clarifying Question:
+            """
+        )
+
+        # chain = prompt | self.llm
+        # response = chain.invoke({"missing_slots": ", ".join(missing_slots), "input": last_user_msg})
+
+        # Explicit invocation for better testability with Mocks
+        formatted_prompt = prompt.invoke({"missing_slots": ", ".join(missing_slots), "input": last_user_msg})
+        response = self.llm.invoke(formatted_prompt)
+
+        return {
+            "messages": [response],
+            "is_clarification": True,
+            "tool_output": "Clarification Requested"
+        }
+
     def router_node(self, state: AdminState) -> dict:
         messages = state["messages"]
         last_user_msg = messages[-1].content if messages else ""
 
-        # 의도 분류 프롬프트
+        # 의도 분류 프롬프트 (Spec 045: Clarify 추가)
         prompt = ChatPromptTemplate.from_template(
             """
             Analyze the user's input and determine the intent.
 
+            check for missing critical information:
+            - If intent is 'ingest', a URL is REQUIRED. If URL is missing, return 'clarify'.
+            - If intent is 'search', a specific topic/question is REQUIRED. However, if the user asks to "summarize this" or "explain this" (referring to context/history), classify as 'search'.
+
             Options:
             - 'ingest': The user wants to read, learn, scrape, or ingest a URL. (e.g. "Read this link", "Ingest https://...")
-            - 'search': The user is asking a question or chatting. (e.g. "What is RAG?", "Summarize the doc")
+            - 'search': The user is asking a specific question, discussing a topic, or asking for a summary of the context. (e.g. "What is RAG?", "Who is Elon Musk?", "일론 머스크가 누구야?", "이거 요약해줘")
+            - 'clarify': The input is ambiguous or missing required arguments. (e.g. "Do it", "help me", "알려줘")
 
             Input: {input}
 
-            Return ONLY 'ingest' or 'search'.
+            Return ONLY 'ingest', 'search', or 'clarify'.
             """
         )
         prompt_val = prompt.invoke({"input": last_user_msg})
@@ -114,10 +185,20 @@ class AdminAgent:
 
         if "ingest" in intent:
             intent = "ingest"
-        else:
+        elif "search" in intent:
             intent = "search"
+        else:
+            intent = "clarify"
 
-        return {"intent": intent}
+        # Basic slot filling check (fallback if LLM misses it)
+        missing_slots = []
+        if intent == "ingest":
+            url_pattern = r"http[s]?://"
+            if not re.search(url_pattern, last_user_msg):
+                intent = "clarify"
+                missing_slots.append("url")
+
+        return {"intent": intent, "missing_slots": missing_slots}
 
     def ingest_node(self, state: AdminState) -> dict:
         messages = state["messages"]
