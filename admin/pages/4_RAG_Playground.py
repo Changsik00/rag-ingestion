@@ -1,4 +1,5 @@
 import uuid
+import time
 
 import streamlit as st
 
@@ -328,9 +329,15 @@ with st.sidebar:
     st.divider()
 
     with st.expander("🛠️ Advanced Settings", expanded=False):
-        if st.button("🗑️ Clear Chat History", use_container_width=True):
-            st.session_state.messages = []
-            st.rerun()
+        if st.button("🗑️ Delete Thread History", use_container_width=True):
+            try:
+                api_client.post(f"/rag/sessions/{current_thread_id}/reset")
+                st.session_state.messages = []
+                st.toast("Conversation history deleted from server.")
+                time.sleep(1) # Give toast time to show
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to clear history: {e}")
 
         if st.button("🔄 New Conversation (Reset Thread)", use_container_width=True):
             st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
