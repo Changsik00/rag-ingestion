@@ -230,10 +230,17 @@ for message in st.session_state.messages:
 
                     with col_cancel:
                         if st.form_submit_button("🔁 Request Re-generation"):
+                            # Find the last user message to re-submit (Retry logic)
+                            last_user_query = "Regenerate"
+                            for msg in reversed(st.session_state.messages):
+                                if msg["role"] == "user":
+                                    last_user_query = msg["content"]
+                                    break
+                            
                             try:
                                 res = api_client.post(
                                     f"/rag/sessions/{current_thread_id}/resume",
-                                    json={"input": "Regenerate please (User requested re-generation)"},
+                                    json={"input": last_user_query},
                                 )
                                 if res:
                                     message["status"] = "completed"
@@ -274,7 +281,7 @@ for message in st.session_state.messages:
                                             "debug_info": context_data,
                                             "debug_intent": debug_intent,
                                             "debug_rewrite": {
-                                                "original": "Regenerate Request",
+                                                "original": f"Retry: {last_user_query}",
                                                 "rewritten": context_data.get("rewritten_query"),
                                             },
                                             "debug_prompt": context_data.get("full_context", ""),
