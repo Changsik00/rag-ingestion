@@ -160,13 +160,13 @@ for message in st.session_state.messages:
             if message.get("status") == "paused" and message == st.session_state.messages[-1]:
                 # Spec 045: Canvas / Draft Editor
                 st.info("📝 **Draft Mode**: You can edit the agent's response directly before finalizing.")
-                
+
                 # Use draft_content if available, else current message content
                 draft_text = message.get("draft_content") or message.get("content", "")
-                
+
                 with st.form(key=f"draft_form_{len(st.session_state.messages)}"):
                     edited_content = st.text_area("Edit Draft", value=draft_text, height=300)
-                    
+
                     col_confirm, col_cancel = st.columns([1, 1])
                     with col_confirm:
                         if st.form_submit_button("✅ Confirm & Finalize"):
@@ -175,16 +175,16 @@ for message in st.session_state.messages:
                                     payload_input = f"User edited the draft to:\n\n{edited_content}"
                                 else:
                                     payload_input = "Approved"
-                                    
+
                                 res = api_client.post(
                                     f"/rag/sessions/{current_thread_id}/resume", json={"input": payload_input}
                                 )
                                 if res:
                                     message["status"] = "completed"
-                                    
+
                                     result_data = res.get("result", {})
                                     answer_text = "Resumed with feedback."
-                                    
+
                                     msgs = result_data.get("messages", [])
                                     if msgs:
                                         last_msg = msgs[-1]
@@ -227,7 +227,7 @@ for message in st.session_state.messages:
                                     st.rerun()
                             except Exception as e:
                                 st.error(f"Failed to resume: {e}")
-                                
+
                     with col_cancel:
                          if st.form_submit_button("🔁 Request Re-generation"):
                              pass
