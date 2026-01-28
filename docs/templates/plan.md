@@ -5,28 +5,37 @@
 
 ## 🛑 User Review Required
 <!-- Korean: Critical items requiring explicit user approval before proceeding -->
-<!-- Example: A vs B 선택, Breaking Change 여부 등 -->
-- [ ] <Item 1>
+> [!IMPORTANT]
+> - [ ] <Item 1> (Critical Decision)
+
+> [!WARNING]
+> - [ ] <Item 2> (Potential Breaking Change)
 
 ## 🎯 Core Strategy
 <!-- Korean: Key architectural decisions and reasoning -->
-<!-- Example: A 방식 대신 B 방식을 선택함. 그 이유는 성능상 이점이 있기 때문임. -->
+
+### Architecture Context
+```mermaid
+<!-- Visual representation of the strategy (e.g. Graph flow, Sequence) -->
+```
+
+| Component | Strategy | Reasoning |
+|:---:|:---|:---|
+| **A** | Option X | Performance |
+| **B** | Option Y | Scalability |
 
 ## 📂 Proposed Changes
-<!-- Group by Component -->
 
 ### [Component Name]
 
 #### [MODIFY] `path/to/file`
-<!-- Korean: Explanation of changes -->
+<!-- Korean: Detailed explanation of changes -->
 ```python
-# Code snippet
-def example():
-    pass
+# Code snippet if helpful
 ```
 
 #### [NEW] `path/to/new_file`
-<!-- Korean: Explanation of purpose -->
+<!-- Korean: Purpose and interface -->
 
 ## 🧪 Verification Plan
 
@@ -40,5 +49,5 @@ uv run pytest tests/integration/...
 ```
 
 ### Manual Verification
-1. <Step 1>
-2. <Step 2>
+1. <Step 1> - Expected result: ...
+2. <Step 2> - Expected result: ...
