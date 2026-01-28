@@ -19,6 +19,10 @@
 - [x] 검증 실행 (Manual Verification): `uv run python scripts/verify_hitl_real.py`
 - [x] Commit: `feat(spec-040): implement hitl verification logic`
 
+### 1-3. Bug Fix (Embedding Model)
+- [x] `app/infrastructure/storage/chroma.py`: `models/embedding-001` -> `models/text-embedding-004` 수정
+- [x] Commit: `fix(spec-040): upgrage embedding model to text-embedding-004`
+
 ## Task 2: Fix Admin HITL Toggle (Scope Expanded)
 ### 2-1. Backend Logic Update
 - [x] State Update: `IngestionState`에 `hitl_enabled` 필드 추가

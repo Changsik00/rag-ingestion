@@ -1,7 +1,7 @@
 # Implementation Plan: Spec-040
 
 ## 📋 Branch Strategy
-- `feature/040-hitl-verification-script`
+- `feature/040-hitl-verification-fix`
 
 ## 🛑 User Review Required
 <!-- Korean: Critical items requiring explicit user approval before proceeding -->
@@ -15,6 +15,10 @@
 
 ## 📂 Proposed Changes
 <!-- Group by Component -->
+
+### [Infrastructure]
+#### [MODIFY] `app/infrastructure/storage/chroma.py`
+- **Fix Embedding Model**: `models/embedding-001` -> `models/text-embedding-004` (Deprecated model caused 404).
 
 ### [Core Domain]
 #### [MODIFY] `app/domain/ingestion/state.py`
@@ -57,6 +61,7 @@ if __name__ == "__main__":
 ```bash
 python scripts/verify_hitl_real.py
 ```
+- **Expected Result**: No `404` errors, successful interruption, and resumption.
 
 ### Manual Verification
 - 스크립트 실행 로그를 통해 "Interrupt Detected" 및 "Resuming..." 로그 확인.

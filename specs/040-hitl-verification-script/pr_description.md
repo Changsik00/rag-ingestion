@@ -9,6 +9,7 @@ feat(spec-040): real-world hitl verification script & toggle fix
 2. **Real-World Verification**: 검증 스크립트가 토글을 켰을 때 정상적으로 Interrupt 되는지 확인합니다.
 3. **Full-Stack Update**: Frontend(Streamlit) -> API(FastAPI) -> Backend(LangGraph) -> State까지 데이터 흐름이 연결되었습니다.
 4. **Collision Fix**: `AdminAgent`와 내부 `RAGService` 간 Checkpointer ID 충돌 방지를 위해 Thread ID Namespace(`rag-*`)를 적용했습니다.
+5. **Embedding Fix**: `ChromaStorage`의 Embedding Model을 `embedding-001` (Deprecated)에서 `text-embedding-004`로 변경하여 404 에러를 해결했습니다.
 
 ## 🧪 Verification
 ### Automated Tests
