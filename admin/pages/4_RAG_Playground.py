@@ -153,7 +153,13 @@ if "hitl_enabled" not in st.session_state:
 # --- Chat Interface (History Loop) ---
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        # Decide whether to show default chat bubble
+        is_draft = message.get("status") == "paused"
+        is_clarification = message.get("is_clarification", False)
+
+        # Only render standard bubble if it's NOT a draft (HITL) and NOT a clarification request
+        if not is_draft and not is_clarification:
+             st.markdown(message["content"])
         if message["role"] == "assistant":
             render_debug_ui(message)
 
