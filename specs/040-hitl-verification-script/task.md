@@ -20,8 +20,8 @@
 - [x] Commit: `feat(spec-040): implement hitl verification logic`
 
 ### 1-3. Bug Fix (Embedding Model)
-- [ ] `app/infrastructure/storage/chroma.py`: `models/embedding-001` -> `models/text-embedding-004` 수정
-- [ ] Commit: `fix(spec-040): upgrage embedding model to text-embedding-004`
+- [x] `app/infrastructure/storage/chroma.py`: `models/embedding-001` -> `models/text-embedding-004` 수정
+- [x] Commit: `fix(spec-040): upgrage embedding model to text-embedding-004`
 
 ## Task 2: Fix Admin HITL Toggle (Scope Expanded)
 ### 2-1. Backend Logic Update
