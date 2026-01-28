@@ -116,22 +116,39 @@ class AdminAgent:
         return {"tool_output": "Human Review Completed"}
 
     def clarify_node(self, state: AdminState) -> dict:
-        """사용자에게 역질문을 하는 노드"""
-        intent = state.get("intent", "clarify")
+        """사용자에게 역질문을 하는 노드 (LLM 기반 다국어 지원)"""
         missing_slots = state.get("missing_slots", [])
-        
-        # Simple rule-based generation or LLM generation
-        if "url" in missing_slots:
-            question = "어떤 URL을 수집하거나 요약할까요? 링크를 알려주세요."
-        elif "topic" in missing_slots:
-            question = "어떤 주제에 대해 검색할까요?"
-        else:
-            # Use LLM for dynamic question
-            question = "질문이 조금 모호합니다. 조금 더 구체적으로 말씀해주시겠어요?"
+        messages = state.get("messages", [])
+        last_user_msg = messages[-1].content if messages else ""
+
+        prompt = ChatPromptTemplate.from_template(
+            """
+            You are a helpful assistant. The user's intent is ambiguous or missing critical information.
+            Your task is to ask a clarifying question to get the missing information.
+
+            Missing Information: {missing_slots}
+            User Input: {input}
+
+            Guidelines:
+            1. If 'url' is missing, ask the user to provide the URL to ingest or summarize.
+            2. If 'topic' is missing, ask the user what topic they want to search for.
+            3. If specific slots are not clear, politely ask for clarification.
+            4. **IMPORTANT**: Respond in the SAME LANGUAGE as the User Input.
+
+            Clarifying Question:
+            """
+        )
+
+        # chain = prompt | self.llm
+        # response = chain.invoke({"missing_slots": ", ".join(missing_slots), "input": last_user_msg})
+
+        # Explicit invocation for better testability with Mocks
+        formatted_prompt = prompt.invoke({"missing_slots": ", ".join(missing_slots), "input": last_user_msg})
+        response = self.llm.invoke(formatted_prompt)
 
         return {
-            "messages": [AIMessage(content=question)], 
-            "is_clarification": True, 
+            "messages": [response],
+            "is_clarification": True,
             "tool_output": "Clarification Requested"
         }
 
@@ -143,7 +160,7 @@ class AdminAgent:
         prompt = ChatPromptTemplate.from_template(
             """
             Analyze the user's input and determine the intent.
-            
+
             check for missing critical information:
             - If intent is 'ingest', a URL is REQUIRED. If URL is missing, return 'clarify'.
             - If intent is 'search', a specific topic/question is REQUIRED. If input is too vague (e.g. "summarize this", "do it"), return 'clarify'.
@@ -172,7 +189,7 @@ class AdminAgent:
             intent = "search"
         else:
             intent = "clarify"
-            
+
         # Basic slot filling check (fallback if LLM misses it)
         missing_slots = []
         if intent == "ingest":
