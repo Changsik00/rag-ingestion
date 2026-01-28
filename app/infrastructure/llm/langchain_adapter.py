@@ -73,17 +73,20 @@ class LangChainLLMAdapter:
             - Book titles should use DOCUMENT type.
 
             5. **Relationships between entities:**
-            Extract relationships that are **EXPLICITLY stated** in the text. Do NOT infer.
+            Extract meaningful relationships between the identified entities.
+            
             **Relationship Types:**
             - FOUNDED: Person founded Organization (e.g., "Elon Musk founded Tesla")
             - WORKS_FOR: Person works for Organization (e.g., "Jane works at Google")
+            - ACQUIRED: Person/Organization acquired Organization (e.g., "Elon Musk acquired Twitter")
+            - OWNS: Person/Organization owns Product/Organization (e.g., "Microsoft owns GitHub")
             - USES: Organization uses Technology (e.g., "Netflix uses Python")
-            - RELATED_TO: Concept related to Concept (e.g., "ML is related to AI")
+            - RELATED_TO: Generic relationship between any entities (e.g., "AI is related to Ethics", "Elon is related to controversies")
             - SUPPORTS: Technology supports Activity (e.g., "Docker supports deployment")
             - PERFORMED: Person performed Activity (e.g., "Steve Jobs gave presentations")
             - PART_OF: Activity is part of Activity (e.g., "Testing is part of development")
 
-            **CRITICAL: Only extract relationships EXPLICITLY mentioned. If not clear, skip it.**
+            **Important**: Capture high-value relationships that describe interactions, ownership, or causality.
 
             Text to analyze:
             {text}

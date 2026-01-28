@@ -9,7 +9,7 @@ from app.infrastructure.llm import LangChainLLMAdapter
 class LLMFactory:
     @staticmethod
     @lru_cache
-    def get_google_llm(model: str = "gemini-2.0-flash-exp", temperature: float = 0.0) -> ChatGoogleGenerativeAI:
+    def get_google_llm(model: str = "gemini-3-flash-preview", temperature: float = 0.0) -> ChatGoogleGenerativeAI:
         settings = get_settings()
         api_key = settings.GEMINI_API_KEY
         if not api_key:
@@ -19,7 +19,7 @@ class LLMFactory:
 
     @staticmethod
     @lru_cache
-    def get_llm_adapter(model: str = "gemini-2.0-flash-exp", temperature: float = 0.0) -> LangChainLLMAdapter:
+    def get_llm_adapter(model: str = "gemini-3-flash-preview", temperature: float = 0.0) -> LangChainLLMAdapter:
         """LangChain Adapter 반환 (LLMInterface 구현체)"""
         llm = LLMFactory.get_google_llm(model, temperature)
         return LangChainLLMAdapter(llm)

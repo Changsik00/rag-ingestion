@@ -20,4 +20,5 @@ class UserIntent(BaseModel):
 
     intent: IntentType = Field(description="사용자 의도 분류 결과")
     targets: list[str] = Field(default_factory=list, description="검색 대상 (Document ID, URL, Entity Name 등)")
+    entities: list[str] = Field(default_factory=list, description="질문에 등장하는 주요 고유명사(인물, 조직 등)")
     reasoning: str = Field(description="의도 분류 근거 (디버깅용)")

@@ -91,7 +91,7 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
             return {"messages": [], "values": {}}
 
         # AIMessage 등을 직렬화
-        values = state.values
+        values = state["channel_values"]
         messages = []
         for m in values.get("messages", []):
             messages.append({"role": m.type, "content": m.content})

@@ -123,8 +123,11 @@ class IngestionService:
 
         # 2. Entity-Entity 관계 생성 (Spec 016)
         if hasattr(semantic_data, "relationships") and semantic_data.relationships:
+            logger.info(f"Building graph with {len(semantic_data.relationships)} relationships for doc {doc_id}")
             for rel in semantic_data.relationships:
                 try:
+                    logger.debug(f"Processing relationship: {rel.source} -[{rel.relationship}]-> {rel.target}")
+                    
                     # 누락된 Entity 생성
                     if rel.source not in all_entity_names:
                         self.graph.save_entity(rel.source, rel.source_type)
@@ -135,5 +138,8 @@ class IngestionService:
                     self.graph.create_entity_relationship(
                         source_name=rel.source, relationship_type=rel.relationship, target_name=rel.target
                     )
+                    logger.debug(f"Created relationship: {rel.source}->{rel.target}")
                 except Exception as e:
                     logger.error(f"Failed to create relationship {rel.source}->{rel.target}: {e}")
+        else:
+            logger.warning(f"No relationships found in semantic data for doc {doc_id}")

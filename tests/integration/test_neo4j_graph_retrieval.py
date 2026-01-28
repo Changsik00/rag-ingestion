@@ -64,3 +64,46 @@ def test_get_subgraph_flow(graph_repo):
             found = True
 
     assert found, f"Relationship {elon} FOUNDED {tesla} not found in subgraph"
+
+
+@pytest.mark.integration
+def test_find_shortest_path(graph_repo):
+    """
+    Scenario: Find shortest path between two entities
+    1. Create A -> B -> C
+    2. Call find_shortest_path([A, C])
+    3. Verify result contains A->B and B->C
+    """
+    from uuid import uuid4
+
+    suffix = uuid4().hex[:6]
+    name_a = f"A_{suffix}"
+    name_b = f"B_{suffix}"
+    name_c = f"C_{suffix}"
+
+    graph_repo.save_entity(name_a, EntityType.CONCEPT)
+    graph_repo.save_entity(name_b, EntityType.CONCEPT)
+    graph_repo.save_entity(name_c, EntityType.CONCEPT)
+
+    class MockRelType:
+        value = "RELATED_TO"
+
+    graph_repo.create_entity_relationship(name_a, MockRelType(), name_b)
+    graph_repo.create_entity_relationship(name_b, MockRelType(), name_c)
+
+    # Call method
+    if hasattr(graph_repo, "find_shortest_path"):
+        results = graph_repo.find_shortest_path([name_a, name_c])
+    else:
+        pytest.fail("find_shortest_path not implemented yet")
+
+    # Assert
+    assert len(results) >= 2
+    # Verify path continuity
+    sources = set(r["source"] for r in results)
+    targets = set(r["target"] for r in results)
+
+    assert name_a in sources
+    assert name_b in sources  # B is source of B->C
+    assert name_b in targets  # B is target of A->B
+    assert name_c in targets

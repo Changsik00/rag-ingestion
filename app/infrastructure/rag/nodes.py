@@ -146,7 +146,11 @@ class RAGNodes:
             RAGGraphState with updated vector_chunks, keyword_chunks, graph_data
         """
         rewritten_query = state.get("rewritten_query") or state["query"]
+        user_intent = state.get("user_intent")
         final_filters = state.get("final_filters")
+
+        # [Spec 044] Extract entities for Graph Search
+        entities = getattr(user_intent, "entities", []) if user_intent else []
 
         # [Spec 034] Initial Search reasoning
         reasoning_log = state.get("reasoning_log", [])
@@ -154,7 +158,7 @@ class RAGNodes:
         # Parallel Hybrid Search (Running sync calls in threads)
         vector_task = asyncio.to_thread(self._search_vector, rewritten_query, final_filters)
         keyword_task = asyncio.to_thread(self._search_keyword, rewritten_query, final_filters)
-        graph_task = asyncio.to_thread(self._search_graph, rewritten_query)
+        graph_task = asyncio.to_thread(self._search_graph, rewritten_query, entities)
 
         vector_results, keyword_results, graph_results = await asyncio.gather(vector_task, keyword_task, graph_task)
 
@@ -340,8 +344,13 @@ class RAGNodes:
         """Neo4j Keyword 검색 (Sync)"""
         return self.neo4j_doc_repo.search(query, filters=filters)
 
-    def _search_graph(self, query: str) -> list[dict]:
+    def _search_graph(self, query: str, entities: list[str] | None = None) -> list[dict]:
         """Neo4j Graph Traversal (Sync)"""
+        # [Spec 044] Entity Based Search
+        if entities and len(entities) > 0:
+            return self.neo4j_graph_repo.find_shortest_path(entities)
+
+        # Fallback: Keyword-based Subgraph (Legacy)
         return self.neo4j_graph_repo.get_subgraph([query])
 
     def _merge_and_format_context(

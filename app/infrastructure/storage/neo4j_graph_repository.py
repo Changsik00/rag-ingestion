@@ -126,3 +126,52 @@ class Neo4jGraphRepository:
                 )
 
         return triples
+
+    def find_shortest_path(self, entity_names: list[str]) -> list[dict]:
+        """주어진 Entity들 사이의 최단 경로 관계 조회
+
+        Args:
+            entity_names: 경로를 찾을 Entity 이름 목록 (2개 이상 권장)
+
+        Returns:
+            list[dict]: 경로 상의 Triples (source, relationship, target)
+        """
+        if len(entity_names) < 2:
+            return self.get_subgraph(entity_names)
+
+        triples = []
+        # Query: Find shortest path between any pair of entities in the list
+        # Relaxed matching: Use CONTAINS and toLower for partial/case-insensitive match
+        query = """
+        MATCH (start:Entity), (end:Entity)
+        WHERE (ANY(name IN $names WHERE toLower(start.name) CONTAINS toLower(name)) OR start.name IN $names)
+          AND (ANY(name IN $names WHERE toLower(end.name) CONTAINS toLower(name)) OR end.name IN $names)
+          AND start <> end
+        MATCH p = shortestPath((start)-[*]-(end))
+        WITH p
+        UNWIND relationships(p) AS r
+        RETURN startNode(r).name as source, type(r) as relationship, endNode(r).name as target
+        LIMIT 100
+        """
+
+        with self.driver.session() as session:
+            results = session.run(query, names=entity_names)
+            unique_triples = set()
+
+            for record in results:
+                triple_key = (record["source"], record["relationship"], record["target"])
+                if triple_key not in unique_triples:
+                    unique_triples.add(triple_key)
+                    triples.append(
+                        {
+                            "source": record["source"],
+                            "relationship": record["relationship"],
+                            "target": record["target"],
+                        }
+                    )
+
+        # 만약 경로가 없으면 1-hop subgraph라도 반환 (Fallback)
+        if not triples:
+            return self.get_subgraph(entity_names)
+
+        return triples

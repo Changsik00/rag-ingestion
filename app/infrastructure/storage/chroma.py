@@ -31,7 +31,7 @@ class ChromaStorage(DocumentRepository):
 
         # LangChain GoogleGenerativeAIEmbeddings를 ChromaDB embedding function wrapper로 변환
         langchain_embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/text-embedding-004", google_api_key=gemini_api_key
+            model="models/embedding-001", google_api_key=gemini_api_key
         )
 
         # ChromaDB가 요구하는 embedding function 형식으로 래핑
@@ -135,7 +135,7 @@ class ChromaStorage(DocumentRepository):
 
             logger.info(f"Saving batch {current_batch_count}/{total_batches} ({len(batch_ids)} chunks)...")
 
-            max_retries = 3
+            max_retries = 5
             base_delay = 2  # seconds
 
             for attempt in range(max_retries):
@@ -144,9 +144,11 @@ class ChromaStorage(DocumentRepository):
                     break  # Batch Success, move to next batch
                 except Exception as e:
                     # 429 (Rate Limit) or other errors
-                    is_rate_limit = "429" in str(e) or "quota" in str(e).lower()
+                    error_msg = str(e).lower()
+                    is_rate_limit = "429" in error_msg or "quota" in error_msg
+                    is_ssl_error = "ssl" in error_msg or "eof" in error_msg
 
-                    if attempt < max_retries - 1 and (is_rate_limit or "retry" in str(e).lower()):
+                    if attempt < max_retries - 1 and (is_rate_limit or "retry" in error_msg or is_ssl_error):
                         delay = (base_delay**attempt) + random.uniform(0, 1)
                         logger.warning(
                             f"ChromaDB batch save failed (attempt {attempt + 1}/{max_retries}). Retrying in {delay:.2f}s... Error: {e}"
