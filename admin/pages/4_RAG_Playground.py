@@ -192,7 +192,7 @@ for message in st.session_state.messages:
                                             last_msg.get("content") if isinstance(last_msg, dict) else last_msg.content
                                         )
 
-                                    context_data = result_data.get("context_data", {})
+                                    context_data = result_data.get("context_data") or {}
                                     debug_intent = None
                                     if context_data and context_data.get("user_intent"):
                                         ui = context_data["user_intent"]
@@ -325,7 +325,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     # Last AI message
                     answer = next((m["content"] for m in reversed(res["messages"]) if m["role"] == "ai"), answer)
 
-                context_data = res.get("context_data", {})
+                context_data = res.get("context_data") or {}
                 intent = res.get("intent", "search")
                 status = res.get("status", "completed")
 
