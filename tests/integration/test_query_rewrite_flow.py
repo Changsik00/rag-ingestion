@@ -21,7 +21,7 @@ class TestQueryRewriteFlow:
 
         from langchain_google_genai import ChatGoogleGenerativeAI
 
-        base_llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0, google_api_key=api_key)
+        base_llm = ChatGoogleGenerativeAI(model=settings.GEMINI_MODEL_NAME, temperature=0, google_api_key=api_key)
         llm = LangChainLLMAdapter(llm=base_llm)
         return QueryRewriter(llm)
 

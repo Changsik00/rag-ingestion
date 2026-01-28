@@ -23,7 +23,7 @@ def llm_adapter():
     if not api_key:
         pytest.skip("GEMINI_API_KEY not found")
 
-    base_llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0)
+    base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0)
     return LangChainLLMAdapter(base_llm)
 
 
@@ -95,7 +95,7 @@ async def test_intent_classifier_with_history_context(llm_adapter):
     시스템이 이전 문맥을 이해해야 한다.
     """
     # Given
-    base_llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0)
+    base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0)
     llm = LangChainLLMAdapter(base_llm)
     classifier = IntentClassifier(llm)
 
@@ -127,7 +127,7 @@ async def test_intent_classifier_summarize_with_pronoun(llm_adapter):
     사용자가 대명사("이것", "그거")를 사용해도 시스템이 맥락을 파악해야 한다.
     """
     # Given
-    base_llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0)
+    base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0)
     llm = LangChainLLMAdapter(base_llm)
     classifier = IntentClassifier(llm)
 
@@ -158,7 +158,7 @@ async def test_intent_classifier_filter_by_topic(llm_adapter):
     "Python 관련된 것만 보여줘"라고 하면 Python 주제만 검색해야 한다.
     """
     # Given
-    base_llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", temperature=0)
+    base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0)
     llm = LangChainLLMAdapter(base_llm)
     classifier = IntentClassifier(llm)
 

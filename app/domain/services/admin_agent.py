@@ -41,7 +41,7 @@ class AdminAgent:
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash-exp", temperature=0, google_api_key=get_settings().GEMINI_API_KEY
+            model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=get_settings().GEMINI_API_KEY
         )
 
     def build_workflow(self, checkpointer: Any = None, interrupt_before: list[str] | None = None):
