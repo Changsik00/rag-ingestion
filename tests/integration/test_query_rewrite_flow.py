@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from app.core.config import get_settings
 from app.domain.services.query_rewriter import QueryRewriter
 from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
 
@@ -21,7 +22,7 @@ class TestQueryRewriteFlow:
 
         from langchain_google_genai import ChatGoogleGenerativeAI
 
-        base_llm = ChatGoogleGenerativeAI(model=settings.GEMINI_MODEL_NAME, temperature=0, google_api_key=api_key)
+        base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=api_key)
         llm = LangChainLLMAdapter(llm=base_llm)
         return QueryRewriter(llm)
 

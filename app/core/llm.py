@@ -14,7 +14,7 @@ class LLMFactory:
         api_key = settings.GEMINI_API_KEY
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
-        
+
         target_model = model or settings.GEMINI_MODEL_NAME
         return ChatGoogleGenerativeAI(model=target_model, temperature=temperature, google_api_key=api_key)
 

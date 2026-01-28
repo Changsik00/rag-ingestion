@@ -163,12 +163,12 @@ class AdminAgent:
 
             check for missing critical information:
             - If intent is 'ingest', a URL is REQUIRED. If URL is missing, return 'clarify'.
-            - If intent is 'search', a specific topic/question is REQUIRED. If input is too vague (e.g. "summarize this", "do it"), return 'clarify'.
+            - If intent is 'search', a specific topic/question is REQUIRED. If input is too vague (e.g. "summarize this", "do it", "explain"), return 'clarify'.
 
             Options:
             - 'ingest': The user wants to read, learn, scrape, or ingest a URL. (e.g. "Read this link", "Ingest https://...")
-            - 'search': The user is asking a question or chatting. (e.g. "What is RAG?", "Summarize the doc")
-            - 'clarify': The input is ambiguous or missing required arguments (like URL).
+            - 'search': The user is asking a specific question or discussing a topic. (e.g. "What is RAG?", "Who is Elon Musk?")
+            - 'clarify': The input is ambiguous or missing required arguments. (e.g. "Summarize this", "Do it", "help me")
 
             Input: {input}
 
