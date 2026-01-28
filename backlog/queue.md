@@ -338,7 +338,7 @@
   * **Goal**: Playwright 또는 Selenium 기반의 Headless Browser 도입으로 렌더링된 최종 DOM을 수집하여 데이터 유실 없는 고품질 스크래핑 구현.
   * **Problem**: 현재 `trafilatura` 스크래퍼가 네이버 뉴스, 나무위키 등의 복잡한 레이아웃이나 일부 동적 렌더링을 필요로 하는 콘텐츠를 누락함.
   * **Action**:
-    - `Playwright` 또는 `Firecrawl` 도입 (Headless Browser)
+    - `Firecrawl` 도입
     - Tiered Scraping Strategy 구현 (Trafilatura -> Headless Fallback)
     - Clean Markdown 변환 및 Noise Filtering 강화
    High (Phase 4 핵심 기능)
@@ -387,7 +387,19 @@
   * **Solution**: `IntentClassifier`에서 Entity 추출 및 Neo4j Shortest Path (`find_shortest_path`) 구현으로 관계 정보 주입.
   * **PR**: `feat(spec-044): graph retrieval logic fix`
 
+* [ ] **Spec 045: Interactive Refinement (Canvas & Clarification)**
+  * **Goal**: HITL UX를 "단순 승인"에서 "적극적 개입"으로 고도화.
+  * **Features**:
+    - **Clarification**: 모호한 질문 시 Agent가 역질문(Questions)을 하여 의도를 명확히 함.
+    - **Canvas (Draft Editing)**: Agent가 작성한 초안을 사용자가 직접 수정(Edit) 후 최종 승인.
+  * **Scenario**: 질문 ("이거 요약해") -> Agent ("어떤 문서요?") -> 답변 ("A문서") -> 초안 생성 -> 사용자 수정 -> 승인.
+  * **Priority**: High (UX 차별화)
+  * **Status**: Planning (2026-01-28)
 
+* [ ] **Spec 046: Advanced Scraper (Headless Browser)**
+  * **Goal**: Playwright 도입으로 동적 페이지 및 복잡한 레이아웃 수집
+  * **Action**: Tiered Scraping Strategy 구현.
+  * **Status**: Planning
 ---
 
 
@@ -456,8 +468,6 @@
   * **Persistence**: `PostgresSaver` 등을 도입하여 서버 재시작 시에도 결재 대기 상태 유지
   * **Notification**: `humne_review` 진입 시 Slack/Email 알림 발송
    Spec 022 완료 후 운영 단계에서 필요 시 진행
-
-
 
 * **[Integration] n8n Workflow Automation**
   * **Goal**: 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템.
