@@ -2,12 +2,12 @@
 
 ## Progress
 
-- [ ] Spec 번호 확정 (019)
+- [x] Spec 번호 확정 (019)
 - [x] spec.md 작성
 - [x] plan.md 작성
 - [x] task.md 작성
 - [x] 백로그 업데이트 (Spec 018 완료 처리 포함)
-- [ ] User Plan Accept
+- [x] User Plan Accept
 
 ---
 
@@ -15,7 +15,7 @@
 
 ### 1-1. Branch & Housekeeping
 - [x] 브랜치 생성: `git checkout -b feature/019-advanced-chunking-strategy`
-- [x] 백로그 업데이트: `backlog/queue.md` (Spec 018 [x], Spec 019 [/])
+- [x] 백로그 업데이트: `backlog/queue.md` (Spec 018 [x], Spec 019 [x])
 - [x] Commit: `chore(spec-019): start spec 019 and update backlog`
 
 ### 1-2. Configuration

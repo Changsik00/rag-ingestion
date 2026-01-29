@@ -12,7 +12,7 @@
 - [x] Task 2 완료: ChromaDB Embedding 설정 변경 (Unit tests 통과)
 - [x] Task 3 완료: 의존성 제거 (직접 의존성에서 제거)
 - [x] Task 4 완료: Integration Test 통과 (4 passed) ✅
-- [ ] Task 5: 전체 테스트 스위트 실행
+- [x] Task 5: 전체 테스트 스위트 실행
 
 ---
 
@@ -51,7 +51,7 @@ docs: add spec 017 - embedding strategy refactoring
   - [x] `get_or_create_collection()` 호출 시 `embedding_function` 전달
 
 ### 2-2. Unit Test 실행
-- [/] 테스트 실행: `uv run pytest tests/unit/test_storage.py -v`
+- [x] 테스트 실행: `uv run pytest tests/unit/test_storage.py -v`
 ```python
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
@@ -78,7 +78,7 @@ class ChromaStorage(DocumentRepository):
 ```
 
 ### 2-2. Unit Test 실행
-- [ ] 테스트 실행: `uv run pytest tests/unit/test_storage.py -v`
+- [x] 테스트 실행: `uv run pytest tests/unit/test_storage.py -v`
 
 **Expected**: ChromaStorage 관련 테스트 통과
 
@@ -101,10 +101,10 @@ refactor(spec-017): integrate gemini embedding api with chromadb
 
 ### 3-2. 의존성 업데이트
 - [x] 실행: `uv lock`
-- [/] 실행: `uv sync`
+- [x] 실행: `uv sync`
 
 ### 3-3. 의존성 검증
-- [ ] 실행: `uv tree | grep -E "(onnxruntime|tokenizers)"`
+- [x] 실행: `uv tree | grep -E "(onnxruntime|tokenizers)"`
 
 **Expected**: 출력 없음 (완전히 제거됨)
 

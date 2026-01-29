@@ -85,10 +85,10 @@ Spec 010에서 `IngestionService` 생성자에 `graph`와 `extractor` 파라미�
 
 ## 📊 성공 기준
 
-- [ ] `test_dependency_injection.py` 3개 테스트 통과
-- [ ] `test_usecases.py` 3개 테스트 통과
-- [ ] 전체 테스트 스위트 통과 (회귀 방지)
-- [ ] CI 파이프라인 통과
+- [x] `test_dependency_injection.py` 3개 테스트 통과
+- [x] `test_usecases.py` 3개 테스트 통과
+- [x] 전체 테스트 스위트 통과 (회귀 방지)
+- [x] CI 파이프라인 통과
 
 ## 🚫 Out of Scope
 

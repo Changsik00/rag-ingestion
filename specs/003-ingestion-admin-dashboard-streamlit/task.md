@@ -1,12 +1,12 @@
 # Spec 003 Tasks
 
 ## Backend Implementation (백엔드 구현)
-- [ ] Domain Layer 구성
+- [x] Domain Layer 구성
   - [x] `IngestionJob` Entity & `JobStatus` Enum 정의 <!-- id: 0 -->
   - [x] `JobRepository` Interface 정의 <!-- id: 1 -->
-- [ ] Infrastructure Layer 구성
+- [x] Infrastructure Layer 구성
   - [x] `Neo4jJobRepository` 구현 (Save, FindAll, FindById) <!-- id: 2 -->
-- [ ] Application Layer 수정
+- [x] Application Layer 수정
   - [x] `IngestionService` 수정: 작업 시작/종료 시 Job 상태 업데이트 로직 추가 <!-- id: 3 -->
 - [x] Interface Layer (API) 구현
   - [x] `GET /jobs` 엔드포인트 구현 <!-- id: 5 -->

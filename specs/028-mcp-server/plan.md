@@ -4,7 +4,7 @@
 - `feature/spec-028-mcp-server`
 
 ## 🛑 User Review Required
-- [ ] **동기 처리(Sync) 방식**: Ingestion은 수 초~수십 초가 걸릴 수 있습니다. 초기 버전에서는 LLM이 결과를 기다릴 수 있도록 `sync` 방식으로 구현하고 타임아웃을 넉넉히 잡을 예정입니다. 괜찮으신가요?
+- [x] **동기 처리(Sync) 방식**: Ingestion은 수 초~수십 초가 걸릴 수 있습니다. 초기 버전에서는 LLM이 결과를 기다릴 수 있도록 `sync` 방식으로 구현하고 타임아웃을 넉넉히 잡을 예정입니다. 괜찮으신가요?
 
 ## 🎯 Core Strategy
 - **FastMCP 사용**: `mcp` 라이브러리의 고수준 API인 `FastMCP`를 사용하여 빠르고 표준화된 방식으로 서버를 구현합니다.

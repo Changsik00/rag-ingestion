@@ -138,7 +138,7 @@
 ### 4. Backlog 업데이트 (Commit 5)
 
 ```diff
--* [ ] **Spec 015: Documentation Update & Reorganization** (진행 중)
+-* [x] **Spec 015: Documentation Update & Reorganization** (진행 중)
 +* [x] **Spec 015: Documentation Update & Reorganization**
 +  * **완료**: 2026-01-19
 ```

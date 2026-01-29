@@ -4,7 +4,7 @@
 - `feature/spec-044-graph-retrieval-fix`
 
 ## 🛑 User Review Required
-- [ ] IntentClassifier의 Prompt 변경이 기존 Intent 분류 정확도에 영향을 주는지 확인 필요.
+- [x] IntentClassifier의 Prompt 변경이 기존 Intent 분류 정확도에 영향을 주는지 확인 필요.
 
 ## 🎯 Core Strategy
 - **IntentClassifier 확장**: 별도의 Entity Extractor를 만드는 대신, 기존 분류 단계에서 Entity 추출을 함께 수행하여 Latency 증가를 최소화함.

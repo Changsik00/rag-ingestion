@@ -290,7 +290,7 @@ TypeError: __init__() takes 1 positional argument but 2 were given
 
 ## 🚀 Next Steps
 
-- [ ] Merge to `main`
-- [ ] Deploy to staging/production
-- [ ] Monitor `/documents` endpoint in production
-- [ ] Consider adding E2E tests with Playwright (Icebox)
+- [x] Merge to `main`
+- [x] Deploy to staging/production
+- [x] Monitor `/documents` endpoint in production
+- [x] Consider adding E2E tests with Playwright (Icebox)

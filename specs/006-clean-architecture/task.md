@@ -88,8 +88,8 @@
   - [x] 메타데이터 추출 품질 확인
 
 ### 6.4 전체 테스트
-- [ ] **`uv run pytest` 실행**
-  - [ ] 전체 테스트 통과 확인
+- [x] **`uv run pytest` 실행**
+  - [x] 전체 테스트 통과 확인
 
 ---
 
@@ -106,12 +106,12 @@
 ## 8. PR 생성
 
 ### 8.1 PR 준비
-- [ ] **`specs/refactor-clean-architecture/pr_description.md` 작성**
-  - [ ] Summary 섹션
-  - [ ] Key Review Points 섹션
-  - [ ] Verification Plan 섹션
-  - [ ] 커밋: `docs: add PR description for clean architecture refactoring`
+- [x] **`specs/refactor-clean-architecture/pr_description.md` 작성**
+  - [x] Summary 섹션
+  - [x] Key Review Points 섹션
+  - [x] Verification Plan 섹션
+  - [x] 커밋: `docs: add PR description for clean architecture refactoring`
 
 ### 8.2 Push & PR
-- [ ] **`git push -u origin refactor/clean-architecture`**
-- [ ] **`gh pr create --body-file specs/refactor-clean-architecture/pr_description.md`**
+- [x] **`git push -u origin refactor/clean-architecture`**
+- [x] **`gh pr create --body-file specs/refactor-clean-architecture/pr_description.md`**
