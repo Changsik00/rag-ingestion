@@ -11,11 +11,12 @@ load_dotenv()
 settings = get_settings()
 
 TEST_TEXT = """
-일론 리브 머스크(영어: Elon Reeve Musk, 1971년 6월 28일 ~ )는 남아프리카 공화국 출신의 미국의 기업인이다. 
-페이팔의 전신이 된 온라인 결제 서비스 회사 x.com, 로켓 제조 회사 겸 민간 우주 기업 스페이스X, 
-전기 자동차 회사 테슬라 등을 설립했다. 
+일론 리브 머스크(영어: Elon Reeve Musk, 1971년 6월 28일 ~ )는 남아프리카 공화국 출신의 미국의 기업인이다.
+페이팔의 전신이 된 온라인 결제 서비스 회사 x.com, 로켓 제조 회사 겸 민간 우주 기업 스페이스X,
+전기 자동차 회사 테슬라 등을 설립했다.
 2022년 10월 트위터를 인수한 후 CEO 재직 후 사임하였다.
 """
+
 
 async def test_extraction():
     print("Initializing LLM Adapter...")
@@ -33,6 +34,7 @@ async def test_extraction():
 
     except Exception as e:
         print(f"Error: {e}")
+
 
 if __name__ == "__main__":
     # Ensure API key is set

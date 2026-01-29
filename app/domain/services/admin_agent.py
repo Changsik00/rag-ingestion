@@ -115,7 +115,7 @@ class AdminAgent:
         """HITL Review Node (Pass-through)"""
         return {"tool_output": "Human Review Completed"}
 
-    def clarify_node(self, state: AdminState) -> dict:
+    async def clarify_node(self, state: AdminState) -> dict:
         """사용자에게 역질문을 하는 노드 (LLM 기반 다국어 지원)"""
         missing_slots = state.get("missing_slots", [])
         messages = state.get("messages", [])
@@ -139,20 +139,12 @@ class AdminAgent:
             """
         )
 
-        # chain = prompt | self.llm
-        # response = chain.invoke({"missing_slots": ", ".join(missing_slots), "input": last_user_msg})
-
-        # Explicit invocation for better testability with Mocks
         formatted_prompt = prompt.invoke({"missing_slots": ", ".join(missing_slots), "input": last_user_msg})
-        response = self.llm.invoke(formatted_prompt)
+        response = await self.llm.ainvoke(formatted_prompt)
 
-        return {
-            "messages": [response],
-            "is_clarification": True,
-            "tool_output": "Clarification Requested"
-        }
+        return {"messages": [response], "is_clarification": True, "tool_output": "Clarification Requested"}
 
-    def router_node(self, state: AdminState) -> dict:
+    async def router_node(self, state: AdminState) -> dict:
         messages = state["messages"]
         last_user_msg = messages[-1].content if messages else ""
 
@@ -176,7 +168,7 @@ class AdminAgent:
             """
         )
         prompt_val = prompt.invoke({"input": last_user_msg})
-        response = self.llm.invoke(prompt_val)
+        response = await self.llm.ainvoke(prompt_val)
 
         if hasattr(response, "content"):
             intent = response.content.strip().lower()

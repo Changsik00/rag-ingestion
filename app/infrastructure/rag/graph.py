@@ -52,13 +52,15 @@ class RAGGraphBuilder:
         workflow.add_node("classify_intent", self.nodes.classify_intent)
         workflow.add_node("route_decision", self.nodes.route_decision)
         workflow.add_node("retrieve_hybrid", self.nodes.retrieve_hybrid)
+        workflow.add_node("rerank_results", self.nodes.rerank_results)
         workflow.add_node("generate_answer", self.nodes.generate_answer)
 
         # 3. Edge 연결 (Linear Pipeline)
         workflow.set_entry_point("classify_intent")
         workflow.add_edge("classify_intent", "route_decision")
         workflow.add_edge("route_decision", "retrieve_hybrid")
-        workflow.add_edge("retrieve_hybrid", "generate_answer")
+        workflow.add_edge("retrieve_hybrid", "rerank_results")
+        workflow.add_edge("rerank_results", "generate_answer")
         workflow.add_edge("generate_answer", END)
 
         # 4. Compile

@@ -56,8 +56,8 @@ class RelationshipType(str, Enum):
     PART_OF = "PART_OF"  # Activity -> Activity
 
     # Business/Ownership 관계
-    ACQUIRED = "ACQUIRED" # Person/Org -> Org
-    OWNS = "OWNS" # Person/Org -> Product/Org
+    ACQUIRED = "ACQUIRED"  # Person/Org -> Org
+    OWNS = "OWNS"  # Person/Org -> Product/Org
 
 
 class TypedEntity(BaseModel):

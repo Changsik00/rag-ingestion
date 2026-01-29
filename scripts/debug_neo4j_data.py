@@ -7,8 +7,10 @@ URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
 USER = os.getenv("NEO4J_USER", "neo4j")
 PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
 
+
 def debug_print(msg):
     print(f"[DEBUG] {msg}")
+
 
 def inspect_graph():
     driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
@@ -42,11 +44,11 @@ def inspect_graph():
             else:
                 debug_print("✅ Found relationships:\n" + "\n".join(rels))
 
-        # 3. Check for Paths (up to 2 hops)
+            # 3. Check for Paths (up to 2 hops)
             debug_print("Checking for paths (up to 2 hops)...")
             result = session.run("""
                 MATCH p = (a:Entity)-[*1..2]-(b:Entity)
-                WHERE (a.name CONTAINS '일론' OR a.name CONTAINS 'Elon') 
+                WHERE (a.name CONTAINS '일론' OR a.name CONTAINS 'Elon')
                   AND (b.name CONTAINS '트위터' OR b.name CONTAINS 'Twitter')
                 RETURN [n in nodes(p) | n.name] as path
             """)
@@ -57,6 +59,7 @@ def inspect_graph():
                 debug_print("✅ Found paths:\n" + "\n".join(paths))
 
     driver.close()
+
 
 if __name__ == "__main__":
     inspect_graph()

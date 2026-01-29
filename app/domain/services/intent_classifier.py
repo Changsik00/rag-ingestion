@@ -44,14 +44,7 @@ class IntentClassifier:
         # 3. LLM 호출
         logger.info(f"Classifying intent for query: {query}")
 
-        # Handle both sync and async adapters
-        import asyncio
-
-        if hasattr(self.llm, "generate") and asyncio.iscoroutinefunction(self.llm.generate):
-            raw_response_obj = await self.llm.generate(prompt)
-        else:
-            raw_response_obj = self.llm.generate(prompt)
-
+        raw_response_obj = await self.llm.agenerate(prompt)
         raw_response = str(raw_response_obj).strip()
 
         # 4. JSON 파싱 및 Pydantic 검증

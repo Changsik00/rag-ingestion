@@ -18,6 +18,7 @@ class CompositeScraper(ScraperInterface):
 
     def __init__(self):
         from app.infrastructure.scrapers.playwright_scraper import PlaywrightScraper
+
         self.primary_scraper = TrafilaturaWebScraper()
         self.playwright_scraper = PlaywrightScraper()
         self.advanced_scraper = FirecrawlWebScraper()

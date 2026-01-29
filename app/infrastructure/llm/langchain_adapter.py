@@ -99,34 +99,44 @@ class LangChainLLMAdapter:
         self.chain = self.prompt | self.llm | self.parser
 
     def extract_metadata(self, text: str) -> ExtractedMetadata | None:
-        """
-        LLMInterface 구현: 텍스트에서 메타데이터 추출
-
-        Args:
-            text: 분석할 텍스트
-
-        Returns:
-            ExtractedMetadata: 추출된 메타데이터
-            None: 추출 실패 시
-        """
+        """동기식 메타데이터 추출 (하위 호환용)"""
         try:
-            logger.info("Starting semantic extraction via LLM...")
+            logger.info("Starting semantic extraction via LLM (Sync)...")
             result = self.chain.invoke({"text": text})
+            return result
+        except Exception as e:
+            logger.error(f"Failed to extract semantic metadata (Sync): {e}")
+            return None
+
+    async def aextract_metadata(self, text: str) -> ExtractedMetadata | None:
+        """비동기식 메타데이터 추출"""
+        try:
+            logger.info("Starting semantic extraction via LLM (Async)...")
+            result = await self.chain.ainvoke({"text": text})
             logger.info("Semantic extraction completed successfully.")
             return result
         except Exception as e:
-            logger.error(f"Failed to extract semantic metadata: {e}")
+            logger.error(f"Failed to extract semantic metadata (Async): {e}")
             return None
 
     def generate(self, prompt: str) -> str:
-        """
-        단순 텍스트 생성 (RAG 답변 등)
-        """
+        """단순 텍스트 생성 (동기)"""
         try:
             from langchain_core.output_parsers import StrOutputParser
 
             chain = self.llm | StrOutputParser()
             return chain.invoke(prompt)
         except Exception as e:
-            logger.error(f"Failed to generate text: {e}")
+            logger.error(f"Failed to generate text (Sync): {e}")
+            return f"Error: {str(e)}"
+
+    async def agenerate(self, prompt: str) -> str:
+        """단순 텍스트 생성 (비동기)"""
+        try:
+            from langchain_core.output_parsers import StrOutputParser
+
+            chain = self.llm | StrOutputParser()
+            return await chain.ainvoke(prompt)
+        except Exception as e:
+            logger.error(f"Failed to generate text (Async): {e}")
             return f"Error: {str(e)}"

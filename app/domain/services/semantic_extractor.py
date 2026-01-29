@@ -32,19 +32,8 @@ class SemanticExtractor:
         Returns:
             ExtractedMetadata: 추출된 메타데이터 (실패 시 None)
         """
-        if hasattr(self.llm, "extract_metadata"):
-            try:
-                # adapter methods are now async
-                import asyncio
-
-                if asyncio.iscoroutinefunction(self.llm.extract_metadata):
-                    return await self.llm.extract_metadata(text, thread_id=thread_id)
-                else:
-                    return self.llm.extract_metadata(text, thread_id=thread_id)
-            except TypeError:
-                # Fallback for other adapters
-                if asyncio.iscoroutinefunction(self.llm.extract_metadata):
-                    return await self.llm.extract_metadata(text)
-                else:
-                    return self.llm.extract_metadata(text)
-        return None
+        try:
+            return await self.llm.aextract_metadata(text)
+        except Exception as e:
+            logger.error(f"Semantic extraction failed: {e}")
+            return None

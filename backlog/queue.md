@@ -413,6 +413,7 @@
     - **LLM Reranker**: 검색된 Top-K 청크를 LLM이 질문과의 관련성 기준으로 재정렬.
     - **Citation Restriction**: 핵심 근거가 되는 문서만 인용하도록 프롬프트 가이드라인 고도화.
   * **Priority**: High (RAG 사용성 핵심 개선)
+  * **Status**: Planning (2026-01-29) - [Spec](specs/048-rag-precision/spec.md), [Plan](specs/048-rag-precision/plan.md)
 ---
 
 

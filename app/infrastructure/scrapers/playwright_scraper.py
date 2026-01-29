@@ -8,6 +8,7 @@ from app.schemas.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)
 
+
 class PlaywrightScraper(ScraperInterface):
     """
     Advanced Web Scraper using Playwright (Headless Browser).
@@ -16,6 +17,7 @@ class PlaywrightScraper(ScraperInterface):
 
     def __init__(self):
         from app.infrastructure.scrapers.cleaner import MarkdownCleaner
+
         self.cleaner = MarkdownCleaner()
 
     async def scrape(self, url: str) -> IngestResponse:
@@ -53,7 +55,7 @@ class PlaywrightScraper(ScraperInterface):
                     include_comments=False,
                     include_tables=True,
                     include_images=False,
-                    output_format="markdown"
+                    output_format="markdown",
                 )
 
                 if not markdown_content:
@@ -69,17 +71,9 @@ class PlaywrightScraper(ScraperInterface):
                 markdown_content = self.cleaner.clean(markdown_content)
 
                 # 7. Metadata
-                metadata = {
-                    "title": title,
-                    "url": url,
-                    "engine": "playwright"
-                }
+                metadata = {"title": title, "url": url, "engine": "playwright"}
 
-                return IngestResponse(
-                    url=url,
-                    markdown=markdown_content,
-                    metadata=metadata
-                )
+                return IngestResponse(url=url, markdown=markdown_content, metadata=metadata)
 
         except Exception as e:
             logger.error(f"Playwright scraping failed for {url}: {e}")
