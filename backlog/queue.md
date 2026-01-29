@@ -400,10 +400,11 @@
   * **Action**: Tiered Scraping Strategy 구현 (Trafilatura -> Playwright Fallback).
   * **Status**: Completed (2026-01-29)
 
-* [ ] **Spec 047: YouTube Knowledge Scraper (Video-to-Knowledge)**
-  * **Goal**: YouTube 영상에서 고품질 자막 및 오디오를 추출하여 구조화된 지식 문서 생성.
-  * **Action**: Transcript API + Whisper Fallback + LLM Structuring 구현.
-  * **Status**: Planning (2026-01-29)
+* [x] **Spec 047: YouTube Knowledge Scraper (Video-to-Knowledge)**
+  * [x] **Goal**: YouTube 영상에서 고품질 자막 및 오디오를 추출하여 구조화된 지식 문서 생성.
+  * [x] **Action**: Transcript API + Whisper Fallback + LLM Structuring 구현.
+  * **Status**: Completed (2026-01-29)
+ Broadway PR #51 Merge 확인 필요
 ---
 
 

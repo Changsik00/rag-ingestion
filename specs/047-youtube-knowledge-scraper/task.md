@@ -33,21 +33,21 @@
 - [x] Commit: `feat(spec-047): add llm-based video knowledge extraction`
 
 ## Task 3: Integration & Documentation
-- [ ] `CompositeScraper`에 YouTube 라우팅 로직 추가
-- [ ] **운영 전략 가이드 작성**: `docs/design_guides/011-youtube-strategy.md` (Mac 최적화 포함)
-- [ ] Commit: `docs(spec-047): add youtube scraping strategy and mac optimization guide`
+- [x] `CompositeScraper`에 YouTube 라우팅 로직 추가
+- [x] **운영 전략 가이드 작성**: `docs/design_guides/011-youtube-strategy.md` (Intel Mac 최적화 포함)
+- [x] Commit: `docs(spec-047): add youtube scraping strategy and mac optimization guide`
 
 ---
 
 ## Task N: PR Creation & Archiving (Mandatory)
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
-- [ ] **Walkthrough 작성**: `specs/047-youtube-knowledge-scraper/walkthrough.md`
-- [ ] **PR Description 작성**: `specs/047-youtube-knowledge-scraper/pr_description.md`
-- [ ] **Archive Commit**: 위 파일을 `specs/`에 커밋
-- [ ] Create PR: `gh pr create`
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Run Full Tests: `uv run pytest`
+- [x] **Walkthrough 작성**: `specs/047-youtube-knowledge-scraper/walkthrough.md`
+- [x] **PR Description 작성**: `specs/047-youtube-knowledge-scraper/pr_description.md`
+- [x] **Archive Commit**: 위 파일을 `specs/`에 커밋
+- [x] Create PR: `gh pr create`
 
 ## Summary
 **총 Task**: 3개 주요 작업군  
 **예상 커밋 수**: 7~9개  
-**현재 진행**: 완료 (PR 준비 중)
+**현재 진행**: 완료 (PR #51 생성됨)
