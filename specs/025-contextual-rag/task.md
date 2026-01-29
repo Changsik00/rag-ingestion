@@ -6,7 +6,7 @@
 - [x] plan.md 작성
 - [x] task.md 작성
 - [x] 백로그 업데이트 (Note 추가)
-- [ ] User Plan Accept
+- [x] User Plan Accept
 
 ## Task 1: Domain Service Implementation (TDD)
 ### 1-1. TDD Warming up
@@ -36,5 +36,4 @@
 - [x] Create PR: `gh pr create --title "feat(spec-025): contextual rag query rewriting" --body-file specs/025-contextual-rag/pr_description.md`
 
 ## Summary
-**총 Task**: 2개
-**예상 커밋 수**: 4-5개
+**현재 진행**: 완료 (PR 머지됨)

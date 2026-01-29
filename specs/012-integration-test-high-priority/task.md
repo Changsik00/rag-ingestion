@@ -50,16 +50,16 @@
 - [x] New Tests: `pytest tests/integration/bdd/test_high_priority_scenarios.py -v -m integration`
 - [x] All Integration Tests: `pytest tests/integration/ -v -m integration`
 - [x] All Tests: `pytest tests/ -v`
-- [ ] Ruff: `ruff check tests/`
+- [x] Ruff: `ruff check tests/`
 - [x] 모든 테스트 통과 확인 (79 passed, 6 failed 기존, 4 skipped)
 
 ---
 
 ## Task 6: 수동 검증 (선택)
 
-- [ ] Invalid Job ID: `curl http://localhost:8000/jobs/non-existent-id`
-- [ ] Duplicate URL: 같은 URL 두 번 수집
-- [ ] Document 개수 확인
+- [x] Invalid Job ID: `curl http://localhost:8000/jobs/non-existent-id`
+- [x] Duplicate URL: 같은 URL 두 번 수집
+- [x] Document 개수 확인
 
 ---
 

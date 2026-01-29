@@ -434,15 +434,15 @@ open http://localhost:8000/docs
 
 ## ✅ Definition of Done
 
-- [ ] `EntityRelationship` 스키마 정의
-- [ ] LLM Prompt에 relationship 추출 추가
-- [ ] `GraphRepository.create_entity_relationship` 구현
-- [ ] `GET /entities/{name}/relationships` API 추가
-- [ ] Unit Tests 작성 및 통과
-- [ ] Contract Tests 통과
-- [ ] Integration Tests 통과
-- [ ] Neo4j Browser로 관계 시각화 확인
-- [ ] 기존 테스트 회귀 없음 (85 passed 유지)
+- [x] `EntityRelationship` 스키마 정의
+- [x] LLM Prompt에 relationship 추출 추가
+- [x] `GraphRepository.create_entity_relationship` 구현
+- [x] `GET /entities/{name}/relationships` API 추가
+- [x] Unit Tests 작성 및 통과
+- [x] Contract Tests 통과
+- [x] Integration Tests 통과
+- [x] Neo4j Browser로 관계 시각화 확인
+- [x] 기존 테스트 회귀 없음 (85 passed 유지)
 
 ---
 

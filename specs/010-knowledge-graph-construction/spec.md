@@ -124,29 +124,29 @@ def save(self, document: AtomicDocument):
 ## 📦 Deliverables
 
 ### 1. Domain Layer
-- [ ] `EntityNode` 엔티티 클래스 추가 (선택: 필요시)
-- [ ] `GraphRepository` 인터페이스 정의 (Entity 저장/조회)
+- [x] `EntityNode` 엔티티 클래스 추가 (선택: 필요시)
+- [x] `GraphRepository` 인터페이스 정의 (Entity 저장/조회)
 
 ### 2. Infrastructure Layer
-- [ ] `Neo4jGraphRepository` 구현
+- [x] `Neo4jGraphRepository` 구현
   - `save_entity(name, type) -> Entity` - Entity 노드 생성/조회
   - `create_mention_relationship(doc_id, entity_name)`
   - `get_entities_by_document(doc_id) -> list[Entity]`
   - `get_documents_by_entity(entity_name) -> list[Document]`
 
 ### 3. Application/Use Case Layer
-- [ ] `IngestionService` 수정
+- [x] `IngestionService` 수정
   - Document 저장 후 Entity 그래프 구축 로직 추가
 
 ### 4. API Layer
-- [ ] `GET /entities` - 전체 Entity 목록 조회
-- [ ] `GET /entities/{name}/documents` - 특정 Entity가 언급된 Document 목록
-- [ ] `GET /documents/{id}/entities` - 특정 Document의 Entity 목록
+- [x] `GET /entities` - 전체 Entity 목록 조회
+- [x] `GET /entities/{name}/documents` - 특정 Entity가 언급된 Document 목록
+- [x] `GET /documents/{id}/entities` - 특정 Document의 Entity 목록
 
 ### 5. Testing
-- [ ] Unit Tests: `Neo4jGraphRepository` 메서드 테스트
-- [ ] Integration Tests: Entity 그래프 구축 E2E 시나리오
-- [ ] Contract Tests: `GraphRepository` 인터페이스 계약 검증
+- [x] Unit Tests: `Neo4jGraphRepository` 메서드 테스트
+- [x] Integration Tests: Entity 그래프 구축 E2E 시나리오
+- [x] Contract Tests: `GraphRepository` 인터페이스 계약 검증
 
 ---
 

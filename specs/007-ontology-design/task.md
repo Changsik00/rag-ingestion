@@ -5,8 +5,8 @@
 - [x] 현재 코드베이스 분석 (Entity 구조 파악)
 - [x] Spec 문서 작성 (`spec.md`)
 - [x] Plan 문서 작성 (`plan.md`)
-- [/] Task 체크리스트 작성 (`task.md`)
-- [ ] 사용자 리뷰 및 Plan Accept 대기
+- [x] Task 체크리스트 작성 (`task.md`)
+- [x] 사용자 리뷰 및 Plan Accept 대기
 
 ---
 
@@ -69,11 +69,11 @@
 - [x] 필요 시 수정 후 커밋: `fix: resolve linting issues`
 
 ### Task 8: PR 준비 및 생성
-- [/] `specs/007-ontology-design/pr_description.md` 작성
-  - [ ] Summary (변경 개요)
-  - [ ] Key Review Points (리뷰 포인트)
-  - [ ] Verification Plan (검증 방법)
-  - [ ] Tech Stack
-- [ ] 전체 테스트 재실행 확인: `pytest -v`
-- [ ] GitHub PR 생성: `gh pr create -F specs/007-ontology-design/pr_description.md`
-- [ ] PR URL 사용자에게 보고
+- [x] `specs/007-ontology-design/pr_description.md` 작성
+  - [x] Summary (변경 개요)
+  - [x] Key Review Points (리뷰 포인트)
+  - [x] Verification Plan (검증 방법)
+  - [x] Tech Stack
+- [x] 전체 테스트 재실행 확인: `pytest -v`
+- [x] GitHub PR 생성: `gh pr create -F specs/007-ontology-design/pr_description.md`
+- [x] PR URL 사용자에게 보고

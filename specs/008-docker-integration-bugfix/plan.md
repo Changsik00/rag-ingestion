@@ -189,9 +189,9 @@ uv run pytest tests/unit/ -v
 ```
 
 **검증 항목:**
-- [ ] `test_scraper.py` import 에러 해결
-- [ ] 모든 기존 테스트 통과
-- [ ] 새로운 테스트 추가 불필요 (구조 변경만 있음)
+- [x] `test_scraper.py` import 에러 해결
+- [x] 모든 기존 테스트 통과
+- [x] 새로운 테스트 추가 불필요 (구조 변경만 있음)
 
 #### 1.2 Integration Tests
 ```bash
@@ -202,9 +202,9 @@ uv run pytest tests/integration/ -v
 ```
 
 **검증 항목:**
-- [ ] `test_list_documents_endpoint` 통과
-- [ ] `test_async_ingest_web_endpoint` 통과
-- [ ] `test_jobs.py` 모든 테스트 통과
+- [x] `test_list_documents_endpoint` 통과
+- [x] `test_async_ingest_web_endpoint` 통과
+- [x] `test_jobs.py` 모든 테스트 통과
 
 ### 2. 수동 검증 (Manual Verification)
 
@@ -223,9 +223,9 @@ docker-compose up --build
 ```
 
 **검증 항목:**
-- [ ] backend 서비스 정상 기동
-- [ ] 의존성 설치 에러 없음
-- [ ] 환경 변수 정상 로드
+- [x] backend 서비스 정상 기동
+- [x] 의존성 설치 에러 없음
+- [x] 환경 변수 정상 로드
 
 #### 2.2 API 엔드포인트 테스트
 
@@ -333,14 +333,14 @@ docker-compose logs -f backend
 
 ## ✅ Definition of Done (DoD)
 
-- [ ] Neo4jStorage와 ChromaStorage가 Driver/Client를 외부에서 주입받음
-- [ ] `tests/unit/test_scraper.py` import 에러 해결
-- [ ] 전체 Unit 테스트 통과 (24개 이상)
-- [ ] Backend 서비스가 Dockerfile 기반으로 빌드됨
-- [ ] `docker-compose up --build`로 전체 환경이 정상 실행됨
-- [ ] 모든 API 엔드포인트가 정상 응답 반환:
+- [x] Neo4jStorage와 ChromaStorage가 Driver/Client를 외부에서 주입받음
+- [x] `tests/unit/test_scraper.py` import 에러 해결
+- [x] 전체 Unit 테스트 통과 (24개 이상)
+- [x] Backend 서비스가 Dockerfile 기반으로 빌드됨
+- [x] `docker-compose up --build`로 전체 환경이 정상 실행됨
+- [x] 모든 API 엔드포인트가 정상 응답 반환:
   - `GET /health` → 200 OK
   - `POST /ingest/web` → 202 Accepted
   - `GET /documents` → 200 OK (500 에러 해결 확인)
-- [ ] Docker 로그에 에러 없음
-- [ ] Swagger UI에서 스키마 정상 표시
+- [x] Docker 로그에 에러 없음
+- [x] Swagger UI에서 스키마 정상 표시

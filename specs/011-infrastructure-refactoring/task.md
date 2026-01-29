@@ -63,7 +63,7 @@
 - [x] Type hints 완성 (`chroma.py`)
 - [x] Docstring 추가 (`composite.py`)
 - [x] 주석 상세화 (`dependencies.py`)
-- [ ] 커밋: `refactor: improve type hints and docstrings`
+- [x] 커밋: `refactor: improve type hints and docstrings`
 
 ---
 
@@ -71,7 +71,7 @@
 
 - [x] Contract Tests: `uv run pytest tests/contracts/ -v`
 - [x] Unit Tests: `uv run pytest tests/unit/ -v`
-- [ ] Integration Tests: `docker compose up -d && uv run pytest tests/integration/ -v -m integration`
+- [x] Integration Tests: `docker compose up -d && uv run pytest tests/integration/ -v -m integration`
 - [x] Linter: `ruff check app/`
 - [x] Import 검증 스크립트 실행
 - [x] 모든 테스트 통과 확인 (45 passed, 2 skipped)

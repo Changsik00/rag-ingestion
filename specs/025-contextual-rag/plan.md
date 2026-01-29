@@ -4,7 +4,7 @@
 - `feature/spec-025-contextual-rag`
 
 ## 🛑 User Review Required
-- [ ] 없음 (기능 개선 요청 사항)
+- [x] 없음 (기능 개선 요청 사항)
 
 ## 🎯 Core Strategy
 - **Domain Service 분리**: `QueryRewriter`를 별도 도메인 서비스로 구현하여 LLM 의존성을 캡슐화하고 컨트롤러(UI) 로직을 단순하게 유지합니다.

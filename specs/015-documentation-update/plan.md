@@ -160,9 +160,9 @@ docs/
 
 ### 2. 문서 일관성 확인
 
-- [ ] 모든 완료 Spec이 README에 표시됨
-- [ ] docs 디렉토리의 모든 파일이 README에서 언급됨
-- [ ] specs 디렉토리에 기술 참고 문서가 남아있지 않음
+- [x] 모든 완료 Spec이 README에 표시됨
+- [x] docs 디렉토리의 모든 파일이 README에서 언급됨
+- [x] specs 디렉토리에 기술 참고 문서가 남아있지 않음
 
 ### 3. 사용자 리뷰
 
@@ -203,9 +203,9 @@ docs/
 ## ✅ Definition of Done
 
 - [x] spec.md, plan.md, task.md 작성 완료
-- [ ] specs → docs 문서 이동 완료
-- [ ] README 최신화 완료
-- [ ] Cross-reference 정리 완료
-- [ ] 모든 링크 검증 완료
-- [ ] backlog 업데이트 완료
-- [ ] 사용자 리뷰 및 승인
+- [x] specs → docs 문서 이동 완료
+- [x] README 최신화 완료
+- [x] Cross-reference 정리 완료
+- [x] 모든 링크 검증 완료
+- [x] backlog 업데이트 완료
+- [x] 사용자 리뷰 및 승인

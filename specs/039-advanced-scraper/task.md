@@ -6,7 +6,7 @@
 - [x] plan.md 업데이트 (Firecrawl & Cleaner 중심)
 - [x] task.md 업데이트
 - [x] 백로그 업데이트
-- [ ] User Plan Accept
+- [x] User Plan Accept
 
 ## Task 1: Pollution Control & Cleaning Engine
 ### 1-1. Markdown Cleaner Implementation
@@ -39,17 +39,17 @@
 
 ## Task 5: Verification & PR Creation (Protocol Compliance)
 ### 5-1. Pre-PR Quality Check
-- [/] Code Quality: `uv run ruff check . --fix && uv run ruff format .`
-- [/] Full Tests: `uv run pytest` (모든 테스트 통과 확인)
-- [ ] Commit: `chore(spec-039): final code quality and test verification`
+- [x] Code Quality: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Full Tests: `uv run pytest` (모든 테스트 통과 확인)
+- [x] Commit: `chore(spec-039): final code quality and test verification`
 
 ### 5-2. Documentation & Artifacts
-- [ ] Walkthrough 작성: `specs/039-advanced-scraper/walkthrough.md` (스크린샷/로그 포함)
-- [ ] PR Description 작성: `docs/protocols/templates/pr_description.md`를 복사하여 `specs/039-advanced-scraper/pr_description.md` 작성 (한글 사용)
-- [ ] Commit: `docs(spec-039): add walkthrough and pr description artifacts`
+- [x] Walkthrough 작성: `specs/039-advanced-scraper/walkthrough.md` (스크린샷/로그 포함)
+- [x] PR Description 작성: `docs/protocols/templates/pr_description.md`를 복사하여 `specs/039-advanced-scraper/pr_description.md` 작성 (한글 사용)
+- [x] Commit: `docs(spec-039): add walkthrough and pr description artifacts`
 
 ### 5-3. Create Pull Request
-- [ ] PR 생성: `gh pr create --title "feat(spec-039): advanced scraper with pollution control" --body-file specs/039-advanced-scraper/pr_description.md`
+- [x] PR 생성: `gh pr create --title "feat(spec-039): advanced scraper with pollution control" --body-file specs/039-advanced-scraper/pr_description.md`
 
 ## Summary
 **총 Task**: 7개 주요 세부 단계

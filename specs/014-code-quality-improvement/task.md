@@ -94,10 +94,10 @@ fix: initialize semantic_data to prevent NameError
 
 ## Task 7: PR 준비 및 생성
 
-- [ ] `specs/014-code-quality-improvement/walkthrough.md` 작성
-- [ ] `specs/014-code-quality-improvement/pr_description.md` 작성
-- [ ] Push: `git push origin feature/014-code-quality-improvement`
-- [ ] PR 생성:
+- [x] `specs/014-code-quality-improvement/walkthrough.md` 작성
+- [x] `specs/014-code-quality-improvement/pr_description.md` 작성
+- [x] Push: `git push origin feature/014-code-quality-improvement`
+- [x] PR 생성:
 ```bash
 gh pr create --base main --head feature/014-code-quality-improvement \
   --title "fix(spec-014): code quality improvements (bug fix + test standardization)" \

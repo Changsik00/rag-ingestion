@@ -4,8 +4,8 @@
 - `feature/019-advanced-chunking-strategy`
 
 ## 🛑 User Review Required
-- [ ] **Data Migration**: 기존에 수집된 문서는 청킹되지 않은 상태입니다. 이 변경 사항 적용 시 기존 데이터는 검색 품질이 떨어지거나 호환되지 않을 수 있습니다. (현재 개발 단계이므로 DB 초기화(`RESET_DB=true`)를 권장합니다.)
-- [ ] **ChromaDB Schema**: 기존에는 `Document` ID 기준이었으나, 이제는 `Chunk` ID 기준으로 임베딩이 저장됩니다.
+- [x] **Data Migration**: 기존에 수집된 문서는 청킹되지 않은 상태입니다. 이 변경 사항 적용 시 기존 데이터는 검색 품질이 떨어지거나 호환되지 않을 수 있습니다. (현재 개발 단계이므로 DB 초기화(`RESET_DB=true`)를 권장합니다.)
+- [x] **ChromaDB Schema**: 기존에는 `Document` ID 기준이었으나, 이제는 `Chunk` ID 기준으로 임베딩이 저장됩니다.
 
 ## 🎯 Core Strategy
 - **Context Preservation (Overlap)**: `RecursiveCharacterTextSplitter`의 `chunk_overlap` 기능을 활용하여 청크 간 맥락을 보존합니다. 예를 들어, 청크 1의 끝부분 200자가 청크 2의 시작부분에 포함되도록 하여 정보 단절을 막습니다.

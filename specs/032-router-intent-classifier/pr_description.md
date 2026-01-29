@@ -81,13 +81,13 @@ uv run streamlit run app/admin/Home.py
   - 답변 정상 생성
 
 #### 검증 체크리스트
-- [ ] Debug Expander "🛠️ Debug: Intent & Prompt" 정상 표시
-- [ ] Intent Type 색상 코딩 확인 (🟢🔵🟡🟣)
-- [ ] Targets 정확히 추출
-- [ ] Reasoning 필드에 분류 근거 표시
-- [ ] Query Rewriting 정보 표시
-- [ ] 히스토리 기반 문맥 이해 작동
-- [ ] Fallback 시 시스템 안정성 유지
+- [x] Debug Expander "🛠️ Debug: Intent & Prompt" 정상 표시
+- [x] Intent Type 색상 코딩 확인 (🟢🔵🟡🟣)
+- [x] Targets 정확히 추출
+- [x] Reasoning 필드에 분류 근거 표시
+- [x] Query Rewriting 정보 표시
+- [x] 히스토리 기반 문맥 이해 작동
+- [x] Fallback 시 시스템 안정성 유지
 
 ## 📦 Files Changed
 

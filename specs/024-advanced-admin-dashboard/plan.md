@@ -4,7 +4,7 @@
 - `feature/spec-024-admin-dashboard`
 
 ## 🛑 User Review Required
-- [ ] `streamlit`, `streamlit-agraph`, `plotly` 의존성 추가 필요. (현재 `pyproject.toml`에 없음)
+- [x] `streamlit`, `streamlit-agraph`, `plotly` 의존성 추가 필요. (현재 `pyproject.toml`에 없음)
 
 ## 🎯 Core Strategy
 - **Service-First TDD**: UI(Streamlit)는 테스트가 어려우므로, 모든 로직(Graph Fetching, Status Parsing, Feedback)을 `app/admin/services/`에 격리하고 **Unit Test**로 검증한 뒤 UI에 연결한다.

@@ -4,7 +4,7 @@
 - `feature/037-document-integrity-sync`
 
 ## 🛑 User Review Required
-- [ ] **Document-Chunk Consistency**: `Document` 노드의 제목을 자식 `Chunk`들에게 강제로 덮어씌우는 방식(Propagate)에 대한 동의 여부.
+- [x] **Document-Chunk Consistency**: `Document` 노드의 제목을 자식 `Chunk`들에게 강제로 덮어씌우는 방식(Propagate)에 대한 동의 여부.
 
 ---
 

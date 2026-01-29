@@ -76,22 +76,22 @@
 ## ✅ 성공 기준 (Success Criteria)
 
 1. **문서화:**
-   - [ ] `docs/testing_strategy.md` 작성 완료
-   - [ ] 테스트 전략이 명확히 문서화되어 향후 Spec 작성 시 참조 가능
+   - [x] `docs/testing_strategy.md` 작성 완료
+   - [x] 테스트 전략이 명확히 문서화되어 향후 Spec 작성 시 참조 가능
 
 2. **Contract Tests:**
-   - [ ] `tests/contracts/` 디렉토리 생성 및 4개 Contract Test 구현
-   - [ ] 모든 Contract Test 통과
+   - [x] `tests/contracts/` 디렉토리 생성 및 4개 Contract Test 구현
+   - [x] 모든 Contract Test 통과
 
 3. **Integration Tests:**
-   - [ ] E2E 시나리오 테스트 1개 이상 작성
-   - [ ] Testcontainers 기반 실제 DB 연동 테스트 구현
-   - [ ] DI Container 검증 테스트 추가
+   - [x] E2E 시나리오 테스트 1개 이상 작성
+   - [x] Testcontainers 기반 실제 DB 연동 테스트 구현
+   - [x] DI Container 검증 테스트 추가
 
 4. **검증:**
-   - [ ] 모든 기존 테스트 통과
-   - [ ] 새로운 Contract Tests 통과
-   - [ ] CI 파이프라인에서 정상 동작
+   - [x] 모든 기존 테스트 통과
+   - [x] 새로운 Contract Tests 통과
+   - [x] CI 파이프라인에서 정상 동작
 
 ---
 

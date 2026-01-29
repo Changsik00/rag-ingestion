@@ -4,8 +4,8 @@
 - `feature/023-reasoning-context`
 
 ## 🛑 User Review Required
-- [ ] **State Structure Update**: `IngestionState`에 `backtracking_context` 딕셔너리가 추가됩니다. 디버깅 복잡도가 증가할 수 있습니다.
-- [ ] **Recall Cost**: `analyze_failure` 단계에서 초기 구현은 Rule-based로 진행하여 비용을 최소화합니다. (LLM 사용 X)
+- [x] **State Structure Update**: `IngestionState`에 `backtracking_context` 딕셔너리가 추가됩니다. 디버깅 복잡도가 증가할 수 있습니다.
+- [x] **Recall Cost**: `analyze_failure` 단계에서 초기 구현은 Rule-based로 진행하여 비용을 최소화합니다. (LLM 사용 X)
 
 ## 🎯 Core Strategy
 - **State Expansion**: 단순히 에러 메시지만 남기는 것이 아니라, `FailureHypothesis`(가설)와 `DecisionTrace`(의사결정)를 상태에 저장하여 "사고의 연속성"을 보장합니다.

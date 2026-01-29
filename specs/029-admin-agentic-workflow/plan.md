@@ -4,7 +4,7 @@
 - `feature/spec-029-admin-agentic`
 
 ## 🛑 User Review Required
-- [ ] **UI 변경**: 기존의 즉각적인 응답 방식에서, 도구 실행 과정을 보여주는 `st.status` 또는 `st.expander` 기반의 UI로 변경됩니다.
+- [x] **UI 변경**: 기존의 즉각적인 응답 방식에서, 도구 실행 과정을 보여주는 `st.status` 또는 `st.expander` 기반의 UI로 변경됩니다.
 
 ## 🎯 Core Strategy
 1.  **LangGraph 도입**: `AdminAgent`를 LangGraph `StateGraph`로 구현하여 확장성 및 상태 관리 능력 확보.
