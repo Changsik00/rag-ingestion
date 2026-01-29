@@ -4,6 +4,7 @@ from app.domain.interfaces.scraper import ScraperInterface
 from app.infrastructure.scrapers.checker import ScrapingQualityChecker
 from app.infrastructure.scrapers.firecrawl_scraper import FirecrawlWebScraper
 from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
+from app.infrastructure.scrapers.youtube_scraper import YouTubeScraper
 from app.schemas.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)
@@ -20,9 +21,14 @@ class CompositeScraper(ScraperInterface):
         self.primary_scraper = TrafilaturaWebScraper()
         self.playwright_scraper = PlaywrightScraper()
         self.advanced_scraper = FirecrawlWebScraper()
+        self.youtube_scraper = YouTubeScraper()
         self.quality_checker = ScrapingQualityChecker()
 
     async def scrape(self, url: str) -> IngestResponse:
+        # 0. YouTube URL 감지
+        if "youtube.com" in url or "youtu.be" in url:
+            return await self.youtube_scraper.scrape(url)
+
         # 1. Tier 1: Trafilatura (Fast) 시도
         try:
             result = await self.primary_scraper.scrape(url)
