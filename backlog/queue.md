@@ -404,6 +404,15 @@
   * [x] **Goal**: YouTube 영상 유출 및 구조화된 지식 추출 (Docker 환경 동기화 포함).
   * [x] **Action**: Transcript API + Whisper Fallback + Docker `ffmpeg`/Playwright 설정.
   * **Status**: Completed (2026-01-29)
+
+* [ ] **Spec 048: RAG Precision Refinement (Reranking & Dynamic Filtering)**
+  * **Goal**: 검색 노이즈(관련 없는 문서 인용)를 제거하고 답변의 신뢰도 및 정밀도 극대화.
+  * **Critical Context**: "릭롤 노래" 질문에 일론 머스크 문서가 인용되는 등의 "과응답" 문제 해결.
+  * **Action**:
+    - **Similarity Thresholding**: 일정 점수 이하의 벡터 검색 결과 자동 배제.
+    - **LLM Reranker**: 검색된 Top-K 청크를 LLM이 질문과의 관련성 기준으로 재정렬.
+    - **Citation Restriction**: 핵심 근거가 되는 문서만 인용하도록 프롬프트 가이드라인 고도화.
+  * **Priority**: High (RAG 사용성 핵심 개선)
 ---
 
 
