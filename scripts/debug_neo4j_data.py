@@ -32,7 +32,7 @@ def inspect_graph():
             debug_print("Checking for direct relationships between found entities...")
             result = session.run("""
                 MATCH (a:Entity)-[r]-(b:Entity)
-                WHERE (a.name CONTAINS '일론' OR a.name CONTAINS 'Elon') 
+                WHERE (a.name CONTAINS '일론' OR a.name CONTAINS 'Elon')
                   AND (b.name CONTAINS '트위터' OR b.name CONTAINS 'Twitter')
                 RETURN a.name, type(r), b.name
             """)

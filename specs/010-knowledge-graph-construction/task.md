@@ -109,7 +109,7 @@
   - [x] `test_successful_entity_graph_auto_construction` - Entity 자동 구축
   - [x] `test_entity_based_document_search` - Entity로 Document 검색
   - [x] `test_entity_deduplication` - Entity 중복 처리
-- [ ] 테스트 실행: `docker compose up -d && uv run pytest tests/integration/bdd/test_knowledge_graph.py -v -m integration`
+- [x] 테스트 실행: `docker compose up -d && uv run pytest tests/integration/bdd/test_knowledge_graph.py -v -m integration`
 - [x] 커밋: `test: add integration tests for knowledge graph`
 
 ---
@@ -129,7 +129,7 @@
 
 - [x] Contract Tests: `uv run pytest tests/contracts/ -v`
 - [x] Unit Tests: `uv run pytest tests/unit/test_neo4j_graph_repository.py -v`
-- [ ] Integration Tests: `docker compose up -d && uv run pytest tests/integration/bdd/test_knowledge_graph.py -v -m integration`
+- [x] Integration Tests: `docker compose up -d && uv run pytest tests/integration/bdd/test_knowledge_graph.py -v -m integration`
 - [x] Contract + Unit 테스트 통과 확인
 - [x] 기존 기능 영향 없음 확인
 

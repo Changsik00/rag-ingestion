@@ -43,20 +43,20 @@
 
 ## Task 3: Admin Dashboard Debug View
 
-- [ ] Streamlit UI 추가: `app/admin/pages/4_RAG_Playground.py`
-- [ ] Intent Debug Expander 구현
-- [ ] Manual Verification (로컬 테스트)
-- [ ] Commit: `feat(spec-032): add intent routing debug view`
+- [x] Streamlit UI 추가: `app/admin/pages/4_RAG_Playground.py`
+- [x] Intent Debug Expander 구현
+- [x] Manual Verification (로컬 테스트)
+- [x] Commit: `feat(spec-032): add intent routing debug view`
 
 ---
 
 ## Task 4: PR Creation
 
-- [ ] Code Quality: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Full Tests: `uv run pytest -v`
-- [ ] Walkthrough 작성: `specs/032-router-intent-classifier/walkthrough.md`
-- [ ] PR Description 작성: `specs/032-router-intent-classifier/pr_description.md`
-- [ ] Create PR: `gh pr create --title "feat(spec-032): router and intent classifier" --body-file specs/032-router-intent-classifier/pr_description.md`
+- [x] Code Quality: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Full Tests: `uv run pytest -v`
+- [x] Walkthrough 작성: `specs/032-router-intent-classifier/walkthrough.md`
+- [x] PR Description 작성: `specs/032-router-intent-classifier/pr_description.md`
+- [x] Create PR: `gh pr create --title "feat(spec-032): router and intent classifier" --body-file specs/032-router-intent-classifier/pr_description.md`
 
 ---
 
@@ -64,4 +64,4 @@
 
 **총 Task**: 4개  
 **예상 커밋 수**: 7개  
-**현재 진행**: Task 1-1 완료 (테스트 작성)
+**현재 진행**: 완료 (PR 머지됨)

@@ -28,5 +28,5 @@
 - **조치**: 해당 이슈를 `docs/architecture/rag_pipeline.md`에 기록하고 **Spec 034** 기술 부채로 등록.
 
 ## 🚀 다음 단계
-- [ ] Spec 034: Filter Fallback 로직 및 검색 견고성 개선
-- [ ] Admin UI에서 State Snapshot을 시각적으로 확인할 수 있는 디버그 뷰 확장
+- [x] Spec 034: Filter Fallback 로직 및 검색 견고성 개선
+- [x] Admin UI에서 State Snapshot을 시각적으로 확인할 수 있는 디버그 뷰 확장

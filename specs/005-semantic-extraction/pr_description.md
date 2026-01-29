@@ -109,9 +109,9 @@ curl "http://localhost:8000/jobs/{job_id}"
 ```
 
 **검증 항목**:
-- [ ] Job Status가 `COMPLETED`로 변경되는지
-- [ ] Document의 `metadata` 필드에 추출 결과가 포함되는지
-- [ ] Neo4j/ChromaDB에 메타데이터가 저장되는지
+- [x] Job Status가 `COMPLETED`로 변경되는지
+- [x] Document의 `metadata` 필드에 추출 결과가 포함되는지
+- [x] Neo4j/ChromaDB에 메타데이터가 저장되는지
 
 #### 4. 메타데이터 품질 검증
 

@@ -109,10 +109,10 @@ def test_example():
 
 ## 📊 성공 기준
 
-- [ ] `semantic_data` 버그 수정 완료
-- [ ] 9개 TDD 테스트 파일 GWT 형식 적용
-- [ ] 전체 테스트 스위트 통과 (회귀 없음)
-- [ ] CI 통과 (if exists)
+- [x] `semantic_data` 버그 수정 완료
+- [x] 9개 TDD 테스트 파일 GWT 형식 적용
+- [x] 전체 테스트 스위트 통과 (회귀 없음)
+- [x] CI 통과 (if exists)
 
 ---
 

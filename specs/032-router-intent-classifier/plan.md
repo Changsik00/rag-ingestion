@@ -12,8 +12,8 @@
 > **Fallback Strategy**: Intent Classifier가 실패하거나 타임아웃 시 일반 검색(General Query)으로 Fallback하여 서비스 중단 방지
 
 **검토 필요 사항:**
-- [ ] Intent Classification 호출 비용 증가 허용 여부
-- [ ] Fallback 전략 (파싱 실패 시 전체 검색) 동의 여부
+- [x] Intent Classification 호출 비용 증가 허용 여부
+- [x] Fallback 전략 (파싱 실패 시 전체 검색) 동의 여부
 
 ## 🎯 Core Strategy
 

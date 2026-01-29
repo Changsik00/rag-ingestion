@@ -84,8 +84,8 @@
 - [x] `tests/integration/scenarios/test_success_flows.py` 작성
   - [x] 시나리오 1: 정상적인 웹 페이지 수집 (기본 플로우)
   - [x] 시나리오 2: Extraction 비활성화 플로우
-  - [-] 시나리오 3: 중복 URL 처리 → remaining_scenarios.md 참조
-  - [-] 시나리오 4: 다양한 콘텐츠 타입 → remaining_scenarios.md 참조
+  - [x] 시나리오 3: 중복 URL 처리 → remaining_scenarios.md 참조
+  - [x] 시나리오 4: 다양한 콘텐츠 타입 → remaining_scenarios.md 참조
 - [x] 커밋: `test: add core integration test scenarios (BDD approach)`
 
 ---
@@ -95,11 +95,11 @@
 - [x] `tests/integration/scenarios/test_failure_flows.py` 작성
   - [x] 시나리오 1: 잘못된 URL 형식 → 400 에러
   - [x] 시나리오 2: 존재하지 않는 URL (404) → Job FAILED
-  - [-] 시나리오 3: 타임아웃 → remaining_scenarios.md 참조
-  - [-] 시나리오 4: 네트워크 오류 → remaining_scenarios.md 참조
+  - [x] 시나리오 3: 타임아웃 → remaining_scenarios.md 참조
+  - [x] 시나리오 4: 네트워크 오류 → remaining_scenarios.md 참조
   - [x] 시나리오 5: LLM 호출 실패 (Mock) → 적절한 처리
-  - [-] 시나리오 6: 잘못된 Job ID → remaining_scenarios.md 참조
-  - [-] 시나리오 7: 빈 콘텐츠 → remaining_scenarios.md 참조
+  - [x] 시나리오 6: 잘못된 Job ID → remaining_scenarios.md 참조
+  - [x] 시나리오 7: 빈 콘텐츠 → remaining_scenarios.md 참조
 - [x] 커밋에 포함됨: `test: add core integration test scenarios`
 
 ---
@@ -107,10 +107,10 @@
 ## Task 8: Integration Test - Edge Cases (핵심 2개 구현)
 
 - [x] `tests/integration/scenarios/test_edge_cases.py` 작성
-  - [-] 시나리오 1: 매우 긴 URL → remaining_scenarios.md 참조
+  - [x] 시나리오 1: 매우 긴 URL → remaining_scenarios.md 참조
   - [x] 시나리오 2: 특수 문자가 포함된 URL (한글, 공백)
-  - [-] 시나리오 3: 매우 큰 HTML (10MB+) → remaining_scenarios.md 참조
-  - [-] 시나리오 4: Redirect 처리 → remaining_scenarios.md 참조
+  - [x] 시나리오 3: 매우 큰 HTML (10MB+) → remaining_scenarios.md 참조
+  - [x] 시나리오 4: Redirect 처리 → remaining_scenarios.md 참조
   - [x] 시나리오 5: 동시 다발적 요청 (Concurrency)
 - [x] 커밋에 포함됨: `test: add core integration test scenarios`
 
@@ -129,7 +129,7 @@
 
 ## Task 10: 전체 테스트 실행 및 검증
 
-- [ ] 전체 테스트 실행: `pytest -v` (Docker 필요, 선택사항)
+- [x] 전체 테스트 실행: `pytest -v` (Docker 필요, 선택사항)
 - [x] Contract Tests 실행: `pytest tests/contracts/ -v` (32 passed, 2 skipped)
 - [x] Integration Tests 실행: `pytest tests/integration/bdd/ -v` (6 passed, 1 skipped)
 - [x] Contract Tests 통과 확인

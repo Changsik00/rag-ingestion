@@ -2,19 +2,19 @@
 
 ## Progress
 
-- [ ] Spec 번호 확정 (018)
-- [ ] spec.md 작성
-- [ ] plan.md 작성
-- [ ] task.md 작성
-- [ ] 백로그 업데이트 (Note 추가)
-- [ ] User Plan Accept
+- [x] Spec 번호 확정 (018)
+- [x] spec.md 작성
+- [x] plan.md 작성
+- [x] task.md 작성
+- [x] 백로그 업데이트 (Note 추가)
+- [x] User Plan Accept
 
 ---
 
 ## Task 1: Core Foundation (Exceptions & Logging)
 
 ### 1-1. Branch & TDD Setup
-- [ ] 브랜치 생성: `git checkout -b feature/018-system-stability`
+- [x] 브랜치 생성: `git checkout -b feature/018-system-stability`
 - [x] Test Case 작성: `tests/unit/test_exceptions.py` (Custom Exception Hierarchy 검증)
 - [x] Test 실행 (Fail): `uv run pytest tests/unit/test_exceptions.py` (ImportError 예상)
 - [x] Commit: `test(spec-018): add unit tests for custom exceptions`

@@ -260,11 +260,11 @@ Manual Filter: {"id": ["doc_A"]}
 
 Admin Dashboard에서 다음을 확인하세요:
 
-- [ ] **시나리오 1**: 일반 질문 시 전체 지식 베이스 검색
-- [ ] **시나리오 2**: 비교 질문 시 특정 문서만 검색 (Auto Filter 적용)
-- [ ] **시나리오 3**: Manual Filter 설정 시 Intent와 무관하게 Manual Filter 우선
+- [x] **시나리오 1**: 일반 질문 시 전체 지식 베이스 검색
+- [x] **시나리오 2**: 비교 질문 시 특정 문서만 검색 (Auto Filter 적용)
+- [x] **시나리오 3**: Manual Filter 설정 시 Intent와 무관하게 Manual Filter 우선
 - [x] **시나리오 4**: `checkpoints.sqlite` 파일에 State 저장 확인
-- [ ] **답변 품질**: Citations가 포함되고, 올바른 출처 정보 표시
+- [x] **답변 품질**: Citations가 포함되고, 올바른 출처 정보 표시
 
 ### ⚠️ 검증 중 발견된 특이사항 (Spec 034에서 개선 예정)
 이번 Spec 033 검증 과정에서 RAG의 견고성을 높이기 위한 다음의 이슈들을 발견했으며, 이는 의도적으로 **Spec 034 (RAG Pipeline Robustness)**로 이관하여 해결할 예정입니다:

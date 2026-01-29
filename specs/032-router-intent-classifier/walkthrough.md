@@ -161,7 +161,7 @@ a48cb94 test(spec-032): add intent classifier test cases
 
 ## 🚀 다음 단계
 
-- [ ] PR Merge 후 Production 배포
-- [ ] 실사용 데이터로 Intent 분류 정확도 모니터링
-- [ ] Intent Type 추가 (e.g., RECENT_ONLY, EXCLUDE, etc.)
-- [ ] Multi-target 지원 개선
+- [x] PR Merge 후 Production 배포
+- [x] 실사용 데이터로 Intent 분류 정확도 모니터링
+- [x] Intent Type 추가 (e.g., RECENT_ONLY, EXCLUDE, etc.)
+- [x] Multi-target 지원 개선

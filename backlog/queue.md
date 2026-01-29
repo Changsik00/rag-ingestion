@@ -387,19 +387,32 @@
   * **Solution**: `IntentClassifier`에서 Entity 추출 및 Neo4j Shortest Path (`find_shortest_path`) 구현으로 관계 정보 주입.
   * **PR**: `feat(spec-044): graph retrieval logic fix`
 
-* [ ] **Spec 045: Interactive Refinement (Canvas & Clarification)**
+* [x] **Spec 045: Interactive Refinement (Canvas & Clarification)**
   * **Goal**: HITL UX를 "단순 승인"에서 "적극적 개입"으로 고도화.
   * **Features**:
     - **Clarification**: 모호한 질문 시 Agent가 역질문(Questions)을 하여 의도를 명확히 함.
     - **Canvas (Draft Editing)**: Agent가 작성한 초안을 사용자가 직접 수정(Edit) 후 최종 승인.
   * **Scenario**: 질문 ("이거 요약해") -> Agent ("어떤 문서요?") -> 답변 ("A문서") -> 초안 생성 -> 사용자 수정 -> 승인.
-  * **Priority**: High (UX 차별화)
-  * **Status**: Planning (2026-01-28)
+  * **Status**: Completed (2026-01-29)
 
-* [ ] **Spec 046: Advanced Scraper (Headless Browser)**
+* [x] **Spec 046: Advanced Scraper (Headless Browser)**
   * **Goal**: Playwright 도입으로 동적 페이지 및 복잡한 레이아웃 수집
   * **Action**: Tiered Scraping Strategy 구현 (Trafilatura -> Playwright Fallback).
-  * **Status**: Planning (2026-01-29) - [Spec](specs/046-advanced-scraper/spec.md), [Plan](specs/046-advanced-scraper/plan.md)
+  * **Status**: Completed (2026-01-29)
+
+* [x] **Spec 047: YouTube Knowledge Scraper (Video-to-Knowledge)**
+  * [x] **Goal**: YouTube 영상 유출 및 구조화된 지식 추출 (Docker 환경 동기화 포함).
+  * [x] **Action**: Transcript API + Whisper Fallback + Docker `ffmpeg`/Playwright 설정.
+  * **Status**: Completed (2026-01-29)
+
+* [ ] **Spec 048: RAG Precision Refinement (Reranking & Dynamic Filtering)**
+  * **Goal**: 검색 노이즈(관련 없는 문서 인용)를 제거하고 답변의 신뢰도 및 정밀도 극대화.
+  * **Critical Context**: "릭롤 노래" 질문에 일론 머스크 문서가 인용되는 등의 "과응답" 문제 해결.
+  * **Action**:
+    - **Similarity Thresholding**: 일정 점수 이하의 벡터 검색 결과 자동 배제.
+    - **LLM Reranker**: 검색된 Top-K 청크를 LLM이 질문과의 관련성 기준으로 재정렬.
+    - **Citation Restriction**: 핵심 근거가 되는 문서만 인용하도록 프롬프트 가이드라인 고도화.
+  * **Priority**: High (RAG 사용성 핵심 개선)
 ---
 
 

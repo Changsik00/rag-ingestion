@@ -31,11 +31,12 @@ class IngestionService:
         self.job_repository = job_repository
         self.chunker = chunker
         self.extractor = extractor
-        
+
         # [Spec 046] Inject LLM into Quality Checker if using CompositeScraper
         from app.infrastructure.scrapers.composite_scraper import CompositeScraper
         if isinstance(self.scraper, CompositeScraper) and self.extractor:
             self.scraper.quality_checker.llm = self.extractor.llm
+            self.scraper.youtube_scraper.llm = self.extractor.llm
 
     def create_job(self, url: str, retry_of: str | None = None) -> IngestionJob:
         """Create and persist a new job in PENDING state."""

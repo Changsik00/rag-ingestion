@@ -4,8 +4,8 @@
 - `feature/034-rag-pipeline-recovery`
 
 ## 🛑 User Review Required
-- [ ] **Prompt Guardrail**: 현재 프롬프트에 "컨텍스트에 정보가 없으면 모른다고 답하라"는 지시를 한글/영문 중 어느 쪽으로 강화할지 결정 (일단 영문 지시문 추가 예정).
-- [ ] **Fallback 대상**: 필터 결과가 0건일 때 무조건 Fallback할지, 아니면 사용자에게 의사를 물어야 할지 (일단 자동 Fallback으로 구현).
+- [x] **Prompt Guardrail**: 현재 프롬프트에 "컨텍스트에 정보가 없으면 모른다고 답하라"는 지시를 한글/영문 중 어느 쪽으로 강화할지 결정 (일단 영문 지시문 추가 예정).
+- [x] **Fallback 대상**: 필터 결과가 0건일 때 무조건 Fallback할지, 아니면 사용자에게 의사를 물어야 할지 (일단 자동 Fallback으로 구현).
 
 ## 🎯 Core Strategy
 1. **State Traceability**: `RAGGraphState`에 `fallback_triggered` 필드를 추가하여 런타임 중 Fallback 발생 사실을 기록하고 이를 UI에 전달합니다.

@@ -4,8 +4,8 @@
 기존 Admin UI의 레이아웃을 개선하여 진단(분석)이 먼저 나오고 조치(복구)가 나중에 나오도록 변경합니다. 또한, N+1 쿼리 문제를 해결하여 성능을 최적화하고, 데이터 불일치의 세부 내용(스니펫)을 확인할 수 있는 기능을 추가합니다.
 
 ## 🛑 User Review Required
-- [ ] **Button Semantics**: "Fix All Chunks" 버튼의 색상이 'Primary'(테마에 따라 빨간색/오렌지색)로 표시되는 것이 의도된 것인지 재확인 (중요 액션이므로 눈에 띄게 설정함).
-- [ ] **Data Preview**: 청크 미리보기를 테이블 내 Expander로 넣을지, 별도 팝업으로 처리할지를 결정 (현재는 Expander 제안).
+- [x] **Button Semantics**: "Fix All Chunks" 버튼의 색상이 'Primary'(테마에 따라 빨간색/오렌지색)로 표시되는 것이 의도된 것인지 재확인 (중요 액션이므로 눈에 띄게 설정함).
+- [x] **Data Preview**: 청크 미리보기를 테이블 내 Expander로 넣을지, 별도 팝업으로 처리할지를 결정 (현재는 Expander 제안).
 
 ---
 

@@ -7,8 +7,8 @@
 - [x] plan.md 작성
 - [x] task.md 작성
 - [x] 백로그 업데이트
-- [ ] 사용자 승인 대기
-- [ ] 브랜치 생성 및 구현 시작
+- [x] 사용자 승인 대기
+- [x] 브랜치 생성 및 구현 시작
 
 ---
 
@@ -16,7 +16,7 @@
 
 - [x] 브랜치 생성: `git checkout -b feature/015-documentation-update`
 - [x] 브랜치 확인: `git branch --show-current`
-- [-] Spec 문서 커밋 (이미 main에서 커밋됨)
+- [x] Spec 문서 커밋 (이미 main에서 커밋됨)
 
 **커밋 메시지:**
 ```
@@ -122,8 +122,8 @@ docs: improve Documentation section in README
 
 - [x] `docs/ontology.md`에 관련 문서 링크 추가 (Task 2-2에서 완료)
 - [x] `docs/graph_schema.md`, `docs/neo4j_query_guide.md` 추가 (Task 2-1에서 완료)
-- [-] `docs/architecture.md` 업데이트 (필요 없음 - 이미 최신 상태)
-- [-] 별도 커밋 (Task 2에서 이미 포함됨)
+- [x] `docs/architecture.md` 업데이트 (필요 없음 - 이미 최신 상태)
+- [x] 별도 커밋 (Task 2에서 이미 포함됨)
 
 **커밋 메시지:**
 ```
@@ -167,10 +167,10 @@ docs: mark spec 015 as completed in backlog
 
 ## Task 6: PR 준비 및 생성
 
-- [ ] `specs/015-documentation-update/walkthrough.md` 작성
-- [ ] `specs/015-documentation-update/pr_description.md` 작성
-- [ ] Push: `git push origin feature/015-documentation-update`
-- [ ] PR 생성:
+- [x] `specs/015-documentation-update/walkthrough.md` 작성
+- [x] `specs/015-documentation-update/pr_description.md` 작성
+- [x] Push: `git push origin feature/015-documentation-update`
+- [x] PR 생성:
 ```bash
 gh pr create --base main --head feature/015-documentation-update \
   --title "docs(spec-015): documentation update and reorganization" \

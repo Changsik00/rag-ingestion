@@ -5,7 +5,7 @@
 - [x] spec.md 작성
 - [x] plan.md 작성
 - [x] task.md 작성
-- [ ] 백로그 업데이트 (Note 추가)
+- [x] 백로그 업데이트 (Note 추가)
 - [x] User Plan Accept
 
 ## Task 1: 인프라 계층 리셋 메서드 구현

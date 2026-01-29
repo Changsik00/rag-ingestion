@@ -1,7 +1,7 @@
 # Task List: Spec-031 Source-Filtered RAG
 
 ## Progress
-- [ ] Spec 번호 확정 (031)
+- [x] Spec 번호 확정 (031)
 - [x] spec.md 작성 (Final)
 - [x] plan.md 작성 (Final)
 - [x] task.md 작성 (Final)
@@ -41,5 +41,9 @@
 
 ## Task 4: Finalize
 - [x] Code Quality Check: `uv run ruff check . --fix`
-- [x] Full Test Suite: `uv run pytest` (In Progress - Regression Fix)
+- [x] Full Test Suite: `uv run pytest`
 - [x] PR Creation: Strategy 문서 링크 포함
+
+## Summary
+**총 Task**: 4개 세부 작업군
+**현재 진행**: 완료 (PR 머지됨)

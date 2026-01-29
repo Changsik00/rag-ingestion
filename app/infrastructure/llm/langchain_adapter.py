@@ -74,7 +74,7 @@ class LangChainLLMAdapter:
 
             5. **Relationships between entities:**
             Extract meaningful relationships between the identified entities.
-            
+
             **Relationship Types:**
             - FOUNDED: Person founded Organization (e.g., "Elon Musk founded Tesla")
             - WORKS_FOR: Person works for Organization (e.g., "Jane works at Google")

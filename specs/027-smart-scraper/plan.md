@@ -6,8 +6,8 @@
 ## 🛑 User Review Required
 <!-- Korean: Critical items requiring explicit user approval before proceeding -->
 <!-- Example: A vs B 선택, Breaking Change 여부 등 -->
-- [ ] **Library Choice**: `trafilatura`는 정적 페이지에 강하지만 SPA(동적 페이지) 수집 능력은 제한적임. (동적 페이지는 추후 Playwright 등으로 확장 필요)
-- [ ] **Fallback**: 본문 추출 실패 시, 기존 단순 방식(requests)으로 자동 전환되는 것에 동의하는지.
+- [x] **Library Choice**: `trafilatura`는 정적 페이지에 강하지만 SPA(동적 페이지) 수집 능력은 제한적임. (동적 페이지는 추후 Playwright 등으로 확장 필요)
+- [x] **Fallback**: 본문 추출 실패 시, 기존 단순 방식(requests)으로 자동 전환되는 것에 동의하는지.
 
 ## 🎯 Core Strategy
 <!-- Korean: Key architectural decisions and reasoning -->

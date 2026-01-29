@@ -66,9 +66,9 @@
 - [x] Create PR: `gh pr create` -> [PR #39](https://github.com/Changsik00/rag-ingestion/pull/39)
 
 ## Task 6: Debugging & Stabilization
-- [/] Fix HITL 404: Add missing endpoints to `app/interfaces/api/v1/endpoints/admin/jobs.py`
-- [ ] Fix SQLite 500: Solve "database disk image is malformed" error
-- [ ] Verify Streamlit stability: Correct internal 404s if necessary
+- [x] Fix HITL 404: Add missing endpoints to `app/interfaces/api/v1/endpoints/admin/jobs.py`
+- [x] Fix SQLite 500: Solve "database disk image is malformed" error
+- [x] Verify Streamlit stability: Correct internal 404s if necessary
 
 ## Summary
 **총 Task**: 5개 대분류 + 디버깅

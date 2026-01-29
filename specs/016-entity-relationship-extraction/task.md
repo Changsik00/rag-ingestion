@@ -230,17 +230,17 @@ feat: add PRODUCT and DOCUMENT entity types
 
 ### 11-2. Neo4j Browser 검증
 
-- [ ] Neo4j Browser 접속: http://localhost:7474
-- [ ] Cypher 쿼리: `MATCH (s:Entity)-[r]->(t:Entity) RETURN s, r, t LIMIT 20`
-- [ ] Relationship 시각화 확인 (FOUNDED, WORKS_FOR 등)
-- [ ] Screenshot 저장 (선택사항)
+- [x] Neo4j Browser 접속: http://localhost:7474
+- [x] Cypher 쿼리: `MATCH (s:Entity)-[r]->(t:Entity) RETURN s, r, t LIMIT 20`
+- [x] Relationship 시각화 확인 (FOUNDED, WORKS_FOR 등)
+- [x] Screenshot 저장 (선택사항)
 
 ### 11-3. API 수동 테스트
 
-- [ ] Swagger UI: http://localhost:8000/docs
-- [ ] `POST /ingest/web` 테스트 (관계 포함 문서)
-- [ ] `GET /entities/{name}/relationships` 테스트
-- [ ] Response 검증
+- [x] Swagger UI: http://localhost:8000/docs
+- [x] `POST /ingest/web` 테스트 (관계 포함 문서)
+- [x] `GET /entities/{name}/relationships` 테스트
+- [x] Response 검증
 
 ---
 
