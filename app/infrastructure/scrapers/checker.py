@@ -11,8 +11,9 @@ class ScrapingQualityChecker:
     수집된 마크다운 결과물의 품질을 휴리스틱하게 검사하여 부실 여부를 판단함.
     """
 
-    def __init__(self, min_length: int = 300):
+    def __init__(self, min_length: int = 300, llm: Optional["LLMInterface"] = None):
         self.min_length = min_length
+        self.llm = llm
         # JS 차단 및 클라우드플레어 관련 키워드
         self.blocked_keywords = [
             "javascript를 활성화해주세요",
