@@ -245,9 +245,9 @@ class RAGNodes:
         # Run 리랭킹 in parallel
         rerank_results = await asyncio.gather(*rerank_tasks)
 
-        # Filter by threshold (e.g., score >= 5)
-        # 0.7 probability or 5/10 score is common for positive relevance
-        min_relevance_score = 5
+        # [Spec 048] Filter by threshold
+        # Lowered to 3 to keep contextually useful chunks (e.g. artist info)
+        min_relevance_score = 3
         final_reranked = []
 
         for chunk, score_data in zip(rerank_targets, rerank_results):
@@ -352,11 +352,11 @@ class RAGNodes:
         prompt = (
             "You are a professional AI assistant. Answer the question by combining the provided Context (DB) and your internal knowledge.\n\n"
             "KNOWLEDGE MIXING RULES:\n"
-            "1. CONTEXT IS ABSOLUTE: If the provided Context contains information, it MUST be prioritized as the source of truth.\n"
+            "1. PRIORITIZE CONTEXT: If the provided Context contains information, it MUST be prioritized as the source of truth. Use it for core facts and citations.\n"
             "2. CITATION REQUIREMENT: For every sentence or fact derived from the Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
-            "3. LLM KNOWLEDGE SUPPLEMENT: If the Context is missing information or is sparse, use your own internal knowledge to provide a complete and helpful answer.\n"
+            "3. HELPfulness & COMPLETENESS: Even if the Context answers the question, use your internal knowledge to enrich the answer (e.g., adding artist name, historical background, or related concepts) to make it comprehensive.\n"
             "4. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n"
-            "5. SEAMLESS FUSION: Mix both sources into a natural, coherent response. If no relevant info exists in DB at all, state this clearly before answering with your general knowledge.\n\n"
+            "5. SEAMLESS FUSION: Mix both sources into a natural, coherent response. Ensure the answer is structured and deep, not just a minimal summary.\n\n"
             f"Question: {query}\n"
             f"(Rewritten Query for Search): {rewritten_query}\n\n"
             "=== Provided Context (DB) ===\n"
