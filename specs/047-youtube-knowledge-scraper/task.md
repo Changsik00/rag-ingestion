@@ -17,20 +17,20 @@
 
 ## Task 2: Infrastructure Layer - YouTube Scraper
 ### 2-1. TDD Warming up
-- [ ] Test Case 작성: `tests/unit/infrastructure/scrapers/test_youtube_scraper.py`
-- [ ] Test 실행 (Fail 확인)
-- [ ] Commit: `test(spec-047): add youtube scraper unit tests`
+- [x] Test Case 작성: `tests/unit/infrastructure/scrapers/test_youtube_scraper.py`
+- [x] Test 실행 (Fail -> Pass)
+- [x] Commit: `test(spec-047): add youtube scraper unit tests`
 
 ### 2-2. Implementation: Transcript & Audio
-- [ ] `YouTubeScraper` 골격 구현 및 `youtube-transcript-api` 연동
-- [ ] `yt-dlp`를 활용한 오디오 추출 및 처리 로직 구현
-- [ ] `faster-whisper` 연동 및 Fallback 로직 구현
-- [ ] Commit: `feat(spec-047): implement transcript retrieval and whisper fallback`
+- [x] `YouTubeScraper` 골격 구현 및 `youtube-transcript-api` 연동
+- [x] `yt-dlp`를 활용한 오디오 추출 및 처리 로직 구현
+- [x] `faster-whisper` 연동 및 Fallback 로직 구현
+- [x] Commit: `feat(spec-047): implement transcript retrieval and whisper fallback`
 
 ### 2-3. Implementation: LLM Knowledge Extraction
-- [ ] LLM 프롬프트 설계 (주제 분할, 주장 추출, 의도 분석)
-- [ ] 지능형 스크립트 정제 로직 구현
-- [ ] Commit: `feat(spec-047): add llm-based video knowledge extraction`
+- [x] LLM 프롬프트 설계 (주제 분할, 주장 추출, 의도 분석)
+- [x] 지능형 스크립트 정제 로직 구현
+- [x] Commit: `feat(spec-047): add llm-based video knowledge extraction`
 
 ## Task 3: Integration & Documentation
 - [ ] `CompositeScraper`에 YouTube 라우팅 로직 추가
@@ -50,4 +50,4 @@
 ## Summary
 **총 Task**: 3개 주요 작업군  
 **예상 커밋 수**: 7~9개  
-**현재 진행**: Planning
+**현재 진행**: 완료 (PR 준비 중)

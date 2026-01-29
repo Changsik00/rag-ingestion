@@ -1,9 +1,7 @@
 import logging
-import asyncio
-from typing import Dict, Any, Optional
 
-from playwright.async_api import async_playwright
 import trafilatura
+from playwright.async_api import async_playwright
 
 from app.domain.interfaces.scraper import ScraperInterface
 from app.schemas.ingest import IngestResponse
@@ -30,7 +28,7 @@ class PlaywrightScraper(ScraperInterface):
             async with async_playwright() as p:
                 # 1. Launch Browser
                 browser = await p.chromium.launch(headless=True)
-                
+
                 # 2. Create Page with custom User-Agent
                 context = await browser.new_context(
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -51,10 +49,10 @@ class PlaywrightScraper(ScraperInterface):
                 # 5. Extract Main Content using Trafilatura for consistency
                 # Playwright로 렌더링된 HTML을 Trafilatura로 파싱하여 클린 마크다운 획득
                 markdown_content = trafilatura.extract(
-                    html_content, 
-                    include_comments=False, 
-                    include_tables=True, 
-                    include_images=False, 
+                    html_content,
+                    include_comments=False,
+                    include_tables=True,
+                    include_images=False,
                     output_format="markdown"
                 )
 

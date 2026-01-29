@@ -31,7 +31,7 @@ class IngestionService:
         self.job_repository = job_repository
         self.chunker = chunker
         self.extractor = extractor
-        
+
         # [Spec 046] Inject LLM into Quality Checker if using CompositeScraper
         from app.infrastructure.scrapers.composite_scraper import CompositeScraper
         if isinstance(self.scraper, CompositeScraper) and self.extractor:

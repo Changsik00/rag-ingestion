@@ -1,12 +1,12 @@
 import asyncio
-import os
+import json
 import logging
 import multiprocessing
-import json
-from typing import List, Dict, Any, Optional
+import os
+from typing import Any
 
-from youtube_transcript_api import YouTubeTranscriptApi
 import yt_dlp
+from youtube_transcript_api import YouTubeTranscriptApi
 
 from app.domain.interfaces.scraper import ScraperInterface
 from app.schemas.ingest import IngestResponse
@@ -28,10 +28,10 @@ class YouTubeScraper(ScraperInterface):
     async def scrape(self, url: str) -> IngestResponse:
         logger.info(f"YouTube 스크래핑 시작: {url}")
         video_id = self._extract_video_id(url)
-        
+
         # 1. 자막 수집 시도
         transcript_text = await self._get_transcript(video_id)
-        
+
         # 2. 자막 부재 시 Whisper Fallback
         if not transcript_text:
             logger.info("자막 데이터를 찾을 수 없어 Whisper STT Fallback을 실행합니다.")
@@ -48,7 +48,7 @@ class YouTubeScraper(ScraperInterface):
 
         # 3. LLM 기반 지식 구조화 및 정제
         knowledge = await self._extract_knowledge_with_llm(transcript_text)
-        
+
         # 4. IngestResponse 생성
         markdown_content = self._format_as_markdown(knowledge)
         metadata = {
@@ -57,7 +57,7 @@ class YouTubeScraper(ScraperInterface):
             "video_id": video_id,
             "knowledge": knowledge
         }
-        
+
         return IngestResponse(url=url, markdown=markdown_content, metadata=metadata)
 
     def _extract_video_id(self, url: str) -> str:
@@ -72,17 +72,17 @@ class YouTubeScraper(ScraperInterface):
                 return match.group(1)
         raise ValueError(f"유효하지 않은 YouTube URL입니다: {url}")
 
-    async def _get_transcript(self, video_id: str) -> Optional[str]:
+    async def _get_transcript(self, video_id: str) -> str | None:
         try:
             # 우선순위: 수동 자막 -> 자동 자막
             transcript_list = YouTubeTranscriptApi().list(video_id)
             try:
                 # 한국어 또는 영어 수동 자막 시도
                 transcript = transcript_list.find_transcript(['ko', 'en'])
-            except:
+            except Exception:
                 # 아무 자막이나 가져오기 (자동 생성 포함)
                 transcript = transcript_list.find_generated_transcript(['ko', 'en'])
-            
+
             data = transcript.fetch()
             return " ".join([d['text'] for d in data])
         except Exception as e:
@@ -101,7 +101,7 @@ class YouTubeScraper(ScraperInterface):
             'outtmpl': temp_audio_path + '.%(ext)s',
             'quiet': True,
         }
-        
+
         def download():
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
@@ -109,22 +109,22 @@ class YouTubeScraper(ScraperInterface):
 
         return await asyncio.to_thread(download)
 
-    def _run_whisper(self, audio_path: str) -> List[Dict[str, Any]]:
+    def _run_whisper(self, audio_path: str) -> list[dict[str, Any]]:
         from faster_whisper import WhisperModel
-        
+
         # [Intel Core i9 최적화]
         # device="cpu", compute_type="int8" (Quantization) 적용
         if self.whisper_model is None:
             logger.info("Whisper 모델 로드 중 (Intel i9 CPU 최적화 모드)...")
             self.whisper_model = WhisperModel(
-                "medium", 
-                device="cpu", 
-                compute_type="int8", 
+                "medium",
+                device="cpu",
+                compute_type="int8",
                 cpu_threads=max(1, multiprocessing.cpu_count() - 2)
             )
-            
+
         segments, info = self.whisper_model.transcribe(audio_path, beam_size=5)
-        
+
         results = []
         for segment in segments:
             results.append({
@@ -134,7 +134,7 @@ class YouTubeScraper(ScraperInterface):
             })
         return results
 
-    async def _extract_knowledge_with_llm(self, transcript: str) -> Dict[str, Any]:
+    async def _extract_knowledge_with_llm(self, transcript: str) -> dict[str, Any]:
         if not self.llm:
             return {"summary": transcript, "sections": [], "claims": [], "tone": "N/A", "intent": "N/A"}
 
@@ -180,24 +180,24 @@ class YouTubeScraper(ScraperInterface):
             logger.error(f"LLM 지식 추출 실패: {e}")
             return {"summary": transcript, "sections": [], "claims": [], "tone": "N/A", "intent": "N/A"}
 
-    def _format_as_markdown(self, knowledge: Dict[str, Any]) -> str:
+    def _format_as_markdown(self, knowledge: dict[str, Any]) -> str:
         md = f"# {knowledge.get('title', 'Video Knowledge Document')}\n\n"
         md += f"## 📝 핵심 요약\n{knowledge.get('summary', '')}\n\n"
-        
+
         if knowledge.get("sections"):
             md += "## 📂 주제별 타임라인\n"
             for sec in knowledge["sections"]:
                 md += f"- **{sec.get('topic')}**\n"
             md += "\n"
-            
+
         if knowledge.get("claims"):
             md += "## 🎯 주요 주장 및 사실\n"
             for claim in knowledge["claims"]:
                 md += f"- {claim.get('text')}\n"
             md += "\n"
-            
-        md += f"## 🔍 분석 데이터\n"
+
+        md += "## 🔍 분석 데이터\n"
         md += f"- **어조**: {knowledge.get('tone')}\n"
         md += f"- **의도**: {knowledge.get('intent')}\n"
-        
+
         return md

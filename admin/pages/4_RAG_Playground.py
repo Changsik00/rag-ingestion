@@ -1,5 +1,5 @@
-import uuid
 import time
+import uuid
 
 import streamlit as st
 
@@ -243,7 +243,7 @@ for message in st.session_state.messages:
                                 if msg["role"] == "user":
                                     last_user_query = msg["content"]
                                     break
-                            
+
                             try:
                                 res = api_client.post(
                                     f"/rag/sessions/{current_thread_id}/resume",
