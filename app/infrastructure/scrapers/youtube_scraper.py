@@ -62,9 +62,11 @@ class YouTubeScraper(ScraperInterface):
 
     def _extract_video_id(self, url: str) -> str:
         import re
+        # 다양한 YouTube URL 패턴 대응 (escaped characters 포함)
         patterns = [
-            r'(?:v=|\/)([0-9A-Za-z_-]{11}).*',
-            r'(?:embed\/|v\/|youtu.be\/)([0-9A-Za-z_-]{11})'
+            r'[vV](?:=|\\{1,2}=)([0-9A-Za-z_-]{11})',  # v=ID 또는 v\=ID 또는 v\\=ID
+            r'(?:be\/|embed\/|v\/|shorts\/)([0-9A-Za-z_-]{11})', # youtu.be/ID, shorts/ID 등
+            r'(?:\/)([0-9A-Za-z_-]{11})(?:[\?&]|$)' # /ID?query 또는 /ID
         ]
         for pattern in patterns:
             match = re.search(pattern, url)
@@ -84,7 +86,11 @@ class YouTubeScraper(ScraperInterface):
                 transcript = transcript_list.find_generated_transcript(['ko', 'en'])
 
             data = transcript.fetch()
-            return " ".join([d['text'] for d in data])
+            # 딕셔너리 형태와 객체 형태(FetchedTranscriptSnippet) 모두 대응
+            return " ".join([
+                d['text'] if isinstance(d, dict) else getattr(d, 'text', '') 
+                for d in data
+            ])
         except Exception as e:
             logger.warning(f"Transcript 수집 실패: {e}")
             return None
