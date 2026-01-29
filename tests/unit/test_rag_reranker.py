@@ -13,7 +13,7 @@ async def test_rerank_results_success():
     # Given
     mock_llm = MagicMock()
     # LLM response for 2 chunks
-    mock_llm.generate = AsyncMock(
+    mock_llm.agenerate = AsyncMock(
         side_effect=[
             MagicMock(content=json.dumps({"score": 9, "reasoning": "High relevance"})),
             MagicMock(content=json.dumps({"score": 2, "reasoning": "Low relevance"})),

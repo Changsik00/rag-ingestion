@@ -18,6 +18,7 @@ class TestLLMFactory:
         """Should succeed when GEMINI_API_KEY is present"""
         mock_settings = Mock(spec=Settings)
         mock_settings.GEMINI_API_KEY = "test_gemini_key"
+        mock_settings.GEMINI_MODEL_NAME = "gemini-1.5-pro"
         mock_get_settings.return_value = mock_settings
 
         llm = LLMFactory.get_google_llm()
@@ -29,6 +30,7 @@ class TestLLMFactory:
         """Should raise ValueError when GEMINI_API_KEY is missing"""
         mock_settings = Mock(spec=Settings)
         mock_settings.GEMINI_API_KEY = None
+        mock_settings.GEMINI_MODEL_NAME = "gemini-1.5-pro"
         mock_get_settings.return_value = mock_settings
 
         with pytest.raises(ValueError, match="GEMINI_API_KEY environment variable is not set"):
@@ -41,6 +43,7 @@ class TestLLMFactory:
         # but GEMINI_API_KEY is empty in Settings object.
         mock_settings = Mock(spec=Settings)
         mock_settings.GEMINI_API_KEY = None
+        mock_settings.GEMINI_MODEL_NAME = "gemini-1.5-pro"
         mock_get_settings.return_value = mock_settings
 
         with pytest.raises(ValueError, match="GEMINI_API_KEY environment variable is not set"):

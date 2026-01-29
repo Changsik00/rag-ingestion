@@ -169,7 +169,7 @@ class YouTubeScraper(ScraperInterface):
 }}
 """
         try:
-            response_text = await self.llm.generate(prompt)
+            response_text = await self.llm.agenerate(prompt)
             # JSON 추출 (Markdown 코드 블록 제거 등)
             import re
 

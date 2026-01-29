@@ -55,7 +55,7 @@ class ScrapingQualityChecker:
                     "Answer only 'COHERENT' or 'DISJOINTED'.\n\n"
                     f"Content Snippet (first 1000 chars):\n{content[:1000]}"
                 )
-                judgment = await self.llm.generate(prompt)
+                judgment = await self.llm.agenerate(prompt)
                 if "DISJOINTED" in judgment.upper():
                     logger.warning("LLM judged the content as disjointed/navigation-heavy.")
                     return True

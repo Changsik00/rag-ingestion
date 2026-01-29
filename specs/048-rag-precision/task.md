@@ -48,7 +48,22 @@
 - [x] **Archive Commit**: `docs(spec-048): archive walkthrough and pr description`
 - [x] Create PR: `gh pr create --title "feat(spec-048): rag precision refinement" --body-file specs/048-rag-precision/pr_description.md`
 
+## Task 4: Fix RAG Timeout (Async LLM Refactoring)
+### 4-1. Interface Refactoring
+- [/] `app/domain/interfaces/llm.py`에 비동기 메서드 추가
+
+### 4-2. Infrastructure Implementation
+- [ ] `app/infrastructure/llm/langchain_adapter.py` 비동기 구현 (`ainvoke`)
+
+### 4-3. Workflow Optimization
+- [ ] `app/infrastructure/rag/nodes.py`의 `rerank_results` 및 주요 노드 비동기화
+
+### 4-4. Verification
+- [ ] `uv run pytest` (Unit & Integration)
+- [ ] Admin UI에서 타임아웃 여부 재확인
+- [ ] Commit: `fix(spec-048): implement async llm adapter to fix rag timeout`
+
 ## Summary
-**총 Task**: 3개  
-**예상 커밋 수**: 6~8개  
-**현재 진행**: Done
+**총 Task**: 4개  
+**예상 커밋 수**: 8~10개  
+**현재 진행**: Execution (Fixing Timeout)

@@ -41,19 +41,16 @@ async def test_ambiguity_detection_in_router(mock_services):
     rag_service, ingestion_service = mock_services
     agent = AdminAgent(rag_service, ingestion_service)
 
-    # Use MagicMock for synchronous invoke
+    # Use AsyncMock for asynchronous ainvoke
     agent.llm = MagicMock()
-
-    # Mock LLM response to 'ingest' (but input has no URL)
-    # This forces the regex check to fail and switch to clarify
-    agent.llm.invoke.return_value = AIMessage(content="ingest")
+    agent.llm.ainvoke = AsyncMock(return_value=AIMessage(content="ingest"))
 
     state = {
         "messages": [HumanMessage(content="이거 요약해줘")],  # No URL here
         "hitl_enabled": True,
     }
 
-    result = agent.router_node(state)
+    result = await agent.router_node(state)
 
     assert result["intent"] == "clarify"
     assert "url" in result["missing_slots"]
@@ -76,8 +73,8 @@ async def test_ambiguity_detection_in_router(mock_services):
     # So the fix IS the prompt change.
 
     # I will assert 'clarify' here just to keep the logic valid.
-    agent.llm.invoke.return_value = AIMessage(content="clarify")
-    result_en = agent.router_node(state_en)
+    agent.llm.ainvoke.return_value = AIMessage(content="clarify")
+    result_en = await agent.router_node(state_en)
     assert result_en["intent"] == "clarify"
 
 
@@ -95,10 +92,10 @@ async def test_clarify_node(mock_services):
 
     # clarify_node now uses LLM, so we must mock it
     agent.llm = MagicMock()
-    # Mock LLM response
-    agent.llm.invoke.return_value = AIMessage(content="Please provide the URL to ingest.")
+    # Mock LLM response (ainvoke)
+    agent.llm.ainvoke = AsyncMock(return_value=AIMessage(content="Please provide the URL to ingest."))
 
-    result = agent.clarify_node(state)
+    result = await agent.clarify_node(state)
 
     assert "messages" in result
     assert isinstance(result["messages"][0], AIMessage)
@@ -113,30 +110,10 @@ async def test_human_review_feedback_loop(mock_services):
     rag_service, ingestion_service = mock_services
     agent = AdminAgent(rag_service, ingestion_service)
 
-    # 1. Feedback provided (Resume with input)
-    # The state will have the feedback as a HumanMessage appended
-    # Let's mock the nodes to avoid side effects
-    agent.router_node = MagicMock(return_value={"intent": "search"})
-    agent.search_node = AsyncMock(return_value={"messages": [AIMessage(content="Revised Answer")]})
-
-    # We need to test that after human_review, if feedback exists, it goes to router.
-
-    # Alternative: Instantiate Agent and check the closure if possible? No.
-    # Best way: Run workflow from human_review with state.
-
-    # Skip actual run if complex.
-    # Let's rely on the fact that we added the edge in build_workflow:
-    # workflow.add_conditional_edges("human_review", route_after_review, {"router": "router", END: END})
-    # And route_after_review checks for HumanMessage.
-
-    # So we can just trust the code or run a full flow.
-    # Let's try running full flow with mocks.
-    pass
-
-    # Actually, simpler test: Verify that if we call router_node with feedback, it detects 'search' intent (contextual).
+    # Verify that if we call router_node with feedback, it detects 'search' intent (contextual).
     agent.llm = MagicMock()
-    agent.llm.invoke.return_value = AIMessage(content="search")
+    agent.llm.ainvoke = AsyncMock(return_value=AIMessage(content="search"))
 
     feedback_state = {"messages": [HumanMessage(content="User Feedback: Fix this part")]}
-    result = agent.router_node(feedback_state)
+    result = await agent.router_node(feedback_state)
     assert result["intent"] == "search"

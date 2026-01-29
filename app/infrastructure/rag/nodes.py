@@ -280,11 +280,7 @@ class RAGNodes:
         import json
 
         try:
-            if hasattr(self.llm, "generate") and asyncio.iscoroutinefunction(self.llm.generate):
-                response = await self.llm.generate(prompt)
-            else:
-                response = self.llm.generate(prompt)
-
+            response = await self.llm.agenerate(prompt)
             content = response.content if hasattr(response, "content") else str(response)
 
             # JSON block 추출 (LLM이 마크다운 형식을 포함할 수 있음)
@@ -368,13 +364,8 @@ class RAGNodes:
             "Answer:"
         )
 
-        # Handle both sync and async LLM adapter implementations
-        import asyncio
-
-        if hasattr(self.llm, "generate") and asyncio.iscoroutinefunction(self.llm.generate):
-            response = await self.llm.generate(prompt)
-        else:
-            response = self.llm.generate(prompt)
+        # [Spec 048] Async LLM Refactoring
+        response = await self.llm.agenerate(prompt)
 
         if hasattr(response, "content"):
             answer_text = response.content

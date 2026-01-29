@@ -46,7 +46,7 @@ async def test_rag_precision_refinement_flow():
     # 1st call: Reranking rel-1 (score 9)
     # 2nd call: Reranking irr-1 (score 1)
     # 3rd call: Answer Generation
-    mock_llm.generate = AsyncMock(
+    mock_llm.agenerate = AsyncMock(
         side_effect=[
             MagicMock(content=json.dumps({"score": 9, "reasoning": "Direct answer"})),
             MagicMock(content=json.dumps({"score": 1, "reasoning": "Irrelevant noise"})),
@@ -93,8 +93,8 @@ async def test_rag_precision_refinement_flow():
     assert final_state["final_answer"] == "Final Precision Answer [1]"
 
     # - Context given to LLM for Answer Generation should ONLY contain rel-1
-    # We check the third call to llm.generate
-    answer_gen_prompt = mock_llm.generate.call_args_list[2][0][0]
+    # We check the third call to llm.agenerate
+    answer_gen_prompt = mock_llm.agenerate.call_args_list[2][0][0]
     assert "This is highly relevant content." in answer_gen_prompt
     assert "This is completely irrelevant spam." not in answer_gen_prompt
 
