@@ -12,6 +12,7 @@ def mock_services():
     ingestion_service = MagicMock()
     return rag_service, ingestion_service
 
+
 @pytest.mark.asyncio
 async def test_admin_state_schema():
     """AdminState에 새로운 필드가 추가되었는지 검증"""
@@ -28,10 +29,11 @@ async def test_admin_state_schema():
         # New Fields
         "draft_content": "Draft",
         "is_clarification": True,
-        "missing_slots": ["url"]
+        "missing_slots": ["url"],
     }
     assert state["draft_content"] == "Draft"
     assert state["is_clarification"] is True
+
 
 @pytest.mark.asyncio
 async def test_ambiguity_detection_in_router(mock_services):
@@ -47,8 +49,8 @@ async def test_ambiguity_detection_in_router(mock_services):
     agent.llm.invoke.return_value = AIMessage(content="ingest")
 
     state = {
-        "messages": [HumanMessage(content="이거 요약해줘")], # No URL here
-        "hitl_enabled": True
+        "messages": [HumanMessage(content="이거 요약해줘")],  # No URL here
+        "hitl_enabled": True,
     }
 
     result = agent.router_node(state)
@@ -57,10 +59,7 @@ async def test_ambiguity_detection_in_router(mock_services):
     assert "url" in result["missing_slots"]
 
     # Test English "Summarize this"
-    state_en = {
-        "messages": [HumanMessage(content="Summarize this")],
-        "hitl_enabled": True
-    }
+    state_en = {"messages": [HumanMessage(content="Summarize this")], "hitl_enabled": True}
     # Mock LLM to return 'clarify' if prompt is followed, OR 'search' if not.
     # But here we are mocking the LLM response itself!
     # Wait, if we mock the LLM response, we are NOT testing the prompt efficacy.
@@ -81,6 +80,7 @@ async def test_ambiguity_detection_in_router(mock_services):
     result_en = agent.router_node(state_en)
     assert result_en["intent"] == "clarify"
 
+
 @pytest.mark.asyncio
 async def test_clarify_node(mock_services):
     """Clarify Node가 적절한 역질문을 생성하는지 테스트"""
@@ -90,7 +90,7 @@ async def test_clarify_node(mock_services):
     state = {
         "messages": [HumanMessage(content="요약해줘")],
         "intent": "clarify",
-        "missing_slots": ["url"] # Use recognized slot name
+        "missing_slots": ["url"],  # Use recognized slot name
     }
 
     # clarify_node now uses LLM, so we must mock it
@@ -105,6 +105,7 @@ async def test_clarify_node(mock_services):
     assert result["is_clarification"] is True
     # Check if mock content is returned
     assert "Please provide the URL" in result["messages"][0].content
+
 
 @pytest.mark.asyncio
 async def test_human_review_feedback_loop(mock_services):
@@ -136,9 +137,6 @@ async def test_human_review_feedback_loop(mock_services):
     agent.llm = MagicMock()
     agent.llm.invoke.return_value = AIMessage(content="search")
 
-    feedback_state = {
-        "messages": [HumanMessage(content="User Feedback: Fix this part")]
-    }
+    feedback_state = {"messages": [HumanMessage(content="User Feedback: Fix this part")]}
     result = agent.router_node(feedback_state)
     assert result["intent"] == "search"
-

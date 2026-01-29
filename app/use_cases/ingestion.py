@@ -34,6 +34,7 @@ class IngestionService:
 
         # [Spec 046] Inject LLM into Quality Checker if using CompositeScraper
         from app.infrastructure.scrapers.composite_scraper import CompositeScraper
+
         if isinstance(self.scraper, CompositeScraper) and self.extractor:
             self.scraper.quality_checker.llm = self.extractor.llm
             self.scraper.youtube_scraper.llm = self.extractor.llm

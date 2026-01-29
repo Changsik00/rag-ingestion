@@ -51,4 +51,4 @@
 ## Summary
 **총 Task**: 3개  
 **예상 커밋 수**: 6~8개  
-**현재 진행**: Verification
+**현재 진행**: Done

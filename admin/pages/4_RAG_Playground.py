@@ -159,7 +159,7 @@ for message in st.session_state.messages:
 
         # Only render standard bubble if it's NOT a draft (HITL) and NOT a clarification request
         if not is_draft and not is_clarification:
-             st.markdown(message["content"])
+            st.markdown(message["content"])
         if message["role"] == "assistant":
             render_debug_ui(message)
 
@@ -259,9 +259,7 @@ for message in st.session_state.messages:
                                     if msgs:
                                         last_msg = msgs[-1]
                                         answer_text = (
-                                            last_msg.get("content")
-                                            if isinstance(last_msg, dict)
-                                            else last_msg.content
+                                            last_msg.get("content") if isinstance(last_msg, dict) else last_msg.content
                                         )
 
                                     context_data = result_data.get("context_data") or {}
@@ -340,7 +338,7 @@ with st.sidebar:
                 api_client.post(f"/rag/sessions/{current_thread_id}/reset")
                 st.session_state.messages = []
                 st.toast("Conversation history deleted from server.")
-                time.sleep(1) # Give toast time to show
+                time.sleep(1)  # Give toast time to show
                 st.rerun()
             except Exception as e:
                 st.error(f"Failed to clear history: {e}")
@@ -361,8 +359,6 @@ with st.sidebar:
             help="If enabled, the pipeline will stop before generating the final answer for your review.",
         )
         st.session_state.hitl_enabled = hitl_enabled
-
-
 
 
 # --- Input Handling ---

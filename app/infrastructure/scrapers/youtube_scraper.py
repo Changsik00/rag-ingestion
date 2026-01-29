@@ -13,6 +13,7 @@ from app.schemas.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)
 
+
 class YouTubeScraper(ScraperInterface):
     """
     YouTube 영상 정보를 고품질 지식으로 변환하는 스크래퍼.
@@ -55,18 +56,19 @@ class YouTubeScraper(ScraperInterface):
             "title": knowledge.get("title", f"YouTube Video: {video_id}"),
             "source": url,
             "video_id": video_id,
-            "knowledge": knowledge
+            "knowledge": knowledge,
         }
 
         return IngestResponse(url=url, markdown=markdown_content, metadata=metadata)
 
     def _extract_video_id(self, url: str) -> str:
         import re
+
         # 다양한 YouTube URL 패턴 대응 (escaped characters 포함)
         patterns = [
-            r'[vV](?:=|\\{1,2}=)([0-9A-Za-z_-]{11})',  # v=ID 또는 v\=ID 또는 v\\=ID
-            r'(?:be\/|embed\/|v\/|shorts\/)([0-9A-Za-z_-]{11})', # youtu.be/ID, shorts/ID 등
-            r'(?:\/)([0-9A-Za-z_-]{11})(?:[\?&]|$)' # /ID?query 또는 /ID
+            r"[vV](?:=|\\{1,2}=)([0-9A-Za-z_-]{11})",  # v=ID 또는 v\=ID 또는 v\\=ID
+            r"(?:be\/|embed\/|v\/|shorts\/)([0-9A-Za-z_-]{11})",  # youtu.be/ID, shorts/ID 등
+            r"(?:\/)([0-9A-Za-z_-]{11})(?:[\?&]|$)",  # /ID?query 또는 /ID
         ]
         for pattern in patterns:
             match = re.search(pattern, url)
@@ -80,17 +82,14 @@ class YouTubeScraper(ScraperInterface):
             transcript_list = YouTubeTranscriptApi().list(video_id)
             try:
                 # 한국어 또는 영어 수동 자막 시도
-                transcript = transcript_list.find_transcript(['ko', 'en'])
+                transcript = transcript_list.find_transcript(["ko", "en"])
             except Exception:
                 # 아무 자막이나 가져오기 (자동 생성 포함)
-                transcript = transcript_list.find_generated_transcript(['ko', 'en'])
+                transcript = transcript_list.find_generated_transcript(["ko", "en"])
 
             data = transcript.fetch()
             # 딕셔너리 형태와 객체 형태(FetchedTranscriptSnippet) 모두 대응
-            return " ".join([
-                d['text'] if isinstance(d, dict) else getattr(d, 'text', '') 
-                for d in data
-            ])
+            return " ".join([d["text"] if isinstance(d, dict) else getattr(d, "text", "") for d in data])
         except Exception as e:
             logger.warning(f"Transcript 수집 실패: {e}")
             return None
@@ -98,14 +97,16 @@ class YouTubeScraper(ScraperInterface):
     async def _extract_audio(self, url: str) -> str:
         temp_audio_path = f"temp_audio_{self._extract_video_id(url)}"
         ydl_opts = {
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            'outtmpl': temp_audio_path + '.%(ext)s',
-            'quiet': True,
+            "format": "bestaudio/best",
+            "postprocessors": [
+                {
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "mp3",
+                    "preferredquality": "192",
+                }
+            ],
+            "outtmpl": temp_audio_path + ".%(ext)s",
+            "quiet": True,
         }
 
         def download():
@@ -123,21 +124,14 @@ class YouTubeScraper(ScraperInterface):
         if self.whisper_model is None:
             logger.info("Whisper 모델 로드 중 (Intel i9 CPU 최적화 모드)...")
             self.whisper_model = WhisperModel(
-                "medium",
-                device="cpu",
-                compute_type="int8",
-                cpu_threads=max(1, multiprocessing.cpu_count() - 2)
+                "medium", device="cpu", compute_type="int8", cpu_threads=max(1, multiprocessing.cpu_count() - 2)
             )
 
         segments, info = self.whisper_model.transcribe(audio_path, beam_size=5)
 
         results = []
         for segment in segments:
-            results.append({
-                "start": segment.start,
-                "end": segment.end,
-                "text": segment.text.strip()
-            })
+            results.append({"start": segment.start, "end": segment.end, "text": segment.text.strip()})
         return results
 
     async def _extract_knowledge_with_llm(self, transcript: str) -> dict[str, Any]:
@@ -178,7 +172,8 @@ class YouTubeScraper(ScraperInterface):
             response_text = await self.llm.generate(prompt)
             # JSON 추출 (Markdown 코드 블록 제거 등)
             import re
-            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+
+            json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
             if json_match:
                 return json.loads(json_match.group())
             return {"summary": transcript, "sections": [], "claims": [], "tone": "N/A", "intent": "N/A"}

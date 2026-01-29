@@ -10,6 +10,7 @@ from app.schemas.ingest import IngestResponse
 def scraper():
     return YouTubeScraper()
 
+
 @pytest.mark.asyncio
 async def test_youtube_scraper_with_transcript(scraper):
     """
@@ -19,7 +20,7 @@ async def test_youtube_scraper_with_transcript(scraper):
 
     mock_transcript = [
         {"text": "Hello world", "start": 0.0, "duration": 2.0},
-        {"text": "This is a test", "start": 2.5, "duration": 3.0}
+        {"text": "This is a test", "start": 2.5, "duration": 3.0},
     ]
 
     # Mock youtube-transcript-api
@@ -31,13 +32,15 @@ async def test_youtube_scraper_with_transcript(scraper):
         mock_instance = mock_api.return_value
         mock_instance.list.return_value.find_transcript.return_value = mock_transcript_obj
         # Mock LLM extraction (since it's part of the scraper's scrape method)
-        with patch("app.infrastructure.scrapers.youtube_scraper.YouTubeScraper._extract_knowledge_with_llm") as mock_llm:
+        with patch(
+            "app.infrastructure.scrapers.youtube_scraper.YouTubeScraper._extract_knowledge_with_llm"
+        ) as mock_llm:
             mock_llm.return_value = {
                 "summary": "Moked summary",
                 "sections": [{"topic": "Introduction", "start": 0, "end": 5}],
                 "claims": [{"text": "Test claim", "timestamp": "0:01"}],
                 "tone": "Neutral",
-                "intent": "Testing"
+                "intent": "Testing",
             }
 
             response = await scraper.scrape(url)
@@ -47,6 +50,7 @@ async def test_youtube_scraper_with_transcript(scraper):
             assert "Moked summary" in response.markdown
             assert response.metadata["title"] != "Untitled Document"
             assert response.metadata["knowledge"]["intent"] == "Testing"
+
 
 @pytest.mark.asyncio
 async def test_youtube_scraper_fallback_to_whisper(scraper):
@@ -58,10 +62,23 @@ async def test_youtube_scraper_fallback_to_whisper(scraper):
     # Mock Exception for Transcript API to trigger fallback
     with patch("app.infrastructure.scrapers.youtube_scraper.YouTubeTranscriptApi") as mock_api:
         mock_api.return_value.list.side_effect = Exception("No transcript")
-        with patch("app.infrastructure.scrapers.youtube_scraper.YouTubeScraper._extract_audio", return_value="/tmp/test.mp3"):
-            with patch("app.infrastructure.scrapers.youtube_scraper.YouTubeScraper._run_whisper", return_value=[{"text": "Whisper text", "start": 0.0, "end": 5.0}]):
-                with patch("app.infrastructure.scrapers.youtube_scraper.YouTubeScraper._extract_knowledge_with_llm") as mock_llm:
-                    mock_llm.return_value = {"summary": "Whisper summary", "sections": [], "claims": [], "tone": "", "intent": ""}
+        with patch(
+            "app.infrastructure.scrapers.youtube_scraper.YouTubeScraper._extract_audio", return_value="/tmp/test.mp3"
+        ):
+            with patch(
+                "app.infrastructure.scrapers.youtube_scraper.YouTubeScraper._run_whisper",
+                return_value=[{"text": "Whisper text", "start": 0.0, "end": 5.0}],
+            ):
+                with patch(
+                    "app.infrastructure.scrapers.youtube_scraper.YouTubeScraper._extract_knowledge_with_llm"
+                ) as mock_llm:
+                    mock_llm.return_value = {
+                        "summary": "Whisper summary",
+                        "sections": [],
+                        "claims": [],
+                        "tone": "",
+                        "intent": "",
+                    }
 
                     response = await scraper.scrape(url)
 

@@ -146,11 +146,7 @@ class AdminAgent:
         formatted_prompt = prompt.invoke({"missing_slots": ", ".join(missing_slots), "input": last_user_msg})
         response = self.llm.invoke(formatted_prompt)
 
-        return {
-            "messages": [response],
-            "is_clarification": True,
-            "tool_output": "Clarification Requested"
-        }
+        return {"messages": [response], "is_clarification": True, "tool_output": "Clarification Requested"}
 
     def router_node(self, state: AdminState) -> dict:
         messages = state["messages"]
