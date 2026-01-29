@@ -59,11 +59,11 @@
 - [ ] `app/infrastructure/rag/nodes.py`의 `rerank_results` 및 주요 노드 비동기화
 
 ### 4-4. Verification
-- [ ] `uv run pytest` (Unit & Integration)
-- [ ] Admin UI에서 타임아웃 여부 재확인
-- [ ] Commit: `fix(spec-048): implement async llm adapter to fix rag timeout`
+- [x] `uv run pytest` (Unit & Integration)
+- [x] Admin UI에서 타임아웃 여부 재확인
+- [x] Commit: `fix(spec-048): implement async llm adapter to fix rag timeout`
 
 ## Summary
 **총 Task**: 4개  
-**예상 커밋 수**: 8~10개  
-**현재 진행**: Execution (Fixing Timeout)
+**예상 커밋 수**: 4개 (Rewritten)
+**현재 진행**: Done

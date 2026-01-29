@@ -1,9 +1,10 @@
 # Walkthrough: Spec 048
 
 ## 📋 Changes Implemented
-- [ ] Similarity Thresholding (Filter low scores)
-- [ ] LLM Reranker Node (Context refinement)
-- [ ] Precise Citation Logic (Prompt optimization)
+- [x] Similarity Thresholding (Filter low scores)
+- [x] LLM Reranker Node (Context refinement)
+- [x] Precise Citation Logic (Prompt optimization)
+- [x] **Async performance optimization** (Fixed Admin UI timeout)
 
 ## 🧪 Verification Results
 

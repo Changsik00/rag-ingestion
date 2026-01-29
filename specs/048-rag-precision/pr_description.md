@@ -9,13 +9,13 @@
 - [x] **LLM Reranker Node 도입**: `RAGNodes.rerank_results`를 통해 검색 결과의 관련성을 1~10점으로 재평가.
 - [x] **유사도 임계값 필터링**: 리랭킹 결과가 `min_relevance_score(5)` 미만인 청크를 컨텍스트에서 배제.
 - [x] **Dynamic Context Window**: 고득점 청크로만 컨텍스트를 재구성하여 LLM에게 전달 (인용 정확도 향상).
-- [x] **RAGGraphState 확장**: `reranked_chunks`, `rerank_log` 필드 추가로 리랭킹 과정 가시성 확보.
-- [x] **Workflow 최적화**: `retrieve_hybrid` -> `rerank_results` -> `generate_answer`로 이어지는 파이프라인 완성.
+- [x] **Async Performance 최적화**: `LLMInterface` 및 `LangChainLLMAdapter`를 비동기로 리팩토링하여 병행 리랭킹 처리 (타임아웃 문제 해결).
+- [x] **Workflow 고도화**: `retrieve_hybrid` -> `rerank_results`(Parallel) -> `generate_answer` 파이프라인 완성.
 
 ## 🎯 Key Review Points
-1. **Reranking Logic**: `rerank_results` 노드에서 상위 10개 청크에 대해 병렬로 LLM 평가를 수행하며, 지연 시간을 최소화하기 위해 `asyncio.gather`를 사용했습니다.
+1. **Reranking Logic**: `rerank_results` 노드에서 상위 10개 청크에 대해 **True Parallelism**을 구현했습니다. `LangChainLLMAdapter.agenerate`를 통해 비동기로 호출되어 60초 타임아웃 문제를 원천 해결했습니다.
 2. **Context Fallback**: 리랭킹 결과가 없거나 실패할 경우를 대비하여 `generate_answer` 노드에서 기존 청크를 사용하도록 안전장치를 마련했습니다.
-3. **Prompt Efficiency**: `RERANKER_PROMPT`를 통해 각 청크의 점수와 이유를 JSON 형식으로 명확히 추출합니다.
+3. **Async Consistency**: RAG 노드뿐만 아니라 `AdminAgent`, `SemanticExtractor`, `YouTubeScraper` 등 시스템 전반의 LLM 호출을 비동기로 정렬했습니다.
 
 ## 🧪 Verification
 
