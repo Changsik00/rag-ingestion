@@ -387,19 +387,23 @@
   * **Solution**: `IntentClassifier`에서 Entity 추출 및 Neo4j Shortest Path (`find_shortest_path`) 구현으로 관계 정보 주입.
   * **PR**: `feat(spec-044): graph retrieval logic fix`
 
-* [ ] **Spec 045: Interactive Refinement (Canvas & Clarification)**
+* [x] **Spec 045: Interactive Refinement (Canvas & Clarification)**
   * **Goal**: HITL UX를 "단순 승인"에서 "적극적 개입"으로 고도화.
   * **Features**:
     - **Clarification**: 모호한 질문 시 Agent가 역질문(Questions)을 하여 의도를 명확히 함.
     - **Canvas (Draft Editing)**: Agent가 작성한 초안을 사용자가 직접 수정(Edit) 후 최종 승인.
   * **Scenario**: 질문 ("이거 요약해") -> Agent ("어떤 문서요?") -> 답변 ("A문서") -> 초안 생성 -> 사용자 수정 -> 승인.
-  * **Priority**: High (UX 차별화)
-  * **Status**: Planning (2026-01-28)
+  * **Status**: Completed (2026-01-29)
 
-* [ ] **Spec 046: Advanced Scraper (Headless Browser)**
+* [x] **Spec 046: Advanced Scraper (Headless Browser)**
   * **Goal**: Playwright 도입으로 동적 페이지 및 복잡한 레이아웃 수집
   * **Action**: Tiered Scraping Strategy 구현 (Trafilatura -> Playwright Fallback).
-  * **Status**: Planning (2026-01-29) - [Spec](specs/046-advanced-scraper/spec.md), [Plan](specs/046-advanced-scraper/plan.md)
+  * **Status**: Completed (2026-01-29)
+
+* [ ] **Spec 047: YouTube Knowledge Scraper (Video-to-Knowledge)**
+  * **Goal**: YouTube 영상에서 고품질 자막 및 오디오를 추출하여 구조화된 지식 문서 생성.
+  * **Action**: Transcript API + Whisper Fallback + LLM Structuring 구현.
+  * **Status**: Planning (2026-01-29)
 ---
 
 
