@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from app.schemas.ingest import IngestResponse
 
@@ -69,7 +69,6 @@ class ScrapingQualityChecker:
         동적 로직 없이 단순 휴리스틱만 검사 (Sync)
         """
         content = result.markdown
-        metadata = result.metadata
 
         # 1. Minimum Length 및 내용 밀도 체크
         if len(content) < self.min_length:
@@ -102,7 +101,7 @@ class ScrapingQualityChecker:
 
         # 종결 문자 패턴
         end_markers = re.findall(r"[.!?다요]\s", text)
-        
+
         # 텍스트 길이 대비 종결 기호 비율이 극도로 낮으면 메뉴성 리스트로 판단
         ratio = len(end_markers) / (len(text) / 1000)
         if ratio < 3:
