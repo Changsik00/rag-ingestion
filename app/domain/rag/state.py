@@ -59,6 +59,12 @@ class RAGGraphState(TypedDict):
     graph_data: list[dict]
     """Neo4j Graph Traversal 결과 (Entity 관계)"""
 
+    reranked_chunks: list[Chunk]
+    """LLM Reranker에 의해 정렬 및 필터링된 최종 청크들"""
+
+    rerank_log: list[dict]
+    """리랭킹 과정의 상세ログ (score, reasoning 등)"""
+
     # === Output (최종 결과) ===
     fallback_triggered: bool
     """필터 검색 실패로 인해 전역 검색(Fallback)이 수행되었는지 여부"""
