@@ -404,7 +404,11 @@
   * [x] **Goal**: YouTube 영상에서 고품질 자막 및 오디오를 추출하여 구조화된 지식 문서 생성.
   * [x] **Action**: Transcript API + Whisper Fallback + LLM Structuring 구현.
   * **Status**: Completed (2026-01-29)
- Broadway PR #51 Merge 확인 필요
+
+* [x] **Spec 048: Docker Environment Sync (FFmpeg & Playwright)**
+  * [x] **Goal**: YouTube 수집 및 Playwright 기반 웹 스크래핑이 Docker 내에서도 정상 작동하도록 인프라 동기화.
+  * [x] **Action**: `Dockerfile.backend` 내 `ffmpeg` 및 Playwright 브라우저/의존성 설치 추가.
+  * **Status**: Completed (PR #52 생성)
 ---
 
 
