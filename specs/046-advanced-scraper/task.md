@@ -33,23 +33,22 @@
 
 ## Task 3: Ingestion Logic - Tiered Strategy Integration
 ### 3-1. Refactoring ScraperService
-- [/] `app/infrastructure/scrapers/scraper_service.py` (CompositeScraper) 수정
+- [x] `app/infrastructure/scrapers/scraper_service.py` (CompositeScraper) 수정
   - [x] Tiered logic (Fallback) 반영
-  - [/] **Semantic / Morphological Guard** 구현 (LLM-as-a-Judge 연동)
+  - [x] **Semantic / Morphological Guard** 구현 (LLM-as-a-Judge 연동)
   - [x] Async 인터페이스 전환 명시
-- [ ] Commit: `refactor(spec-046): implement tiered scraping strategy with semantic guard`
+- [x] Commit: `refactor(spec-046): implement tiered scraping strategy with semantic guard`
 
 ---
 
 ## Task N: PR Creation & Archiving (Mandatory)
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
-- [ ] **Walkthrough 작성**: `specs/046-advanced-scraper/walkthrough.md`
-- [ ] **PR Description 작성**: `specs/046-advanced-scraper/pr_description.md`
-- [ ] **Archive Commit**: 위 파일을 `specs/`에 커밋
-- [ ] Create PR: `gh pr create --title "feat(spec-046): advanced scraper with playwright" --body-file specs/046-advanced-scraper/pr_description.md`
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Run Full Tests: `uv run pytest`
+- [x] **Walkthrough 작성**: `specs/046-advanced-scraper/walkthrough.md`
+- [x] **PR Description 작성**: `specs/046-advanced-scraper/pr_description.md`
+- [x] **Archive Commit**: 위 파일을 `specs/`에 커밋
+- [x] Create PR: `gh pr create`
 
 ## Summary
 **총 Task**: 4개 세부 작업군  
-**예상 커밋 수**: 6개 내외  
-**현재 진행**: Planning (Spec/Plan/Task 작성 완료)
+**현재 진행**: 완료 (PR #50 생성)
