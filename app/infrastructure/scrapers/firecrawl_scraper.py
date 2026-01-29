@@ -26,7 +26,7 @@ class FirecrawlWebScraper(ScraperInterface):
         self.app = FirecrawlApp(api_key=self.api_key) if self.api_key else None
         self.cleaner = MarkdownCleaner()
 
-    def scrape(self, url: str) -> IngestResponse:
+    async def scrape(self, url: str) -> IngestResponse:
         logger.info(f"Scraping URL with Firecrawl: {url}")
 
         if not self.app:

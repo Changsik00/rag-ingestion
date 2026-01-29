@@ -5,7 +5,7 @@ from app.schemas.ingest import IngestResponse
 
 class ScraperInterface(ABC):
     @abstractmethod
-    def scrape(self, url: str) -> IngestResponse:
+    async def scrape(self, url: str) -> IngestResponse:
         """
         Scrape content from the given URL and return structured IngestResponse.
         """

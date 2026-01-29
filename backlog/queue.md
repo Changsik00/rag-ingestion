@@ -398,8 +398,8 @@
 
 * [ ] **Spec 046: Advanced Scraper (Headless Browser)**
   * **Goal**: Playwright 도입으로 동적 페이지 및 복잡한 레이아웃 수집
-  * **Action**: Tiered Scraping Strategy 구현.
-  * **Status**: Planning
+  * **Action**: Tiered Scraping Strategy 구현 (Trafilatura -> Playwright Fallback).
+  * **Status**: Planning (2026-01-29) - [Spec](specs/046-advanced-scraper/spec.md), [Plan](specs/046-advanced-scraper/plan.md)
 ---
 
 

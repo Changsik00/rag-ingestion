@@ -12,27 +12,34 @@ logger = logging.getLogger(__name__)
 class CompositeScraper(ScraperInterface):
     """
     Tiered Hybrid Scraper Strategy 관리자.
-    Trafilatura(Fast) -> Firecrawl(Advanced) 순서로 시도함.
+    Trafilatura(Tier 1) -> Playwright(Tier 2) -> Firecrawl(Tier 3) 순서로 시도함.
     """
 
     def __init__(self):
+        from app.infrastructure.scrapers.playwright_scraper import PlaywrightScraper
         self.primary_scraper = TrafilaturaWebScraper()
+        self.playwright_scraper = PlaywrightScraper()
         self.advanced_scraper = FirecrawlWebScraper()
         self.quality_checker = ScrapingQualityChecker()
 
-    def scrape(self, url: str) -> IngestResponse:
-        # 1. Primary Scraper (Trafilatura) 시도
+    async def scrape(self, url: str) -> IngestResponse:
+        # 1. Tier 1: Trafilatura (Fast) 시도
         try:
-            result = self.primary_scraper.scrape(url)
+            result = await self.primary_scraper.scrape(url)
 
-            # 품질 검사
+            # 품질 검사 (Heuristics + Semantic Check)
             if self.quality_checker.is_poor(result):
-                logger.info(f"Primary scraper output for {url} is poor. Falling back to Advanced Scraper.")
-                return self.advanced_scraper.scrape(url)
+                logger.info(f"Primary scraper output for {url} is poor. Falling back to Playwright Scraper.")
+                return await self.playwright_scraper.scrape(url)
 
             return result
 
         except Exception as e:
-            logger.warning(f"Primary scraper failed for {url}: {e}. Falling back to Advanced Scraper.")
-            # 실패 시 Advanced Scraper로 Fallback
-            return self.advanced_scraper.scrape(url)
+            logger.warning(f"Primary scraper failed for {url}: {e}. Falling back to Playwright Scraper.")
+            try:
+                # 2. Tier 2: Playwright (Direct Dynamic) 시도
+                return await self.playwright_scraper.scrape(url)
+            except Exception as pe:
+                logger.error(f"Playwright scraper also failed for {url}: {pe}. Falling back to Firecrawl.")
+                # 3. Tier 3: Firecrawl (Paid API) 시도
+                return await self.advanced_scraper.scrape(url)

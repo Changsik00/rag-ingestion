@@ -19,7 +19,7 @@ class TrafilaturaWebScraper(ScraperInterface):
 
         self.cleaner = MarkdownCleaner()
 
-    def scrape(self, url: str) -> IngestResponse:
+    async def scrape(self, url: str) -> IngestResponse:
         logger.info(f"Scraping URL with Trafilatura: {url}")
 
         try:
