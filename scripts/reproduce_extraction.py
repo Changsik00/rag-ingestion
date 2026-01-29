@@ -3,10 +3,10 @@ import os
 from dotenv import load_dotenv
 
 # Load .env file explicitly
-load_dotenv()
-
 from app.core.config import get_settings
 from app.core.llm import LLMFactory
+
+load_dotenv()
 
 settings = get_settings()
 
