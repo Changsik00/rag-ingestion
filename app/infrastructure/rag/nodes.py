@@ -17,6 +17,7 @@ from app.domain.entities.chunk import Chunk
 from app.domain.rag.state import RAGGraphState
 from app.domain.schemas.intent import IntentType, UserIntent
 from app.domain.services.intent_classifier import IntentClassifier
+from app.domain.services.prompts.reranker import RERANKER_PROMPT
 from app.domain.services.query_rewriter import QueryRewriter
 
 logger = logging.getLogger(__name__)
@@ -200,6 +201,101 @@ class RAGNodes:
 
         return state
 
+    async def rerank_results(self, state: RAGGraphState) -> RAGGraphState:
+        """
+        Node 3.5: LLM Reranker (Body Layer - Precision Refinement)
+
+        검색된 청크들을 LLM을 사용하여 다시 평가하고, 관련성이 높은 청크들만 남깁니다.
+        [Spec 048] 구현.
+
+        Args:
+            state: RAGGraphState
+
+        Returns:
+            RAGGraphState with updated reranked_chunks and rerank_log
+        """
+        query = state["query"]
+        rewritten_query = state.get("rewritten_query") or query
+        vector_chunks = state.get("vector_chunks", [])
+        keyword_chunks = state.get("keyword_chunks", [])
+
+        # Deduplicate and combine chunks
+        all_chunks = []
+        seen_ids = set()
+        for c in vector_chunks + keyword_chunks:
+            if c.id not in seen_ids:
+                all_chunks.append(c)
+                seen_ids.add(c.id)
+
+        if not all_chunks:
+            state["reranked_chunks"] = []
+            return state
+
+        # [Spec 048] Pointwise Reranking
+        # Latency를 고려하여 상위 10개만 리랭킹 (나머지는 후순위로 유지하거나 버림)
+        rerank_targets = all_chunks[:10]
+
+        rerank_log = []
+        rerank_tasks = []
+
+        for chunk in rerank_targets:
+            prompt = RERANKER_PROMPT.format(query=rewritten_query, chunk_text=chunk.content)
+            rerank_tasks.append(self._get_rerank_score(chunk, prompt))
+
+        # Run 리랭킹 in parallel
+        rerank_results = await asyncio.gather(*rerank_tasks)
+
+        # Filter by threshold (e.g., score >= 5)
+        # 0.7 probability or 5/10 score is common for positive relevance
+        min_relevance_score = 5
+        final_reranked = []
+
+        for chunk, score_data in zip(rerank_targets, rerank_results):
+            score = score_data.get("score", 0)
+            reasoning = score_data.get("reasoning", "No reasoning")
+
+            rerank_log.append({"chunk_id": chunk.id, "score": score, "reasoning": reasoning})
+
+            if score >= min_relevance_score:
+                chunk.metadata["rerank_score"] = score  # Store for citation prioritization
+                final_reranked.append(chunk)
+
+        # Sort by score descending
+        final_reranked.sort(key=lambda x: x.metadata.get("rerank_score", 0), reverse=True)
+
+        state["reranked_chunks"] = final_reranked
+        state["rerank_log"] = rerank_log
+
+        # Update Reasoning Log
+        reasoning_log = state.get("reasoning_log", [])
+        reasoning_log.append(
+            f"🎯 [Rerank] Filtered {len(all_chunks)} chunks down to {len(final_reranked)} based on LLM relevance scores."
+        )
+        state["reasoning_log"] = reasoning_log
+
+        return state
+
+    async def _get_rerank_score(self, chunk: Chunk, prompt: str) -> dict:
+        """LLM을 호출하여 청크의 관련성 점수를 가져옵니다."""
+        import json
+
+        try:
+            if hasattr(self.llm, "generate") and asyncio.iscoroutinefunction(self.llm.generate):
+                response = await self.llm.generate(prompt)
+            else:
+                response = self.llm.generate(prompt)
+
+            content = response.content if hasattr(response, "content") else str(response)
+
+            # JSON block 추출 (LLM이 마크다운 형식을 포함할 수 있음)
+            json_match = re.search(r"\{.*\}", content, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group())
+            return json.loads(content)
+        except Exception as e:
+            logger.warning(f"Reranking failed for chunk {chunk.id}: {e}")
+            return {"score": 0, "reasoning": f"Error: {e}"}
+
     def _clean_context_noise(self, text: str) -> str:
         """
         [Spec 037] RAG 컨텍스트 노이즈 제거.
@@ -246,10 +342,15 @@ class RAGNodes:
         rewritten_query = state.get("rewritten_query") or query
         vector_chunks = state.get("vector_chunks", [])
         keyword_chunks = state.get("keyword_chunks", [])
+        reranked_chunks = state.get("reranked_chunks")
         graph_data = state.get("graph_data", [])
 
+        # Use reranked_chunks if available, otherwise fallback to original chunks
+        # [Spec 048] Dynamic Context Window
+        target_chunks = reranked_chunks if reranked_chunks is not None else (vector_chunks + keyword_chunks)
+
         # Format Context
-        context_str, mapped_chunks = self._merge_and_format_context(vector_chunks, keyword_chunks, graph_data)
+        context_str, mapped_chunks = self._merge_and_format_context(target_chunks, [], graph_data)
 
         # [Spec 035] Hybrid Knowledge PromptING
         prompt = (
