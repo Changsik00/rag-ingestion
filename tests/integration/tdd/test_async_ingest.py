@@ -17,7 +17,7 @@ client = TestClient(app)
 
 
 def test_async_ingest_web_endpoint():
-    # Given: Mock IngestionService
+    # Given: Mock Ingestion
     mock_service = Mock()
 
     def create_job_side_effect(url, retry_of=None):

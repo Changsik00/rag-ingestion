@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository
 from app.interfaces.api.main import app
-from app.application.services.ingestion_service import IngestionService
+from app.application.services.ingestion import Ingestion
 
 client = TestClient(app)
 
@@ -66,12 +66,12 @@ def test_get_job_endpoint():
 
 
 def test_retry_job_endpoint():
-    # Given: Mock JobRepository와 IngestionService
+    # Given: Mock JobRepository와 Ingestion
     mock_job_repo = Mock()
     job = IngestionJob(job_id="test-id", source_url="http://test.com", status=JobStatus.FAILED)
     mock_job_repo.get_job.return_value = job
 
-    mock_service = Mock(spec=IngestionService)
+    mock_service = Mock(spec=Ingestion)
     new_job = IngestionJob(
         job_id="new-job-id", source_url="http://test.com", status=JobStatus.PENDING, retry_of="test-id"
     )

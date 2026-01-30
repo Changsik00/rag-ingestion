@@ -94,8 +94,8 @@ def test_llm_failure_still_saves_document():
 
     # Given: LLM이 에러를 발생시키도록 Mock
     # patch object using exact import path used in ingestion.py
-    # Note: IngestionService imports SemanticExtractor directly effectively.
-    # But IngestionService takes extractor as dependency.
+    # Note: Ingestion imports SemanticExtractor directly effectively.
+    # But Ingestion takes extractor as dependency.
     # In integration test, we need to mock where it's instantiated or injected.
     # For simplicity in BDD/Integration with TestClient, we rely on dependency override or patching internals if DI is not fully exposed to TestClient.
     from app.interfaces.api.dependencies import (
@@ -104,7 +104,7 @@ def test_llm_failure_still_saves_document():
         get_job_repository,
         get_neo4j_driver,
     )
-    from app.application.services.ingestion_service import IngestionService
+    from app.application.services.ingestion import Ingestion
 
     # Given: Mock LLM
     mock_llm = Mock()
@@ -115,7 +115,7 @@ def test_llm_failure_still_saves_document():
 
     # We need other real dependencies or mocks.
     # Since we are overriding get_ingestion_service, we can resolve them manually or use a dependency chain.
-    # Simpler: Instantiate IngestionService with mocks/real mix.
+    # Simpler: Instantiate Ingestion with mocks/real mix.
     # We need real JobRepo for status updates to work? Or we mock JobRepo too?
     # Test checks API /jobs/{id}. This reads from DB.
     # So we need REAL JobRepository and REAL GraphDatabase (unless we mock the API response too, which defeats 'Integration' test).
@@ -128,7 +128,7 @@ def test_llm_failure_still_saves_document():
     driver = get_neo4j_driver()  # Assumes Neo4j is available?
     # Wait, earlier I assumed Neo4j IS running because Job status check passed.
 
-    # But if I construct IngestionService, I need a JobRepository instance.
+    # But if I construct Ingestion, I need a JobRepository instance.
     real_job_repo_instance = get_job_repository(driver)
     real_graph_repo_instance = get_graph_repository(driver)
     # Mock Scraper to avoid network dependency
@@ -149,7 +149,7 @@ def test_llm_failure_still_saves_document():
     mock_chunker = Mock()
     mock_chunker.chunk_document.return_value = []  # Return empty chunks as fallback
 
-    service_instance = IngestionService(
+    service_instance = Ingestion(
         scraper=mock_scraper,
         repository=mock_repo,  # The mock we want to verify
         graph=real_graph_repo_instance,

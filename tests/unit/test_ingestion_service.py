@@ -4,7 +4,7 @@ import pytest
 
 from app.core.exceptions import InfrastructureException, ScrapingError
 from app.domain.entities.job import IngestionJob, JobStatus
-from app.application.services.ingestion_service import IngestionService
+from app.application.services.ingestion import Ingestion
 
 
 @pytest.fixture
@@ -33,7 +33,7 @@ async def test_process_job_handles_scraping_error(service_deps):
     service_deps["job_repository"].get_job.return_value = job
     service_deps["scraper"].scrape.side_effect = ScrapingError("404 Not Found")
 
-    service = IngestionService(**service_deps)
+    service = Ingestion(**service_deps)
 
     # When
     await service.process_job(job_id)
@@ -75,7 +75,7 @@ async def test_process_job_handles_infrastructure_exception(service_deps):
     future.set_result(None)
     service_deps["extractor"].extract.return_value = future
 
-    service = IngestionService(**service_deps)
+    service = Ingestion(**service_deps)
 
     # Chunking mock setup to return list (iterable) just in case
     service_deps["chunker"].chunk_document.return_value = []
@@ -124,7 +124,7 @@ async def test_process_job_chunks_document(service_deps):
     mock_chunker.chunk_document.return_value = chunks
     service_deps["chunker"] = mock_chunker  # Inject chunker
 
-    service = IngestionService(**service_deps)
+    service = Ingestion(**service_deps)
 
     # When
     await service.process_job(job_id)

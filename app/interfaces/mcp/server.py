@@ -20,7 +20,7 @@ from app.interfaces.api.dependencies import (
 )
 
 # Domain Imports
-from app.application.services.ingestion_service import IngestionService
+from app.application.services.ingestion import Ingestion
 
 # Initialize FastMCP
 mcp = FastMCP("RAG Agent")

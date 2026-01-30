@@ -1,7 +1,7 @@
 """
-Unit Tests for IngestionService
+Unit Tests for Ingestion
 
-IngestionService의 주요 기능(Job 생성, Job 처리)을 검증합니다.
+Ingestion의 주요 기능(Job 생성, Job 처리)을 검증합니다.
 Mock을 사용하여 의존성을 격리하고 비즈니스 로직만 테스트합니다.
 """
 
@@ -12,17 +12,17 @@ import pytest
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.scraper import ScraperInterface
 from app.schemas.ingest import IngestResponse
-from app.application.services.ingestion_service import IngestionService
+from app.application.services.ingestion import Ingestion
 
 
 def test_create_job():
-    # Given: IngestionService와 mocked dependencies
+    # Given: Ingestion와 mocked dependencies
     mock_scraper = Mock(spec=ScraperInterface)
     mock_doc_repo = Mock()
     mock_graph_repo = Mock()
     mock_job_repo = Mock()
     mock_chunker = Mock()
-    service = IngestionService(
+    service = Ingestion(
         scraper=mock_scraper,
         repository=mock_doc_repo,
         graph=mock_graph_repo,
@@ -42,7 +42,7 @@ def test_create_job():
 
 @pytest.mark.asyncio
 async def test_process_job_success():
-    # Given: IngestionService와 mocked dependencies
+    # Given: Ingestion와 mocked dependencies
     mock_scraper = Mock(spec=ScraperInterface)
     mock_doc_repo = Mock()
     mock_graph_repo = Mock()
@@ -64,7 +64,7 @@ async def test_process_job_success():
     mock_extractor.extract.return_value = future
 
     mock_chunker = Mock()
-    service = IngestionService(
+    service = Ingestion(
         scraper=mock_scraper,
         repository=mock_doc_repo,
         graph=mock_graph_repo,
@@ -100,7 +100,7 @@ async def test_process_job_failure():
     mock_job_repo.get_job.return_value = mock_job
 
     mock_chunker = Mock()
-    service = IngestionService(
+    service = Ingestion(
         scraper=mock_scraper,
         repository=mock_doc_repo,
         graph=mock_graph_repo,

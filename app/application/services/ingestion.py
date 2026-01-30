@@ -16,7 +16,7 @@ from app.domain.services.file_processor import FileProcessor
 logger = setup_logger(__name__)
 
 
-class IngestionService:
+class Ingestion:
     def __init__(
         self,
         scraper: ScraperInterface,
