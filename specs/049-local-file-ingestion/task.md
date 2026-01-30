@@ -52,11 +52,11 @@
 ---
 
 ## Task 4: PR Creation & Archiving (Mandatory)
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
-- [ ] **Walkthrough 작성**: `specs/049-local-file-ingestion/walkthrough.md`
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Run Full Tests: `uv run pytest`
+- [x] **Walkthrough 작성**: `specs/049-local-file-ingestion/walkthrough.md`
 - [ ] **PR Description 작성**: `specs/049-local-file-ingestion/pr_description.md`
-- [ ] **Archive Commit**: 위 파일들을 커밋 (`docs(spec-049): archive walkthrough and pr description`)
+- [x] **Archive Commit**: 위 파일들을 커밋 (`docs(spec-049): archive walkthrough and pr description`)
 - [ ] Create PR: `gh pr create --title "feat(spec-049): local file ingestion (pdf, txt, md)" --body-file specs/049-local-file-ingestion/pr_description.md`
 
 ## Summary
