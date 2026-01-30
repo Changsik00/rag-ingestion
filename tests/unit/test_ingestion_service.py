@@ -4,7 +4,7 @@ import pytest
 
 from app.core.exceptions import InfrastructureException, ScrapingError
 from app.domain.entities.job import IngestionJob, JobStatus
-from app.use_cases.ingestion import IngestionService
+from app.application.services.ingestion_service import IngestionService
 
 
 @pytest.fixture

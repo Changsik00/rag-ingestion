@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository
 from app.interfaces.api.main import app
-from app.use_cases.ingestion import IngestionService
+from app.application.services.ingestion_service import IngestionService
 
 client = TestClient(app)
 

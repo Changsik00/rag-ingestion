@@ -12,7 +12,7 @@ import pytest
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.scraper import ScraperInterface
 from app.schemas.ingest import IngestResponse
-from app.use_cases.ingestion import IngestionService
+from app.application.services.ingestion_service import IngestionService
 
 
 def test_create_job():

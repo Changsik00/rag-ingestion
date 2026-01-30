@@ -104,7 +104,7 @@ def test_llm_failure_still_saves_document():
         get_job_repository,
         get_neo4j_driver,
     )
-    from app.use_cases.ingestion import IngestionService
+    from app.application.services.ingestion_service import IngestionService
 
     # Given: Mock LLM
     mock_llm = Mock()

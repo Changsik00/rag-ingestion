@@ -27,7 +27,7 @@ from app.infrastructure.storage.composite import CompositeStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
-from app.use_cases.ingestion import IngestionService
+from app.application.services.ingestion_service import IngestionService
 
 # === Dependency Injection 컨테이너 ===
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
