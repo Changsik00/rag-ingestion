@@ -3,7 +3,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.domain.services.admin_agent import AdminAgent
+from app.application.services.admin_agent import AdminAgent
 from app.domain.services.feedback_service import FeedbackService
 from app.interfaces.api.dependencies import get_admin_agent, get_checkpointer, get_feedback_service, get_repository
 

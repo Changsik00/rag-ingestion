@@ -9,7 +9,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 # App Modules (Real)
 from app.core.config import get_settings
-from app.domain.services.admin_agent import AdminAgent
+from app.application.services.admin_agent import AdminAgent
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
@@ -61,7 +61,7 @@ def get_real_services():
         async def retrieve_and_generate(self, query, history, filters=None, thread_id=None):
             logger.info(f"[MockRAG] Processing query: {query}")
             await asyncio.sleep(1)  # Simulate delay
-            from app.domain.services.rag_service import RAGResult
+            from app.application.services.rag_service import RAGResult
 
             return RAGResult(
                 answer="This is a real LLM response from Admin Agent context, but the RAG retrieval was mocked.",

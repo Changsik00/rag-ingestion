@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 
-from app.domain.services.admin_agent import AdminAgent, AdminState
+from app.application.services.admin_agent import AdminAgent, AdminState
 
 
 @pytest.fixture

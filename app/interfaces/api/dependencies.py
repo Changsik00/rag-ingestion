@@ -11,7 +11,7 @@ from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.services.admin_agent import AdminAgent
+from app.application.services.admin_agent import AdminAgent
 from app.domain.services.chunker import ChunkerService
 from app.domain.services.feedback_service import FeedbackService
 from app.domain.services.intent_classifier import IntentClassifier
