@@ -456,3 +456,38 @@
   * **Problem**: 현재 `Neo4jDocumentRepository`와 `ChromaStorage`는 메타데이터를 `json.dumps`로 직렬화함. `datetime`이나 `bytes` 같은 객체가 포함되면 저장 실패 위험 있음.
   * **Solution**: `json.dumps` 호출 시 `default` 파라미터에 커스텀 인코더(datetime -> isoformat, bytes -> base64 등)를 주입하여 안정성 확보.
   * **Context**: Spec 049 로컬 파일 인제스션 작업 중 잠재적 위험으로 식별되어 등록.
+
+* [x] **Spec 050: Clean Architecture Refactoring (4-Layer Structure)**
+  * **Goal**: 프로젝트 구조를 Clean Architecture 4-Layer로 전면 리팩토링
+  * [x] **Phase A**: Dependency Rule 강제, Domain 재구성, Application Layer 통합
+  * [x] **Phase B**: 네이밍 통일, Service Layer 정리, Protocol 적용
+  * [x] **Phase C**: Architecture 문서 업데이트
+  * **Results**:
+    - 80 files changed (+2064, -333)
+    - 22 commits (18 implementation + 4 documentation)
+    - 126 passed tests (20 failed는 기존 이슈)
+  * **Priority**: Critical (Architecture Debt)
+  * **Status**: Completed (2026-01-31)
+  * **PR**: [#55](https://github.com/Changsik00/rag-ingestion/pull/55)
+  * **Follow-up**: DocumentMetadata VO, AdminAgent Renaming (Icebox 참조)
+
+
+* **[Refactor] DocumentMetadata Value Object (Spec 050 Follow-up)**
+  * **Goal**: `Document.metadata: dict` 구조를 type-safe한 Value Object로 전환
+  * **Trade-off**: 
+    - 장점: 타입 안정성, IDE 자동완성, 명확한 스키마
+    - 단점: 동적 메타데이터 추가 어려움, 리팩토링 비용
+  * **Scope**: 
+    - `DocumentMetadata` Value Object 정의
+    - `Document` entity 수정
+    - 모든 메타데이터 접근 코드 업데이트
+  * **Context**: Spec 050 Phase A-2-3에서 스킵됨
+
+* **[Refactor] AdminAgent Renaming (Spec 050 Follow-up)**
+  * **Goal**: `AdminAgent` → `ConversationalRAGAgent`로 리네이밍하여 클라이언트 비의존적 naming 적용
+  * **Breaking Change**: 모든 클라이언트 코드 수정 필요
+  * **Scope**:
+    - `app/application/services/admin_agent.py` → `app/application/clients/admin/rag_agent.py`
+    - 클래스명 변경 및 import 경로 전면 업데이트
+  * **Strategy**: 점진적 마이그레이션 (Deprecation Warning → 완전 교체)
+  * **Context**: Spec 050 Phase C-1에서 Breaking Change가 너무 커서 스킵됨
