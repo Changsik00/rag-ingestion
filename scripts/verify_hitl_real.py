@@ -50,18 +50,18 @@ def get_real_services():
     # query_rewriter = QueryRewriter(llm=adapter if hasattr(adapter, 'ainvoke') else llm)
 
     # 3. Services
-    # Note: Using Mock RAG graph builder?? No, let's try to use RAGService as is if possible.
-    # But RAGService now requires RAGGraphBuilder (Spec 033).
-    # Since we are testing *AdminAgent* HITL, we can mock RAGService to avoid complexity
+    # Note: Using Mock RAG graph builder?? No, let's try to use RAG as is if possible.
+    # But RAG now requires RAGGraphBuilder (Spec 033).
+    # Since we are testing *AdminAgent* HITL, we can mock RAG to avoid complexity
     # OR use real one if easy.
     # Let's start with a Mock RAG Service for simplicity in testing AdminAgent's HITL logic first,
     # as defined in the plan "Minimal Dependencies".
 
-    class MockRAGService:
+    class MockRAG:
         async def retrieve_and_generate(self, query, history, filters=None, thread_id=None):
             logger.info(f"[MockRAG] Processing query: {query}")
             await asyncio.sleep(1)  # Simulate delay
-            from app.application.services.rag_service import RAGResult
+            from app.application.services.rag import RAGResult
 
             return RAGResult(
                 answer="This is a real LLM response from Admin Agent context, but the RAG retrieval was mocked.",
@@ -94,7 +94,7 @@ def get_real_services():
 
         job_repository = MockJobRepo()
 
-    rag_service = MockRAGService()
+    rag_service = MockRAG()
     ingestion_service = MockIngestionService()
 
     return rag_service, ingestion_service

@@ -12,7 +12,7 @@ import pytest
 
 from app.domain.entities.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
-from app.application.services.rag_service import RAGService
+from app.application.services.rag import RAG
 from app.infrastructure.rag.graph import RAGGraphBuilder
 from app.infrastructure.rag.nodes import RAGNodes
 
@@ -51,7 +51,7 @@ def hybrid_rag_service(mock_dependencies):
     )
     builder = RAGGraphBuilder(nodes)
     graph = builder.build()
-    return RAGService(graph)
+    return RAG(graph)
 
 
 @pytest.mark.asyncio

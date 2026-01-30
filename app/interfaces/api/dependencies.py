@@ -16,7 +16,7 @@ from app.domain.services.chunker import ChunkerService
 from app.domain.services.feedback_service import FeedbackService
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
-from app.application.services.rag_service import RAGService
+from app.application.services.rag import RAG
 from app.domain.services.semantic_extractor import SemanticExtractor
 from app.application.services.integrity_service import IntegrityService
 from app.infrastructure.brain.adapter import LangGraphAdapter

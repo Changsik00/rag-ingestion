@@ -5,19 +5,19 @@ import pytest
 
 from app.domain.entities.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
-from app.application.services.rag_service import RAGService
+from app.application.services.rag import RAG
 
 
 @pytest.mark.asyncio
 async def test_rag_service_orchestration():
     """
-    Scenario: Verify RAGService orchestration flow with LangGraph.
+    Scenario: Verify RAG orchestration flow with LangGraph.
 
-    Spec 033: RAGService가 Graph 기반으로 리팩토링되어,
+    Spec 033: RAG가 Graph 기반으로 리팩토링되어,
     Graph가 반환한 State를 RAGResult로 변환하는지 검증합니다.
 
     Given: Mock Graph가 완전한 RAGGraphState를 반환
-    When: RAGService.retrieve_and_generate() 호출
+    When: RAG.retrieve_and_generate() 호출
     Then: State가 RAGResult로 올바르게 변환됨
     """
     # Given: Mock Graph 생성
@@ -50,8 +50,8 @@ async def test_rag_service_orchestration():
 
     mock_graph.ainvoke = AsyncMock(return_value=mock_result_state)
 
-    # When: RAGService 생성 및 실행
-    service = RAGService(graph=mock_graph)
+    # When: RAG 생성 및 실행
+    service = RAG(graph=mock_graph)
 
     history = []
     response = await service.retrieve_and_generate("Original Query", history)

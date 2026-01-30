@@ -32,7 +32,7 @@ class RAGResult:
     user_intent: UserIntent | None = None
 
 
-class RAGService:
+class RAG:
     """
     LangGraph 기반 RAG Orchestrator.
 

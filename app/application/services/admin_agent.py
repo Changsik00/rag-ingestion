@@ -9,7 +9,7 @@ from langgraph.graph import END, StateGraph, add_messages
 
 from app.core.config import get_settings
 from app.domain.entities.job import JobStatus
-from app.application.services.rag_service import RAGService
+from app.application.services.rag import RAG
 from app.use_cases.ingestion import IngestionService
 
 logger = logging.getLogger(__name__)
