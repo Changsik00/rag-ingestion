@@ -92,6 +92,8 @@ def test_llm_failure_still_saves_document():
     import time
     from unittest.mock import Mock
 
+    from app.application.services.ingestion import Ingestion
+
     # Given: LLM이 에러를 발생시키도록 Mock
     # patch object using exact import path used in ingestion.py
     # Note: Ingestion imports SemanticExtractor directly effectively.
@@ -104,7 +106,6 @@ def test_llm_failure_still_saves_document():
         get_job_repository,
         get_neo4j_driver,
     )
-    from app.application.services.ingestion import Ingestion
 
     # Given: Mock LLM
     mock_llm = Mock()

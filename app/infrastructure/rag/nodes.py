@@ -12,13 +12,13 @@ import asyncio
 import re
 from typing import Any
 
+from app.core.logging_config import setup_logger
 from app.domain.entities.chunk import Chunk
 from app.domain.rag.state import RAGGraphState
-from app.domain.value_objects.intent import IntentType, UserIntent
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.prompts.reranker import RERANKER_PROMPT
 from app.domain.services.query_rewriter import QueryRewriter
-from app.core.logging_config import setup_logger
+from app.domain.value_objects.intent import IntentType, UserIntent
 
 logger = setup_logger(__name__)
 
@@ -224,7 +224,7 @@ class RAGNodes:
         # Keyword matches are often higher precision but lower recall than vector
         all_chunks = []
         seen_ids = set()
-        
+
         # Interleave pattern: K1, V1, K2, V2...
         max_len = max(len(vector_chunks), len(keyword_chunks))
         for i in range(max_len):

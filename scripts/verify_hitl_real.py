@@ -7,9 +7,10 @@ from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 
+from app.application.services.admin_agent import AdminAgent
+
 # App Modules (Real)
 from app.core.config import get_settings
-from app.application.services.admin_agent import AdminAgent
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository

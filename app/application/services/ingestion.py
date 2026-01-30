@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
+from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.exceptions import DoitException
 from app.core.logging_config import setup_logger
 from app.domain.entities.document import Document
@@ -10,7 +11,6 @@ from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.services.chunker import Chunker
-from app.application.services.semantic_extractor import SemanticExtractor
 from app.domain.services.file_processor import FileProcessor
 
 logger = setup_logger(__name__)
@@ -42,14 +42,12 @@ class Ingestion:
             self.scraper.quality_checker.llm = self.extractor.llm
             self.scraper.youtube_scraper.llm = self.extractor.llm
 
-    def create_job(self, url: str, retry_of: str | None = None, raw_content: bytes | None = None, filename: str | None = None) -> IngestionJob:
+    def create_job(
+        self, url: str, retry_of: str | None = None, raw_content: bytes | None = None, filename: str | None = None
+    ) -> IngestionJob:
         """Create and persist a new job in PENDING state."""
         job = IngestionJob(
-            source_url=url, 
-            status=JobStatus.PENDING, 
-            retry_of=retry_of,
-            raw_content=raw_content,
-            filename=filename
+            source_url=url, status=JobStatus.PENDING, retry_of=retry_of, raw_content=raw_content, filename=filename
         )
         self.job_repository.create_job(job)
         return job
@@ -74,11 +72,10 @@ class Ingestion:
                 segments = self.file_processor.extract_segments(job.raw_content, job.filename)
             else:
                 result = await self.scraper.scrape(job.source_url)
-                from app.infrastructure.scrapers.base import ScrapeResult
                 segments = [(result.markdown, result.metadata)]
 
             job.docs_ids = []
-            
+
             # 3. Process each segment
             for text, metadata in segments:
                 # Semantic Extraction (Spec 005)

@@ -2,8 +2,8 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.domain.interfaces.document_repository import DocumentRepository
 from app.application.services.admin_agent import AdminAgent
+from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.services.feedback_service import Feedback
 from app.interfaces.api.dependencies import get_admin_agent, get_checkpointer, get_feedback_service, get_repository
 
@@ -210,8 +210,8 @@ async def reset_session(id: str, checkpointer=Depends(get_checkpointer)):
 async def list_threads(checkpointer=Depends(get_checkpointer)):
     """활성 스레드 목록 조회"""
     try:
-        from app.infrastructure.factories.llm_factory import LLMFactory
         from app.infrastructure.brain.adapter import LangGraphAdapter
+        from app.infrastructure.factories.llm_factory import LLMFactory
 
         adapter = LangGraphAdapter(llm=LLMFactory.get_llm_adapter(), checkpointer=checkpointer)
         threads = await adapter.list_threads(limit=50)

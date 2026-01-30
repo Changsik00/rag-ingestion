@@ -5,29 +5,29 @@ from fastapi import Depends
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
+from app.application.services.admin_agent import AdminAgent
+from app.application.services.ingestion import Ingestion
+from app.application.services.integrity_service import IntegrityService
+from app.application.services.rag import RAG
+from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.config import get_settings
-from app.infrastructure.factories.llm_factory import LLMFactory
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
-from app.application.services.admin_agent import AdminAgent
 from app.domain.services.chunker import Chunker
 from app.domain.services.feedback_service import Feedback
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
-from app.application.services.rag import RAG
-from app.application.services.semantic_extractor import SemanticExtractor
-from app.application.services.integrity_service import IntegrityService
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
+from app.infrastructure.factories.llm_factory import LLMFactory
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
 from app.infrastructure.storage.chroma import ChromaStorage
 from app.infrastructure.storage.composite import CompositeStorage
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
-from app.application.services.ingestion import Ingestion
 
 # === Dependency Injection 컨테이너 ===
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
@@ -147,8 +147,8 @@ def get_ingestion_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     chunker: Annotated[Chunker, Depends(get_chunker)],
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
-) -> IngestionService:
-    return IngestionService(
+) -> Ingestion:
+    return Ingestion(
         scraper=scraper,
         repository=repository,
         graph=graph,
@@ -219,17 +219,17 @@ def get_rag_graph_builder(nodes=Depends(get_rag_nodes)):
 async def get_rag_service(
     graph_builder=Depends(get_rag_graph_builder),
     checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)] = None,
-) -> RAGService:
+) -> RAG:
     # Build Graph with Checkpointer
     compiled_graph = graph_builder.build(checkpointer=checkpointer)
 
-    return RAGService(graph=compiled_graph)
+    return RAG(graph=compiled_graph)
 
 
 # Admin Agent 의존성 (Spec 038)
 async def get_admin_agent(
-    rag_service: Annotated[RAGService, Depends(get_rag_service)],
-    ingestion_service: Annotated[IngestionService, Depends(get_ingestion_service)],
+    rag_service: Annotated[RAG, Depends(get_rag_service)],
+    ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ) -> AdminAgent:
     return AdminAgent(rag_service=rag_service, ingestion_service=ingestion_service)
 

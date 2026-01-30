@@ -37,7 +37,7 @@ class APIClient:
 
     def upload_file(self, endpoint: str, files: any):
         """
-        지원: 
+        지원:
         - 단일: files={'file': ('filename', content, 'mime')}
         - 다중: files=[('files', ('name1', content1, 'mime1')), ('files', ('name2', content2, 'mime2'))]
         """
@@ -52,7 +52,6 @@ class APIClient:
         with httpx.Client(base_url=self.base_url, timeout=self.timeout) as client:
             response = client.delete(endpoint)
             return self._handle_response(response)
-
 
 
 def get_api_client():

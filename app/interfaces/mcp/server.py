@@ -2,10 +2,13 @@ import asyncio
 
 from mcp.server.fastmcp import FastMCP
 
-from app.infrastructure.factories.llm_factory import LLMFactory
+from app.application.services.ingestion import Ingestion
+from app.application.services.rag import RAG
+
+# Domain Imports
 from app.domain.entities.job import JobStatus
 from app.domain.services.query_rewriter import QueryRewriter
-from app.application.services.rag import RAG
+from app.infrastructure.factories.llm_factory import LLMFactory
 
 # Dependency Injection Imports
 from app.interfaces.api.dependencies import (
@@ -19,9 +22,6 @@ from app.interfaces.api.dependencies import (
     get_semantic_extractor,
 )
 
-# Domain Imports
-from app.application.services.ingestion import Ingestion
-
 # Initialize FastMCP
 mcp = FastMCP("RAG Agent")
 
@@ -29,7 +29,7 @@ mcp = FastMCP("RAG Agent")
 # Since we are outside FastAPI, we need to manually invoke the dependency chain.
 
 
-async def provide_ingestion_service() -> IngestionService:
+async def provide_ingestion_service() -> Ingestion:
     driver = get_neo4j_driver()
     scraper = get_scraper()
     repo = get_repository(driver)
@@ -41,12 +41,12 @@ async def provide_ingestion_service() -> IngestionService:
     checkpointer = await get_checkpointer()
     extractor = await get_semantic_extractor(checkpointer)
 
-    return IngestionService(
+    return Ingestion(
         scraper=scraper, repository=repo, graph=graph, job_repository=job_repo, chunker=chunker, extractor=extractor
     )
 
 
-async def provide_rag_service() -> RAGService:
+async def provide_rag_service() -> RAG:
     from app.domain.services.intent_classifier import IntentClassifier
     from app.infrastructure.rag.graph import RAGGraphBuilder
     from app.infrastructure.rag.nodes import RAGNodes
@@ -73,7 +73,7 @@ async def provide_rag_service() -> RAGService:
     checkpointer = await get_checkpointer()
     graph = builder.build(checkpointer=checkpointer)
 
-    return RAGService(graph=graph)
+    return RAG(graph=graph)
 
 
 # === Tools ===
@@ -137,7 +137,7 @@ async def search_knowledge_base(query: str) -> str:
     try:
         service = await provide_rag_service()
 
-        # RAGService.retrieve_and_generate expects 'history' for QueryRewriting.
+        # RAG.retrieve_and_generate expects 'history' for QueryRewriting.
         # MCP tool interface is stateless mostly. We can pass empty history for now.
         # Or we can track history? The prompt implies "search".
 

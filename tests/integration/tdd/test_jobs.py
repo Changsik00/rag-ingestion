@@ -9,10 +9,10 @@ from unittest.mock import Mock
 
 from fastapi.testclient import TestClient
 
+from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository
 from app.interfaces.api.main import app
-from app.application.services.ingestion import Ingestion
 
 client = TestClient(app)
 

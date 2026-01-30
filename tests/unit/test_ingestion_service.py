@@ -2,9 +2,9 @@ from unittest.mock import Mock
 
 import pytest
 
+from app.application.services.ingestion import Ingestion
 from app.core.exceptions import InfrastructureException, ScrapingError
 from app.domain.entities.job import IngestionJob, JobStatus
-from app.application.services.ingestion import Ingestion
 
 
 @pytest.fixture

@@ -25,9 +25,7 @@ async def get_reports(service: Annotated[IntegrityService, Depends(get_storage_i
 
 
 @router.get("/documents/{doc_id}/diagnostic")
-async def get_diagnostic(
-    doc_id: str, service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]
-):
+async def get_diagnostic(doc_id: str, service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]):
     try:
         sample = service.get_missing_chunk_sample(doc_id)
         return {"doc_id": doc_id, "sample": sample}
@@ -47,9 +45,7 @@ async def get_preview_context(
 
 
 @router.post("/documents/{doc_id}/sync")
-async def sync_document(
-    doc_id: str, service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]
-):
+async def sync_document(doc_id: str, service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]):
     try:
         return service.sync_document(doc_id)
     except Exception as e:

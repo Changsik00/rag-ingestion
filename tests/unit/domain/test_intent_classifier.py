@@ -6,8 +6,8 @@ from app.domain.interfaces.llm import LLMInterface
 
 # Import will succeed after implementation
 try:
-    from app.domain.value_objects.intent import IntentType, UserIntent
     from app.domain.services.intent_classifier import IntentClassifier
+    from app.domain.value_objects.intent import IntentType, UserIntent
 except ImportError:
     IntentClassifier = None
     UserIntent = None

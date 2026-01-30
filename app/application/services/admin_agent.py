@@ -1,6 +1,12 @@
 import logging
 import re
 from typing import Annotated, Any, Literal, TypedDict
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from app.application.services.ingestion import Ingestion
+    from app.application.services.rag import RAG
+
 
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,8 +15,7 @@ from langgraph.graph import END, StateGraph, add_messages
 
 from app.core.config import get_settings
 from app.domain.entities.job import JobStatus
-from app.application.services.rag import RAG
-from app.use_cases.ingestion import IngestionService
+from app.use_cases.ingestion import "Ingestion"
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +42,7 @@ class AdminAgent:
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
 
-    def __init__(self, rag_service: RAGService, ingestion_service: IngestionService):
+    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
         self.llm = ChatGoogleGenerativeAI(
@@ -240,8 +245,8 @@ class AdminAgent:
 
         filters = state.get("filters")
         thread_id = state.get("thread_id")
-        # Spec 040 Fix: AdminAgent와 RAGService가 동일한 Checkpointer/ThreadID를 공유하면 상태 충돌 발생.
-        # 따라서 RAGService 호출 시에는 별도의 namespace를 적용한 thread_id를 전달함.
+        # Spec 040 Fix: AdminAgent와 "RAG"가 동일한 Checkpointer/ThreadID를 공유하면 상태 충돌 발생.
+        # 따라서 "RAG" 호출 시에는 별도의 namespace를 적용한 thread_id를 전달함.
         rag_thread_id = f"rag-{thread_id}" if thread_id else None
 
         # RAG 검색 및 생성 실행

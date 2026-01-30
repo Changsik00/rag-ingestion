@@ -39,6 +39,7 @@ class LangGraphAdapter:
         actual_thread_id = thread_id
         if self.graph.checkpointer and not actual_thread_id:
             import uuid
+
             actual_thread_id = f"auto-{uuid.uuid4()}"
             logger.info(f"Checkpointer active but no thread_id provided. Using auto-generated: {actual_thread_id}")
 

@@ -9,10 +9,10 @@ from unittest.mock import Mock
 
 import pytest
 
+from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.scraper import ScraperInterface
 from app.schemas.ingest import IngestResponse
-from app.application.services.ingestion import Ingestion
 
 
 def test_create_job():
