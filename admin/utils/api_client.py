@@ -54,6 +54,6 @@ class APIClient:
             return self._handle_response(response)
 
 
-@st.cache_resource
+
 def get_api_client():
     return APIClient()

@@ -21,7 +21,7 @@ class LangGraphAdapter:
         builder = IngestionGraphBuilder(llm=llm)
         self.graph = builder.build(checkpointer=checkpointer)
 
-    async def extract_metadata(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:
+    async def aextract_metadata(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:
         """
         Executes the ingestion graph to extract metadata from the text.
 
@@ -35,8 +35,15 @@ class LangGraphAdapter:
         """
         # 1. Initialize State
         config = None
-        if thread_id:
-            config = {"configurable": {"thread_id": thread_id}}
+        # Spec 040 Fix: If checkpointer is present but thread_id is missing, generate a dummy one to avoid error
+        actual_thread_id = thread_id
+        if self.graph.checkpointer and not actual_thread_id:
+            import uuid
+            actual_thread_id = f"auto-{uuid.uuid4()}"
+            logger.info(f"Checkpointer active but no thread_id provided. Using auto-generated: {actual_thread_id}")
+
+        if actual_thread_id:
+            config = {"configurable": {"thread_id": actual_thread_id}}
 
         initial_state = {
             "original_url": "",  # Optional, not used in extraction logic yet
@@ -48,7 +55,7 @@ class LangGraphAdapter:
         }
 
         try:
-            logger.info(f"Executing Ingestion Graph (Thread: {thread_id})...")
+            logger.info(f"Executing Ingestion Graph (Thread: {actual_thread_id})...")
 
             # 2. Invoke Graph (Async)
             final_state = await self.graph.ainvoke(initial_state, config=config)

@@ -18,7 +18,9 @@ class Neo4jJobRepository(JobRepository):
             j.created_at = $created_at,
             j.updated_at = $updated_at,
             j.error_message = $error_message,
-            j.retry_of = $retry_of
+            j.retry_of = $retry_of,
+            j.raw_content = $raw_content,
+            j.filename = $filename
         """
         params = {
             "job_id": job.job_id,
@@ -28,6 +30,8 @@ class Neo4jJobRepository(JobRepository):
             "updated_at": job.updated_at.isoformat(),
             "error_message": job.error_message,
             "retry_of": job.retry_of,
+            "raw_content": job.raw_content,
+            "filename": job.filename,
         }
         with self.driver.session() as session:
             session.run(query, params)
@@ -38,7 +42,9 @@ class Neo4jJobRepository(JobRepository):
         SET j.status = $status,
             j.updated_at = $updated_at,
             j.error_message = $error_message,
-            j.docs_ids = $docs_ids
+            j.docs_ids = $docs_ids,
+            j.raw_content = $raw_content,
+            j.filename = $filename
         """
         params = {
             "job_id": job.job_id,
@@ -46,6 +52,8 @@ class Neo4jJobRepository(JobRepository):
             "updated_at": job.updated_at.isoformat(),
             "error_message": job.error_message,
             "docs_ids": job.docs_ids,
+            "raw_content": job.raw_content,
+            "filename": job.filename,
         }
         with self.driver.session() as session:
             session.run(query, params)
@@ -70,6 +78,9 @@ class Neo4jJobRepository(JobRepository):
                 updated_at=datetime.fromisoformat(node["updated_at"]),
                 error_message=node.get("error_message"),
                 retry_of=node.get("retry_of"),
+                raw_content=node.get("raw_content"),
+                filename=node.get("filename"),
+                docs_ids=node.get("docs_ids", []),
             )
 
     def list_jobs(self, limit: int = 50) -> list[IngestionJob]:
@@ -93,6 +104,9 @@ class Neo4jJobRepository(JobRepository):
                         updated_at=datetime.fromisoformat(node["updated_at"]),
                         error_message=node.get("error_message"),
                         retry_of=node.get("retry_of"),
+                        raw_content=node.get("raw_content"),
+                        filename=node.get("filename"),
+                        docs_ids=node.get("docs_ids", []),
                     )
                 )
         return jobs

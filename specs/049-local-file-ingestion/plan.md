@@ -5,8 +5,7 @@
 
 ## 🛑 User Review Required
 > [!IMPORTANT]
-> - **Multi-file Upload**: 사용자가 여러 파일을 동시에 선택하거나 폴더째로 드래그 앤 드롭하여 대량의 문서를 한 번에 업로드할 수 있도록 기능을 확장합니다.
-> - **Batch Job Creation**: 각 파일은 개별 `IngestionJob`으로 처리되어 병렬로 인제스션됩니다.
+> - **AttributeError (APIClient.upload_file)**: Streamlit의 `@st.cache_resource`로 인해 이전 버전의 `APIClient` 인스턴스가 메모리에 남아 있을 가능성이 높습니다. 임시로 캐시를 제거하거나 리프레시를 유도하여 해결하겠습니다.
 
 ## 🎯 Core Strategy
 
@@ -39,11 +38,8 @@ sequenceDiagram
 
 ### [Backend/Core]
 
-#### [MODIFY] `app/domain/services/file_processor.py`
-- `extract_segments(content, filename)` 제너레이터 추가. (텍스트와 메타데이터 쌍 반환)
-
-#### [MODIFY] `app/use_cases/ingestion.py`
-- `process_job` 내부에서 파일인 경우 루프를 돌며 세그먼트별로 처리하도록 로직 변경.
+#### [MODIFY] `admin/utils/api_client.py`
+- `@st.cache_resource` 데코레이터를 제거하여 매번 새로운 인스턴스를 생성하도록 하고, 캐싱 문제를 원천 차단합니다.
 
 ### [Frontend/Admin]
 

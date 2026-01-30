@@ -9,7 +9,7 @@ from app.interfaces.api.dependencies import get_ingestion_service, get_repositor
 from app.interfaces.api.endpoints.entities import router as entities_router
 from app.interfaces.api.endpoints.jobs import router as jobs_router
 from app.interfaces.api.v1.endpoints.admin import router as admin_router
-from app.schemas.ingest import AsyncIngestResponse, IngestRequest, IngestResponse
+from app.schemas.ingest import AsyncIngestResponse, IngestRequest, IngestResponse, MultiAsyncIngestResponse
 from app.use_cases.ingestion import IngestionService
 
 app = FastAPI(

@@ -161,6 +161,7 @@ class RAGNodes:
         keyword_task = asyncio.to_thread(self._search_keyword, rewritten_query, final_filters)
         graph_task = asyncio.to_thread(self._search_graph, rewritten_query, entities)
 
+        logger.info(f"RAG Retrieval: query='{rewritten_query}', filters={final_filters}, entities={entities}")
         vector_results, keyword_results, graph_results = await asyncio.gather(vector_task, keyword_task, graph_task)
 
         reasoning_log.append(
@@ -219,21 +220,33 @@ class RAGNodes:
         vector_chunks = state.get("vector_chunks", [])
         keyword_chunks = state.get("keyword_chunks", [])
 
-        # Deduplicate and combine chunks
+        # Combine and interleave to ensure diversity in reranking candidates
+        # Keyword matches are often higher precision but lower recall than vector
         all_chunks = []
         seen_ids = set()
-        for c in vector_chunks + keyword_chunks:
-            if c.id not in seen_ids:
-                all_chunks.append(c)
-                seen_ids.add(c.id)
+        
+        # Interleave pattern: K1, V1, K2, V2...
+        max_len = max(len(vector_chunks), len(keyword_chunks))
+        for i in range(max_len):
+            if i < len(keyword_chunks):
+                c = keyword_chunks[i]
+                if c.id not in seen_ids:
+                    all_chunks.append(c)
+                    seen_ids.add(c.id)
+            if i < len(vector_chunks):
+                c = vector_chunks[i]
+                if c.id not in seen_ids:
+                    all_chunks.append(c)
+                    seen_ids.add(c.id)
 
         if not all_chunks:
+            logger.warning(f"No chunks found to rerank for query: {rewritten_query}")
             state["reranked_chunks"] = []
             return state
 
         # [Spec 048] Pointwise Reranking
-        # Latency를 고려하여 상위 10개만 리랭킹 (나머지는 후순위로 유지하거나 버림)
-        rerank_targets = all_chunks[:10]
+        # 상위 15개로 확장하여 키워드 매칭 결과가 충분히 포함되도록 함
+        rerank_targets = all_chunks[:15]
 
         rerank_log = []
         rerank_tasks = []

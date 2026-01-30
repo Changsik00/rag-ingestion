@@ -71,7 +71,29 @@
 - [x] 다중 파일 업로드 시 개별 Job 생성 확인 및 검증
 - [x] Commit: `feat(spec-049): support multi-file upload and drag-and-drop UI`
 
+## Task 6: Resolve Docker Build & Networking Issues (Hotfix)
+- [x] `pyproject.toml`: `python-magic-bin` 제거 및 `python-magic` 추가
+- [x] `Dockerfile.backend`, `Dockerfile.admin`: `libmagic1` 시스템 필수 패키지 추가
+- [x] `app/interfaces/api/main.py`: `MultiAsyncIngestResponse` 누락된 임포트 추가 (NameError 해결)
+- [x] `docker-compose.yml`: `ADMIN_API_URL` 및 `NEO4J_URI` 호스트명 동기화 및 APOC 권한 해제 (`unrestricted`)
+- [x] Commit: `fix(spec-049): resolve backend startup NameError and neo4j permission issues`
+
+## Task 7: Fix Job Persistence & Retrieval
+- [x] `app/infrastructure/storage/neo4j_job_repository.py`: `raw_content`, `filename`, `docs_ids` 데이터 누락 수정
+- [x] 검증: 파일 업로드 후 백엔드 로그에서 `Processing local file` 확인
+- [x] Commit: `fix(spec-049): resolve backend NameError, neo4j config, and job persistence`
+
+## Task 8: Fix Semantic Extraction & Debug Retrieval
+- [x] `app/infrastructure/brain/adapter.py`: `aextract_metadata` 인터페이스 불일치 수정
+- [x] `app/infrastructure/rag/nodes.py`, `app/infrastructure/storage/chroma.py`: 상세 디버그 로그 추가
+- [x] 검증: 파일 재업로드 후 Semantic Extraction 성공 확인
+
+## Task 9: Optimize Hybrid Search & Reranking (Final Quality Fix)
+- [x] `app/infrastructure/rag/nodes.py`: 키워드 검색 결과(Keyword Search) 우선순위 상향 및 인터리빙(Interleaving) 적용
+- [x] `app/infrastructure/brain/adapter.py`: `thread_id` 자동 생성 로직 추가 (Robustness 향상)
+- [ ] 최종 검증: "네오사피엔스" 질문 시 업로드된 계약서 내용 기반 정확한 답변 확인
+
 ## Summary
-**총 Task**: 5개
-**예상 커밋 수**: 8개 이상
-**현재 진행**: Completed (Multi-file enhancement included)
+**총 Task**: 9개  
+**예상 커밋 수**: 12개 이상  
+**현재 진행**: Final quality verification after search optimization
