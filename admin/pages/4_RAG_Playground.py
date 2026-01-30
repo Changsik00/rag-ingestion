@@ -329,6 +329,22 @@ with st.sidebar:
         except Exception as e:
             st.error(f"Failed to load documents: {e}")
             selected_doc_ids = []
+    st.divider()
+
+    st.subheader("📁 Quick File Upload")
+    quick_file = st.file_uploader("Upload PDF/TXT/MD to Chat", type=["pdf", "txt", "md"], key="quick_upload")
+    if st.button("🚀 Upload & Chat", use_container_width=True, disabled=not quick_file):
+        with st.spinner("Ingesting file..."):
+            files = {"file": (quick_file.name, quick_file.getvalue(), quick_file.type)}
+            res = api_client.upload_file("/../../../ingest/file", files=files)
+            if res:
+                st.success(f"Ingested: {quick_file.name}")
+                st.session_state.messages.append({
+                    "role": "assistant", 
+                    "content": f"✅ 파일 수집 완료: **{quick_file.name}**\n\n이제 이 파일의 내용에 대해 질문하실 수 있습니다.",
+                    "status": "completed"
+                })
+                st.rerun()
 
     st.divider()
 
