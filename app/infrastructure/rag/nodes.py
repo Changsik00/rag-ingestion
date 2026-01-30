@@ -9,7 +9,6 @@ Design Guide 005: 3-Layer Architecture (Brain → Nervous System → Body)
 """
 
 import asyncio
-import logging
 import re
 from typing import Any
 
@@ -19,8 +18,9 @@ from app.domain.schemas.intent import IntentType, UserIntent
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.prompts.reranker import RERANKER_PROMPT
 from app.domain.services.query_rewriter import QueryRewriter
+from app.core.logging_config import setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 class RAGNodes:
@@ -161,6 +161,7 @@ class RAGNodes:
         keyword_task = asyncio.to_thread(self._search_keyword, rewritten_query, final_filters)
         graph_task = asyncio.to_thread(self._search_graph, rewritten_query, entities)
 
+        logger.info(f"RAG Retrieval: query='{rewritten_query}', filters={final_filters}, entities={entities}")
         vector_results, keyword_results, graph_results = await asyncio.gather(vector_task, keyword_task, graph_task)
 
         reasoning_log.append(
@@ -219,21 +220,33 @@ class RAGNodes:
         vector_chunks = state.get("vector_chunks", [])
         keyword_chunks = state.get("keyword_chunks", [])
 
-        # Deduplicate and combine chunks
+        # Combine and interleave to ensure diversity in reranking candidates
+        # Keyword matches are often higher precision but lower recall than vector
         all_chunks = []
         seen_ids = set()
-        for c in vector_chunks + keyword_chunks:
-            if c.id not in seen_ids:
-                all_chunks.append(c)
-                seen_ids.add(c.id)
+        
+        # Interleave pattern: K1, V1, K2, V2...
+        max_len = max(len(vector_chunks), len(keyword_chunks))
+        for i in range(max_len):
+            if i < len(keyword_chunks):
+                c = keyword_chunks[i]
+                if c.id not in seen_ids:
+                    all_chunks.append(c)
+                    seen_ids.add(c.id)
+            if i < len(vector_chunks):
+                c = vector_chunks[i]
+                if c.id not in seen_ids:
+                    all_chunks.append(c)
+                    seen_ids.add(c.id)
 
         if not all_chunks:
+            logger.warning(f"No chunks found to rerank for query: {rewritten_query}")
             state["reranked_chunks"] = []
             return state
 
         # [Spec 048] Pointwise Reranking
-        # Latency를 고려하여 상위 10개만 리랭킹 (나머지는 후순위로 유지하거나 버림)
-        rerank_targets = all_chunks[:10]
+        # 상위 15개로 확장하여 키워드 매칭 결과가 충분히 포함되도록 함
+        rerank_targets = all_chunks[:15]
 
         rerank_log = []
         rerank_tasks = []
@@ -352,11 +365,11 @@ class RAGNodes:
         prompt = (
             "You are a professional AI assistant. Answer the question by combining the provided Context (DB) and your internal knowledge.\n\n"
             "KNOWLEDGE MIXING RULES:\n"
-            "1. PRIORITIZE CONTEXT: If the provided Context contains information, it MUST be prioritized as the source of truth. Use it for core facts and citations.\n"
-            "2. CITATION REQUIREMENT: For every sentence or fact derived from the Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
-            "3. HELPfulness & COMPLETENESS: Even if the Context answers the question, use your internal knowledge to enrich the answer (e.g., adding artist name, historical background, or related concepts) to make it comprehensive.\n"
-            "4. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n"
-            "5. SEAMLESS FUSION: Mix both sources into a natural, coherent response. Ensure the answer is structured and deep, not just a minimal summary.\n\n"
+            "1. PRIORITIZE KNOWLEDGE GRAPH: The 'Graph Facts' section contains high-precision structured relationships. Treat these as the most reliable source of truth.\n"
+            "2. PRIORITIZE DOCUMENT CONTEXT: If information is not in the Graph, use 'Document Context'. It MUST be prioritized over your internal knowledge.\n"
+            "3. CITATION REQUIREMENT: For every sentence or fact derived from the Document Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
+            "4. ENRICH WITH INTERNAL KNOWLEDGE: Use your internal knowledge ONLY to enrich the answer with context that doesn't conflict with the provided Context.\n"
+            "5. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n\n"
             f"Question: {query}\n"
             f"(Rewritten Query for Search): {rewritten_query}\n\n"
             "=== Provided Context (DB) ===\n"

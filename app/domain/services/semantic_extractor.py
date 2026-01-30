@@ -33,7 +33,7 @@ class SemanticExtractor:
             ExtractedMetadata: 추출된 메타데이터 (실패 시 None)
         """
         try:
-            return await self.llm.aextract_metadata(text)
+            return await self.llm.aextract_metadata(text, thread_id=thread_id)
         except Exception as e:
             logger.error(f"Semantic extraction failed: {e}")
             return None

@@ -52,7 +52,7 @@ try:
                 df,
                 use_container_width=True,
                 column_config={
-                    "URL": st.column_config.LinkColumn("Source URL"),
+                    "URL": st.column_config.TextColumn("Source (URL/File)", width="medium"),
                     "Status": st.column_config.TextColumn("Status", help="Current job status"),
                 },
             )

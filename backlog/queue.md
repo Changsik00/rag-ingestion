@@ -405,15 +405,13 @@
   * [x] **Action**: Transcript API + Whisper Fallback + Docker `ffmpeg`/Playwright 설정.
   * **Status**: Completed (2026-01-29)
 
-* [ ] **Spec 048: RAG Precision Refinement (Reranking & Dynamic Filtering)**
-  * **Goal**: 검색 노이즈(관련 없는 문서 인용)를 제거하고 답변의 신뢰도 및 정밀도 극대화.
-  * **Critical Context**: "릭롤 노래" 질문에 일론 머스크 문서가 인용되는 등의 "과응답" 문제 해결.
-  * **Action**:
-    - **Similarity Thresholding**: 일정 점수 이하의 벡터 검색 결과 자동 배제.
-    - **LLM Reranker**: 검색된 Top-K 청크를 LLM이 질문과의 관련성 기준으로 재정렬.
-    - **Citation Restriction**: 핵심 근거가 되는 문서만 인용하도록 프롬프트 가이드라인 고도화.
-  * **Priority**: High (RAG 사용성 핵심 개선)
-  * **Status**: Planning (2026-01-29) - [Spec](specs/048-rag-precision/spec.md), [Plan](specs/048-rag-precision/plan.md)
+* [/] **Spec 049: Local File Ingestion (PDF, TXT, MD)**
+  * [ ] PDF/TXT/MD 로컬 파일 파싱 및 지식 인제스션
+  * [ ] Admin UI & Playground 파일 업로드 연동
+  * **Priority**: High
+  * **Status**: In Progress (2026-01-30)
+
+---
 ---
 
 
@@ -486,3 +484,8 @@
 * **[Integration] n8n Workflow Automation**
   * **Goal**: 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템.
    Low (Phase 4에서 Icebox로 이동).
+
+* **[Tech] Metadata Robustness: Custom JSON Encoder**
+  * **Problem**: 현재 `Neo4jDocumentRepository`와 `ChromaStorage`는 메타데이터를 `json.dumps`로 직렬화함. `datetime`이나 `bytes` 같은 객체가 포함되면 저장 실패 위험 있음.
+  * **Solution**: `json.dumps` 호출 시 `default` 파라미터에 커스텀 인코더(datetime -> isoformat, bytes -> base64 등)를 주입하여 안정성 확보.
+  * **Context**: Spec 049 로컬 파일 인제스션 작업 중 잠재적 위험으로 식별되어 등록.

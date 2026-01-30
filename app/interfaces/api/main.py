@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status, UploadFile, File
 
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
@@ -9,7 +9,7 @@ from app.interfaces.api.dependencies import get_ingestion_service, get_repositor
 from app.interfaces.api.endpoints.entities import router as entities_router
 from app.interfaces.api.endpoints.jobs import router as jobs_router
 from app.interfaces.api.v1.endpoints.admin import router as admin_router
-from app.schemas.ingest import AsyncIngestResponse, IngestRequest, IngestResponse
+from app.schemas.ingest import AsyncIngestResponse, IngestRequest, IngestResponse, MultiAsyncIngestResponse
 from app.use_cases.ingestion import IngestionService
 
 app = FastAPI(
@@ -33,6 +33,33 @@ async def ingest_web_page(
         job = service.create_job(str(request.url))
         background_tasks.add_task(service.process_job, job.job_id)
         return {"job_id": job.job_id, "status": job.status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ingest/files", status_code=status.HTTP_202_ACCEPTED, response_model=MultiAsyncIngestResponse)
+async def ingest_files(
+    background_tasks: BackgroundTasks,
+    service: Annotated[IngestionService, Depends(get_ingestion_service)],
+    files: list[UploadFile] = File(...),
+):
+    """
+    Upload multiple local files (PDF, TXT, MD) for ingestion.
+    """
+    job_responses = []
+    try:
+        for file in files:
+            content = await file.read()
+            # source_url for file ingestion will be the filename for tracking
+            job = service.create_job(
+                url=f"file://{file.filename}", 
+                raw_content=content, 
+                filename=file.filename
+            )
+            background_tasks.add_task(service.process_job, job.job_id)
+            job_responses.append({"job_id": job.job_id, "status": job.status})
+        
+        return {"jobs": job_responses}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

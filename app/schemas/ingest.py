@@ -16,3 +16,7 @@ class IngestResponse(BaseModel):
 class AsyncIngestResponse(BaseModel):
     job_id: str = Field(..., description="Unique Job ID to track progress")
     status: str = Field(..., description="Current status of the job (e.g. PENDING)")
+
+
+class MultiAsyncIngestResponse(BaseModel):
+    jobs: list[AsyncIngestResponse] = Field(..., description="List of created jobs")
