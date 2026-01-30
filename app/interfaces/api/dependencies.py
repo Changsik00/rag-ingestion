@@ -12,8 +12,8 @@ from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.application.services.admin_agent import AdminAgent
-from app.domain.services.chunker import ChunkerService
-from app.domain.services.feedback_service import FeedbackService
+from app.domain.services.chunker import Chunker
+from app.domain.services.feedback_service import Feedback
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.application.services.rag import RAG
@@ -135,7 +135,7 @@ def get_graph_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -
 
 # Chunker Service 의존성 (Spec 019: LangChain RecursiveCharacterTextSplitter)
 @lru_cache
-def get_chunker() -> ChunkerService:
+def get_chunker() -> Chunker:
     return LangChainChunker()
 
 
@@ -145,7 +145,7 @@ def get_ingestion_service(
     repository: Annotated[DocumentRepository, Depends(get_repository)],
     graph: Annotated[GraphRepository, Depends(get_graph_repository)],
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
-    chunker: Annotated[ChunkerService, Depends(get_chunker)],
+    chunker: Annotated[Chunker, Depends(get_chunker)],
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
 ) -> IngestionService:
     return IngestionService(
@@ -236,8 +236,8 @@ async def get_admin_agent(
 
 # Feedback Service 의존성
 @lru_cache
-def get_feedback_service() -> FeedbackService:
-    return FeedbackService()
+def get_feedback_service() -> Feedback:
+    return Feedback()
 
 
 # Integrity Service 의존성 (Spec 042)

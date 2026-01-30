@@ -9,7 +9,7 @@ from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.services.chunker import ChunkerService
+from app.domain.services.chunker import Chunker
 from app.domain.services.semantic_extractor import SemanticExtractor
 from app.domain.services.file_processor import FileProcessor
 
@@ -23,7 +23,7 @@ class Ingestion:
         repository: DocumentRepository,
         graph: GraphRepository,
         job_repository: JobRepository,
-        chunker: ChunkerService,
+        chunker: Chunker,
         extractor: SemanticExtractor | None = None,
         file_processor: FileProcessor | None = None,
     ):

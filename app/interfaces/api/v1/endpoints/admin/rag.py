@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.application.services.admin_agent import AdminAgent
-from app.domain.services.feedback_service import FeedbackService
+from app.domain.services.feedback_service import Feedback
 from app.interfaces.api.dependencies import get_admin_agent, get_checkpointer, get_feedback_service, get_repository
 
 router = APIRouter()
@@ -106,7 +106,7 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
 
 
 @router.post("/feedback")
-async def save_feedback(feedback: dict[str, Any], service: Annotated[FeedbackService, Depends(get_feedback_service)]):
+async def save_feedback(feedback: dict[str, Any], service: Annotated[Feedback, Depends(get_feedback_service)]):
     """사용자 피드백 저장"""
     if service.save_feedback(feedback):
         return {"success": True}

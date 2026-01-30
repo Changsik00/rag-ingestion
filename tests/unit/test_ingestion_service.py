@@ -93,7 +93,7 @@ async def test_process_job_handles_infrastructure_exception(service_deps):
 @pytest.mark.asyncio
 async def test_process_job_chunks_document(service_deps):
     """
-    Given: ChunkerService splits document into chunks
+    Given: Chunker splits document into chunks
     When: process_job is called
     Then: repository.save_with_chunks is called with document and chunks
     """
