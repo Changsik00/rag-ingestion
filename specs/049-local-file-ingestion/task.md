@@ -83,17 +83,23 @@
 - [x] 검증: 파일 업로드 후 백엔드 로그에서 `Processing local file` 확인
 - [x] Commit: `fix(spec-049): resolve backend NameError, neo4j config, and job persistence`
 
-## Task 8: Fix Semantic Extraction & Debug Retrieval
-- [x] `app/infrastructure/brain/adapter.py`: `aextract_metadata` 인터페이스 불일치 수정
-- [x] `app/infrastructure/rag/nodes.py`, `app/infrastructure/storage/chroma.py`: 상세 디버그 로그 추가
-- [x] 검증: 파일 재업로드 후 Semantic Extraction 성공 확인
+## Task 8: Fix `AttributeError` in semantic extraction and debug retrieval prioritization.
+    *   Renamed `extract_metadata` to `aextract_metadata`.
+    *   Handled `thread_id` fallback in `LangGraphAdapter`.
+    *   Improved interleaving of keyword and vector results in RAG.
+## Task 9: Optimize hybrid search and reranking, including final verification.
+    *   Expanded reranking window to 15 candidates.
+    *   Explicitly prioritized Knowledge Graph context in generate_answer prompt.
+    *   Added extensive debug logging for retrieval and storage.
+- [x] 최종 검증: "네오사피엔스" 질문 시 업로드된 계약서 내용 기반 정확한 답변 확인
 
-## Task 9: Optimize Hybrid Search & Reranking (Final Quality Fix)
-- [x] `app/infrastructure/rag/nodes.py`: 키워드 검색 결과(Keyword Search) 우선순위 상향 및 인터리빙(Interleaving) 적용
-- [x] `app/infrastructure/brain/adapter.py`: `thread_id` 자동 생성 로직 추가 (Robustness 향상)
-- [ ] 최종 검증: "네오사피엔스" 질문 시 업로드된 계약서 내용 기반 정확한 답변 확인
+## Task 10: Critical Fix - Storage ID Mismatches & Data Corruption [Hotfix]
+- [x] `app/infrastructure/storage/neo4j_document_repository.py`: `Chunk` nodes missing `id` (mismatch with `chunk_id`) fixed.
+- [x] `app/infrastructure/storage/neo4j_job_repository.py`: Binary `raw_content` encoded as Base64 to prevent corruption (`????`).
+- [x] `app/domain/entities/job.py`: `raw_content` excluded from API serialization to prevent Unicode errors.
+- [x] System Verification: Full RAG pipeline test with "Neosapiens" contract.
 
 ## Summary
-**총 Task**: 9개  
-**예상 커밋 수**: 12개 이상  
-**현재 진행**: Final quality verification after search optimization
+**총 Task**: 10개  
+**예상 커밋 수**: 15개 이상  
+**현재 진행**: All tasks completed & Verified

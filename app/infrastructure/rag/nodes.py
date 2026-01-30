@@ -9,7 +9,6 @@ Design Guide 005: 3-Layer Architecture (Brain → Nervous System → Body)
 """
 
 import asyncio
-import logging
 import re
 from typing import Any
 
@@ -19,8 +18,9 @@ from app.domain.schemas.intent import IntentType, UserIntent
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.prompts.reranker import RERANKER_PROMPT
 from app.domain.services.query_rewriter import QueryRewriter
+from app.core.logging_config import setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 class RAGNodes:
@@ -365,11 +365,11 @@ class RAGNodes:
         prompt = (
             "You are a professional AI assistant. Answer the question by combining the provided Context (DB) and your internal knowledge.\n\n"
             "KNOWLEDGE MIXING RULES:\n"
-            "1. PRIORITIZE CONTEXT: If the provided Context contains information, it MUST be prioritized as the source of truth. Use it for core facts and citations.\n"
-            "2. CITATION REQUIREMENT: For every sentence or fact derived from the Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
-            "3. HELPfulness & COMPLETENESS: Even if the Context answers the question, use your internal knowledge to enrich the answer (e.g., adding artist name, historical background, or related concepts) to make it comprehensive.\n"
-            "4. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n"
-            "5. SEAMLESS FUSION: Mix both sources into a natural, coherent response. Ensure the answer is structured and deep, not just a minimal summary.\n\n"
+            "1. PRIORITIZE KNOWLEDGE GRAPH: The 'Graph Facts' section contains high-precision structured relationships. Treat these as the most reliable source of truth.\n"
+            "2. PRIORITIZE DOCUMENT CONTEXT: If information is not in the Graph, use 'Document Context'. It MUST be prioritized over your internal knowledge.\n"
+            "3. CITATION REQUIREMENT: For every sentence or fact derived from the Document Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
+            "4. ENRICH WITH INTERNAL KNOWLEDGE: Use your internal knowledge ONLY to enrich the answer with context that doesn't conflict with the provided Context.\n"
+            "5. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n\n"
             f"Question: {query}\n"
             f"(Rewritten Query for Search): {rewritten_query}\n\n"
             "=== Provided Context (DB) ===\n"

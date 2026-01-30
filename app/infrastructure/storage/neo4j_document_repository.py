@@ -104,7 +104,7 @@ class Neo4jStorage(DocumentRepository):
             query = """
             MATCH (d:Document {id: $doc_id})
             UNWIND $chunks AS chunk_data
-            MERGE (c:Chunk {id: chunk_data.id})
+            MERGE (c:Chunk {chunk_id: chunk_data.chunk_id})
             SET c.content = chunk_data.content,
                 c.index = chunk_data.index,
                 c.parent_id = $doc_id,
@@ -116,7 +116,7 @@ class Neo4jStorage(DocumentRepository):
             chunks_data = []
             for chunk in chunks:
                 chunk_dict = {
-                    "id": chunk.id,
+                    "chunk_id": chunk.id,
                     "content": chunk.content,
                     "index": chunk.index,
                     "metadata": self._flatten_metadata(chunk.metadata),
@@ -169,7 +169,7 @@ class Neo4jStorage(DocumentRepository):
                     node = record["d"]
                     docs.append(
                         Document(
-                            id=node["id"],
+                            id=node["chunk_id"],
                             content=node.get("content", ""),
                             metadata=self._unflatten_metadata(node),
                         )
@@ -193,7 +193,7 @@ class Neo4jStorage(DocumentRepository):
                     node = record["c"]
                     chunks.append(
                         Chunk(
-                            id=node["id"],
+                            id=node["chunk_id"],
                             content=node.get("content", ""),
                             parent_id=node.get("parent_id"),
                             index=node.get("index", 0),
@@ -286,7 +286,7 @@ class Neo4jStorage(DocumentRepository):
 
                     chunks.append(
                         Chunk(
-                            id=node["id"],
+                            id=node["chunk_id"],
                             content=node.get("content", ""),
                             parent_id=node.get("parent_id"),
                             index=node.get("index", 0),
@@ -303,7 +303,7 @@ class Neo4jStorage(DocumentRepository):
     def get_all_chunk_ids(self) -> set[str]:
         """Neo4j의 모든 청크 ID를 가져옵니다."""
         try:
-            query = "MATCH (c:Chunk) RETURN c.id as id"
+            query = "MATCH (c:Chunk) RETURN c.chunk_id as id"
             with self.driver.session() as session:
                 result = session.run(query)
                 return {record["id"] for record in result}
@@ -316,7 +316,7 @@ class Neo4jStorage(DocumentRepository):
         try:
             query = """
             MATCH (c:Chunk)
-            WHERE c.id IN $ids
+            WHERE c.chunk_id IN $ids
             RETURN c
             """
             chunks = []
@@ -340,7 +340,7 @@ class Neo4jStorage(DocumentRepository):
 
                     chunks.append(
                         Chunk(
-                            id=node["id"],
+                            id=node["chunk_id"],
                             content=node.get("content", ""),
                             parent_id=node.get("parent_id"),
                             index=node.get("index", 0),
@@ -391,7 +391,7 @@ class Neo4jStorage(DocumentRepository):
         """모든 청크의 핵심 데이터(ID, 부모 ID)를 조인 없이 가볍게 가져옵니다."""
         try:
             # content는 벌크 로드에서 제외 (성능 저하 방지)
-            query = "MATCH (c:Chunk) RETURN c.id as id, c.parent_id as parent_id"
+            query = "MATCH (c:Chunk) RETURN c.chunk_id as id, c.parent_id as parent_id"
             with self.driver.session() as session:
                 results = session.run(query)
                 return [dict(record) for record in results]

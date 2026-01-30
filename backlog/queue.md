@@ -484,3 +484,8 @@
 * **[Integration] n8n Workflow Automation**
   * **Goal**: 외부 소스(RSS/뉴스) 감지 시 자동 수집 트리거 및 알림 시스템.
    Low (Phase 4에서 Icebox로 이동).
+
+* **[Tech] Metadata Robustness: Custom JSON Encoder**
+  * **Problem**: 현재 `Neo4jDocumentRepository`와 `ChromaStorage`는 메타데이터를 `json.dumps`로 직렬화함. `datetime`이나 `bytes` 같은 객체가 포함되면 저장 실패 위험 있음.
+  * **Solution**: `json.dumps` 호출 시 `default` 파라미터에 커스텀 인코더(datetime -> isoformat, bytes -> base64 등)를 주입하여 안정성 확보.
+  * **Context**: Spec 049 로컬 파일 인제스션 작업 중 잠재적 위험으로 식별되어 등록.

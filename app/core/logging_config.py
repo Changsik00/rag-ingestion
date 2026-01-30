@@ -9,10 +9,11 @@ def setup_logger(name: str) -> logging.Logger:
     """
     logger = logging.getLogger(name)
 
+    # Always set the level to DEBUG as per instruction
+    logger.setLevel(logging.DEBUG)
+
     # Prevent adding handlers multiple times
     if not logger.handlers:
-        logger.setLevel(logging.INFO)
-
         handler = logging.StreamHandler(sys.stdout)
         formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         handler.setFormatter(formatter)

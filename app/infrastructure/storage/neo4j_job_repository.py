@@ -1,4 +1,5 @@
 from datetime import datetime
+import base64
 
 from neo4j import Driver
 
@@ -22,6 +23,11 @@ class Neo4jJobRepository(JobRepository):
             j.raw_content = $raw_content,
             j.filename = $filename
         """
+        # Encode bytes to base64 string for Neo4j storage
+        raw_content_b64 = None
+        if job.raw_content:
+            raw_content_b64 = base64.b64encode(job.raw_content).decode("utf-8")
+
         params = {
             "job_id": job.job_id,
             "source_url": job.source_url,
@@ -30,7 +36,7 @@ class Neo4jJobRepository(JobRepository):
             "updated_at": job.updated_at.isoformat(),
             "error_message": job.error_message,
             "retry_of": job.retry_of,
-            "raw_content": job.raw_content,
+            "raw_content": raw_content_b64,
             "filename": job.filename,
         }
         with self.driver.session() as session:
@@ -46,13 +52,18 @@ class Neo4jJobRepository(JobRepository):
             j.raw_content = $raw_content,
             j.filename = $filename
         """
+        # Encode bytes to base64 string for Neo4j storage
+        raw_content_b64 = None
+        if job.raw_content:
+            raw_content_b64 = base64.b64encode(job.raw_content).decode("utf-8")
+
         params = {
             "job_id": job.job_id,
             "status": job.status.value,
             "updated_at": job.updated_at.isoformat(),
             "error_message": job.error_message,
             "docs_ids": job.docs_ids,
-            "raw_content": job.raw_content,
+            "raw_content": raw_content_b64,
             "filename": job.filename,
         }
         with self.driver.session() as session:
@@ -70,6 +81,12 @@ class Neo4jJobRepository(JobRepository):
                 return None
 
             node = record["j"]
+            
+            # Decode base64 back to bytes
+            raw_content = None
+            if node.get("raw_content"):
+                raw_content = base64.b64decode(node["raw_content"])
+
             return IngestionJob(
                 job_id=node["job_id"],
                 source_url=node["source_url"],
@@ -78,7 +95,7 @@ class Neo4jJobRepository(JobRepository):
                 updated_at=datetime.fromisoformat(node["updated_at"]),
                 error_message=node.get("error_message"),
                 retry_of=node.get("retry_of"),
-                raw_content=node.get("raw_content"),
+                raw_content=raw_content,
                 filename=node.get("filename"),
                 docs_ids=node.get("docs_ids", []),
             )
@@ -95,6 +112,12 @@ class Neo4jJobRepository(JobRepository):
             result = session.run(query, limit=limit)
             for record in result:
                 node = record["j"]
+                
+                # Decode base64 back to bytes
+                raw_content = None
+                if node.get("raw_content"):
+                    raw_content = base64.b64decode(node["raw_content"])
+
                 jobs.append(
                     IngestionJob(
                         job_id=node["job_id"],
@@ -104,7 +127,7 @@ class Neo4jJobRepository(JobRepository):
                         updated_at=datetime.fromisoformat(node["updated_at"]),
                         error_message=node.get("error_message"),
                         retry_of=node.get("retry_of"),
-                        raw_content=node.get("raw_content"),
+                        raw_content=raw_content,
                         filename=node.get("filename"),
                         docs_ids=node.get("docs_ids", []),
                     )

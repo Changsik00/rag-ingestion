@@ -31,6 +31,25 @@ uv run pytest tests/unit/test_file_processor.py
 ### Manual Verification
 신규 생성된 `scripts/verify_file_ingestion.py`를 통해 API 엔드포인트의 동작과 비동기 처리 흐름을 검증하였습니다.
 
+## 3. Debugging & Critical Fixes (Post-Implementation)
+
+### Issue Identification
+- **Symptom**: Local file ingestion jobs marked `COMPLETED` but search returned no results.
+- **Root Cause 1 (Unicode Error)**: API failed to serialize `IngestionJob` containing binary `raw_content`, causing silent failures or errors in logs.
+- **Root Cause 2 (Data Corruption)**: Storing raw PDF bytes directly in Neo4j caused text extraction to fail (producing `????` garbage characters).
+- **Root Cause 3 (Missing IDs)**: `Chunk` nodes in Neo4j lacked `id` properties due to a key mismatch (`id` vs `chunk_id`), breaking the link between Chroma search results and Neo4j nodes.
+
+### Applied Fixes
+1. **API Serialization**: Excluded `raw_content` from `IngestionJob` Pydantic model serialization.
+2. **Safe Storage**: Modified `Neo4jJobRepository` to store `raw_content` as **Base64 encoded string**.
+3. **ID Standardization**: Updated `Neo4jDocumentRepository` to consistently use `chunk_id` for `Chunk` nodes.
+
+### Final Verification
+- **Input**: "네오사피엔스_스톡옵션 계약서(2024)_Changsik_2025-02-13.pdf"
+- **Query**: "네오사피엔스 주식매수선택권 계약의 행사가격은 얼마인가요?"
+- **Result**: "네오사피엔스 주식회사와 장창식 간의 주식매수선택권 부여 계약서에 따르면... 1주당 행사가격은 500원입니다."
+- **Status**: ✅ **SUCCESS**
+
 ## 스크린샷 / 영상 (Placeholder)
 > [!NOTE]
 > 실제 Streamlit UI 화면은 로컬 실행 후 확인 가능합니다.
