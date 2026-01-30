@@ -57,7 +57,7 @@
 - [x] **Walkthrough 작성**: `specs/049-local-file-ingestion/walkthrough.md`
 - [ ] **PR Description 작성**: `specs/049-local-file-ingestion/pr_description.md`
 - [x] **Archive Commit**: 위 파일들을 커밋 (`docs(spec-049): archive walkthrough and pr description`)
-- [ ] Create PR: `gh pr create --title "feat(spec-049): local file ingestion (pdf, txt, md)" --body-file specs/049-local-file-ingestion/pr_description.md`
+- [x] Create PR: `gh pr create --title "feat(spec-049): local file ingestion (pdf, txt, md) support" --body-file specs/049-local-file-ingestion/pr_description.md`
 
 ## Summary
 **총 Task**: 4개  
