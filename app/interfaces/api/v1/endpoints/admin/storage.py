@@ -2,14 +2,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.domain.services.storage_integrity_service import StorageIntegrityService
+from app.application.services.integrity_service import IntegrityService
 from app.interfaces.api.dependencies import get_checkpointer, get_semantic_extractor, get_storage_integrity_service
 
 router = APIRouter()
 
 
 @router.get("/stats")
-async def get_stats(service: Annotated[StorageIntegrityService, Depends(get_storage_integrity_service)]):
+async def get_stats(service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]):
     try:
         return service.get_drift_report()
     except Exception as e:
@@ -17,7 +17,7 @@ async def get_stats(service: Annotated[StorageIntegrityService, Depends(get_stor
 
 
 @router.get("/reports")
-async def get_reports(service: Annotated[StorageIntegrityService, Depends(get_storage_integrity_service)]):
+async def get_reports(service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]):
     try:
         return service.get_document_drift_report()
     except Exception as e:
@@ -26,7 +26,7 @@ async def get_reports(service: Annotated[StorageIntegrityService, Depends(get_st
 
 @router.get("/documents/{doc_id}/diagnostic")
 async def get_diagnostic(
-    doc_id: str, service: Annotated[StorageIntegrityService, Depends(get_storage_integrity_service)]
+    doc_id: str, service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]
 ):
     try:
         sample = service.get_missing_chunk_sample(doc_id)
@@ -37,7 +37,7 @@ async def get_diagnostic(
 
 @router.get("/documents/{doc_id}/preview-context")
 async def get_preview_context(
-    doc_id: str, service: Annotated[StorageIntegrityService, Depends(get_storage_integrity_service)]
+    doc_id: str, service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]
 ):
     try:
         context = await service.get_cleaned_context(doc_id)
@@ -48,7 +48,7 @@ async def get_preview_context(
 
 @router.post("/documents/{doc_id}/sync")
 async def sync_document(
-    doc_id: str, service: Annotated[StorageIntegrityService, Depends(get_storage_integrity_service)]
+    doc_id: str, service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]
 ):
     try:
         return service.sync_document(doc_id)
@@ -59,7 +59,7 @@ async def sync_document(
 @router.post("/documents/{doc_id}/enrich")
 async def enrich_document(
     doc_id: str,
-    service: Annotated[StorageIntegrityService, Depends(get_storage_integrity_service)],
+    service: Annotated[IntegrityService, Depends(get_storage_integrity_service)],
     checkpointer=Depends(get_checkpointer),
 ):
     try:
@@ -70,7 +70,7 @@ async def enrich_document(
 
 
 @router.post("/sync-all")
-async def sync_all(service: Annotated[StorageIntegrityService, Depends(get_storage_integrity_service)]):
+async def sync_all(service: Annotated[IntegrityService, Depends(get_storage_integrity_service)]):
     # BackgroundTasks 를 사용하거나 간단히 실행 (현재는 동기 실행으로 구현되어 있음)
     try:
         service.sync_all()

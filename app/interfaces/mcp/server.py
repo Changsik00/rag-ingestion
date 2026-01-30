@@ -2,7 +2,7 @@ import asyncio
 
 from mcp.server.fastmcp import FastMCP
 
-from app.core.llm import get_llm
+from app.infrastructure.factories.llm_factory import LLMFactory
 from app.domain.entities.job import JobStatus
 from app.domain.services.query_rewriter import QueryRewriter
 from app.domain.services.rag_service import RAGService
@@ -57,7 +57,7 @@ async def provide_rag_service() -> RAGService:
     neo4j_doc_repo = Neo4jStorage(driver)
     graph_repo = get_graph_repository(driver)
     chroma_repo = ChromaStorage()
-    llm = get_llm()
+    llm = LLMFactory.get_llm_adapter()
     query_rewriter = QueryRewriter(llm)
     intent_classifier = IntentClassifier(llm)
 

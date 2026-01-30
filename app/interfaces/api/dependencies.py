@@ -6,7 +6,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
 from app.core.config import get_settings
-from app.core.llm import get_llm
+from app.infrastructure.factories.llm_factory import LLMFactory
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
@@ -18,7 +18,7 @@ from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.domain.services.rag_service import RAGService
 from app.domain.services.semantic_extractor import SemanticExtractor
-from app.domain.services.storage_integrity_service import StorageIntegrityService
+from app.application.services.integrity_service import IntegrityService
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
@@ -73,9 +73,9 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 def get_storage_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     chroma_storage: Annotated[ChromaStorage, Depends(get_chroma_storage)],
-) -> StorageIntegrityService:
+) -> IntegrityService:
     primary_repo = Neo4jStorage(driver)
-    return StorageIntegrityService(primary_repo, chroma_storage)
+    return IntegrityService(primary_repo, chroma_storage)
 
 
 # Checkpointer 의존성 (HITL Persistence)
@@ -120,7 +120,7 @@ async def get_checkpointer() -> AsyncSqliteSaver:
 async def get_semantic_extractor(
     checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
 ) -> SemanticExtractor:
-    llm_adapter = get_llm()  # LangChainLLMAdapter를 반환
+    llm_adapter = LLMFactory.get_llm_adapter()  # LangChainLLMAdapter를 반환
     # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
     # Spec 024: Checkpointer 주입
     langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
@@ -174,14 +174,14 @@ async def get_langgraph_adapter(
 # Query Rewriter 의존성
 @lru_cache
 def get_query_rewriter() -> QueryRewriter:
-    llm_adapter = get_llm()
+    llm_adapter = LLMFactory.get_llm_adapter()
     return QueryRewriter(llm_adapter)
 
 
 # Intent Classifier 의존성 (Spec 032)
 @lru_cache
 def get_intent_classifier() -> IntentClassifier:
-    llm_adapter = get_llm()
+    llm_adapter = LLMFactory.get_llm_adapter()
     return IntentClassifier(llm_adapter)
 
 
@@ -196,7 +196,7 @@ def get_rag_nodes(
 
     neo4j_doc_repo = Neo4jStorage(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
-    llm_adapter = get_llm()
+    llm_adapter = LLMFactory.get_llm_adapter()
 
     return RAGNodes(
         neo4j_doc_repo=neo4j_doc_repo,
@@ -250,7 +250,7 @@ async def get_integrity_service(
 
     neo4j_storage = Neo4jStorage(driver)
     # 어댑터 생성 (Checkpointer 리셋용)
-    llm_adapter = get_llm()
+    llm_adapter = LLMFactory.get_llm_adapter()
     langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
 
     return IntegrityService(
