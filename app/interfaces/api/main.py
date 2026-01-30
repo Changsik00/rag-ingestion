@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, UploadFile, status
 
+from app.application.services.ingestion import IngestionService
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.scraper import ScraperInterface
@@ -15,7 +16,6 @@ from app.interfaces.api.schemas.ingest import (
     MultiAsyncIngestResponse,
 )
 from app.interfaces.api.v1.endpoints.admin import router as admin_router
-from app.use_cases.ingestion import IngestionService
 
 app = FastAPI(
     title="RAG Ingestion API",

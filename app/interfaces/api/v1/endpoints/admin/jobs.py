@@ -3,11 +3,11 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.application.services.ingestion import IngestionService
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository, get_langgraph_adapter
-from app.use_cases.ingestion import IngestionService
 
 router = APIRouter()
 
