@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status, UploadFile, File
 
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
@@ -31,6 +31,29 @@ async def ingest_web_page(
 ):
     try:
         job = service.create_job(str(request.url))
+        background_tasks.add_task(service.process_job, job.job_id)
+        return {"job_id": job.job_id, "status": job.status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ingest/file", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
+async def ingest_file(
+    background_tasks: BackgroundTasks,
+    service: Annotated[IngestionService, Depends(get_ingestion_service)],
+    file: UploadFile = File(...),
+):
+    """
+    Upload a local file (PDF, TXT, MD) for ingestion.
+    """
+    try:
+        content = await file.read()
+        # source_url for file ingestion will be the filename for tracking
+        job = service.create_job(
+            url=f"file://{file.filename}", 
+            raw_content=content, 
+            filename=file.filename
+        )
         background_tasks.add_task(service.process_job, job.job_id)
         return {"job_id": job.job_id, "status": job.status}
     except Exception as e:

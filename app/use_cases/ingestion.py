@@ -11,6 +11,7 @@ from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.services.chunker import ChunkerService
 from app.domain.services.semantic_extractor import SemanticExtractor
+from app.domain.services.file_processor import FileProcessor
 
 logger = setup_logger(__name__)
 
@@ -24,6 +25,7 @@ class IngestionService:
         job_repository: JobRepository,
         chunker: ChunkerService,
         extractor: SemanticExtractor | None = None,
+        file_processor: FileProcessor | None = None,
     ):
         self.scraper = scraper
         self.repository = repository
@@ -31,6 +33,7 @@ class IngestionService:
         self.job_repository = job_repository
         self.chunker = chunker
         self.extractor = extractor
+        self.file_processor = file_processor or FileProcessor()
 
         # [Spec 046] Inject LLM into Quality Checker if using CompositeScraper
         from app.infrastructure.scrapers.composite_scraper import CompositeScraper
@@ -39,9 +42,15 @@ class IngestionService:
             self.scraper.quality_checker.llm = self.extractor.llm
             self.scraper.youtube_scraper.llm = self.extractor.llm
 
-    def create_job(self, url: str, retry_of: str | None = None) -> IngestionJob:
+    def create_job(self, url: str, retry_of: str | None = None, raw_content: bytes | None = None, filename: str | None = None) -> IngestionJob:
         """Create and persist a new job in PENDING state."""
-        job = IngestionJob(source_url=url, status=JobStatus.PENDING, retry_of=retry_of)
+        job = IngestionJob(
+            source_url=url, 
+            status=JobStatus.PENDING, 
+            retry_of=retry_of,
+            raw_content=raw_content,
+            filename=filename
+        )
         self.job_repository.create_job(job)
         return job
 
@@ -59,40 +68,48 @@ class IngestionService:
             job.updated_at = datetime.now(timezone.utc)
             self.job_repository.update_job(job)
 
-            # 2. Scrape
-            result = await self.scraper.scrape(job.source_url)
+            # 2. Extract Content (Iterative or Single)
+            if job.raw_content and job.filename:
+                logger.info(f"Processing local file: {job.filename}")
+                segments = self.file_processor.extract_segments(job.raw_content, job.filename)
+            else:
+                result = await self.scraper.scrape(job.source_url)
+                from app.infrastructure.scrapers.base import ScrapeResult
+                segments = [(result.markdown, result.metadata)]
 
-            # 3. Semantic Extraction (Spec 005)
-            semantic_data = None
-            if self.extractor:
-                try:
-                    semantic_data = await self.extractor.extract(result.markdown, thread_id=job_id)
-                    if semantic_data:
-                        # Append semantic data to metadata
-                        result.metadata["semantic_data"] = semantic_data.model_dump()
-                except Exception as e:
-                    # Extraction failure should not fail the entire job, but log it
-                    logger.warning(f"Semantic extraction failed for job {job_id}: {e}")
+            job.docs_ids = []
+            
+            # 3. Process each segment
+            for text, metadata in segments:
+                # Semantic Extraction (Spec 005)
+                semantic_data = None
+                if self.extractor:
+                    try:
+                        semantic_data = await self.extractor.extract(text, thread_id=job_id)
+                        if semantic_data:
+                            metadata["semantic_data"] = semantic_data.model_dump()
+                    except Exception as e:
+                        logger.warning(f"Semantic extraction failed for segment in job {job_id}: {e}")
 
-            # 4. Map to Domain Entity
-            doc_metadata = result.metadata.copy()
-            doc_metadata["source_url"] = str(result.url)
+                # Map to Domain Entity
+                doc_metadata = metadata.copy()
+                doc_metadata["source_url"] = str(job.source_url)
+                doc = Document(content=text, metadata=doc_metadata)
 
-            doc = Document(content=result.markdown, metadata=doc_metadata)
+                # Chunking & Save
+                chunks = self.chunker.chunk_document(doc)
+                self.repository.save_with_chunks(doc, chunks)
+                job.docs_ids.append(doc.id)
 
-            # 5. Chunking & Save
-            chunks = self.chunker.chunk_document(doc)
-            self.repository.save_with_chunks(doc, chunks)
+                # Build Knowledge Graph (Spec 010 + 016)
+                if semantic_data:
+                    self._build_knowledge_graph(UUID(doc.id), semantic_data)
 
-            # 6. Build Knowledge Graph (Spec 010 + 016)
-            if semantic_data:
-                self._build_knowledge_graph(UUID(doc.id), semantic_data)
-
-            # 7. Update Job (COMPLETED)
+            # 4. Update Job (COMPLETED)
             job.status = JobStatus.COMPLETED
             job.updated_at = datetime.now(timezone.utc)
             self.job_repository.update_job(job)
-            logger.info(f"Ingestion job {job_id} completed successfully")
+            logger.info(f"Ingestion job {job_id} completed with {len(job.docs_ids)} documents")
 
         except DoitException as e:
             # Known domain/infrastructure exceptions

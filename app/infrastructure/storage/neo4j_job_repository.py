@@ -37,13 +37,15 @@ class Neo4jJobRepository(JobRepository):
         MATCH (j:IngestionJob {job_id: $job_id})
         SET j.status = $status,
             j.updated_at = $updated_at,
-            j.error_message = $error_message
+            j.error_message = $error_message,
+            j.docs_ids = $docs_ids
         """
         params = {
             "job_id": job.job_id,
             "status": job.status.value,
             "updated_at": job.updated_at.isoformat(),
             "error_message": job.error_message,
+            "docs_ids": job.docs_ids,
         }
         with self.driver.session() as session:
             session.run(query, params)
