@@ -26,13 +26,13 @@
 #### A-1-2. IntegrityService 이동 ✅
 - [x] 파일 이동: `app/domain/services/storage_integrity_service.py` → `app/application/services/integrity_service.py`
 - [x] 클래스명 변경: `StorageIntegrityService` → `IntegrityService`
-- [ ] Import 수정: `Any` → `DocumentRepository`, `VectorRepository` Protocol (Phase B-3에서 처리)
+- [x] Import 수정: `Any` → `DocumentRepository` Protocol (Phase B-3에서 완료)
 - [x] Commit: `refactor(spec-050): move IntegrityService to application layer`
 
 #### A-1-3. LLMFactory 이동 ✅
 - [x] 디렉토리 생성: `mkdir -p app/infrastructure/factories`
 - [x] 파일 이동: `app/core/llm.py` → `app/infrastructure/factories/llm_factory.py`
-- [ ] 반환 타입 변경: `LangChainLLMAdapter` → `LLMInterface` (Phase B-3에서 처리)
+- [x] 반환 타입 변경: `LangChainLLMAdapter` → `LLMInterface` (Phase B-3에서 완료)
 - [x] `app/core/llm.py` 삭제
 - [x] Commit: `refactor(spec-050): move LLMFactory to infrastructure layer`
 
@@ -65,9 +65,12 @@
 - [x] Commit: `refactor(spec-050): move API schemas to interfaces layer`
 
 #### A-2-3. DocumentMetadata VO 생성 (Skipped - Out of Scope)
+
+**스킵 이유**: Document.metadata는 현재 유연한 dict 구조로 잘 작동하고 있습니다. VO로 만들면 타입 안정성은 높아지지만, 동적 메타데이터 추가가 어려워집니다. 이 작업은 별도 PR로 분리하여 충분한 검토 후 진행하는 것이 적절합니다.
+
 - [ ] 파일 생성: `app/domain/value_objects/document_metadata.py`
 - [ ] `Document.metadata: dict` → `metadata: DocumentMetadata` 변경
-- [ ] Note: 현재 dict 구조로도 충분히 작동, 별도 PR로 분리 가능
+- [ ] Note: 유연성 vs 타입안정성 트레이드오프, 별도 논의 필요
 
 #### A-2-4. Import 경로 전면 업데이트 ✅
 ```bash
@@ -193,11 +196,13 @@ class LLMInterface(Protocol):
 
 ### Task C-1: Client-Agnostic Naming (Skipped)
 
+**스킵 이유**: AdminAgent는 이미 Application Layer로 이동했고, 클래스명 변경은 Breaking Change가 너무 커서 별도 PR로 분리하기로 결정. 현재 상태로도 Clean Architecture 원칙은 준수하고 있음.
+
 #### C-1-1. AdminAgent → RAGAgent 이동 및 이름 변경 (Not in Scope)
 - [ ] 디렉토리 생성: `mkdir -p app/application/clients/admin`
-- [ ] 파일 이동: `app/domain/services/admin_agent.py` → `app/application/clients/admin/rag_agent.py`
+- [ ] 파일 이동: `app/application/services/admin_agent.py` → `app/application/clients/admin/rag_agent.py`
 - [ ] 클래스명 변경: `AdminAgent` → `ConversationalRAGAgent`
-- [ ] Note: 별도 PR로 분리 결정
+- [ ] Note: Breaking Change 최소화 위해 별도 PR로 분리
 
 #### C-1-2. Import 경로 업데이트 (Not in Scope)
 ```bash
@@ -210,10 +215,12 @@ grep -r "AdminAgent" app/ tests/
 
 ### Task C-2: Shared Utilities Layer (Skipped)
 
+**스킵 이유**: `app/core/`는 이미 공통 유틸리티 역할을 잘 수행하고 있습니다. `config.py`, `exceptions.py`, `logging_config.py`는 모두 프레임워크와 무관한 공통 설정이므로 현재 위치가 적절합니다. Shared Layer를 새로 만드는 것은 over-engineering입니다.
+
 #### C-2-1. Shared 디렉토리 생성 (Not in Scope)
 - [ ] 디렉토리 생성: `mkdir -p app/shared`
 - [ ] `app/core/logging_config.py` → `app/shared/logging.py` 이동
-- [ ] Note: 현재 구조로도 충분히 명확함
+- [ ] Note: app/core가 이미 공통 유틸리티 역할 수행 중
 
 #### C-2-2. Import 경로 업데이트 (Not in Scope)
 ```bash
@@ -224,9 +231,10 @@ grep -r "from app.core.logging_config" app/
 
 #### C-2-3. Core 디렉토리 정리 확인 ✅
 - [x] `app/core/`에 남은 파일:
-  - `config.py` ✅
-  - `exceptions.py` ✅
-  - Note: 적절한 수준으로 정리됨
+  - `config.py` ✅ (애플리케이션 설정)
+  - `exceptions.py` ✅ (공통 예외)
+  - `logging_config.py` ✅ (로깅 설정)
+  - Note: 모두 공통 인프라 설정으로 app/core가 적절한 위치
 
 ---
 
@@ -240,9 +248,12 @@ grep -r "from app.core.logging_config" app/
 - [x] Commit: `docs(spec-050): rewrite architecture.md for Clean Architecture`
 
 #### C-3-2. ADR 작성 (Optional - Skipped)
+
+**스킵 이유**: architecture.md에 이미 Clean Architecture + DDD 선택 이유, Design Decisions, 트레이드오프가 상세히 문서화되어 있습니다. 별도 ADR 파일을 만드는 것은 중복입니다.
+
 - [ ] 파일 생성: `docs/architecture_decisions/adr-001-clean-architecture-refactoring.md`
 - [ ] 내용: 왜 리팩토링했는지, 어떤 트레이드오프가 있었는지 기록
-- [ ] Note: Architecture.md에 충분히 문서화됨
+- [ ] Note: architecture.md의 "Design Decisions" 섹션에 충분히 문서화됨
 
 #### C-3-3. 백로그 업데이트 (To be done in PR)
 - [ ] `backlog/queue.md`에 Spec 050 완료 상태 업데이트
