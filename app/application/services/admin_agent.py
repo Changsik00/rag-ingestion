@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Annotated, Any, Literal, TypedDict
+from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict
 
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,9 +9,11 @@ from langgraph.graph import END, StateGraph, add_messages
 
 from app.core.config import get_settings
 from app.domain.entities.job import JobStatus
-from app.application.services.rag import RAG
-from app.use_cases.ingestion import IngestionService
 
+
+if TYPE_CHECKING:
+    from app.application.services.ingestion import Ingestion
+    from app.application.services.rag import RAG
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +39,7 @@ class AdminAgent:
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
 
-    def __init__(self, rag_service: RAGService, ingestion_service: IngestionService):
+    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
         self.llm = ChatGoogleGenerativeAI(
