@@ -38,21 +38,23 @@ with tabs[1]:
     st.subheader("로컬 파일 수집")
     st.info("지원 포맷: PDF, TXT, MD (최대 10MB)")
     
-    uploaded_file = st.file_uploader("Choose a file", type=["pdf", "txt", "md"])
+    uploaded_files = st.file_uploader("Choose files", type=["pdf", "txt", "md"], accept_multiple_files=True)
     
-    if st.button("🚀 Upload & Ingest", type="primary", disabled=not uploaded_file):
-        if uploaded_file:
-            with st.spinner("Uploading and processing..."):
-                files = {
-                    "file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)
-                }
-                # /ingest/file is also at root in main.py
-                res = api_client.upload_file("/../../../ingest/file", files=files)
-                if res:
-                    st.success(f"File uploaded and job created: {res.get('job_id')}")
+    if st.button("🚀 Upload & Ingest", type="primary", disabled=not uploaded_files):
+        if uploaded_files:
+            with st.spinner(f"Uploading {len(uploaded_files)} files..."):
+                file_list = [
+                    ("files", (f.name, f.getvalue(), f.type)) for f in uploaded_files
+                ]
+                # /ingest/files is at root in main.py
+                res = api_client.upload_file("/../../../ingest/files", files=file_list)
+                if res and "jobs" in res:
+                    st.success(f"{len(res['jobs'])} files uploaded and jobs created.")
+                    for job in res["jobs"]:
+                        st.write(f"- Job ID: `{job['job_id']}`")
                     st.info("Check 'Job Queue' for status.")
         else:
-            st.warning("Please select a file.")
+            st.warning("Please select at least one file.")
 
 st.divider()
 st.caption("Tip: 수집이 완료된 문서는 RAG Playground에서 바로 활용할 수 있습니다.")

@@ -60,6 +60,18 @@
 - [x] Create PR: `gh pr create --title "feat(spec-049): local file ingestion (pdf, txt, md) support" --body-file specs/049-local-file-ingestion/pr_description.md`
 
 ## Summary
-**총 Task**: 4개  
-**예상 커밋 수**: 7개 이상  
-**현재 진행**: Completed (All tasks finished)
+---
+
+---
+
+## Task 5: Support Multiple File Uploads & Drag-and-Drop (Enhancement)
+- [x] `app/interfaces/api/main.py`: `ingest_file` 엔드포인트를 다중 파일 수락 가능하도록 리팩토링
+- [x] `admin/pages/0_Ingestion_Management.py`: `st.file_uploader`에 `accept_multiple_files=True` 적용 및 루프 처리
+- [x] `admin/pages/4_RAG_Playground.py`: 사이드바 업로드 위젯 다중 파일 지원
+- [x] 다중 파일 업로드 시 개별 Job 생성 확인 및 검증
+- [x] Commit: `feat(spec-049): support multi-file upload and drag-and-drop UI`
+
+## Summary
+**총 Task**: 5개
+**예상 커밋 수**: 8개 이상
+**현재 진행**: Completed (Multi-file enhancement included)

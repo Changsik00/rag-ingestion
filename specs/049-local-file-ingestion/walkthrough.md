@@ -10,11 +10,12 @@
 - `app/use_cases/ingestion.py`: `process_job` 로직을 리팩토링하여, 추출된 각 세그먼트별로 독립적인 Semantic Extraction, Chunking, Graph Indexing을 반복 수행하는 **Iterative Pipeline**을 구축하였습니다.
 
 ### 2. Backend: API 엔드포인트
-- `app/interfaces/api/main.py`: `POST /ingest/file` 멀티파트 업로드 API를 추가하였습니다. 비동기 백그라운드 태스크로 연동되어 대용량 파일도 안정적으로 처리합니다.
+- `app/interfaces/api/main.py`: `POST /ingest/files` 멀티파트 업로드 API를 추가하여 **다중 파일 동시 업로드**를 지원합니다.
+- `app/schemas/ingest.py`: 여러 개의 `job_id`를 반환할 수 있도록 `MultiAsyncIngestResponse` 스키마를 추가하였습니다.
 
 ### 3. Frontend: 관리자 UI (Streamlit)
-- `admin/pages/0_Ingestion_Management.py`: URL 입력과 파일 업로드를 구분한 통합 수집 관리 페이지를 신설하였습니다.
-- `admin/pages/4_RAG_Playground.py`: 사이드바에 'Quick File Upload' 위젯을 추가하여 대화 도중 즉시 지식을 주입할 수 있도록 개선하였습니다.
+- `admin/pages/0_Ingestion_Management.py`: `accept_multiple_files=True`를 적용하여 여러 파일의 동시 선택 및 **드래그 앤 드롭** 업로드를 지원합니다.
+- `admin/pages/4_RAG_Playground.py`: 사이드바 퀵 업로드 위젯에서 다중 파일 지기능을 연동하였습니다.
 - `admin/utils/api_client.py`: `httpx`를 이용한 multipart 파일 업로드 기능을 추가하였습니다.
 
 ## 검증 결과

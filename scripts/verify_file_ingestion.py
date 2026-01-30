@@ -4,48 +4,61 @@ import time
 
 BASE_URL = "http://localhost:8000"
 
-def test_file_upload(file_path):
-    print(f"--- Testing upload of {file_path} ---")
-    if not os.path.exists(file_path):
-        print(f"Skipping: {file_path} not found.")
+def test_multiple_files_upload(file_paths):
+    print(f"--- Testing multi-upload of {file_paths} ---")
+    files_to_upload = []
+    for path in file_paths:
+        if os.path.exists(path):
+            filename = os.path.basename(path)
+            f = open(path, "rb")
+            files_to_upload.append(("files", (filename, f, "application/octet-stream")))
+        else:
+            print(f"Skipping: {path} not found.")
+
+    if not files_to_upload:
+        print("No files to upload.")
         return
 
-    filename = os.path.basename(file_path)
-    with open(file_path, "rb") as f:
-        files = {"file": (filename, f, "application/octet-stream")}
-        response = requests.post(f"{BASE_URL}/ingest/file", files=files)
+    response = requests.post(f"{BASE_URL}/ingest/files", files=files_to_upload)
     
+    # Close files
+    for _, (_, f, _) in files_to_upload:
+        f.close()
+
     if response.status_code == 202:
-        job_id = response.json().get("job_id")
-        print(f"✅ Success: Job created with ID {job_id}")
+        jobs = response.json().get("jobs", [])
+        print(f"✅ Success: {len(jobs)} Jobs created")
         
-        # Monitor job status
-        for _ in range(10):
-            time.sleep(2)
-            status_res = requests.get(f"{BASE_URL}/jobs/{job_id}")
-            if status_res.status_code == 200:
-                job_data = status_res.json()
-                status = job_data.get("status")
-                print(f"Current Status: {status}")
-                if status == "completed":
-                    print("🎉 Job Completed Successfully!")
-                    return
-                elif status == "failed":
-                    print(f"❌ Job Failed: {job_data.get('error_message')}")
-                    return
-            else:
-                print(f"Error fetching status: {status_res.status_code}")
+        for job_info in jobs:
+            job_id = job_info.get("job_id")
+            print(f"Monitoring Job: {job_id}")
+            # Monitor job status
+            for _ in range(10):
+                time.sleep(2)
+                status_res = requests.get(f"{BASE_URL}/jobs/{job_id}")
+                if status_res.status_code == 200:
+                    job_data = status_res.json()
+                    status = job_data.get("status")
+                    print(f"Job {job_id} Status: {status}")
+                    if status == "completed":
+                        print(f"🎉 Job {job_id} Completed!")
+                        break
+                    elif status == "failed":
+                        print(f"❌ Job {job_id} Failed: {job_data.get('error_message')}")
+                        break
+                else:
+                    print(f"Error fetching status: {status_res.status_code}")
     else:
         print(f"❌ Upload Failed: {response.status_code} - {response.text}")
 
 if __name__ == "__main__":
-    # Create a test file
-    test_txt = "test_file_ingestion.txt"
-    with open(test_txt, "w") as f:
-        f.write("This is a test content for local file ingestion.\nRAG system should be able to index this.")
+    # Create test files
+    files = ["test1.txt", "test2.md"]
+    with open("test1.txt", "w") as f: f.write("Content 1")
+    with open("test2.md", "w") as f: f.write("# Content 2")
     
-    test_file_upload(test_txt)
+    test_multiple_files_upload(files)
     
     # Cleanup
-    if os.path.exists(test_txt):
-        os.remove(test_txt)
+    for f in files:
+        if os.path.exists(f): os.remove(f)

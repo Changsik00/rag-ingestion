@@ -35,8 +35,12 @@ class APIClient:
             response = client.post(endpoint, json=json)
             return self._handle_response(response)
 
-    def upload_file(self, endpoint: str, files: dict):
-        """지원: files={'file': ('filename', file_content, 'mime_type')}"""
+    def upload_file(self, endpoint: str, files: any):
+        """
+        지원: 
+        - 단일: files={'file': ('filename', content, 'mime')}
+        - 다중: files=[('files', ('name1', content1, 'mime1')), ('files', ('name2', content2, 'mime2'))]
+        """
         endpoint = endpoint.lstrip("/")
         # Multipart upload requires a longer timeout
         with httpx.Client(base_url=self.base_url, timeout=120.0) as client:

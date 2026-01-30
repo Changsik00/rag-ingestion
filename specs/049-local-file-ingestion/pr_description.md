@@ -1,15 +1,14 @@
-# feat(spec-049): local file ingestion (pdf, txt, md) support
+# feat(spec-049): multi-file upload & drag-and-drop support
 
 ## 📋 Summary
 
 ### 배경 및 목적
-현재 웹 크롤링에 국한된 수집 소스를 로컬 파일(PDF, TXT, MD)로 확장하여, 사용자가 보유한 개인/기업 내부 문서를 지식 베이스에 직접 통합할 수 있도록 하기 위함입니다. 특히 대용량 파일 처리 시의 부하를 방지하기 위해 '분할 정복(Iterative Segmentation)' 전략을 적용하였습니다.
+기존의 단일 파일 업로드 방식을 확장하여, 사용자가 여러 문서(PDF, TXT, MD)를 동시에 선택하거나 폴더째로 드래그 앤 드롭하여 대량의 지식을 한 번에 수집할 수 있도록 사용성을 개선하였습니다.
 
 ### 주요 변경 사항
-- [x] **Iterative File Processor**: `fitz(PyMuPDF)`를 활용하여 PDF를 페이지 단위로, TXT를 세그먼트로 분할 추출하는 제너레이터 구현.
-- [x] **Ingestion Pipeline**: 세그먼트별로 순회하며 Semantic Extraction 및 인덱싱을 수행하도록 `IngestionService` 고도화.
-- [x] **Job Tracking**: 단일 파일에서 생성된 여러 문서를 추적하기 위해 `IngestionJob`에 `docs_ids` 리스트 필드 추가.
-- [x] **New Admin UI**: `Ingestion Management` 페이지 신설 및 `RAG Playground` 사이드바 퀵 업로드 위젯 추가.
+- [x] **Multi-File API**: `POST /ingest/files` 엔드포인트를 구현하여 리스트 형태의 `UploadFile`을 한 번에 처리하고 개별 `job_id`를 반환하도록 고도화.
+- [x] **Drag-and-Drop UI**: Streamlit의 `st.file_uploader`에 `accept_multiple_files=True`를 적용하여 직관적인 다중 선택 및 드래그 앤 드롭 지원.
+- [x] **Batch Processing**: 업로드된 모든 파일에 대해 개별 인제스션 작업을 비동기적으로 생성하여 병렬 처리 및 진행 추적 가능.
 
 ## 🎯 Key Review Points
 1. **Memory Efficiency**: `FileProcessor.extract_segments`가 제너레이터로서 파일을 한 번에 메모리에 올리지 않고 스트리밍 처리하는지 확인.

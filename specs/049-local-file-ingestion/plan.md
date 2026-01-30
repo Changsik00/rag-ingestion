@@ -5,8 +5,8 @@
 
 ## 🛑 User Review Required
 > [!IMPORTANT]
-> - **Divide and Conquer (Chunked Processing)**: 대용량 파일 처리를 위해 파일을 한 번에 메모리에 로드하지 않고, 페이지 단위(PDF) 또는 일정 크기(TXT/MD) 단위로 분할하여 처리하도록 변경합니다.
-> - **세그먼트 메타데이터**: 각 분할된 데이터에는 `page_number` 또는 `segment_index`가 포함되어 검색 시 정확한 위치를 식별할 수 있게 합니다.
+> - **Multi-file Upload**: 사용자가 여러 파일을 동시에 선택하거나 폴더째로 드래그 앤 드롭하여 대량의 문서를 한 번에 업로드할 수 있도록 기능을 확장합니다.
+> - **Batch Job Creation**: 각 파일은 개별 `IngestionJob`으로 처리되어 병렬로 인제스션됩니다.
 
 ## 🎯 Core Strategy
 
@@ -31,9 +31,9 @@ sequenceDiagram
 
 | Component | Strategy | Reasoning |
 |:---:|:---|:---|
-| **File Parsing** | `PyMuPDF` Iterative | 대용량 PDF를 페이지별로 처리하여 메모리 절약 |
-| **Ingestion** | Segment-based Loop | 각 세그먼트별로 Semantic Extraction 및 Indexing 수행 (계단식 처리) |
-| **API Interface** | `FastAPI UploadFile` | 메모리 효율적인 스트리밍 업로드 지원 |
+| **API Interface** | `List[UploadFile]` | 다중 파일 멀티파트 업로드 지원 |
+| **Admin UI** | `st.file_uploader(accept_multiple_files=True)` | 드래그 앤 드롭 및 다중 선택 UI 제공 |
+| **Ingestion** | Batch Job Queue | 각 파일에 대해 개별 백그라운드 태스크 할당 |
 
 ## 📂 Proposed Changes
 
