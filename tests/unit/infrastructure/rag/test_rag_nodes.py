@@ -12,7 +12,7 @@ from unittest.mock import Mock
 import pytest
 
 from app.domain.entities.chunk import Chunk
-from app.domain.schemas.intent import IntentType, UserIntent
+from app.domain.value_objects.intent import IntentType, UserIntent
 
 
 @pytest.fixture

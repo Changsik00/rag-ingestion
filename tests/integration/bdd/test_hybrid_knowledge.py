@@ -11,7 +11,7 @@ from uuid import uuid4
 import pytest
 
 from app.domain.entities.chunk import Chunk
-from app.domain.schemas.intent import IntentType, UserIntent
+from app.domain.value_objects.intent import IntentType, UserIntent
 from app.domain.services.rag_service import RAGService
 from app.infrastructure.rag.graph import RAGGraphBuilder
 from app.infrastructure.rag.nodes import RAGNodes

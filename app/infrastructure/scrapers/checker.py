@@ -2,7 +2,7 @@ import logging
 import re
 from typing import TYPE_CHECKING, Optional
 
-from app.schemas.ingest import IngestResponse
+from app.interfaces.api.schemas.ingest import IngestResponse
 
 if TYPE_CHECKING:
     from app.domain.interfaces.llm import LLMInterface

@@ -9,7 +9,7 @@ Spec 033: LangGraph State Management
 
 import pytest
 
-from app.domain.schemas.intent import IntentType
+from app.domain.value_objects.intent import IntentType
 
 
 @pytest.mark.integration

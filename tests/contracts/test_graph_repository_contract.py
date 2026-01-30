@@ -10,7 +10,7 @@ from typing import get_type_hints
 import pytest
 
 from app.domain.interfaces.graph_repository import GraphRepository
-from app.domain.schemas.ontology import EntityType, TypedEntity
+from app.domain.value_objects.ontology import EntityType, TypedEntity
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 
 

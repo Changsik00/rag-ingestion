@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 
-from app.domain.schemas.ontology import EntityType, RelationshipType, TypedEntity
+from app.domain.value_objects.ontology import EntityType, RelationshipType, TypedEntity
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 
 

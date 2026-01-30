@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import get_settings
-from app.domain.schemas.intent import IntentType
+from app.domain.value_objects.intent import IntentType
 from app.domain.services.intent_classifier import IntentClassifier
 from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
 

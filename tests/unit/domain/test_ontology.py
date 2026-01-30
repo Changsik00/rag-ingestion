@@ -1,5 +1,5 @@
-from app.domain.schemas.extraction import ExtractedMetadata
-from app.domain.schemas.ontology import EntityType, RelationshipType
+from app.domain.value_objects.extracted_metadata import ExtractedMetadata
+from app.domain.value_objects.ontology import EntityType, RelationshipType
 
 
 def test_entity_type_enum_values():

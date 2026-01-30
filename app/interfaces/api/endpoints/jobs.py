@@ -7,7 +7,7 @@ from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository, get_langgraph_adapter
-from app.schemas.ingest import AsyncIngestResponse
+from app.interfaces.api.schemas.ingest import AsyncIngestResponse
 from app.use_cases.ingestion import IngestionService
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])

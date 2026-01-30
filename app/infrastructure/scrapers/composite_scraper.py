@@ -5,7 +5,7 @@ from app.infrastructure.scrapers.checker import ScrapingQualityChecker
 from app.infrastructure.scrapers.firecrawl_scraper import FirecrawlWebScraper
 from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
 from app.infrastructure.scrapers.youtube_scraper import YouTubeScraper
-from app.schemas.ingest import IngestResponse
+from app.interfaces.api.schemas.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)
 
