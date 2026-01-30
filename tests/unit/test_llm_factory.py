@@ -4,7 +4,7 @@ import pytest
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import Settings
-from app.core.llm import LLMFactory
+from app.infrastructure.factories.llm_factory import LLMFactory
 
 
 class TestLLMFactory:
