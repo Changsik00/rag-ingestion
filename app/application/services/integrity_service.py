@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Any
+
+from app.domain.interfaces.document_repository import DocumentRepository
 
 
 @dataclass
@@ -15,7 +16,7 @@ class DriftReport:
 class IntegrityService:
     """Application Service: 데이터 무결성 검증 및 동기화"""
 
-    def __init__(self, primary_repo: Any, target_repo: Any):
+    def __init__(self, primary_repo: DocumentRepository, target_repo: DocumentRepository):
         """
         Args:
             primary_repo: Source of truth (Neo4j)

@@ -3,6 +3,7 @@ from functools import lru_cache
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import get_settings
+from app.domain.interfaces.llm_interface import LLMInterface
 from app.infrastructure.llm import LangChainLLMAdapter
 
 
@@ -20,12 +21,12 @@ class LLMFactory:
 
     @staticmethod
     @lru_cache
-    def get_llm_adapter(model: str | None = None, temperature: float = 0.0) -> LangChainLLMAdapter:
-        """LangChain Adapter 반환 (LLMInterface 구현체)"""
+    def get_llm_adapter(model: str | None = None, temperature: float = 0.0) -> LLMInterface:
+        """LangChain Adapter 반환 (LLMInterface Protocol 구현체)"""
         llm = LLMFactory.get_google_llm(model, temperature)
         return LangChainLLMAdapter(llm)
 
 
-def get_llm() -> LangChainLLMAdapter:
+def get_llm() -> LLMInterface:
     """Adapter 반환 (DI용)"""
     return LLMFactory.get_llm_adapter()
