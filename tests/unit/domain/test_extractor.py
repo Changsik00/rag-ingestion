@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from app.domain.interfaces.llm import LLMInterface
-from app.domain.services.semantic_extractor import SemanticExtractor
+from app.application.services.semantic_extractor import SemanticExtractor
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 from app.domain.value_objects.ontology import EntityType
 
