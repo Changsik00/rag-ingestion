@@ -1,6 +1,9 @@
-# Architecture: Clean Architecture (4-Layer)
+# Architecture: Clean Architecture + DDD
 
-본 프로젝트는 **Clean Architecture**의 4계층 구조를 엄격히 준수하여 구축되었습니다.
+본 프로젝트는 **Clean Architecture**의 4계층 구조 원칙 위에 **Domain-Driven Design (DDD)**의 전술적 패턴을 적용하여 구축되었습니다.
+
+- **Clean Architecture**: 계층 분리, Dependency Rule, 기술 독립성
+- **DDD**: Entities, Value Objects, Domain Services, Repository Pattern
 
 ## 🎯 Core Principles
 
@@ -230,7 +233,65 @@ def get_storage_integrity_service(...) -> IntegrityService:
 
 ## 📋 Design Decisions
 
-### 1. Service Suffix 제거
+### 1. Entities vs Value Objects (DDD)
+
+**Why**: 데이터의 성격을 명확히 하기 위함입니다.
+
+**Entity** (`Document`, `IngestionJob`, `Chunk`)
+- 식별자(ID)로 구분됨
+- 내용이 변해도 ID가 같으면 같은 객체
+- 라이프사이클이 있고 상태가 변경됨
+- DB에 저장되고 관리 대상이 됨
+
+**Value Object** (`ExtractedMetadata`, `UserIntent`, `EntityType`)
+- 값 자체가 정체성
+- 내용이 바뀌면 다른 객체
+- 불변(Immutable)성을 가짐
+- 사이드 이펙트를 줄여줌
+
+```python
+# Entity
+doc1 = Document(id="123", content="A")
+doc1.content = "B"  # 여전히 같은 문서 (ID=123)
+
+# Value Object
+meta1 = ExtractedMetadata(entities=["A"])
+meta2 = ExtractedMetadata(entities=["B"])  # 완전히 다른 객체
+```
+
+### 2. Repository Pattern (DDD)
+
+**Why**: 데이터 접근을 추상화하여 테스트와 교체를 자유롭게 하기 위함입니다.
+
+- Domain은 `DocumentRepository` Protocol만 봄
+- Infrastructure에서 `Neo4jStorage`, `ChromaStorage` 구현
+- `MemoryRepository`로 빠른 테스트 가능
+- DB 교체 시 Infrastructure만 수정
+
+```python
+# Domain Layer - Protocol 정의
+class DocumentRepository(Protocol):
+    def save(self, doc: Document) -> None: ...
+    def get(self, doc_id: str) -> Document | None: ...
+
+# Infrastructure Layer - 구현
+class Neo4jStorage:  # DocumentRepository 구현
+    def save(self, doc: Document) -> None:
+        # Neo4j specific code
+        ...
+```
+
+### 3. Domain Services (DDD)
+
+**Why**: 특정 Entity에 속하지 않는 비즈니스 로직을 캡슐화
+
+- `IntentClassifier`: 사용자 의도 분류
+- `QueryRewriter`: 쿼리 재작성
+- `Chunker`: 텍스트 청킹 전략
+
+**특징**: 상태를 갖지 않음 (Stateless)
+
+### 4. Service Suffix 제거
 **Before**: `IngestionService`, `RAGService`, `ChunkerService`  
 **After**: `Ingestion`, `RAG`, `Chunker`
 
