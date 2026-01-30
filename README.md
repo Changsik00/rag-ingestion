@@ -87,12 +87,22 @@ docker compose down
 
 ## 🗺 Roadmap
 
-현재 프로젝트는 **Phase 5**까지 완료되었으며, 지식 그래프 구축 및 워크플로우 자동화를 향해 나아가고 있습니다. 자세한 계획은 [Backlog](backlog/queue.md)를 참고하세요.
+현재 프로젝트는 **Phase 4**를 완료하였으며, **Phase 5 (Knowledge Reasoning & Agentic Ecosystem)** 구축을 활발히 진행 중입니다. 자세한 계획은 [Backlog](backlog/queue.md)를 참고하세요.
+
+### 📊 Roadmap Status Overview
+
+| Phase | 목표 (Items) | 상태 | 상세 진행 현황 (Queue 기준) |
+| :--- | :--- | :---: | :--- |
+| **Phase 1** | **Functional Foundation**<br>(Scraper, Hybrid Storage) | ✅ **완료** | • Spec 001-002 완료<br>• 기본 수집/저장 파이프라인 (Neo4j+Chroma) 구축됨 |
+| **Phase 2** | **Observability**<br>(Admin Dash, Async Jobs) | ✅ **완료** | • Spec 003-004 완료<br>• Streamlit 대시보드 및 비동기 작업 관리 시스템 가동 중 |
+| **Phase 3** | **Intelligence**<br>(Semantic Extraction, Ontology) | ✅ **완료** | • Spec 005-007 완료<br>• LLM 기반 메타데이터/엔티티 추출 및 온톨로지 설계 적용됨 |
+| **Phase 4** | **Graph Construction**<br>(Entity Nodes, Relationships) | ✅ **완료** | • **Spec 010, 016 완료**<br>• 지식 그래프 노드 매핑 및 관계(Relationship) 추출/탐색 기능 구현됨 |
+| **Phase 5** | **Knowledge Reasoning**<br>(Logic Resolver, Graph RAG) | 🚀 **진행 중** | • **핵심 구현 완료**: Logic Resolver(Spec 021), Graph RAG Fix(Spec 044), Agentic Workflow(Spec 029)<br>• **고도화 진행 중**: HITL(Spec 022/041/045), Robustness(Spec 043/049), Hybrid Search(Spec 026) 등 "지능형/자동화" 기능 대거 추가됨 |
 
 *   [x] **Phase 1**: Functional Foundation (Scraper, Hybrid Storage)
 *   [x] **Phase 2**: Observability (Admin Dash, Async Jobs)
 *   [x] **Phase 3**: Intelligence (Semantic Extraction, Ontology)
 *   [x] **Phase 4**: Graph Construction (Entity Nodes, Relationships)
-*   [ ] **Phase 5**: Knowledge Reasoning (Logic Resolver, Graph RAG) 🚧 *In Progress*
+*   [ ] **Phase 5**: Knowledge Reasoning & Agentic Ecosystem (Logic Resolver, Graph RAG) 🚧 *In Progress*
 
 > **Note for AI Agents**: 코드를 구현할 때는 `agent.md`의 규칙을 준수하고, 저장소 계층 구조(Composite Storage)를 유지해야 합니다.
