@@ -134,7 +134,7 @@ def test_llm_failure_still_saves_document():
     real_graph_repo_instance = get_graph_repository(driver)
     # Mock Scraper to avoid network dependency
     mock_scraper = Mock()
-    from app.schemas.ingest import IngestResponse
+    from app.interfaces.api.schemas.ingest import IngestResponse
 
     # Use generic Any or simple dict for Pydantic model construction if needed,
     # but IngestResponse expects url=HttpUrl. Pydantic handles string conversion.

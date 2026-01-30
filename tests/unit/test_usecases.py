@@ -12,12 +12,7 @@ import pytest
 from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.scraper import ScraperInterface
-from app.schemas.ingest import IngestResponse
-
-
-def test_create_job():
-    # Given: Ingestion와 mocked dependencies
-    mock_scraper = Mock(spec=ScraperInterface)
+from app.interfaces.api.schemas.ingest import IngestResponse
     mock_doc_repo = Mock()
     mock_graph_repo = Mock()
     mock_job_repo = Mock()

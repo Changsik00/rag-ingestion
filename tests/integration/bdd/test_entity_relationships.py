@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 
 from app.interfaces.api.dependencies import get_scraper
 from app.interfaces.api.main import app
-from app.schemas.ingest import IngestResponse
+from app.interfaces.api.schemas.ingest import IngestResponse
 
 client = TestClient(app)
 
