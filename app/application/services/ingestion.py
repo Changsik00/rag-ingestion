@@ -10,7 +10,7 @@ from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.services.chunker import Chunker
-from app.domain.services.semantic_extractor import SemanticExtractor
+from app.application.services.semantic_extractor import SemanticExtractor
 from app.domain.services.file_processor import FileProcessor
 
 logger = setup_logger(__name__)
