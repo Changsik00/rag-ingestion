@@ -5,7 +5,7 @@ from mcp.server.fastmcp import FastMCP
 from app.infrastructure.factories.llm_factory import LLMFactory
 from app.domain.entities.job import JobStatus
 from app.domain.services.query_rewriter import QueryRewriter
-from app.domain.services.rag_service import RAGService
+from app.application.services.rag_service import RAGService
 
 # Dependency Injection Imports
 from app.interfaces.api.dependencies import (
