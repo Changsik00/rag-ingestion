@@ -4,7 +4,7 @@ from typing import Literal, TypedDict
 
 from pydantic import BaseModel, Field
 
-from app.domain.schemas.extraction import ExtractedMetadata
+from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
 
 class StrategyType(str, Enum):

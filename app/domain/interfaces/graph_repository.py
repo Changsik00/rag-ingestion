@@ -7,7 +7,7 @@ Infrastructure Layer의 구현체(Neo4jGraphRepository)는 이 Protocol을 준�
 
 from typing import Any, Protocol
 
-from app.domain.schemas.ontology import EntityType, RelationshipType, TypedEntity
+from app.domain.value_objects.ontology import EntityType, RelationshipType, TypedEntity
 
 
 class GraphRepository(Protocol):

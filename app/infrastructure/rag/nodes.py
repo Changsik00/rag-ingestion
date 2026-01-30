@@ -14,7 +14,7 @@ from typing import Any
 
 from app.domain.entities.chunk import Chunk
 from app.domain.rag.state import RAGGraphState
-from app.domain.schemas.intent import IntentType, UserIntent
+from app.domain.value_objects.intent import IntentType, UserIntent
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.prompts.reranker import RERANKER_PROMPT
 from app.domain.services.query_rewriter import QueryRewriter

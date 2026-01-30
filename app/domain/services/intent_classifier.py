@@ -2,7 +2,7 @@ import json
 import logging
 
 from app.domain.interfaces.llm import LLMInterface
-from app.domain.schemas.intent import UserIntent
+from app.domain.value_objects.intent import UserIntent
 
 logger = logging.getLogger(__name__)
 

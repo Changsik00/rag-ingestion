@@ -13,7 +13,7 @@ from langgraph.graph.state import CompiledStateGraph
 from pydantic import Field
 
 from app.domain.entities.chunk import Chunk
-from app.domain.schemas.intent import UserIntent
+from app.domain.value_objects.intent import UserIntent
 
 logger = logging.getLogger(__name__)
 

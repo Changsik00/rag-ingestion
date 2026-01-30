@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from app.domain.schemas.extraction import ExtractedMetadata
+from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
 
 class LLMInterface(Protocol):

@@ -4,7 +4,7 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from app.domain.schemas.extraction import ExtractedMetadata
+from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
 logger = logging.getLogger(__name__)
 

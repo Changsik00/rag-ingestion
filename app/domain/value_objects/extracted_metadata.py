@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.domain.schemas.ontology import EntityType, RelationshipType
+from app.domain.value_objects.ontology import EntityType, RelationshipType
 
 
 class EntityRelationship(BaseModel):
