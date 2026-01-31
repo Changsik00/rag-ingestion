@@ -8,7 +8,7 @@ Mock Neo4j driver를 사용하여 실제 DB 없이 테스트합니다.
 from unittest.mock import MagicMock, Mock
 
 from app.domain.entities.job import IngestionJob, JobStatus
-from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
+from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 
 
 def test_create_job():

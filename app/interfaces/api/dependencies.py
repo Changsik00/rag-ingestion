@@ -23,11 +23,11 @@ from app.infrastructure.ai.orchestrators.ingestion_orchestrator import Ingestion
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.factories.llm_factory import LLMFactory
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
-from app.infrastructure.storage.chroma import ChromaVectorRepository
-from app.infrastructure.storage.composite import CompositeDocumentRepository
-from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
-from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
-from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
+from app.infrastructure.repositories.chroma import ChromaVectorRepository
+from app.infrastructure.repositories.composite import CompositeDocumentRepository
+from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
+from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
+from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 
 # === Dependency Injection 컨테이너 ===
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.

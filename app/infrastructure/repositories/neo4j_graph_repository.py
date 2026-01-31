@@ -5,7 +5,7 @@ Neo4j 기반 Knowledge Graph 저장소 구현
 from neo4j import Driver
 
 from app.domain.value_objects.ontology import EntityType, TypedEntity
-from app.infrastructure.storage import cypher_queries as cq
+from app.infrastructure.repositories import cypher_queries as cq
 
 
 class Neo4jGraphRepository:

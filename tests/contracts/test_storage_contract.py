@@ -9,8 +9,8 @@ the constructor parameter mismatch found in Spec 008.
 import pytest
 
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
-from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
+from app.infrastructure.repositories.chroma import ChromaVectorRepository
 
 
 # Parametrize all DocumentRepository implementations

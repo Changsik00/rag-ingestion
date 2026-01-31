@@ -11,7 +11,7 @@ import pytest
 
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.value_objects.ontology import EntityType, TypedEntity
-from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
+from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
 
 
 @pytest.fixture(params=[GraphRepository, Neo4jGraphRepository])

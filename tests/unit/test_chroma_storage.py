@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 from app.domain.value_objects.chunk import Chunk
-from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.repositories.chroma import ChromaVectorRepository
 
 
 @patch("chromadb.HttpClient")

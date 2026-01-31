@@ -21,7 +21,7 @@ def test_get_repository_returns_composite_storage():
     """
     # Given: DI container with repository
     from app.interfaces.api.dependencies import get_neo4j_driver, get_repository
-    from app.infrastructure.storage.composite import CompositeDocumentRepository
+    from app.infrastructure.repositories.composite import CompositeDocumentRepository
 
     # When: DI container provides repository
     driver = get_neo4j_driver()
@@ -60,7 +60,7 @@ def test_get_graph_repository():
     Verify that get_graph_repository() creates a valid Neo4jGraphRepository instance
     """
     # Given: DI container
-    from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
+    from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
     from app.interfaces.api.dependencies import get_graph_repository, get_neo4j_driver
 
     # When: DI container provides GraphRepository

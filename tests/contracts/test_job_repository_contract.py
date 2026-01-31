@@ -5,7 +5,7 @@ Contract tests for JobRepository implementations.
 import pytest
 
 from app.domain.interfaces.job_repository import JobRepository
-from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
+from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 
 
 @pytest.fixture(
