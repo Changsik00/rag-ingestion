@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -26,7 +26,7 @@ async def test_classify_general_query():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.generate.return_value = (
+    llm.agenerate = AsyncMock(return_value = )" + ")"
         '{"intent": "general_query", "targets": [], "reasoning": "No specific target mentioned"}'
     )
     classifier = IntentClassifier(llm)
@@ -41,7 +41,7 @@ async def test_classify_general_query():
     assert result.intent == IntentType.GENERAL_QUERY
     assert result.targets == []
     assert "target" in result.reasoning.lower()
-    llm.generate.assert_called_once()
+    llm.agenerate.assert_called_once()
 
 
 @pytest.mark.skipif(IntentClassifier is None, reason="IntentClassifier not implemented yet")
@@ -56,7 +56,7 @@ async def test_classify_compare_intent():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.generate.return_value = (
+    llm.agenerate = AsyncMock(return_value = )" + ")"
         '{"intent": "compare", "targets": ["claude", "gpt-4"], "reasoning": "User wants comparison between two models"}'
     )
     classifier = IntentClassifier(llm)
@@ -86,7 +86,7 @@ async def test_classify_summarize_intent():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.generate.return_value = '{"intent": "summarize", "targets": ["langchain-docs"], "reasoning": "User requests summary of previously mentioned document"}'
+    llm.agenerate = AsyncMock(return_value = '{"intent": "summarize", "targets": ["langchain-docs"], "reasoning": "User requests summary of previously mentioned document"}'
     classifier = IntentClassifier(llm)
 
     query = "이 문서 요약해줘"
@@ -115,7 +115,7 @@ async def test_classify_filter_by_topic():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.generate.return_value = (
+    llm.agenerate = AsyncMock(return_value = )" + ")"
         '{"intent": "filter_by_topic", "targets": ["python"], "reasoning": "User wants to filter by Python topic"}'
     )
     classifier = IntentClassifier(llm)
@@ -143,7 +143,7 @@ async def test_classify_with_invalid_json_raises_exception():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.generate.return_value = "This is not a JSON"
+    llm.agenerate = AsyncMock(return_value = "This is not a JSON"
     classifier = IntentClassifier(llm)
 
     query = "뭐든지 좋으니까 알려줘"
@@ -165,7 +165,7 @@ async def test_classify_with_invalid_intent_type_raises_validation_error():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.generate.return_value = '{"intent": "INVALID_TYPE", "targets": [], "reasoning": "Test"}'
+    llm.agenerate = AsyncMock(return_value = '{"intent": "INVALID_TYPE", "targets": [], "reasoning": "Test"}'
     classifier = IntentClassifier(llm)
 
     query = "테스트 쿼리"
@@ -187,7 +187,7 @@ async def test_classify_with_history_includes_context_in_prompt():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.generate.return_value = '{"intent": "compare", "targets": ["claude", "gpt-4"], "reasoning": "Comparing with previously mentioned model"}'
+    llm.agenerate = AsyncMock(return_value = '{"intent": "compare", "targets": ["claude", "gpt-4"], "reasoning": "Comparing with previously mentioned model"}'
     classifier = IntentClassifier(llm)
 
     query = "GPT-4랑 비교해줘"
@@ -200,7 +200,7 @@ async def test_classify_with_history_includes_context_in_prompt():
     await classifier.classify(query, history)
 
     # Then
-    llm.generate.assert_called_once()
+    llm.agenerate.assert_called_once()
     prompt = llm.generate.call_args[0][0]
     assert "Claude에 대해 알려줘" in prompt
     assert "GPT-4랑 비교해줘" in prompt
