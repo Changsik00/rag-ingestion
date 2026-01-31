@@ -2,12 +2,12 @@ import logging
 
 from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
-from app.infrastructure.brain.graph import IngestionGraphBuilder
+from app.infrastructure.ai.graphs.ingestion_graph import IngestionGraphBuilder
 
 logger = logging.getLogger(__name__)
 
 
-class LangGraphAdapter:
+class IngestionOrchestrator:
     """
     LLMInterface implementation that orchestrates the extraction via LangGraph.
     Acts as the new entry point for Domain Service, replacing direct LangChain calls.

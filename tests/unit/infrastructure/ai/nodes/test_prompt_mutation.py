@@ -1,5 +1,5 @@
 from app.domain.ingestion.state import StrategyType, ValidationFeedback
-from app.infrastructure.brain.nodes import construct_extraction_prompt
+from app.infrastructure.ai.nodes.ingestion_nodes import construct_extraction_prompt
 
 
 def test_standard_prompt_construction():

@@ -6,7 +6,7 @@ from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRe
 import pytest
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-from app.infrastructure.brain.adapter import LangGraphAdapter
+from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
 
 
 @pytest.fixture
@@ -86,7 +86,7 @@ async def test_langgraph_adapter_reset_checkpoints():
     # Commit is an async method in aiosqlite
     mock_conn.commit = AsyncMock()
 
-    adapter = LangGraphAdapter(llm=mock_llm, checkpointer=mock_checkpointer)
+    adapter = IngestionOrchestrator(llm=mock_llm, checkpointer=mock_checkpointer)
 
     # When
     await adapter.reset_checkpoints()

@@ -9,7 +9,7 @@ from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 logger = logging.getLogger(__name__)
 
 
-class LangChainLLMAdapter:
+class LangChainExtractor:
     """
     LangChain을 LLMInterface에 맞게 변환하는 어댑터
 

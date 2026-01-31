@@ -19,7 +19,7 @@ from app.domain.interfaces.chunker import Chunker
 from app.domain.services.feedback import Feedback
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
-from app.infrastructure.brain.adapter import LangGraphAdapter
+from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.factories.llm_factory import LLMFactory
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
@@ -116,10 +116,10 @@ async def get_checkpointer() -> AsyncSqliteSaver:
 async def get_semantic_extractor(
     checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
 ) -> SemanticExtractor:
-    llm_adapter = LLMFactory.get_llm_adapter()  # LangChainLLMAdapter를 반환
+    llm_adapter = LLMFactory.get_llm_adapter()  # LangChainExtractor를 반환
     # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
     # Spec 024: Checkpointer 주입
-    langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
+    orchestrator = IngestionOrchestrator(llm=llm_adapter, checkpointer=checkpointer)
     return SemanticExtractor(llm=langgraph_adapter)
 
 
@@ -154,14 +154,14 @@ def get_ingestion_service(
     )
 
 
-# Spec 024: LangGraphAdapter 직접 접근 (HITL Control용)
-async def get_langgraph_adapter(
+# Spec 024: IngestionOrchestrator 직접 접근 (HITL Control용)
+async def get_ingestion_orchestrator(
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
-) -> LangGraphAdapter:
-    # SemanticExtractor.llm is the LangGraphAdapter
-    if isinstance(extractor.llm, LangGraphAdapter):
+) -> IngestionOrchestrator:
+    # SemanticExtractor.llm is the IngestionOrchestrator
+    if isinstance(extractor.llm, IngestionOrchestrator):
         return extractor.llm
-    raise ValueError("SemanticExtractor is not using LangGraphAdapter")
+    raise ValueError("SemanticExtractor is not using IngestionOrchestrator")
 
 
 # === RAG Service Dependencies (Spec 032) ===
@@ -246,11 +246,11 @@ async def get_integrity_service(
 
     neo4j_storage = Neo4jDocumentRepository(driver)
     # 어댑터 생성 (Checkpointer 리셋용)
-    llm_adapter = LLMFactory.get_llm_adapter()
-    langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
+    # SemanticExtractor는 LLMInterface(IngestionOrchestrator)를 사용
+    orchestrator = IngestionOrchestrator(llm=llm_adapter, checkpointer=checkpointer)
 
     return Integrity(
         primary_repo=neo4j_storage,
         target_repo=chroma_storage,
-        langgraph_adapter=langgraph_adapter,
+        langgraph_adapter=orchestrator,
     )

@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
+from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtractor
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def test_generate_returns_string(mock_chat_model):
     mock_chain.invoke.return_value = "Generated response"
     mock_chat_model.__or__.return_value = mock_chain
 
-    adapter = LangChainLLMAdapter(llm=mock_chat_model)
+    adapter = LangChainExtractor(llm=mock_chat_model)
 
     # Execute
     result = adapter.generate("Test prompt")
@@ -35,7 +35,7 @@ def test_generate_handles_error(mock_chat_model):
     mock_chain.invoke.side_effect = Exception("API Error")
     mock_chat_model.__or__.return_value = mock_chain
 
-    adapter = LangChainLLMAdapter(llm=mock_chat_model)
+    adapter = LangChainExtractor(llm=mock_chat_model)
 
     # Execute
     result = adapter.generate("Test prompt")

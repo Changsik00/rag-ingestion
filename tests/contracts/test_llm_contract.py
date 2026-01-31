@@ -4,12 +4,12 @@ Contract tests for LLM interface implementations.
 
 import pytest
 
-from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
+from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtractor
 
 
 @pytest.fixture(
     params=[
-        LangChainLLMAdapter,
+        LangChainExtractor,
     ]
 )
 def llm_class(request):
@@ -44,12 +44,12 @@ class TestLLMConstructorConsistency:
     """Tests to verify constructor consistency across LLM implementations"""
 
     def test_langchain_adapter_constructor(self):
-        """LangChainLLMAdapter should accept an LLM instance"""
+        """LangChainExtractor should accept an LLM instance"""
         from unittest.mock import Mock
 
         from langchain_google_genai import ChatGoogleGenerativeAI
 
         mock_llm = Mock(spec=ChatGoogleGenerativeAI)
-        adapter = LangChainLLMAdapter(mock_llm)
+        adapter = LangChainExtractor(mock_llm)
 
         assert adapter.llm == mock_llm

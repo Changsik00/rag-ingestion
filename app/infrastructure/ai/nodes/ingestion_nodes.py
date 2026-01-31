@@ -136,7 +136,7 @@ class IngestionNodes:
             dict: Updates current_strategy, attempts, retry_count
         """
         from app.domain.ingestion.state import Attempt
-        from app.infrastructure.brain.logic import select_strategy
+        from app.infrastructure.ai.nodes.logic import select_strategy
 
         current_retry = state.get("retry_count", 0)
         feedbacks = []

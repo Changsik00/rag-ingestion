@@ -12,7 +12,7 @@ from app.domain.entities.job import JobStatus
 
 
 if TYPE_CHECKING:
-    from app.application.services.ingestion import Ingestion
+    from app.application.services.ingestion import IngestionUseCase
     from app.application.services.rag import RAG
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class AdminAgent:
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
 
-    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
+    def __init__(self, rag_service: "RAG", ingestion_service: "IngestionUseCase"):
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
         self.llm = ChatGoogleGenerativeAI(

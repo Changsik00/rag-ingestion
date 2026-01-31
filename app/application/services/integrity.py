@@ -3,7 +3,7 @@ from typing import Any, NamedTuple
 import logging
 
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.infrastructure.brain.adapter import LangGraphAdapter
+from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class Integrity:
         self,
         primary_repo: DocumentRepository,
         target_repo: DocumentRepository,
-        langgraph_adapter: LangGraphAdapter | None = None,
+        langgraph_adapter: IngestionOrchestrator | None = None,
     ):
         """
         Args:
