@@ -23,9 +23,9 @@ from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.factories.llm_factory import LLMFactory
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.composite import CompositeStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.composite import CompositeDocumentRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
 

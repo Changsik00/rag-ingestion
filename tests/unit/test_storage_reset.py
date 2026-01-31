@@ -4,8 +4,8 @@ import pytest
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from app.infrastructure.brain.adapter import LangGraphAdapter
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 
 
 @pytest.fixture

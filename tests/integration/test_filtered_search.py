@@ -4,9 +4,9 @@ import pytest
 
 from app.domain.entities.chunk import Chunk
 from app.domain.entities.document import Document
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.composite import CompositeStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.composite import CompositeDocumentRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 from app.interfaces.api.dependencies import get_neo4j_driver
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")

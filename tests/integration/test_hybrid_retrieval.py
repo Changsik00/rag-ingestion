@@ -1,7 +1,7 @@
 import pytest
 
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 from app.interfaces.api.dependencies import get_neo4j_driver
 

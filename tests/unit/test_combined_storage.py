@@ -5,9 +5,9 @@ import pytest
 
 from app.core.exceptions import InfrastructureException
 from app.domain.entities.document import Document
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.composite import CompositeStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.composite import CompositeDocumentRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 
 # ... existing CompositeStorage & Chroma tests ...
 

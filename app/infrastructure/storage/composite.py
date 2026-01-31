@@ -5,7 +5,7 @@ from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 
 
-class CompositeStorage(DocumentRepository):
+class CompositeDocumentRepository(DocumentRepository):
     """
     여러 저장소를 조합하여 사용하는 Composite 패턴 구현
 

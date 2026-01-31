@@ -15,7 +15,7 @@ from app.domain.interfaces.document_repository import DocumentRepository
 logger = setup_logger(__name__)
 
 
-class ChromaStorage(DocumentRepository):
+class ChromaVectorRepository(DocumentRepository):
     def __init__(self):
         settings = get_settings()
 

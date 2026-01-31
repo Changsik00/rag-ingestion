@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from app.domain.entities.chunk import Chunk
 from app.domain.entities.document import Document
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 
 
 def test_neo4j_storage_save_with_chunks():
