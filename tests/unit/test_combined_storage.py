@@ -17,7 +17,7 @@ def test_composite_storage_save():
     # Given: CompositeStorage와 Document
     neo4j_mock = Mock()
     chroma_mock = Mock()
-    storage = CompositeStorage(neo4j=neo4j_mock, chroma=chroma_mock)
+    storage = CompositeDocumentRepository(neo4j=neo4j_mock, chroma=chroma_mock)
 
     doc = Document(content="Test", metadata={"source_url": "http://test.com"})
 
@@ -39,7 +39,7 @@ def test_composite_storage_get():
     # Neo4j is the source of truth for metadata/structure
     neo4j_mock.get.return_value = expected_doc
 
-    storage = CompositeStorage(neo4j=neo4j_mock, chroma=chroma_mock)
+    storage = CompositeDocumentRepository([neo4j_mock, chroma_mock])
 
     # When: Document 조회
     result = storage.get(doc_id)
@@ -54,7 +54,7 @@ def test_composite_storage_save_with_chunks():
     # Given: CompositeStorage, Document, Chunks
     neo4j_mock = Mock()
     chroma_mock = Mock()
-    storage = CompositeStorage(neo4j=neo4j_mock, chroma=chroma_mock)
+    storage = CompositeDocumentRepository([neo4j_mock, chroma_mock])
 
     doc = Document(content="Test", metadata={"source_url": "http://test.com"})
     chunks = [Mock(), Mock()]  # Mock chunks
