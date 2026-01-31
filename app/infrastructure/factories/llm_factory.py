@@ -1,13 +1,16 @@
+```python
 from functools import lru_cache
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import get_settings
-from app.domain.interfaces.llm import LLMInterface
+from app.domain.interfaces.llm import LLMInvoker
 from app.infrastructure.llm import LangChainLLMAdapter
 
 
 class LLMFactory:
+    """Factory for creating LLM instances"""
+
     @staticmethod
     @lru_cache
     def get_google_llm(model: str | None = None, temperature: float = 0.0) -> ChatGoogleGenerativeAI:
