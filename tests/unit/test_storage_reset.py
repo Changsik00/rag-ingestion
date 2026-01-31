@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from app.infrastructure.storage.chroma import ChromaVectorRepository
 from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
