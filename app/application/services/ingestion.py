@@ -11,7 +11,7 @@ from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.interfaces.chunker import Chunker
-from app.domain.services.file_processor import FileProcessor
+from app.core.utils.file_processor import FileProcessor
 
 logger = setup_logger(__name__)
 
