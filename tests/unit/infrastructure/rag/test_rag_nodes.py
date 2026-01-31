@@ -7,7 +7,7 @@ Mock LLM을 사용하여 외부 의존성 없이 독립적으로 테스트합니
 Spec 033: LangGraph State Management
 """
 
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
