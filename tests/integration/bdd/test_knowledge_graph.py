@@ -17,9 +17,6 @@ import requests
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
-# Docker Compose 환경에서만 실행
-pytestmark = pytest.mark.integration
-
 BASE_URL = "http://localhost:8000"
 
 
