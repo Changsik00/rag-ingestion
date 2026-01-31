@@ -278,7 +278,7 @@ class TestRAGNodesGenerateAnswer:
         # Mock LLM Response
         mock_response = Mock()
         mock_response.content = "인공지능은 기계가 인간처럼 학습하고 판단하는 기술입니다."
-        mock_llm.agenerate = AsyncMock(return_value = mock_response
+        mock_llm.agenerate = AsyncMock(return_value=mock_response)
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -406,7 +406,7 @@ class TestRAGNodesPromptGuard:
         """
         from app.infrastructure.rag.nodes import RAGNodes
 
-        mock_llm.agenerate = AsyncMock(return_value = Mock(content="답변")
+        mock_llm.agenerate = AsyncMock(return_value=Mock(content="답변"))
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
