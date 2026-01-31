@@ -75,7 +75,7 @@ def get_storage_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     chroma_storage: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ) -> IntegrityService:
-    primary_repo = Neo4jStorage(driver)
+    primary_repo = Neo4jDocumentRepository(driver)
     return IntegrityService(primary_repo, chroma_storage)
 
 
@@ -195,7 +195,7 @@ def get_rag_nodes(
 ):
     from app.infrastructure.rag.nodes import RAGNodes
 
-    neo4j_doc_repo = Neo4jStorage(driver)
+    neo4j_doc_repo = Neo4jDocumentRepository(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
     llm_adapter = LLMFactory.get_llm_adapter()
 
@@ -249,7 +249,7 @@ async def get_integrity_service(
 ) -> Any:
     from app.application.admin.integrity_service import IntegrityService
 
-    neo4j_storage = Neo4jStorage(driver)
+    neo4j_storage = Neo4jDocumentRepository(driver)
     # 어댑터 생성 (Checkpointer 리셋용)
     llm_adapter = LLMFactory.get_llm_adapter()
     langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)

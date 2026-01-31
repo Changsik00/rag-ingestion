@@ -5,6 +5,7 @@ import pytest
 from app.domain.entities.chunk import Chunk
 from app.domain.entities.document import Document
 from app.interfaces.api.dependencies import get_neo4j_driver
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
@@ -13,7 +14,7 @@ pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/
 @pytest.fixture
 def neo4j_repo():
     driver = get_neo4j_driver()
-    repo = Neo4jStorage(driver)
+    repo = Neo4jDocumentRepository(driver)
     yield repo
     # Cleanup (Optional)
     # repo.close() # Shared driver usually managed by dependency injection

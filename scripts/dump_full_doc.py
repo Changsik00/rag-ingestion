@@ -5,14 +5,14 @@ from uuid import UUID
 # Create a fake module structure to allow imports if running from script
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 from app.interfaces.api.dependencies import get_neo4j_driver
 
 
 def dump_full_document(doc_id_str=None):
     print("Initializing Neo4j Connection...")
     driver = get_neo4j_driver()
-    repo = Neo4jStorage(driver)
+    repo = Neo4jDocumentRepository(driver)
 
     try:
         if not doc_id_str:

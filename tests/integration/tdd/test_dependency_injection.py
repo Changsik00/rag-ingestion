@@ -21,6 +21,7 @@ def test_get_repository_returns_composite_storage():
     """
     # Given: DI container with repository
     from app.interfaces.api.dependencies import get_neo4j_driver, get_repository
+    from app.infrastructure.storage.composite import CompositeDocumentRepository
 
     # When: DI container provides repository
     driver = get_neo4j_driver()
@@ -28,7 +29,7 @@ def test_get_repository_returns_composite_storage():
 
     # Then: Instance is CompositeStorage
     assert repository is not None
-    assert isinstance(repository, CompositeStorage)
+    assert isinstance(repository, CompositeDocumentRepository)
 
     # Then: Both underlying storages are initialized
     assert hasattr(repository, "neo4j")

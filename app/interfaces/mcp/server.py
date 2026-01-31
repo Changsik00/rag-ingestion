@@ -54,9 +54,9 @@ async def provide_rag_service() -> RAG:
     from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 
     driver = get_neo4j_driver()
-    neo4j_doc_repo = Neo4jStorage(driver)
+    neo4j_doc_repo = Neo4jDocumentRepository(driver)
     graph_repo = get_graph_repository(driver)
-    chroma_repo = ChromaStorage()
+    chroma_repo = ChromaVectorRepository()
     llm = LLMFactory.get_llm_adapter()
     query_rewriter = QueryRewriter(llm)
     intent_classifier = IntentClassifier(llm)

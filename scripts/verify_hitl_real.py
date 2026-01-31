@@ -11,8 +11,8 @@ from app.application.services.admin_agent import AdminAgent
 
 # App Modules (Real)
 from app.core.config import get_settings
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 
 # from app.infrastructure.brain.intent_classifier import IntentClassifier
@@ -37,9 +37,9 @@ def get_real_services():
 
     driver = GraphDatabase.driver(settings.NEO4J_URI, auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD))
 
-    _neo4j_doc_repo = Neo4jStorage(driver=driver)
+    _neo4j_doc_repo = Neo4jDocumentRepository(driver=driver)
     _neo4j_graph_repo = Neo4jGraphRepository(driver=driver)
-    _chroma_repo = ChromaStorage()  # Assuming it connects to persistent dir
+    _chroma_repo = ChromaVectorRepository()  # Assuming it connects to persistent dir
 
     # 2. LLM Components
     _llm = ChatGoogleGenerativeAI(

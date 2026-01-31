@@ -5,6 +5,9 @@ import pytest
 from app.domain.entities.chunk import Chunk
 from app.domain.entities.document import Document
 from app.interfaces.api.dependencies import get_neo4j_driver
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.composite import CompositeDocumentRepository
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
@@ -18,9 +21,9 @@ def stored_data():
     2. Doc B (Fruit): Apple Fruit related content.
     """
     driver = get_neo4j_driver()
-    neo4j_repo = Neo4jStorage(driver)
-    chroma_repo = ChromaStorage()
-    composite_repo = CompositeStorage(neo4j_repo, chroma_repo)
+    neo4j_repo = Neo4jDocumentRepository(driver)
+    chroma_repo = ChromaVectorRepository()
+    composite_repo = CompositeDocumentRepository(neo4j_repo, chroma_repo)
 
     # Document A: Apple (Tech)
     doc_a_id = str(uuid4())

@@ -8,8 +8,8 @@ from tqdm import tqdm
 sys.path.append(os.getcwd())
 
 from app.domain.services.storage_integrity_service import StorageIntegrityService
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 from app.interfaces.api.dependencies import get_neo4j_driver
 
 
@@ -18,8 +18,8 @@ async def main():
 
     # 1. Initialize dependencies
     driver = get_neo4j_driver()
-    primary_repo = Neo4jStorage(driver)
-    target_repo = ChromaStorage()
+    primary_repo = Neo4jDocumentRepository(driver)
+    target_repo = ChromaVectorRepository()
 
     service = StorageIntegrityService(primary_repo, target_repo)
 

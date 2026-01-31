@@ -22,8 +22,8 @@ class IntegrityService:
 
     def __init__(
         self,
-        neo4j_storage: Neo4jStorage,
-        chroma_storage: ChromaStorage,
+        neo4j_storage: Neo4jDocumentRepository,
+        chroma_storage: ChromaVectorRepository,
         langgraph_adapter: LangGraphAdapter,
     ):
         self.neo4j = neo4j_storage
