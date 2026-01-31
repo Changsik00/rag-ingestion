@@ -1,7 +1,3 @@
-import pytest
-
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
-
 """
 Integration Tests (BDD) for Knowledge Graph
 

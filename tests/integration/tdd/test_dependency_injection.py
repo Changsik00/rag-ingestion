@@ -1,9 +1,5 @@
-import pytest
-
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
-
 """
-Dependency Injection container verification tests.
+Dependency Injection verification tests.
 
 These tests verify that the DI container correctly initializes storage instances
 and environment variables are properly consumed.
