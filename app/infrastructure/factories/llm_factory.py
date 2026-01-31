@@ -1,4 +1,3 @@
-```python
 from functools import lru_cache
 
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -9,6 +8,8 @@ from app.infrastructure.llm import LangChainLLMAdapter
 
 
 class LLMFactory:
+    """Factory for creating LLM instances"""
+
     """Factory for creating LLM instances"""
 
     @staticmethod

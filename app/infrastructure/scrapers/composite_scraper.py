@@ -35,7 +35,7 @@ class CompositeScraper(ScraperInterface):
             result = await self.primary_scraper.scrape(url)
 
             # 품질 검사 (Heuristics + Semantic Check)
-            if self.quality_checker.is_poor(result):
+            if self.quality_checker.is_poor(result.markdown):
                 logger.info(f"Primary scraper output for {url} is poor. Falling back to Playwright Scraper.")
                 return await self.playwright_scraper.scrape(url)
 
