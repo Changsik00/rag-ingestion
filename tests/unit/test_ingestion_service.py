@@ -14,7 +14,7 @@ def service_deps():
         "repository": Mock(),
         "graph": Mock(),
         "job_repository": Mock(),
-        "extractor": Mock(),
+        "extractor": AsyncMock(),
         "chunker": Mock(),
     }
 
