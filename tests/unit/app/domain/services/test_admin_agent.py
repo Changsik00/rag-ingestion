@@ -23,7 +23,7 @@ def mock_llm_class():
 async def test_router_detects_url_intent(mock_services, mock_llm_class):
     ingestion, rag = mock_services
     mock_llm_instance = mock_llm_class.return_value
-    mock_llm_instance.invoke.return_value = AIMessage(content="ingest")
+    mock_llm_instance.ainvoke = AsyncMock(return_value = AIMessage(content="ingest"))
 
     agent = AdminAgent(rag, ingestion)
 
@@ -37,7 +37,7 @@ async def test_router_detects_url_intent(mock_services, mock_llm_class):
 async def test_router_detects_search_intent(mock_services, mock_llm_class):
     ingestion, rag = mock_services
     mock_llm_instance = mock_llm_class.return_value
-    mock_llm_instance.invoke.return_value = AIMessage(content="search")
+    mock_llm_instance.ainvoke = AsyncMock(return_value = AIMessage(content="search"))
 
     agent = AdminAgent(rag, ingestion)
 
