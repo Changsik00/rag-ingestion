@@ -439,5 +439,5 @@ class TestRAGNodesPromptGuard:
         assert mock_llm.agenerate.call_count == 1
         prompt = mock_llm.agenerate.call_args[0][0]
         assert "KNOWLEDGE MIXING RULES" in prompt
-        assert "KNOWLEDGE SUPPLEMENT" in prompt
+        assert "PRIORITIZE KNOWLEDGE GRAPH" in prompt
         assert "SEAMLESS FUSION" in prompt
