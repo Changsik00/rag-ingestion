@@ -49,17 +49,18 @@ def get_neo4j_driver() -> Driver:
 
 # Document Repository 의존성 (CompositeStorage: Neo4j + ChromaDB)
 @lru_cache
-def get_chroma_storage() -> ChromaStorage:
-    return ChromaStorage()
+def get_chroma_vector_repository() -> ChromaVectorRepository:
+    return ChromaVectorRepository()
 
 
 @lru_cache
-def get_repository(
-    driver: Annotated[Driver, Depends(get_neo4j_driver)],
-    chroma_storage: Annotated[ChromaStorage, Depends(get_chroma_storage)],
-) -> DocumentRepository:
-    neo4j_storage = Neo4jStorage(driver)
-    return CompositeStorage(neo4j_storage, chroma_storage)
+def get_repository() -> DocumentRepository:
+    """Composite Storage를 DI로 제공"""
+    driver = get_neo4j_driver()
+    neo4j_storage = Neo4jDocumentRepository(driver)
+    chroma_storage = get_chroma_vector_repository() # Use the dependency function
+
+    return CompositeDocumentRepository([neo4j_storage, chroma_storage])
 
 
 # Job Repository 의존성 (IngestionJob 관리)
@@ -72,7 +73,7 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 @lru_cache
 def get_storage_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
-    chroma_storage: Annotated[ChromaStorage, Depends(get_chroma_storage)],
+    chroma_storage: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ) -> IntegrityService:
     primary_repo = Neo4jStorage(driver)
     return IntegrityService(primary_repo, chroma_storage)
@@ -190,7 +191,7 @@ def get_rag_nodes(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     query_rewriter: Annotated[QueryRewriter, Depends(get_query_rewriter)],
     intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
-    chroma_repo: Annotated[ChromaStorage, Depends(get_chroma_storage)],
+    chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ):
     from app.infrastructure.rag.nodes import RAGNodes
 
@@ -244,7 +245,7 @@ def get_feedback_service() -> Feedback:
 async def get_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
-    chroma_storage: Annotated[ChromaStorage, Depends(get_chroma_storage)],
+    chroma_storage: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ) -> Any:
     from app.application.admin.integrity_service import IntegrityService
 

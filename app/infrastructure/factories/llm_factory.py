@@ -25,12 +25,12 @@ class LLMFactory:
 
     @staticmethod
     @lru_cache
-    def get_llm_adapter(model: str | None = None, temperature: float = 0.0) -> LLMInterface:
+    def get_llm_adapter(model: str | None = None, temperature: float = 0.0) -> LLMInvoker:
         """LangChain Adapter 반환 (LLMInterface Protocol 구현체)"""
         llm = LLMFactory.get_google_llm(model, temperature)
         return LangChainLLMAdapter(llm)
 
 
-def get_llm() -> LLMInterface:
+def get_llm() -> LLMInvoker:
     """Adapter 반환 (DI용)"""
     return LLMFactory.get_llm_adapter()

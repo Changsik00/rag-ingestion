@@ -5,9 +5,9 @@ Integration Tests for Async Ingestion API
 Job 생성 및 백그라운드 처리 워크플로우를 검증합니다.
 """
 
-import pytest
 from unittest.mock import Mock
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.domain.entities.job import IngestionJob, JobStatus
