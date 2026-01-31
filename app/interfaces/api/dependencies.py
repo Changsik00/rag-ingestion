@@ -60,7 +60,7 @@ def get_repository() -> DocumentRepository:
     neo4j_storage = Neo4jDocumentRepository(driver)
     chroma_storage = get_chroma_vector_repository() # Use the dependency function
 
-    return CompositeDocumentRepository([neo4j_storage, chroma_storage])
+    return CompositeDocumentRepository(neo4j=neo4j_storage, chroma=chroma_storage)
 
 
 # Job Repository 의존성 (IngestionJob 관리)

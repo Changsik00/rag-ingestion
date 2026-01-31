@@ -20,8 +20,7 @@ def test_get_repository_returns_composite_storage():
     from app.interfaces.api.dependencies import get_neo4j_driver, get_repository
 
     # When: DI container provides repository
-    driver = get_neo4j_driver()
-    repository = get_repository(driver)
+    repository = get_repository()
 
     # Then: Instance is CompositeStorage
     assert repository is not None
@@ -86,7 +85,7 @@ def test_environment_variable_based_initialization():
 
     # When: Dependencies are initialized
     driver = get_neo4j_driver()
-    repository = get_repository(driver)
+    repository = get_repository()
 
     # Then: They use the environment variables
     # (We can't easily verify this without accessing internals,
