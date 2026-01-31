@@ -39,7 +39,7 @@ def test_composite_storage_get():
     # Neo4j is the source of truth for metadata/structure
     neo4j_mock.get.return_value = expected_doc
 
-    storage = CompositeDocumentRepository([neo4j_mock, chroma_mock])
+    storage = CompositeDocumentRepository(neo4j=neo4j_mock, chroma=chroma_mock)
 
     # When: Document 조회
     result = storage.get(doc_id)
@@ -54,7 +54,7 @@ def test_composite_storage_save_with_chunks():
     # Given: CompositeStorage, Document, Chunks
     neo4j_mock = Mock()
     chroma_mock = Mock()
-    storage = CompositeDocumentRepository([neo4j_mock, chroma_mock])
+    storage = CompositeDocumentRepository(neo4j=neo4j_mock, chroma=chroma_mock)
 
     doc = Document(content="Test", metadata={"source_url": "http://test.com"})
     chunks = [Mock(), Mock()]  # Mock chunks
@@ -84,7 +84,7 @@ def test_chroma_storage_save_exception_handling(mock_client_cls):
     # Simulate ChromaDB failure
     mock_collection.add.side_effect = Exception("Connection Refused")
 
-    storage = ChromaStorage()
+    storage = ChromaVectorRepository()
     doc = Document(content="Test", metadata={"source_url": "http://test.com"})
 
     # Verify exception wrapping
@@ -107,7 +107,7 @@ def test_chroma_storage_get_null_safety(mock_client_cls):
     mock_client.get_or_create_collection.return_value = mock_collection
     mock_client_cls.return_value = mock_client
 
-    storage = ChromaStorage()
+    storage = ChromaVectorRepository()
     doc_id = uuid4()
 
     # Case 1: Result is None
@@ -148,7 +148,7 @@ def test_neo4j_storage_save_exception_handling():
     # Simulate Neo4j Failure
     mock_session.run.side_effect = Exception("Database is down")
 
-    storage = Neo4jStorage(driver=mock_driver)
+    storage = Neo4jDocumentRepository(driver=mock_driver)
     doc = Document(content="Test", metadata={"source_url": "http://test.com"})
 
     with pytest.raises(InfrastructureException) as exc_info:
@@ -172,7 +172,7 @@ def test_neo4j_storage_get_null_safety():
     mock_driver.session.return_value = session_ctx
     session_ctx.__enter__.return_value = mock_session
 
-    storage = Neo4jStorage(driver=mock_driver)
+    storage = Neo4jDocumentRepository(driver=mock_driver)
     doc_id = uuid4()
 
     # Case 1: result.single() returns None
