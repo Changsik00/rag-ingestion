@@ -35,7 +35,8 @@ def scraper():
     return TrafilaturaWebScraper()
 
 
-def test_scrape_clean_extraction(scraper):
+@pytest.mark.asyncio
+async def test_scrape_clean_extraction(scraper):
     """광고와 노이즈가 제거된 본문이 추출되는지 검증"""
     with (
         patch("trafilatura.fetch_url", return_value=MOCK_HTML_WITH_ADS),
@@ -54,7 +55,8 @@ def test_scrape_clean_extraction(scraper):
         assert call_args.get("include_comments") is False
 
 
-def test_scrape_metadata_extraction(scraper):
+@pytest.mark.asyncio
+async def test_scrape_metadata_extraction(scraper):
     """메타데이터 추출 검증"""
     mock_metadata = MagicMock()
     mock_metadata.title = "Test Article"
@@ -74,7 +76,8 @@ def test_scrape_metadata_extraction(scraper):
         assert response.metadata["author"] == "Test Author"
 
 
-def test_scrape_fallback_when_trafilatura_fails(scraper):
+@pytest.mark.asyncio
+async def test_scrape_fallback_when_trafilatura_fails(scraper):
     """Trafilatura 추출 실패 시 Fallback 로직 동작 검증"""
     # extract가 None을 반환(실패)하도록 설정
     with (
