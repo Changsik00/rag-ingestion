@@ -14,9 +14,15 @@
   * **Goal**: Spec 050 P0 수정 이후 남은 구조적 개선 사항(P1~P3)을 반영하여 일관성 확보
   * **Guide**: [Design Guide 011: Architecture Refinement Strategy](../docs/design_guides/011-architecture-refinement.md)
   * **Scope**:
-    * **P1 (High)**: Service Suffix 제거(`Integrity`, `Feedback`), Chunk VO 이동, Chunker Protocol 도입
+    * **P1 (High)**: 
+        - Service Suffix 제거(`Integrity`, `Feedback`)
+        - Chunk VO 이동 및 Chunker Protocol 도입
+        - **DocumentMetadata Value Object** (Type-safe Metadata, Icebox Migrated)
     * **P2 (Medium)**: AI Implementation 폴더 구조화, `file_processor` 위치 정리
-    * **P3 (Low)**: Adapter 명확화(`Extractor`, `Orchestrator`), API v1 활용
+    * **P3 (Low)**: 
+        - Adapter 명확화(`Extractor`, `Orchestrator`)
+        - API v1 활용
+        - **AdminAgent Renaming** (`ConversationalRAGAgent`로 변경, Icebox Migrated)
   * **Status**: Ready to Start
 
 * [ ] **Integration Test Infrastructure Improvement** 🆕
@@ -92,8 +98,4 @@
 * **[Tech] Metadata Robustness: Custom JSON Encoder**
   * **Solution**: `json.dumps` 커스텀 인코더 주입으로 안정성 확보.
 
-* **[Refactor] DocumentMetadata Value Object**
-  * **Goal**: `Document.metadata`를 Value Object로 전환 (Spec 051 Follow-up)
 
-* **[Refactor] AdminAgent Renaming**
-  * **Goal**: `AdminAgent` → `ConversationalRAGAgent` 리네이밍 (Spec 051 Follow-up)
