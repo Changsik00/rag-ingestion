@@ -1,4 +1,10 @@
-from app.domain.ingestion.state import Attempt, IngestionGraphState, StrategyType, ValidationConstraints, ValidationFeedback
+from app.domain.ingestion.state import (
+    Attempt,
+    IngestionGraphState,
+    StrategyType,
+    ValidationConstraints,
+    ValidationFeedback,
+)
 
 
 def test_strategy_enum_values():

@@ -1,8 +1,8 @@
 from uuid import UUID
 
-from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
+from app.domain.value_objects.chunk import Chunk
 
 
 class CompositeDocumentRepository(DocumentRepository):

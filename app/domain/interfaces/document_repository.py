@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
+from app.domain.value_objects.chunk import Chunk
 
 
 class DocumentRepository(ABC):

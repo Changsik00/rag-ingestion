@@ -7,7 +7,7 @@ from app.application.services.ingestion import IngestionUseCase
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
 from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
-from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository, get_ingestion_orchestrator
+from app.interfaces.api.dependencies import get_ingestion_orchestrator, get_ingestion_service, get_job_repository
 
 router = APIRouter()
 

@@ -1,8 +1,8 @@
 import pytest
 
-from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
-from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
+from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
+from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
 from app.interfaces.api.dependencies import get_neo4j_driver
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")

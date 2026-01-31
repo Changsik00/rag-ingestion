@@ -20,8 +20,8 @@ def test_get_repository_returns_composite_storage():
     with both Neo4j and Chroma storages.
     """
     # Given: DI container with repository
-    from app.interfaces.api.dependencies import get_neo4j_driver, get_repository
     from app.infrastructure.repositories.composite import CompositeDocumentRepository
+    from app.interfaces.api.dependencies import get_neo4j_driver, get_repository
 
     # When: DI container provides repository
     driver = get_neo4j_driver()

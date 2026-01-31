@@ -1,12 +1,11 @@
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
-
-from app.infrastructure.repositories.chroma import ChromaVectorRepository
-from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
+from app.infrastructure.repositories.chroma import ChromaVectorRepository
+from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 
 
 @pytest.fixture

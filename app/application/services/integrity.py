@@ -1,6 +1,6 @@
+import logging
 from dataclasses import dataclass
 from typing import Any, NamedTuple
-import logging
 
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator

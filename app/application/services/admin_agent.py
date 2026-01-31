@@ -10,7 +10,6 @@ from langgraph.graph import END, StateGraph, add_messages
 from app.core.config import get_settings
 from app.domain.entities.job import JobStatus
 
-
 if TYPE_CHECKING:
     from app.application.services.ingestion import IngestionUseCase
     from app.application.services.rag import RAG

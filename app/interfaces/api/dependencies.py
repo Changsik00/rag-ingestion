@@ -11,23 +11,23 @@ from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.config import get_settings
+from app.domain.interfaces.chunker import Chunker
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.interfaces.chunker import Chunker
 from app.domain.services.feedback import Feedback
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.factories.llm_factory import LLMFactory
-from app.infrastructure.scrapers.composite_scraper import CompositeScraper
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
 from app.infrastructure.repositories.composite import CompositeDocumentRepository
 from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
 from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
+from app.infrastructure.scrapers.composite_scraper import CompositeScraper
 
 # === Dependency Injection 컨테이너 ===
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
@@ -120,7 +120,7 @@ async def get_semantic_extractor(
     # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
     # Spec 024: Checkpointer 주입
     orchestrator = IngestionOrchestrator(llm=llm_adapter, checkpointer=checkpointer)
-    return SemanticExtractor(llm=langgraph_adapter)
+    return SemanticExtractor(llm=orchestrator)
 
 
 # Graph Repository 의존성 (Entity 및 관계 저장)
@@ -246,6 +246,7 @@ async def get_integrity_service(
 
     neo4j_storage = Neo4jDocumentRepository(driver)
     # 어댑터 생성 (Checkpointer 리셋용)
+    llm_adapter = LLMFactory.get_llm_adapter()
     # SemanticExtractor는 LLMInterface(IngestionOrchestrator)를 사용
     orchestrator = IngestionOrchestrator(llm=llm_adapter, checkpointer=checkpointer)
 

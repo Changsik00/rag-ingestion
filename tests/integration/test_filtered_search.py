@@ -2,12 +2,12 @@ from uuid import uuid4
 
 import pytest
 
-from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
-from app.interfaces.api.dependencies import get_neo4j_driver
-from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
+from app.domain.value_objects.chunk import Chunk
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
 from app.infrastructure.repositories.composite import CompositeDocumentRepository
+from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
+from app.interfaces.api.dependencies import get_neo4j_driver
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 

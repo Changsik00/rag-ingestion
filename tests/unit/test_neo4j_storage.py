@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock, Mock
 from uuid import uuid4
 
-from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
+from app.domain.value_objects.chunk import Chunk
 from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 
 

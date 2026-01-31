@@ -7,14 +7,14 @@ from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.interfaces.api.dependencies import get_ingestion_service, get_repository, get_scraper
-from app.interfaces.api.endpoints.entities import router as entities_router
-from app.interfaces.api.endpoints.jobs import router as jobs_router
 from app.interfaces.api.dto.ingest import (
     AsyncIngestResponse,
     IngestRequest,
     IngestResponse,
     MultiAsyncIngestResponse,
 )
+from app.interfaces.api.endpoints.entities import router as entities_router
+from app.interfaces.api.endpoints.jobs import router as jobs_router
 from app.interfaces.api.v1.endpoints.admin import router as admin_router
 
 app = FastAPI(

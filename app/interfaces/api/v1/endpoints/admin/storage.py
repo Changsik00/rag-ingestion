@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.application.services.integrity import Integrity
-from app.interfaces.api.dependencies import get_checkpointer, get_semantic_extractor, get_integrity_service
+from app.interfaces.api.dependencies import get_checkpointer, get_integrity_service, get_semantic_extractor
 
 router = APIRouter()
 

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -18,5 +17,5 @@ class DocumentMetadata(BaseModel):
     url: str | None = Field(None, description="원본 URL")
     created_at: datetime | None = Field(None, description="생성 일시")
     category: str | None = Field(None, description="카테고리")
-    
+
     # 딕셔너리 호환성을 위한 헬퍼 (Pydantic 모델은 dict() 메서드 제공)
