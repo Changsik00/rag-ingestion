@@ -50,7 +50,7 @@ def test_ingestion_saves_chunks():
 
     try:
         # When
-        response = client.post("/ingest/web", json={"url": url, "enable_extraction": False})
+        response = client.post("/v1/ingest/web", json={"url": url, "enable_extraction": False})
 
         # Then
         assert response.status_code == 202

@@ -9,7 +9,7 @@ from app.domain.interfaces.job_repository import JobRepository
 from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
 from app.interfaces.api.dependencies import get_ingestion_orchestrator, get_ingestion_service, get_job_repository
 
-router = APIRouter()
+router = APIRouter(tags=["Jobs"])
 
 
 class ResumeRequest(BaseModel):

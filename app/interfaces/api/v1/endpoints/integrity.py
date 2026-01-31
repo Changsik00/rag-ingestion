@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from app.application.services.integrity import Integrity
 from app.interfaces.api.dependencies import get_integrity_service
 
-router = APIRouter()
+router = APIRouter(tags=["Integrity"])
 
 
 @router.post("/reset")

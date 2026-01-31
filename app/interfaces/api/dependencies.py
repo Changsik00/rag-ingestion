@@ -223,7 +223,7 @@ async def get_rag_service(
 
 
 # Admin Agent 의존성 (Spec 038)
-async def get_admin_agent(
+async def get_conversational_rag_agent(
     rag_service: Annotated[RAG, Depends(get_rag_service)],
     ingestion_service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
 ) -> ConversationalRAGAgent:

@@ -5,7 +5,7 @@ from neo4j import Driver
 
 from app.interfaces.api.dependencies import get_neo4j_driver
 
-router = APIRouter()
+router = APIRouter(tags=["Graph"])
 
 
 @router.get("/schema")

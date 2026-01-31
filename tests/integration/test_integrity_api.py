@@ -27,7 +27,7 @@ def test_reset_all_data_success(mock_integrity_service):
 
     try:
         # When
-        response = client.post("/api/v1/admin/integrity/reset")
+        response = client.post("/v1/integrity/reset")
 
         # Then
         assert response.status_code == 200

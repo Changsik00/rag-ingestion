@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.application.services.admin_agent import ConversationalRAGAgent
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.services.feedback import Feedback
-from app.interfaces.api.dependencies import get_admin_agent, get_checkpointer, get_feedback_service, get_repository
+from app.interfaces.api.dependencies import get_conversational_rag_agent, get_checkpointer, get_feedback_service, get_repository
 
-router = APIRouter()
+router = APIRouter(tags=["RAG"])
 
 
 @router.get("/documents/autocomplete")
@@ -26,10 +26,10 @@ async def autocomplete_documents(
 async def ask_agent(
     id: str,
     payload: dict[str, Any],
-    agent: Annotated[ConversationalRAGAgent, Depends(get_admin_agent)],
+    agent: Annotated[ConversationalRAGAgent, Depends(get_conversational_rag_agent)],
     checkpointer=Depends(get_checkpointer),
 ):
-    """Admin Agent에게 질문을 던지고 결과를 반환 (HITL 지원 가능)"""
+    """Conversational RAG Agent에게 질문을 던지고 결과를 반환 (HITL 지원 가능)"""
     message = payload.get("message")
     filters = payload.get("filters")
     hitl_enabled = payload.get("hitl_enabled", False)
@@ -117,7 +117,7 @@ async def save_feedback(feedback: dict[str, Any], service: Annotated[Feedback, D
 async def resume_session(
     id: str,
     payload: dict[str, Any],
-    agent: Annotated[ConversationalRAGAgent, Depends(get_admin_agent)],
+    agent: Annotated[ConversationalRAGAgent, Depends(get_conversational_rag_agent)],
     checkpointer=Depends(get_checkpointer),
 ):
     """중단된 세션(HITL) 재개"""

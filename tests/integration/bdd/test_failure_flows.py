@@ -30,7 +30,7 @@ def test_invalid_url_format_returns_422():
     invalid_url = "not-a-valid-url"
 
     # When: 수집 요청
-    response = client.post("/ingest/web", json={"url": invalid_url})
+    response = client.post("/v1/ingest/web", json={"url": invalid_url})
 
     # Then: 422 Unprocessable Entity (FastAPI validation error)
     assert response.status_code == 422
@@ -59,7 +59,7 @@ def test_url_404_fails_job():
     url_404 = "https://httpbin.org/status/404"
 
     # When: 수집 요청
-    response = client.post("/ingest/web", json={"url": url_404})
+    response = client.post("/v1/ingest/web", json={"url": url_404})
 
     # Then: 202 Accepted (요청은 성공)
     assert response.status_code == 202
@@ -167,7 +167,7 @@ def test_llm_failure_still_saves_document():
     try:
         # When: 수집 요청 (extraction 활성화)
         url = "https://httpbin.org/html"
-        response = client.post("/ingest/web", json={"url": url, "enable_extraction": True})
+        response = client.post("/v1/ingest/web", json={"url": url, "enable_extraction": True})
 
         # Then: 요청 자체는 성공
         assert response.status_code == 202

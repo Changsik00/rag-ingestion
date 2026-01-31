@@ -201,7 +201,7 @@ with st.expander("🚨 Danger Zone", expanded=False):
     with col2:
         if st.button("💣 RESET ALL DATA", type="primary", use_container_width=True, help="Click to wipe all data."):
             try:
-                # Correct API Path: /integrity/reset (relative to base URL /api/v1/admin)
+                # Correct API Path: /integrity/reset (relative to base URL /v1)
                 res = api_client.post("/integrity/reset")
                 if res and res.get("status") == "success":
                     st.toast("✅ System Reset Successful!", icon="🗑️")

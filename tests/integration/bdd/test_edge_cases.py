@@ -31,7 +31,7 @@ def test_url_with_special_characters():
     url_with_korean = "https://httpbin.org/anything/테스트"
 
     # When: 수집 요청
-    response = client.post("/ingest/web", json={"url": url_with_korean})
+    response = client.post("/v1/ingest/web", json={"url": url_with_korean})
 
     # Then: 요청 성공 (400 에러가 아니어야 함)
     # URL validation이 한글을 허용하는지 확인
@@ -82,7 +82,7 @@ def test_concurrent_ingestion_requests():
     job_ids = []
     for url in urls:
         response = client.post(
-            "/ingest/web",
+            "/v1/ingest/web",
             json={
                 "url": url,
                 "enable_extraction": False,  # 빠른 테스트를 위해

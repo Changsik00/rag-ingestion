@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.application.services.integrity import Integrity
 from app.interfaces.api.dependencies import get_checkpointer, get_integrity_service, get_semantic_extractor
 
-router = APIRouter()
+router = APIRouter(tags=["Storage"])
 
 
 @router.get("/stats")
@@ -28,7 +28,7 @@ async def get_reports(service: Annotated[Integrity, Depends(get_integrity_servic
 async def get_diagnostic(doc_id: str, service: Annotated[Integrity, Depends(get_integrity_service)]):
     try:
         sample = service.get_missing_chunk_sample(doc_id)
-        return {"doc_id": doc_id, "sample": sample}
+        return {"doc_id": doc_id, "snippet": sample}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -39,7 +39,7 @@ async def get_preview_context(
 ):
     try:
         context = await service.get_cleaned_context(doc_id)
-        return {"doc_id": doc_id, "context": context}
+        return {"doc_id": doc_id, "content": context}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

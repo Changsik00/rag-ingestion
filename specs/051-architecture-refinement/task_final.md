@@ -69,6 +69,13 @@
 - [x] **Refactor**: All imports
 - [x] **Commit**: `refactor(api): rename schemas to dto (Spec 051)`
 
+### 3-3. API Path Unification (Spec 051)
+- [x] **Consolidate**: Move all v1 routers to `v1/endpoints/`
+- [x] **Standardize**: Remove `/admin/` prefix from all paths
+- [x] **Prefix**: Use `/v1/` for all endpoints centrally in `main.py`
+- [x] **Frontend**: Update Streamlit pages to use new paths
+- [x] **Commit**: `refactor(api): unify paths under /v1 and remove /admin (Spec 051)`
+
 ---
 
 ## Task N: PR Creation & Archiving

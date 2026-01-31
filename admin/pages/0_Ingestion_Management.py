@@ -15,19 +15,9 @@ with tabs[0]:
     if st.button("🚀 Ingest URL", type="primary"):
         if url:
             with st.spinner("Starting ingestion job..."):
-                # URL is handled via standard POST /ingest/web (outside admin prefix)
-                # But our client base URL is /api/v1/admin.
-                # Let's check main.py again.
-                # main.py @app.post("/ingest/web") is at root.
-                # Admin router is at /api/v1/admin.
-                # We might need to use a different base URL or adjust endpoints.
-                # For now, let's assume we can call relative to root if we adjust client or use absolute path.
-                # Actually, main.py routes:
-                # app.include_router(admin_router, prefix="/api/v1/admin")
-                # So /ingest/web is at /ingest/web.
-
-                # We need to call ../../../ingest/web or similar if base_url is /api/v1/admin/
-                res = api_client.post("/../../../ingest/web", json={"url": url})
+                # URL is handled via standard POST /v1/ingest/web
+                # Admin router is now also under /v1.
+                res = api_client.post("ingest/web", json={"url": url})
                 if res:
                     st.success(f"Job created: {res.get('job_id')}")
                     st.info("Check 'Job Queue' for status.")
@@ -44,8 +34,8 @@ with tabs[1]:
         if uploaded_files:
             with st.spinner(f"Uploading {len(uploaded_files)} files..."):
                 file_list = [("files", (f.name, f.getvalue(), f.type)) for f in uploaded_files]
-                # /ingest/files is at root in main.py
-                res = api_client.upload_file("/../../../ingest/files", files=file_list)
+                # /v1/ingest/files is now standard
+                res = api_client.upload_file("ingest/files", files=file_list)
                 if res and "jobs" in res:
                     st.success(f"{len(res['jobs'])} files uploaded and jobs created.")
                     for job in res["jobs"]:

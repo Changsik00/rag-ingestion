@@ -14,7 +14,7 @@ from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.value_objects.ontology import RelationshipType
 from app.interfaces.api.dependencies import get_graph_repository, get_repository
 
-router = APIRouter(prefix="/entities", tags=["entities"])
+router = APIRouter(tags=["Entities"])
 
 
 @router.get("")
