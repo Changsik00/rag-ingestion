@@ -19,7 +19,8 @@ def mock_llm_class():
         yield mock
 
 
-def test_router_detects_url_intent(mock_services, mock_llm_class):
+@pytest.mark.asyncio
+async def test_router_detects_url_intent(mock_services, mock_llm_class):
     ingestion, rag = mock_services
     mock_llm_instance = mock_llm_class.return_value
     mock_llm_instance.invoke.return_value = AIMessage(content="ingest")
@@ -27,12 +28,13 @@ def test_router_detects_url_intent(mock_services, mock_llm_class):
     agent = AdminAgent(rag, ingestion)
 
     state = AdminState(messages=[HumanMessage(content="https://example.com 읽어줘")], intent="", tool_output="")
-    result = agent.router_node(state)
+    result = await agent.router_node(state)
 
     assert result["intent"] == "ingest"
 
 
-def test_router_detects_search_intent(mock_services, mock_llm_class):
+@pytest.mark.asyncio
+async def test_router_detects_search_intent(mock_services, mock_llm_class):
     ingestion, rag = mock_services
     mock_llm_instance = mock_llm_class.return_value
     mock_llm_instance.invoke.return_value = AIMessage(content="search")
@@ -40,6 +42,6 @@ def test_router_detects_search_intent(mock_services, mock_llm_class):
     agent = AdminAgent(rag, ingestion)
 
     state = AdminState(messages=[HumanMessage(content="RAG가 뭐야?")], intent="", tool_output="")
-    result = agent.router_node(state)
+    result = await agent.router_node(state)
 
     assert result["intent"] == "search"

@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -10,7 +10,7 @@ from app.domain.entities.job import IngestionJob, JobStatus
 @pytest.fixture
 def service_deps():
     return {
-        "scraper": Mock(),
+        "scraper": AsyncMock(),
         "repository": Mock(),
         "graph": Mock(),
         "job_repository": Mock(),
