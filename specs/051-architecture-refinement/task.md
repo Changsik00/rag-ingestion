@@ -16,7 +16,7 @@
 - [x] **Create**: `app/domain/models/document_metadata.py` (Pydantic VO)
 - [x] **Refactor**: Update `Document` to use new VOs
 - [x] **Delete**: `app/domain/entities/chunk.py`
-- [ ] **Commit**: `refactor(domain): introduce DocumentMetadata and Chunk VOs (Spec 051)`
+- [x] **Commit**: `refactor(domain): introduce DocumentMetadata and Chunk VOs (Spec 051)`
 
 ### 1-2. Interfaces
 - [ ] **Create**: `app/domain/interfaces/chunker.py` (Protocol)

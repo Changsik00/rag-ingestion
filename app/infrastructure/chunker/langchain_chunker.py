@@ -5,7 +5,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.core.config import get_settings
 from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
-from app.domain.services.chunker import Chunker
+from app.domain.interfaces.chunker import Chunker
 
 
 class LangChainChunker(Chunker):
@@ -23,7 +23,8 @@ class LangChainChunker(Chunker):
         """문서를 재귀적으로 분할하여 Chunk 리스트를 반환합니다."""
 
         # LangChain의 create_documents를 사용하여 메타데이터 자동 처리 (start_index 등)
-        lc_docs = self.splitter.create_documents([document.content], metadatas=[document.metadata])
+        metadatas = [document.metadata.model_dump() if hasattr(document.metadata, "model_dump") else document.metadata]
+        lc_docs = self.splitter.create_documents([document.content], metadatas=metadatas)
 
         chunks = []
         for i, lc_doc in enumerate(lc_docs):
