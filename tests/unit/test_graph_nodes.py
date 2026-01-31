@@ -5,7 +5,7 @@ import pytest
 
 from app.domain.ingestion.state import IngestionState
 from app.domain.interfaces.llm import LLMInterface
-from app.domain.schemas.extraction import ExtractedMetadata
+from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
 
 def test_nodes_module_import():
@@ -39,7 +39,7 @@ async def test_extract_metadata_node():
     mock_metadata = ExtractedMetadata(
         title="Test Title", summary="Test Summary", keywords=["test"], entities={}, language="en"
     )
-    mock_llm.extract_metadata.return_value = mock_metadata
+    mock_llm.aextract_metadata = AsyncMock(return_value = mock_metadata)
 
     nodes = IngestionNodes(llm=mock_llm)
 

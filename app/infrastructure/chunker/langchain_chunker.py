@@ -5,10 +5,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.core.config import get_settings
 from app.domain.entities.chunk import Chunk
 from app.domain.entities.document import Document
-from app.domain.services.chunker import ChunkerService
+from app.domain.services.chunker import Chunker
 
 
-class LangChainChunker(ChunkerService):
+class LangChainChunker(Chunker):
     def __init__(self):
         self.settings = get_settings()
         self.splitter = RecursiveCharacterTextSplitter(

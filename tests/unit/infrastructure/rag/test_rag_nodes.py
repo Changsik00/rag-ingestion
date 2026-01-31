@@ -7,12 +7,12 @@ Mock LLM을 사용하여 외부 의존성 없이 독립적으로 테스트합니
 Spec 033: LangGraph State Management
 """
 
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
 from app.domain.entities.chunk import Chunk
-from app.domain.schemas.intent import IntentType, UserIntent
+from app.domain.value_objects.intent import IntentType, UserIntent
 
 
 @pytest.fixture
@@ -278,7 +278,7 @@ class TestRAGNodesGenerateAnswer:
         # Mock LLM Response
         mock_response = Mock()
         mock_response.content = "인공지능은 기계가 인간처럼 학습하고 판단하는 기술입니다."
-        mock_llm.generate.return_value = mock_response
+        mock_llm.agenerate = AsyncMock(return_value=mock_response)
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -320,7 +320,7 @@ class TestRAGNodesGenerateAnswer:
         assert result["full_context"] != ""
         assert "test.com" in result["full_context"]  # Citation 포함
         assert result["final_answer"] == "인공지능은 기계가 인간처럼 학습하고 판단하는 기술입니다."
-        mock_llm.generate.assert_called_once()
+        mock_llm.agenerate.assert_called_once()
 
 
 class TestRAGNodesFallback:
@@ -406,7 +406,7 @@ class TestRAGNodesPromptGuard:
         """
         from app.infrastructure.rag.nodes import RAGNodes
 
-        mock_llm.generate.return_value = Mock(content="답변")
+        mock_llm.agenerate = AsyncMock(return_value=Mock(content="답변"))
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -436,8 +436,7 @@ class TestRAGNodesPromptGuard:
         await nodes.generate_answer(state)
 
         # Then
-        assert mock_llm.generate.call_count == 1
-        prompt = mock_llm.generate.call_args[0][0]
+        assert mock_llm.agenerate.call_count == 1
+        prompt = mock_llm.agenerate.call_args[0][0]
         assert "KNOWLEDGE MIXING RULES" in prompt
-        assert "KNOWLEDGE SUPPLEMENT" in prompt
-        assert "SEAMLESS FUSION" in prompt
+        assert "PRIORITIZE KNOWLEDGE GRAPH" in prompt

@@ -1,5 +1,5 @@
-from datetime import datetime
 import base64
+from datetime import datetime
 
 from neo4j import Driver
 
@@ -81,7 +81,7 @@ class Neo4jJobRepository(JobRepository):
                 return None
 
             node = record["j"]
-            
+
             # Decode base64 back to bytes
             raw_content = None
             if node.get("raw_content"):
@@ -112,7 +112,7 @@ class Neo4jJobRepository(JobRepository):
             result = session.run(query, limit=limit)
             for record in result:
                 node = record["j"]
-                
+
                 # Decode base64 back to bytes
                 raw_content = None
                 if node.get("raw_content"):

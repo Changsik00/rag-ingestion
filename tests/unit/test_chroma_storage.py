@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 from app.domain.entities.chunk import Chunk
-from app.infrastructure.storage.chroma import ChromaStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
 
 
 @patch("chromadb.HttpClient")
@@ -18,7 +18,7 @@ def test_chroma_storage_save_chunks(mock_client_cls):
     mock_client.get_or_create_collection.return_value = mock_collection
     mock_client_cls.return_value = mock_client
 
-    storage = ChromaStorage()
+    storage = ChromaVectorRepository()
 
     # Given Chunks
     chunk1 = Chunk(id="c1", content="Chunk 1", parent_id="p1", index=0, metadata={"meta": "1"})

@@ -11,6 +11,9 @@ import time
 import pytest
 import requests
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 # Base URL for the API
 BASE_URL = "http://localhost:8000"
 

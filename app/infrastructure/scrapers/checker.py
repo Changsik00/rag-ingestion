@@ -2,8 +2,6 @@ import logging
 import re
 from typing import TYPE_CHECKING, Optional
 
-from app.schemas.ingest import IngestResponse
-
 if TYPE_CHECKING:
     from app.domain.interfaces.llm import LLMInterface
 
@@ -30,15 +28,18 @@ class ScrapingQualityChecker:
             "attention required",
         ]
 
-    async def is_poor_async(self, result: IngestResponse) -> bool:
+    async def is_poor_async(self, markdown: str) -> bool:
         """
         결과물이 부실하면 True, 충분하면 False 반환 (비동기 분석 지원)
+        
+        Args:
+            markdown: 검사할 마크다운 문자열
         """
         # 1. Sync Heuristic Checks
-        if self.is_poor(result):
+        if self.is_poor(markdown):
             return True
 
-        content = result.markdown
+        content = markdown
 
         # 2. Morphological Analysis (Heuristics for Navigation/Disjointed text)
         if self._is_navigation_heavy(content):
@@ -64,11 +65,14 @@ class ScrapingQualityChecker:
 
         return False
 
-    def is_poor(self, result: IngestResponse) -> bool:
+    def is_poor(self, markdown: str) -> bool:
         """
         동적 로직 없이 단순 휴리스틱만 검사 (Sync)
+        
+        Args:
+            markdown: 검사할 마크다운 문자열
         """
-        content = result.markdown
+        content = markdown
 
         # 1. Minimum Length 및 내용 밀도 체크
         if len(content) < self.min_length:

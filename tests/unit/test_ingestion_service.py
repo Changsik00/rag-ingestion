@@ -1,20 +1,20 @@
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from app.application.services.ingestion import Ingestion
 from app.core.exceptions import InfrastructureException, ScrapingError
 from app.domain.entities.job import IngestionJob, JobStatus
-from app.use_cases.ingestion import IngestionService
 
 
 @pytest.fixture
 def service_deps():
     return {
-        "scraper": Mock(),
+        "scraper": AsyncMock(),
         "repository": Mock(),
         "graph": Mock(),
         "job_repository": Mock(),
-        "extractor": Mock(),
+        "extractor": Mock(),  # extract() is sync
         "chunker": Mock(),
     }
 
@@ -33,7 +33,7 @@ async def test_process_job_handles_scraping_error(service_deps):
     service_deps["job_repository"].get_job.return_value = job
     service_deps["scraper"].scrape.side_effect = ScrapingError("404 Not Found")
 
-    service = IngestionService(**service_deps)
+    service = Ingestion(**service_deps)
 
     # When
     await service.process_job(job_id)
@@ -75,7 +75,7 @@ async def test_process_job_handles_infrastructure_exception(service_deps):
     future.set_result(None)
     service_deps["extractor"].extract.return_value = future
 
-    service = IngestionService(**service_deps)
+    service = Ingestion(**service_deps)
 
     # Chunking mock setup to return list (iterable) just in case
     service_deps["chunker"].chunk_document.return_value = []
@@ -93,7 +93,7 @@ async def test_process_job_handles_infrastructure_exception(service_deps):
 @pytest.mark.asyncio
 async def test_process_job_chunks_document(service_deps):
     """
-    Given: ChunkerService splits document into chunks
+    Given: Chunker splits document into chunks
     When: process_job is called
     Then: repository.save_with_chunks is called with document and chunks
     """
@@ -124,7 +124,7 @@ async def test_process_job_chunks_document(service_deps):
     mock_chunker.chunk_document.return_value = chunks
     service_deps["chunker"] = mock_chunker  # Inject chunker
 
-    service = IngestionService(**service_deps)
+    service = Ingestion(**service_deps)
 
     # When
     await service.process_job(job_id)

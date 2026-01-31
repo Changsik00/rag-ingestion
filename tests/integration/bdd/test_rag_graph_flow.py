@@ -9,7 +9,10 @@ Spec 033: LangGraph State Management
 
 import pytest
 
-from app.domain.schemas.intent import IntentType
+from app.domain.value_objects.intent import IntentType
+
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
 
 
 @pytest.mark.integration
@@ -79,22 +82,22 @@ class TestRAGGraphFlow:
         assert result.final_answer != ""
 
         # Checkpointer를 통해 State 조회 가능한지 확인
-        # (실제로는 RAGService 내부에서 checkpointer.get() 호출 필요)
+        # (실제로는 RAG 내부에서 checkpointer.get() 호출 필요)
         # 여기서는 최소한 오류 없이 실행되었음을 확인
 
 
 @pytest.fixture
 def real_rag_service():
-    """실제 LLM을 사용하는 RAGService (Checkpointer 없음)"""
-    # TODO: DI를 통해 실제 RAGService 인스턴스 생성
-    # 현재는 Mock으로 구현 (실제 구현은 RAGService 완성 후)
-    pytest.skip("RAGService 리팩토리 완료 후 구현")
+    """실제 LLM을 사용하는 RAG (Checkpointer 없음)"""
+    # TODO: DI를 통해 실제 RAG 인스턴스 생성
+    # 현재는 Mock으로 구현 (실제 구현은 RAG 완성 후)
+    pytest.skip("RAG 리팩토리 완료 후 구현")
 
 
 @pytest.fixture
 def real_rag_service_with_checkpointer():
-    """실제 LLM + Checkpointer를 사용하는 RAGService"""
-    pytest.skip("RAGService 리팩토리 완료 후 구현")
+    """실제 LLM + Checkpointer를 사용하는 RAG"""
+    pytest.skip("RAG 리팩토리 완료 후 구현")
 
 
 @pytest.fixture

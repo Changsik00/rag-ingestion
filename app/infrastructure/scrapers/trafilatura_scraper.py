@@ -3,7 +3,7 @@ import logging
 import trafilatura
 
 from app.domain.interfaces.scraper import ScraperInterface
-from app.schemas.ingest import IngestResponse
+from app.interfaces.api.schemas.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)
 

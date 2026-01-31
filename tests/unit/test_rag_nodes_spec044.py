@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from app.domain.rag.state import RAGGraphState
-from app.domain.schemas.intent import IntentType, UserIntent
+from app.domain.value_objects.intent import IntentType, UserIntent
 from app.infrastructure.rag.nodes import RAGNodes
 
 

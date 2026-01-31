@@ -3,8 +3,8 @@ from uuid import uuid4
 
 import pytest
 
+from app.application.services.integrity_service import IntegrityService
 from app.domain.entities.chunk import Chunk
-from app.domain.services.storage_integrity_service import StorageIntegrityService
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def mock_target_repo():
 
 @pytest.fixture
 def service(mock_primary_repo, mock_target_repo):
-    return StorageIntegrityService(mock_primary_repo, mock_target_repo)
+    return IntegrityService(mock_primary_repo, mock_target_repo)
 
 
 def test_get_drfit_report_finds_missing_ids(service, mock_primary_repo, mock_target_repo):

@@ -7,11 +7,12 @@ from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 
+from app.application.services.admin_agent import AdminAgent
+
 # App Modules (Real)
 from app.core.config import get_settings
-from app.domain.services.admin_agent import AdminAgent
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 
 # from app.infrastructure.brain.intent_classifier import IntentClassifier
@@ -36,9 +37,9 @@ def get_real_services():
 
     driver = GraphDatabase.driver(settings.NEO4J_URI, auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD))
 
-    _neo4j_doc_repo = Neo4jStorage(driver=driver)
+    _neo4j_doc_repo = Neo4jDocumentRepository(driver=driver)
     _neo4j_graph_repo = Neo4jGraphRepository(driver=driver)
-    _chroma_repo = ChromaStorage()  # Assuming it connects to persistent dir
+    _chroma_repo = ChromaVectorRepository()  # Assuming it connects to persistent dir
 
     # 2. LLM Components
     _llm = ChatGoogleGenerativeAI(
@@ -50,18 +51,18 @@ def get_real_services():
     # query_rewriter = QueryRewriter(llm=adapter if hasattr(adapter, 'ainvoke') else llm)
 
     # 3. Services
-    # Note: Using Mock RAG graph builder?? No, let's try to use RAGService as is if possible.
-    # But RAGService now requires RAGGraphBuilder (Spec 033).
-    # Since we are testing *AdminAgent* HITL, we can mock RAGService to avoid complexity
+    # Note: Using Mock RAG graph builder?? No, let's try to use RAG as is if possible.
+    # But RAG now requires RAGGraphBuilder (Spec 033).
+    # Since we are testing *AdminAgent* HITL, we can mock RAG to avoid complexity
     # OR use real one if easy.
     # Let's start with a Mock RAG Service for simplicity in testing AdminAgent's HITL logic first,
     # as defined in the plan "Minimal Dependencies".
 
-    class MockRAGService:
+    class MockRAG:
         async def retrieve_and_generate(self, query, history, filters=None, thread_id=None):
             logger.info(f"[MockRAG] Processing query: {query}")
             await asyncio.sleep(1)  # Simulate delay
-            from app.domain.services.rag_service import RAGResult
+            from app.application.services.rag import RAGResult
 
             return RAGResult(
                 answer="This is a real LLM response from Admin Agent context, but the RAG retrieval was mocked.",
@@ -94,7 +95,7 @@ def get_real_services():
 
         job_repository = MockJobRepo()
 
-    rag_service = MockRAGService()
+    rag_service = MockRAG()
     ingestion_service = MockIngestionService()
 
     return rag_service, ingestion_service

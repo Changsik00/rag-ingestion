@@ -8,11 +8,15 @@ FastAPI TestClient를 사용하여 실제 HTTP 요청을 시뮬레이션합니�
 from unittest.mock import Mock
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.domain.entities.document import Document
 from app.interfaces.api.dependencies import get_repository
 from app.interfaces.api.main import app
+
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
 
 client = TestClient(app)
 

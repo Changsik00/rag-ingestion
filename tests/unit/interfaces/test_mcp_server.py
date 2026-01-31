@@ -31,11 +31,11 @@ async def test_ingest_url_tool():
 
 @pytest.mark.asyncio
 async def test_search_knowledge_base_tool():
-    """Test search_knowledge_base tool calling RAGService"""
+    """Test search_knowledge_base tool calling RAG"""
     # Initialize Mock
     mock_rag_service = AsyncMock()
 
-    # Mock return value of RAGService
+    # Mock return value of RAG
     mock_result = MagicMock()
     mock_result.answer = "Test Answer"
     mock_result.full_context = "Context"

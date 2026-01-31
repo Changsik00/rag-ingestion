@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any
 
+from app.domain.interfaces.document_repository import DocumentRepository
+
 
 @dataclass
 class DriftReport:
@@ -12,8 +14,10 @@ class DriftReport:
     orphan_ids: set[str]
 
 
-class StorageIntegrityService:
-    def __init__(self, primary_repo: Any, target_repo: Any):
+class IntegrityService:
+    """Application Service: 데이터 무결성 검증 및 동기화"""
+
+    def __init__(self, primary_repo: DocumentRepository, target_repo: DocumentRepository):
         """
         Args:
             primary_repo: Source of truth (Neo4j)
@@ -194,7 +198,7 @@ class StorageIntegrityService:
             doc.metadata["semantic_data"] = semantic_data.model_dump()
             self.primary_repo.save(doc)
 
-            # 3. 그래프 빌드 (IngestionService 로직과 동일하게 수행하나 여기선 직접 구성)
+            # 3. 그래프 빌드 (Ingestion 로직과 동일하게 수행하나 여기선 직접 구성)
             # Entity 및 Relationship 저장
             if semantic_data.entities:
                 for entity_type, names in semantic_data.entities.items():

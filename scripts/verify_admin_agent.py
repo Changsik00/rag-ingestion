@@ -5,13 +5,13 @@ import uuid
 from dotenv import load_dotenv
 from langgraph.checkpoint.memory import MemorySaver
 
-from app.domain.services.admin_agent import AdminAgent
+from app.application.services.admin_agent import AdminAgent
 
 
-# Mocking RAGService to isolate Agent logic
-class MockRAGService:
+# Mocking RAG to isolate Agent logic
+class MockRAG:
     async def retrieve_and_generate(self, query, history, filters=None, thread_id=None):
-        from app.domain.services.rag_service import RAGResult
+        from app.application.services.rag import RAGResult
 
         return RAGResult(
             answer="Knowledge Channel is a great TV program.",
@@ -35,7 +35,7 @@ async def main():
     logger = logging.getLogger("VerifyAdmin")
 
     # Setup
-    rag_service = MockRAGService()
+    rag_service = MockRAG()
     ingestion_service = MockIngestionService()
     agent = AdminAgent(rag_service, ingestion_service)
 

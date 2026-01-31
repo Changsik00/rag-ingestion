@@ -15,7 +15,7 @@ from app.domain.interfaces.document_repository import DocumentRepository
 logger = setup_logger(__name__)
 
 
-class ChromaStorage(DocumentRepository):
+class ChromaVectorRepository(DocumentRepository):
     def __init__(self):
         settings = get_settings()
 
@@ -280,7 +280,9 @@ class ChromaStorage(DocumentRepository):
 
             chunks = []
             if results and results["ids"] and results["ids"][0]:
-                logger.info(f"Chroma Search results: found {len(results['ids'][0])} candidates. Top IDs: {results['ids'][0][:3]}")
+                logger.info(
+                    f"Chroma Search results: found {len(results['ids'][0])} candidates. Top IDs: {results['ids'][0][:3]}"
+                )
                 for i in range(len(results["ids"][0])):
                     chunk_id = results["ids"][0][i]
                     content = results["documents"][0][i]
@@ -329,7 +331,9 @@ class ChromaStorage(DocumentRepository):
                 logger.warning(f"Chroma MMR: No candidates found for query: {query}")
                 return []
 
-            logger.info(f"Chroma MMR candidates: found {len(results['ids'][0])} candidates. Top IDs: {results['ids'][0][:3]}")
+            logger.info(
+                f"Chroma MMR candidates: found {len(results['ids'][0])} candidates. Top IDs: {results['ids'][0][:3]}"
+            )
             candidate_ids = results["ids"][0]
             candidate_docs = results["documents"][0]
             candidate_metas = results["metadatas"][0]

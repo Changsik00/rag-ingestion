@@ -10,7 +10,7 @@ import pytest
 import requests
 
 from app.infrastructure.scrapers.basic import BasicWebScraper
-from app.schemas.ingest import IngestResponse
+from app.interfaces.api.schemas.ingest import IngestResponse
 
 
 @patch("requests.get")

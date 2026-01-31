@@ -3,12 +3,12 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
 
+from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
 from app.infrastructure.brain.adapter import LangGraphAdapter
 from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository, get_langgraph_adapter
-from app.schemas.ingest import AsyncIngestResponse
-from app.use_cases.ingestion import IngestionService
+from app.interfaces.api.schemas.ingest import AsyncIngestResponse
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -31,7 +31,7 @@ async def retry_job(
     job_id: str,
     background_tasks: BackgroundTasks,
     repo: JobRepository = Depends(get_job_repository),
-    service: IngestionService = Depends(get_ingestion_service),
+    service: Ingestion = Depends(get_ingestion_service),
 ):
     job = repo.get_job(job_id)
     if not job:

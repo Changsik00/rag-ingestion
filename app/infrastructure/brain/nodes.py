@@ -99,10 +99,10 @@ class IngestionNodes:
         # Handle both sync and async LLM adapter implementations
         import asyncio
 
-        if asyncio.iscoroutinefunction(self.llm.extract_metadata):
-            extracted = await self.llm.extract_metadata(enriched_content)
+        if asyncio.iscoroutinefunction(self.llm.aextract_metadata):
+            extracted = await self.llm.aextract_metadata(enriched_content)
         else:
-            extracted = self.llm.extract_metadata(enriched_content)
+            extracted = self.llm.aextract_metadata(enriched_content)
 
         # History 업데이트
         current_history = state.get("steps_history", [])

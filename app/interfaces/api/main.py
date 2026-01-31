@@ -1,16 +1,21 @@
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status, UploadFile, File
+from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, UploadFile, status
 
+from app.application.services.ingestion import Ingestion
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.interfaces.api.dependencies import get_ingestion_service, get_repository, get_scraper
 from app.interfaces.api.endpoints.entities import router as entities_router
 from app.interfaces.api.endpoints.jobs import router as jobs_router
+from app.interfaces.api.schemas.ingest import (
+    AsyncIngestResponse,
+    IngestRequest,
+    IngestResponse,
+    MultiAsyncIngestResponse,
+)
 from app.interfaces.api.v1.endpoints.admin import router as admin_router
-from app.schemas.ingest import AsyncIngestResponse, IngestRequest, IngestResponse, MultiAsyncIngestResponse
-from app.use_cases.ingestion import IngestionService
 
 app = FastAPI(
     title="RAG Ingestion API",
@@ -27,7 +32,7 @@ app.include_router(admin_router, prefix="/api/v1/admin")
 async def ingest_web_page(
     request: IngestRequest,
     background_tasks: BackgroundTasks,
-    service: Annotated[IngestionService, Depends(get_ingestion_service)],
+    service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ):
     try:
         job = service.create_job(str(request.url))
@@ -40,7 +45,7 @@ async def ingest_web_page(
 @app.post("/ingest/files", status_code=status.HTTP_202_ACCEPTED, response_model=MultiAsyncIngestResponse)
 async def ingest_files(
     background_tasks: BackgroundTasks,
-    service: Annotated[IngestionService, Depends(get_ingestion_service)],
+    service: Annotated[Ingestion, Depends(get_ingestion_service)],
     files: list[UploadFile] = File(...),
 ):
     """
@@ -51,14 +56,10 @@ async def ingest_files(
         for file in files:
             content = await file.read()
             # source_url for file ingestion will be the filename for tracking
-            job = service.create_job(
-                url=f"file://{file.filename}", 
-                raw_content=content, 
-                filename=file.filename
-            )
+            job = service.create_job(url=f"file://{file.filename}", raw_content=content, filename=file.filename)
             background_tasks.add_task(service.process_job, job.job_id)
             job_responses.append({"job_id": job.job_id, "status": job.status})
-        
+
         return {"jobs": job_responses}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

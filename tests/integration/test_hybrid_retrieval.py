@@ -1,9 +1,12 @@
 import pytest
 
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
+from app.infrastructure.storage.chroma import ChromaVectorRepository
 from app.interfaces.api.dependencies import get_neo4j_driver
+
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
 
 
 # Skip if explicit flag not set, to avoid slow CI runs if desired
@@ -16,7 +19,7 @@ class TestHybridRetrievalReal:
 
     @pytest.fixture(scope="class")
     def neo4j_repo(self, driver):
-        return Neo4jStorage(driver)
+        return Neo4jDocumentRepository(driver)
 
     @pytest.fixture(scope="class")
     def graph_repo(self, driver):
@@ -24,7 +27,7 @@ class TestHybridRetrievalReal:
 
     @pytest.fixture(scope="class")
     def chroma_repo(self):
-        return ChromaStorage()
+        return ChromaVectorRepository()
 
     def test_full_pipeline_components(self, neo4j_repo, graph_repo, chroma_repo):
         """

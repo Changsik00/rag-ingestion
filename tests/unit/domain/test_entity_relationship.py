@@ -7,8 +7,8 @@ Task 9-1: Domain Schema Tests
 import pytest
 from pydantic import ValidationError
 
-from app.domain.schemas.extraction import EntityRelationship
-from app.domain.schemas.ontology import EntityType, RelationshipType
+from app.domain.value_objects.extracted_metadata import EntityRelationship
+from app.domain.value_objects.ontology import EntityType, RelationshipType
 
 
 def test_entity_relationship_creation():

@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -40,7 +40,7 @@ async def test_rewrite_with_history_calls_llm():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.generate.return_value = "일론 머스크의 형제는 누구입니까?"
+    llm.agenerate = AsyncMock(return_value="일론 머스크의 형제는 누구입니까?")
     rewriter = QueryRewriter(llm)
 
     query = "그의 형제는?"
@@ -54,10 +54,10 @@ async def test_rewrite_with_history_calls_llm():
 
     # Then
     assert result == "일론 머스크의 형제는 누구입니까?"
-    llm.generate.assert_called_once()
+    llm.agenerate.assert_called_once()
 
     # Prompt verification
-    prompt_sent = llm.generate.call_args[0][0]
+    prompt_sent = llm.agenerate.call_args[0][0]
     assert "일론 머스크에 대해 알려줘" in prompt_sent
     assert "그의 형제는?" in prompt_sent
 
@@ -71,7 +71,7 @@ async def test_rewrite_instruction_only_maintains_context():
     # Given
     llm = Mock(spec=LLMInterface)
     # Expected: The previous question context is preserved but with the new instruction
-    llm.generate.return_value = "일론 머스크가 다닌 학교를 한국어로 알려줘"
+    llm.agenerate = AsyncMock(return_value="일론 머스크가 다닌 학교를 한국어로 알려줘")
     rewriter = QueryRewriter(llm)
 
     query = "한국어로 대답해줘"
@@ -85,4 +85,4 @@ async def test_rewrite_instruction_only_maintains_context():
 
     # Then
     assert "학교" in result or "school" in result
-    llm.generate.assert_called_once()
+    llm.agenerate.assert_called_once()

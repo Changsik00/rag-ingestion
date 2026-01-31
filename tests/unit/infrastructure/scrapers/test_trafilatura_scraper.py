@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
-from app.schemas.ingest import IngestResponse
+from app.interfaces.api.schemas.ingest import IngestResponse
 
 # Mock HTML with ads and noise
 MOCK_HTML_WITH_ADS = """
@@ -35,13 +35,14 @@ def scraper():
     return TrafilaturaWebScraper()
 
 
-def test_scrape_clean_extraction(scraper):
+@pytest.mark.asyncio
+async def test_scrape_clean_extraction(scraper):
     """광고와 노이즈가 제거된 본문이 추출되는지 검증"""
     with (
         patch("trafilatura.fetch_url", return_value=MOCK_HTML_WITH_ADS),
         patch("trafilatura.extract", return_value=MOCK_EXTRACTED_TEXT) as mock_extract,
     ):
-        response = scraper.scrape("https://example.com/news")
+        response = await scraper.scrape("https://example.com/news")
 
         assert isinstance(response, IngestResponse)
         assert "Buy this product" not in response.markdown
@@ -54,7 +55,8 @@ def test_scrape_clean_extraction(scraper):
         assert call_args.get("include_comments") is False
 
 
-def test_scrape_metadata_extraction(scraper):
+@pytest.mark.asyncio
+async def test_scrape_metadata_extraction(scraper):
     """메타데이터 추출 검증"""
     mock_metadata = MagicMock()
     mock_metadata.title = "Test Article"
@@ -67,14 +69,15 @@ def test_scrape_metadata_extraction(scraper):
         patch("trafilatura.extract", return_value="Content"),
         patch("trafilatura.extract_metadata", return_value=mock_metadata),
     ):
-        response = scraper.scrape("https://example.com/news")
+        response = await scraper.scrape("https://example.com/news")
 
         assert response.metadata["title"] == "Test Article"
         assert response.metadata["published_date"] == "2026-01-22"
         assert response.metadata["author"] == "Test Author"
 
 
-def test_scrape_fallback_when_trafilatura_fails(scraper):
+@pytest.mark.asyncio
+async def test_scrape_fallback_when_trafilatura_fails(scraper):
     """Trafilatura 추출 실패 시 Fallback 로직 동작 검증"""
     # extract가 None을 반환(실패)하도록 설정
     with (

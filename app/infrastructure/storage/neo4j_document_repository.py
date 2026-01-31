@@ -12,7 +12,7 @@ from app.domain.interfaces.document_repository import DocumentRepository
 logger = setup_logger(__name__)
 
 
-class Neo4jStorage(DocumentRepository):
+class Neo4jDocumentRepository(DocumentRepository):
     def __init__(self, driver: Driver):
         self.driver = driver
 

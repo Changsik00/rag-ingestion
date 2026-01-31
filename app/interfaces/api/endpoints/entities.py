@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
-from app.domain.schemas.ontology import RelationshipType
+from app.domain.value_objects.ontology import RelationshipType
 from app.interfaces.api.dependencies import get_graph_repository, get_repository
 
 router = APIRouter(prefix="/entities", tags=["entities"])

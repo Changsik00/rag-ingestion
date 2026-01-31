@@ -6,38 +6,36 @@
 - [x] plan.md 작성
 - [x] task.md 작성
 - [x] 백로그 업데이트 (Phase 4 이동)
-- [x] User Plan Accept
+- [ ] User Plan Accept
 
 ## Task 1: HITL 검증 스크립트 작성
-### 1-1. TDD Warming up (Skeleton & Execution Check)
-- [x] 스크립트 파일 생성: `scripts/verify_hitl_real.py` (Skeleton)
-- [x] 실행 확인 (Basic Run): `uv run python scripts/verify_hitl_real.py`
-- [x] Commit: `test(spec-040): add script skeleton`
+### 1-1. TDD Warming up
+- [ ] Test Case 작성: `tests/tooling/test_verify_hitl_real.py`
+- [ ] Test 실행 (Fail): `uv run pytest tests/tooling/test_verify_hitl_real.py -v`
+- [ ] Commit: `test(spec-040): add test cases for HITL verification script`
 
-### 1-2. Implementation (Logic)
-- [x] 코드 구현: `scripts/verify_hitl_real.py` (Graph Init, Checkpointer, Interrupt/Resume)
-- [x] 검증 실행 (Manual Verification): `uv run python scripts/verify_hitl_real.py`
-- [x] Commit: `feat(spec-040): implement hitl verification logic`
+### 1-2. Implementation
+- [ ] 스크립트 구현: `scripts/verify_hitl_real.py`
+- [ ] Test 실행 (Pass): `uv run pytest tests/tooling/test_verify_hitl_real.py -v`
+- [ ] Commit: `feat(spec-040): implement real-world HITL verification script`
 
-### 1-3. Bug Fix (Embedding Model)
-- [x] `app/infrastructure/storage/chroma.py`: `models/embedding-001` -> `models/text-embedding-004` 수정
-- [x] Commit: `fix(spec-040): upgrage embedding model to text-embedding-004`
+## Task 2: 실제 시나리오 검증
+### 2-1. TDD Warming up
+- [ ] Integration Test 작성: `tests/integration/test_hitl_scenario.py`
+- [ ] Test 실행 (Fail): `uv run pytest tests/integration/test_hitl_scenario.py -v`
+- [ ] Commit: `test(spec-040): add integration test for HITL scenario`
 
-## Task 2: Fix Admin HITL Toggle (Scope Expanded)
-### 2-1. Backend Logic Update
-- [x] State Update: `IngestionState`에 `hitl_enabled` 필드 추가
-- [x] Graph Logic: `route_after_validation`에서 `hitl_enabled` 확인 로직 추가
-- [x] API Update: `POST /rag/sessions/{id}/ask` payload에 `hitl_enabled` 파라미터 추가
+### 2-2. Implementation
+- [ ] 시나리오 검증 실행: `uv run python scripts/verify_hitl_real.py`
+- [ ] Test 실행 (Pass): `uv run pytest tests/integration/test_hitl_scenario.py -v`
+- [ ] Commit: `feat(spec-040): verify HITL scenario with real LLM`
 
-### 2-2. Frontend Integration
-- [x] UI Logic: `4_RAG_Playground.py`에서 `hitl_enabled` 상태를 API 호출 시 전달
+## Task 3: Documentation & PR
+### 3-1. Documentation
+- [ ] README 업데이트: 스크립트 사용법 추가
+- [ ] Commit: `docs(spec-040): add HITL verification script usage to README`
 
-## Task 3: PR Creation (Updated)
-- [x] Update Verification Script: `scripts/verify_hitl_real.py`에 Toggle 테스트 추가
-- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [x] Run Full Tests: `uv run pytest`
-- [x] Update PR: 기존 PR 업데이트 (`git push --force` or just push)
-
-## Summary
-**총 Task**: 3개
-**예상 커밋 수**: 5개
+### 3-2. PR Creation
+- [ ] Branch: `feature/040-hitl-verification-script`
+- [ ] PR 생성: `pr_description.md` 작성
+- [ ] Review 요청

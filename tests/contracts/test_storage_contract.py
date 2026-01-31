@@ -9,15 +9,15 @@ the constructor parameter mismatch found in Spec 008.
 import pytest
 
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
+from app.infrastructure.storage.chroma import ChromaVectorRepository
 
 
 # Parametrize all DocumentRepository implementations
 @pytest.fixture(
     params=[
-        Neo4jStorage,
-        ChromaStorage,
+        Neo4jDocumentRepository,
+        ChromaVectorRepository,
     ]
 )
 def storage_class(request):
@@ -104,25 +104,25 @@ class TestStorageConstructorConsistency:
     """
 
     def test_neo4j_storage_constructor(self):
-        """Neo4jStorage should accept a Driver instance"""
+        """Neo4jDocumentRepository should accept a Driver instance"""
         from unittest.mock import Mock
 
         from neo4j import Driver
 
         mock_driver = Mock(spec=Driver)
-        storage = Neo4jStorage(mock_driver)
+        storage = Neo4jDocumentRepository(mock_driver)
 
         assert storage.driver == mock_driver
 
     def test_chroma_storage_constructor(self):
         """
-        ChromaStorage initializes its own client internally.
-        This is different from Neo4jStorage which accepts a driver.
+        ChromaVectorRepository initializes its own client internally.
+        This is different from Neo4jDocumentRepository which accepts a driver.
 
         NOTE: This difference in constructor signatures is documented
-        and intentional - ChromaStorage manages its own connection.
+        and intentional - ChromaVectorRepository manages its own connection.
         """
-        storage = ChromaStorage()
+        storage = ChromaVectorRepository()
 
         assert hasattr(storage, "client")
         assert hasattr(storage, "collection")

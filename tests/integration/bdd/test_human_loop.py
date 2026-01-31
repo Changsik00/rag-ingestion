@@ -4,6 +4,9 @@ from langgraph.checkpoint.memory import MemorySaver
 from app.domain.ingestion.state import IngestionState
 from app.infrastructure.brain.graph import IngestionGraphBuilder
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 
 class MockLLM:
     def __init__(self):

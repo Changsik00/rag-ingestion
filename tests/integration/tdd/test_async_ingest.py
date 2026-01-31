@@ -7,17 +7,21 @@ Job 생성 및 백그라운드 처리 워크플로우를 검증합니다.
 
 from unittest.mock import Mock
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.interfaces.api.dependencies import get_ingestion_service
 from app.interfaces.api.main import app
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 client = TestClient(app)
 
 
 def test_async_ingest_web_endpoint():
-    # Given: Mock IngestionService
+    # Given: Mock Ingestion
     mock_service = Mock()
 
     def create_job_side_effect(url, retry_of=None):

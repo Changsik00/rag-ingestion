@@ -2,8 +2,8 @@ import logging
 from typing import NamedTuple
 
 from app.infrastructure.brain.adapter import LangGraphAdapter
-from app.infrastructure.storage.chroma import ChromaStorage
-from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +22,8 @@ class IntegrityService:
 
     def __init__(
         self,
-        neo4j_storage: Neo4jStorage,
-        chroma_storage: ChromaStorage,
+        neo4j_storage: Neo4jDocumentRepository,
+        chroma_storage: ChromaVectorRepository,
         langgraph_adapter: LangGraphAdapter,
     ):
         self.neo4j = neo4j_storage

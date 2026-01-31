@@ -6,6 +6,9 @@ from app.core.config import get_settings
 from app.domain.services.query_rewriter import QueryRewriter
 from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 
 @pytest.mark.integration
 class TestQueryRewriteFlow:

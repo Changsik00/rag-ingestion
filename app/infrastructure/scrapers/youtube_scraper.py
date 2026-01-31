@@ -9,7 +9,7 @@ import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
 
 from app.domain.interfaces.scraper import ScraperInterface
-from app.schemas.ingest import IngestResponse
+from app.interfaces.api.schemas.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)
 

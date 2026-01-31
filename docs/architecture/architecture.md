@@ -1,150 +1,379 @@
-# Project Architecture: Clean Architecture + DDD
+# Architecture: Clean Architecture + DDD
 
-본 프로젝트는 **Clean Architecture**의 계층 구조 원칙 위에 **Domain-Driven Design (DDD)** 의 전술적 패턴을 적용하여 구축됩니다.
+본 프로젝트는 **Clean Architecture**의 4계층 구조 원칙 위에 **Domain-Driven Design (DDD)**의 전술적 패턴을 적용하여 구축되었습니다.
 
-## 🎯 Core Philosophy
-1.  **Dependency Rule**: 의존성은 항상 외부에서 내부(Domain)로 향해야 한다.
-2.  **Domain Isolation**: 비즈니스 로직은 프레임워크나 DB로부터 완전히 격리되어야 한다.
-3.  **Explicit Intent**: 코드를 봤을 때 "무엇을 하는지"가 기술적 구현보다 먼저 보여야 한다.
+- **Clean Architecture**: 계층 분리, Dependency Rule, 기술 독립성
+- **DDD**: Entities, Value Objects, Domain Services, Repository Pattern
 
-## 📂 Directory Structure (Updated)
+## 🎯 Core Principles
 
-```mermaid
-graph TD
-    User([User / Client]) --> API[FastAPI Interface]
-    API --> UseCase[UseCase Layer]
-    
-    subgraph Domain ["Domain Layer (Core Business Logic)"]
-        UseCase --> Service[Domain Services]
-        Service --> Entity[Entities & Value Objects]
-        Service --> Interface[Interfaces & Protocols]
-    end
-    
-    subgraph Infrasturcture ["Infrastructure Layer (Adapters)"]
-        RepoImpl[Repository Impl] -.-> Interface
-        LLMImpl[LLM Adapter] -.-> Interface
-        ScraperImpl[Scraper Adapter] -.-> Interface
-    end
-    
-    RepoImpl --> Neo4j[(Neo4j: Graph DB)]
-    RepoImpl --> Chroma[(ChromaDB: Vector DB)]
-    LLMImpl --> ExternalLLM[Gemini / OpenAI]
+### 1. The Dependency Rule
+**의존성은 항상 외부에서 내부(Domain)로만 향한다.**
+
+```
+Interfaces → Application → Domain ← Infrastructure
+     ↓            ↓            ↑             ↑
+   (UI)      (Use Cases)  (Business)    (Technical)
 ```
 
-```plaintext
-rag-ingestion/
-├── app/
-│   ├── core/               # 설정 및 공통 Utilities
-│   │   ├── config.py
-│   │   ├── llm.py          # LLM Factory 패턴 구현
-│   │   └── logging_config.py
-│   │
-│   ├── domain/             # [Core] 순수 비즈니스 로직 (외부 의존성 없음)
-│   │   ├── entities/       # 식별자(ID)가 있는 객체 (Document, Job, Chunk)
-│   │   ├── value_objects/  # 값 객체 (Source - 불변성)
-│   │   ├── schemas/        # 데이터 전송/검증 스키마 (ExtractedMetadata, Ontology)
-│   │   ├── services/       # 도메인 서비스 (SemanticExtractor, ChunkerService)
-│   │   ├── ingestion/      # LangGraph 상태 관리 (IngestionState)
-│   │   └── interfaces/     # 포트 (Repository, Scraper, LLM Protocol 인터페이스)
-│   │
-│   ├── use_cases/          # [Application] 유스케이스 (도메인 오케스트레이션)
-│   │   └── ingestion.py    # 데이터 파이프라인 제어
-│   │
-│   ├── infrastructure/     # [Adapters] 인터페이스 구현체
-│   │   ├── storage/        # 저장소 구현 (Neo4j, Chroma, Composite Repositories)
-│   │   ├── scrapers/       # 웹 스크래퍼 (BeautifulSoup, Firecrawl)
-│   │   ├── llm/            # LLM 어댑터 (LangChainAdapter)
-│   │   ├── chunker/        # 텍스트 청킹 (LangChainChunker)
-│   │   └── brain/          # LangGraph 노드 및 로직 (Spec 021 - Logic Resolver)
-│   │
-│   ├── interfaces/         # [Presentation] 외부 진입점
-│   │   ├── api/            # FastAPI (라우터, 의존성 주입)
-│   │   └── cli/            # 커맨드 라인 인터페이스
-│   │
-│   └── admin/              # [Presentation] Streamlit 관리자 대시보드
-```
+- **Domain Layer**: 어떤 외부 레이어도 import하지 않음
+- **Application Layer**: Domain만 import
+- **Infrastructure Layer**: Domain interfaces만 import (구현체 제공)
+- **Interfaces Layer**: Application과 Infrastructure를 조합하여 외부에 노출
 
+### 2. Domain Isolation
+비즈니스 로직은 프레임워크, DB, 외부 라이브러리로부터 완전히 격리됩니다.
+- LangChain, FastAPI, Neo4j 같은 기술은 Infrastructure Layer에만 존재
+- Domain은 순수 Python과 자체 정의 Protocol만 사용
 
-## 🏗 Design Decisions & Rationale
-
-### 1. 왜 `Entities`와 `Value Objects`를 나누는가?
--   **Why**: 데이터의 성격을 명확히 하기 위함입니다.
--   **Entity (`AtomicDocument`, `IngestionJob`)**: 내용이 변해도 ID가 같으면 같은 객체입니다. DB에 저장되고 관리 대상이 됩니다.
--   **Value Object (`Source`)**: URL이 바뀌면 아예 다른 객체입니다. 불변(Immutable)성을 가지며 사이드 이펙트를 줄여줍니다.
-
-### 2. 왜 `DB` 대신 `Storage`인가?
--   **Why**: 기술 종속성을 피하기 위함입니다.
--   `DB`라고 하면 자꾸 RDBMS나 SQL을 떠올리게 됩니다. 도메인 입장에서 중요한 건 "저장한다"는 행위이지, 그것이 SQL인지 Graph인지 파일인지는 중요하지 않습니다.
-
-### 3. Repository Pattern은 왜 필수인가?
--   **Why**: 테스트와 교체를 자유롭게 하기 위함입니다.
--   `app/domain/interfaces/document_repository.py`만 보고 개발하면, 실제 DB가 없어도 `MemoryRepository`로 테스트를 짤 수 있습니다. (Fast Test Loop)
-
-### 4. `interfaces/api/main.py` 위치 선정 이유
--   **Why**: 프레임워크도 "세부 사항"이기 때문입니다.
--   Django나 FastAPI 같은 웹 프레임워크는 도메인의 주인이 아닙니다. 도메인을 외부에 노출시키는 '인터페이스'일 뿐입니다. 따라서 `app/` 최상단이 아닌 `interfaces/api/`에 위치시킵니다.
-
-### 5. **NEW! Protocol 패턴을 활용한 추상화 (Spec 006)**
-
--   **Why**: Domain을 외부 프레임워크로부터 완전히 격리하기 위함입니다.
--   **Before (Spec 005)**: Domain에서 LangChain을 직접 사용 → 프레임워크 교체 시 Domain 수정 필요
--   **After (Spec 006)**: Domain은 `LLMInterface` Protocol만 의존 → Infrastructure에서 구현체 교체 가능
-
-**예시: LLM 인터페이스**
-```python
-# domain/interfaces/llm.py (Protocol)
-from typing import Protocol
-class LLMInterface(Protocol):
-    def extract_metadata(self, text: str) -> Optional[ExtractedMetadata]:
-        ...
-
-# infrastructure/llm/langchain_adapter.py (Adapter)
-class LangChainLLMAdapter:
-    def extract_metadata(self, text: str):
-        return self.chain.invoke({"text": text})
-```
-
-**장점**:
-- ✅ LangChain → OpenAI/Claude로 교체 시 Domain 수정 불필요
-- ✅ 테스트에서 간단한 Mock 사용 가능
-- ✅ Dependency Inversion Principle (DIP) 준수
-
-### 6. 데이터 저장 전략: Job과 Doc의 분리 (Separation of Concerns)
-
-본 프로젝트는 **운영 데이터(Job)**와 **지식 데이터(Doc)**를 구조적으로 분리하여 관리합니다. 이는 두 데이터의 성격과 관리 목적이 근본적으로 다르기 때문입니다.
-
-#### 6.1 저장소 구성 (Where to Store?)
-| 데이터 (Data) | 저장소 (Database) | 역할 (Role) |
-| :--- | :--- | :--- |
-| **Job (작업)** | **Neo4j** | **운영 관리 (Operations)**. 수집 작업의 상태(성공/실패/재시도), 시점, 에러 메시지 등 **Task의 흐름(Flow)**을 그래프로 관리합니다. |
-| **Doc (문서)** | **Neo4j** + **ChromaDB** | **지식 저장 (Knowledge)**. 수집된 실제 콘텐츠입니다. <br> - **Neo4j**: 문서의 메타데이터, 구조, 다른 문서와의 관계 (Ontology). <br> - **ChromaDB**: 텍스트의 벡터 임베딩 (Vector Embedding)을 저장하여 의미 기반 검색(RAG)을 지원합니다. |
-
-#### 6.2 분리 저장의 이유 (Rationale)
-1.  **관점의 차이 (Process vs Product)**
-    -   **Job**은 "어떻게(How) 가져왔는가?"에 대한 **과정(Process)**의 기록입니다.
-    -   **Doc**은 "무엇을(What) 가져왔는가?"에 대한 **결과물(Product)**입니다.
-    -   수집 작업이 실패하더라도(Job Fail), 이전에 수집된 문서는 검색되어야 하며, 반대로 문서를 삭제해도 감사(Audit)를 위해 수집 이력은 남아야 합니다.
-2.  **하이브리드 스토리지 (Hybrid Storage Strategy)**
-    -   Job은 작업 간의 선후 관계, 재시도 트리(`retry_of`) 등 **관계(Relationship)**가 중요하므로 Graph DB가 적합합니다.
-    -   Doc은 구조적 관계(Graph)와 의미적 유사도(Vector)가 모두 필요하므로, **Composite Storage Pattern**을 적용하여 각 DB의 장점을 극대화합니다.
-
-#### 6.3 로드맵: 온톨로지 및 지식 그래프 (Future Roadmap)
-현재는 데이터를 "적재(Node Creation)" 및 **기본 메타데이터 추출(Spec 005-006 완료)**을 완료한 상태입니다. 향후 다음과 같이 **관계(Relationship)**를 중심으로 발전합니다.
-
-1.  **Spec 007: Ontology Design**
-    -   추출된 Entities를 목적에 맞게 분류하고 관계 스키마를 설계합니다.
-2.  **Spec 008: Knowledge Graph Construction**
-    -   `(Document)-[:MENTIONS]->(Entity)-[:RELATED_TO]->(Entity)` 관계를 형성합니다.
-3.  **Graph RAG**
-    -   단순 벡터 검색(Vector Search)의 한계를 넘어, 그래프 관계를 활용한 복합 추론(Reasoning)이 가능한 RAG 시스템으로 고도화합니다.
-
-### 4. Architecture Decisions (ADR)
-주요 아키텍처 결정 사항은 [docs/architecture_decisions.md](architecture_decisions.md)에 기록합니다.
+### 3. Protocol-Based Abstraction
+구체적 구현체 대신 Protocol(인터페이스)에 의존합니다.
+- `LangChainLLMAdapter` 대신 `LLMInterface` Protocol 사용
+- `Neo4jStorage` 대신 `DocumentRepository` Protocol 사용
 
 ---
 
-## 🎓 학습 자료
+## 📂 4-Layer Structure
 
-- **Clean Architecture**: Robert C. Martin - "Clean Architecture: A Craftsman's Guide to Software Structure and Design"
-- **Protocol Pattern**: [PEP 544 – Protocols: Structural subtyping](https://peps.python.org/pep-0544/)
-- **DDD**: Eric Evans - "Domain-Driven Design: Tackling Complexity in the Heart of Software"
+```
+┌─────────────────────────────────────────────────────────┐
+│  Interfaces Layer (Presentation)                       │
+│  - FastAPI routes, Streamlit UI, CLI                   │
+│  - 외부 요청을 Application Layer로 전달                 │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│  Application Layer (Use Cases / Orchestration)         │
+│  - Ingestion, RAG, AdminAgent                          │
+│  - Domain Services를 조합하여 비즈니스 워크플로우 구현   │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│  Domain Layer (Business Logic)                         │
+│  - Entities, Value Objects, Domain Services            │
+│  - Repository/LLM Protocols (interfaces)               │
+│  - 순수 비즈니스 규칙, 외부 의존성 없음                 │
+└─────────────────────────────────────────────────────────┘
+                          ↑
+┌─────────────────────────────────────────────────────────┐
+│  Infrastructure Layer (Technical Details)              │
+│  - Neo4j, ChromaDB, LangChain adapters                 │
+│  - Scrapers, File processors                           │
+│  - Domain의 Protocol 구현체 제공                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🗂 Directory Mapping
+
+### Interfaces Layer (`app/interfaces/`)
+외부 세계와의 통신 담당
+
+```
+interfaces/
+├── api/                    # FastAPI REST API
+│   ├── main.py            # Application entry point
+│   ├── dependencies.py    # DI Container
+│   ├── endpoints/         # Route handlers
+│   └── schemas/           # API DTOs (request/response)
+└── mcp/                   # MCP Server interface
+```
+
+**역할**: HTTP 요청 파싱, 응답 직렬화, Application Layer 호출
+
+---
+
+### Application Layer (`app/application/`)
+유스케이스 구현 및 도메인 오케스트레이션
+
+```
+application/
+└── services/
+    ├── ingestion.py        # Ingestion (파일 수집 워크플로우)
+    ├── rag.py              # RAG (검색 및 생성 워크플로우)
+    ├── admin_agent.py      # AdminAgent (대화형 RAG)
+    ├── integrity_service.py # IntegrityService (무결성 검증)
+    └── semantic_extractor.py # SemanticExtractor (의미 추출)
+```
+
+**역할**: 
+- Domain Services를 조합하여 완전한 비즈니스 프로세스 구현
+- 트랜잭션 관리, 에러 핸들링
+- Infrastructure 구현체 사용 (DI로 주입받음)
+
+**특징**:
+- `IngestionService` → `Ingestion` (Service suffix 제거)
+- `RAGService` → `RAG`
+- Any 타입을 Protocol로 교체 (`DocumentRepository`, `LLMInterface`)
+
+---
+
+### Domain Layer (`app/domain/`)
+순수 비즈니스 로직, 외부 의존성 없음
+
+```
+domain/
+├── entities/               # 식별자(ID) 기반 객체
+│   ├── document.py        # Document, Chunk
+│   └── job.py             # IngestionJob
+│
+├── value_objects/          # 값 기반 불변 객체
+│   ├── extracted_metadata.py  # ExtractedMetadata
+│   ├── intent.py              # UserIntent, IntentType
+│   └── ontology.py            # EntityType, RelationshipType
+│
+├── services/               # Domain Services (상태 없는 비즈니스 로직)
+│   ├── intent_classifier.py  # 의도 분류
+│   ├── query_rewriter.py     # 쿼리 재작성
+│   ├── chunker.py            # 청킹 추상화
+│   ├── feedback_service.py   # 피드백 처리
+│   └── file_processor.py     # 파일 처리
+│
+├── interfaces/             # Protocols (Port 정의)
+│   ├── document_repository.py # DocumentRepository Protocol
+│   ├── graph_repository.py    # GraphRepository Protocol
+│   ├── job_repository.py      # JobRepository Protocol
+│   ├── scraper.py             # ScraperInterface Protocol
+│   ├── llm.py                 # (Legacy LLM Protocol)
+│   └── llm_interface.py       # LLMInterface Protocol
+│
+├── ingestion/              # Ingestion 도메인 모델
+│   └── state.py           # IngestionState (LangGraph)
+│
+└── rag/                    # RAG 도메인 모델
+    └── state.py           # RAGState (LangGraph)
+```
+
+**핵심 규칙**:
+- ❌ `from app.infrastructure` 금지
+- ❌ `from langchain`, `from neo4j` 금지
+- ✅ `from app.domain.interfaces` (자신의 Protocol만 사용)
+- ✅ 순수 Python + Pydantic만 사용
+
+---
+
+### Infrastructure Layer (`app/infrastructure/`)
+기술적 구현체, Domain Protocol 구현
+
+```
+infrastructure/
+├── storage/                # Repository 구현체
+│   ├── neo4j_document_repository.py   # DocumentRepository 구현
+│   ├── neo4j_graph_repository.py      # GraphRepository 구현
+│   ├── neo4j_job_repository.py        # JobRepository 구현
+│   ├── chroma.py                       # Vector storage
+│   └── composite.py                    # Composite pattern
+│
+├── llm/                    # LLM Adapter 구현
+│   └── langchain_adapter.py  # LLMInterface 구현체
+│
+├── scrapers/               # Scraper 구현체
+│   ├── composite_scraper.py
+│   ├── trafilatura_scraper.py
+│   ├── playwright_scraper.py
+│   └── ...
+│
+├── chunker/                # Chunker 구현체
+│   └── langchain_chunker.py
+│
+├── brain/                  # LangGraph Workflow
+│   └── adapter.py         # LangGraphAdapter
+│
+├── rag/                    # RAG Graph 구현
+│   ├── nodes.py           # RAG Nodes
+│   └── graph.py           # RAG Graph Builder
+│
+└── factories/              # Factory Pattern
+    └── llm_factory.py     # LLMFactory
+```
+
+**역할**:
+- Domain의 Protocol을 실제로 구현
+- 외부 라이브러리(LangChain, Neo4j, ChromaDB) 사용
+- 기술적 세부 사항 캡슐화
+
+---
+
+## 🔗 Dependency Flow Example
+
+### ❌ Before (잘못된 의존성)
+```python
+# app/domain/services/storage_integrity_service.py
+from app.infrastructure.storage.neo4j import RAGNodes  # ❌ VIOLATION!
+
+class StorageIntegrityService:
+    def __init__(self):
+        self.nodes = RAGNodes()  # Domain → Infrastructure 의존
+```
+
+### ✅ After (올바른 의존성)
+```python
+# app/domain/interfaces/document_repository.py
+class DocumentRepository(Protocol):
+    def get_chunks(self, doc_id: str) -> list[Chunk]: ...
+
+# app/application/services/integrity_service.py
+from app.domain.interfaces.document_repository import DocumentRepository
+
+class IntegrityService:
+    def __init__(self, primary_repo: DocumentRepository, target_repo: DocumentRepository):
+        self.primary_repo = primary_repo  # Protocol에만 의존
+        self.target_repo = target_repo
+
+# app/interfaces/api/dependencies.py (DI Container)
+from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
+
+def get_storage_integrity_service(...) -> IntegrityService:
+    primary_repo = Neo4jStorage(driver)  # 구현체 주입
+    return IntegrityService(primary_repo, chroma_storage)
+```
+
+---
+
+## 📋 Design Decisions
+
+### 1. Entities vs Value Objects (DDD)
+
+**Why**: 데이터의 성격을 명확히 하기 위함입니다.
+
+**Entity** (`Document`, `IngestionJob`, `Chunk`)
+- 식별자(ID)로 구분됨
+- 내용이 변해도 ID가 같으면 같은 객체
+- 라이프사이클이 있고 상태가 변경됨
+- DB에 저장되고 관리 대상이 됨
+
+**Value Object** (`ExtractedMetadata`, `UserIntent`, `EntityType`)
+- 값 자체가 정체성
+- 내용이 바뀌면 다른 객체
+- 불변(Immutable)성을 가짐
+- 사이드 이펙트를 줄여줌
+
+```python
+# Entity
+doc1 = Document(id="123", content="A")
+doc1.content = "B"  # 여전히 같은 문서 (ID=123)
+
+# Value Object
+meta1 = ExtractedMetadata(entities=["A"])
+meta2 = ExtractedMetadata(entities=["B"])  # 완전히 다른 객체
+```
+
+### 2. Repository Pattern (DDD)
+
+**Why**: 데이터 접근을 추상화하여 테스트와 교체를 자유롭게 하기 위함입니다.
+
+- Domain은 `DocumentRepository` Protocol만 봄
+- Infrastructure에서 `Neo4jStorage`, `ChromaStorage` 구현
+- `MemoryRepository`로 빠른 테스트 가능
+- DB 교체 시 Infrastructure만 수정
+
+```python
+# Domain Layer - Protocol 정의
+class DocumentRepository(Protocol):
+    def save(self, doc: Document) -> None: ...
+    def get(self, doc_id: str) -> Document | None: ...
+
+# Infrastructure Layer - 구현
+class Neo4jStorage:  # DocumentRepository 구현
+    def save(self, doc: Document) -> None:
+        # Neo4j specific code
+        ...
+```
+
+### 3. Domain Services (DDD)
+
+**Why**: 특정 Entity에 속하지 않는 비즈니스 로직을 캡슐화
+
+- `IntentClassifier`: 사용자 의도 분류
+- `QueryRewriter`: 쿼리 재작성
+- `Chunker`: 텍스트 청킹 전략
+
+**특징**: 상태를 갖지 않음 (Stateless)
+
+### 4. Service Suffix 제거
+**Before**: `IngestionService`, `RAGService`, `ChunkerService`  
+**After**: `Ingestion`, `RAG`, `Chunker`
+
+**이유**: Application Layer의 클래스는 이미 services 폴더 안에 있으므로 suffix 불필요
+
+### 2. Schemas → Value Objects
+**Before**: `app/domain/schemas/extraction.py`  
+**After**: `app/domain/value_objects/extracted_metadata.py`
+
+**이유**: Clean Architecture에서 "Schema"는 주로 DTO를 의미. 도메인 개념은 Value Object가 더 정확
+
+### 3. Use Cases → Application Services
+**Before**: `app/use_cases/ingestion.py`  
+**After**: `app/application/services/ingestion.py`
+
+**이유**: "Use Cases"와 "Application Services"는 같은 개념. 일관성을 위해 Application Layer로 통합
+
+### 4. Protocol 기반 타입 시스템
+**Before**: `def __init__(self, repo: Any)`  
+**After**: `def __init__(self, repo: DocumentRepository)`
+
+**이유**: 
+- 명시적 계약 정의
+- IDE 자동완성 지원
+- 타입 안정성 향상
+- 테스트 Mock 작성 용이
+
+---
+
+## 🧪 Testing Strategy
+
+### 계층별 테스트 접근
+
+**Domain Layer** (Unit Tests)
+- 외부 의존성 없음 → Mock 불필요
+- 순수 비즈니스 로직 검증
+- 가장 빠르고 안정적
+
+**Application Layer** (Integration Tests)
+- Domain + Infrastructure Mock 조합
+- 프로세스 흐름 검증
+- Repository/LLM Mock 주입
+
+**Infrastructure Layer** (Integration Tests)
+- 실제 DB/External API 사용
+- Docker Compose로 격리된 환경
+- 느리지만 실제 동작 보장
+
+**Interfaces Layer** (E2E Tests)
+- FastAPI TestClient 사용
+- 전체 시스템 통합 검증
+
+---
+
+## 🚀 Benefits
+
+### 1. 테스트 용이성
+- Domain은 Mock 없이 테스트
+- Infrastructure는 쉽게 교체 가능
+
+### 2. 유지보수성
+- 계층 간 명확한 경계
+- 변경 영향 범위 최소화
+
+### 3. 확장성
+- 새 Repository 추가 → Infrastructure만 수정
+- 새 API 추가 → Interfaces만 수정
+- Business Rule 변경 → Domain만 수정
+
+### 4. 기술 독립성
+- LangChain → LlamaIndex 교체 가능
+- FastAPI → Django 교체 가능
+- Neo4j → PostgreSQL 교체 가능
+
+---
+
+## 📚 References
+
+- [Clean Architecture by Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+- [Python Protocol (PEP 544)](https://peps.python.org/pep-0544/)
+- [Dependency Inversion Principle](https://en.wikipedia.org/wiki/Dependency_inversion_principle)
+
+---
+
+**Last Updated**: 2026-01-31 (Spec 050 - Clean Architecture Refactoring)

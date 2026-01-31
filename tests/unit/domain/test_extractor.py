@@ -2,10 +2,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from app.application.services.semantic_extractor import SemanticExtractor
 from app.domain.interfaces.llm import LLMInterface
-from app.domain.schemas.extraction import ExtractedMetadata
-from app.domain.schemas.ontology import EntityType
-from app.domain.services.semantic_extractor import SemanticExtractor
+from app.domain.value_objects.extracted_metadata import ExtractedMetadata
+from app.domain.value_objects.ontology import EntityType
 
 
 @pytest.mark.asyncio
@@ -28,7 +28,7 @@ async def test_extract_success():
         },
     )
     # Adapter methods are now async
-    mock_llm.extract_metadata = AsyncMock(return_value=expected_metadata)
+    mock_llm.aextract_metadata = AsyncMock(return_value=expected_metadata)
 
     # Execute
     extractor = SemanticExtractor(llm=mock_llm)
@@ -41,7 +41,7 @@ async def test_extract_success():
     assert result.keywords == ["AI", "Research", "Development"]
     assert result.entities[EntityType.PERSON] == ["Geoffrey Hinton", "Yann LeCun"]
     assert result.entities[EntityType.ACTIVITY] == ["벤치마킹", "모델 학습", "데이터 전처리"]
-    mock_llm.extract_metadata.assert_called_once_with("Dummy text", thread_id=None)
+    mock_llm.aextract_metadata.assert_called_once_with("Dummy text", thread_id=None)
 
 
 @pytest.mark.asyncio
@@ -49,7 +49,7 @@ async def test_extract_failure():
     """LLM 추출 실패 시 None을 반환하는지 테스트"""
     # Setup
     mock_llm = MagicMock(spec=LLMInterface)
-    mock_llm.extract_metadata = AsyncMock(return_value=None)
+    mock_llm.aextract_metadata = AsyncMock(return_value=None)
 
     # Execute
     extractor = SemanticExtractor(llm=mock_llm)
@@ -57,4 +57,4 @@ async def test_extract_failure():
 
     # Verify
     assert result is None
-    mock_llm.extract_metadata.assert_called_once_with("Dummy text", thread_id=None)
+    mock_llm.aextract_metadata.assert_called_once_with("Dummy text", thread_id=None)
