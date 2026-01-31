@@ -15,7 +15,7 @@ def test_neo4j_storage_save_with_chunks():
     mock_driver.session.return_value = session_ctx
     session_ctx.__enter__.return_value = mock_session
 
-    storage = Neo4jStorage(driver=mock_driver)
+    storage = Neo4jDocumentRepository(driver=mock_driver)
 
     doc = Document(id=str(uuid4()), content="Test Content", metadata={"source": "test"})
     chunk1 = Chunk(id="c1", content="Chunk 1", parent_id=doc.id, index=0, metadata={})

@@ -27,7 +27,7 @@ def mock_chroma_client():
 
 def test_neo4j_reset_database(mock_neo4j_driver):
     # Given
-    storage = Neo4jStorage(mock_neo4j_driver)
+    storage = Neo4jDocumentRepository(mock_neo4j_driver)
 
     # When
     storage.reset_database()
@@ -51,7 +51,7 @@ def test_chroma_reset_collection(mock_http_client, mock_embeddings, mock_setting
     collection_mock = MagicMock()
     client_instance.get_or_create_collection.return_value = collection_mock
 
-    storage = ChromaStorage()
+    storage = ChromaVectorRepository()
 
     # When
     storage.reset_collection()
