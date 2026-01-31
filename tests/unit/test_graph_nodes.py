@@ -39,7 +39,7 @@ async def test_extract_metadata_node():
     mock_metadata = ExtractedMetadata(
         title="Test Title", summary="Test Summary", keywords=["test"], entities={}, language="en"
     )
-    mock_llm.extract_metadata.return_value = mock_metadata
+    mock_llm.aextract_metadata = AsyncMock(return_value = mock_metadata)
 
     nodes = IngestionNodes(llm=mock_llm)
 

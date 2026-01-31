@@ -41,7 +41,7 @@ def test_scrape_clean_extraction(scraper):
         patch("trafilatura.fetch_url", return_value=MOCK_HTML_WITH_ADS),
         patch("trafilatura.extract", return_value=MOCK_EXTRACTED_TEXT) as mock_extract,
     ):
-        response = scraper.scrape("https://example.com/news")
+        response = await scraper.scrape("https://example.com/news")
 
         assert isinstance(response, IngestResponse)
         assert "Buy this product" not in response.markdown
@@ -67,7 +67,7 @@ def test_scrape_metadata_extraction(scraper):
         patch("trafilatura.extract", return_value="Content"),
         patch("trafilatura.extract_metadata", return_value=mock_metadata),
     ):
-        response = scraper.scrape("https://example.com/news")
+        response = await scraper.scrape("https://example.com/news")
 
         assert response.metadata["title"] == "Test Article"
         assert response.metadata["published_date"] == "2026-01-22"

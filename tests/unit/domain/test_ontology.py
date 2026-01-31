@@ -16,7 +16,7 @@ def test_entity_type_enum_values():
 
 def test_relationship_type_enum_values():
     """RelationshipType Enum이 8개 타입을 포함하는지 검증"""
-    assert len(RelationshipType) == 8
+    assert len(RelationshipType) == 10
     assert RelationshipType.MENTIONS.value == "MENTIONS"
     assert RelationshipType.WORKS_FOR.value == "WORKS_FOR"
     assert RelationshipType.FOUNDED.value == "FOUNDED"
