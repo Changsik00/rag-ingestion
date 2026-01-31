@@ -15,7 +15,7 @@ def mock_services():
 
 @pytest.fixture
 def mock_llm_class():
-    with patch("app.domain.services.admin_agent.ChatGoogleGenerativeAI") as mock:
+    with patch("app.application.services.admin_agent.ChatGoogleGenerativeAI") as mock:
         yield mock
 
 
