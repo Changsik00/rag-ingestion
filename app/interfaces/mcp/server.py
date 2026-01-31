@@ -2,7 +2,7 @@ import asyncio
 
 from mcp.server.fastmcp import FastMCP
 
-from app.application.services.ingestion import Ingestion
+from app.application.services.ingestion import IngestionUseCase
 from app.application.services.rag import RAG
 
 # Domain Imports
@@ -29,7 +29,7 @@ mcp = FastMCP("RAG Agent")
 # Since we are outside FastAPI, we need to manually invoke the dependency chain.
 
 
-async def provide_ingestion_service() -> Ingestion:
+async def provide_ingestion_service() -> IngestionUseCase:
     driver = get_neo4j_driver()
     scraper = get_scraper()
     repo = get_repository(driver)
@@ -41,7 +41,7 @@ async def provide_ingestion_service() -> Ingestion:
     checkpointer = await get_checkpointer()
     extractor = await get_semantic_extractor(checkpointer)
 
-    return Ingestion(
+    return IngestionUseCase(
         scraper=scraper, repository=repo, graph=graph, job_repository=job_repo, chunker=chunker, extractor=extractor
     )
 

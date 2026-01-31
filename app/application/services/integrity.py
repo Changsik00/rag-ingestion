@@ -1,7 +1,17 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, NamedTuple
+import logging
 
 from app.domain.interfaces.document_repository import DocumentRepository
+from app.infrastructure.brain.adapter import LangGraphAdapter
+
+logger = logging.getLogger(__name__)
+
+
+class ResetResult(NamedTuple):
+    neo4j: str
+    chroma: str
+    sqlite: str
 
 
 @dataclass
@@ -14,17 +24,66 @@ class DriftReport:
     orphan_ids: set[str]
 
 
-class IntegrityService:
+class Integrity:
     """Application Service: 데이터 무결성 검증 및 동기화"""
 
-    def __init__(self, primary_repo: DocumentRepository, target_repo: DocumentRepository):
+    def __init__(
+        self,
+        primary_repo: DocumentRepository,
+        target_repo: DocumentRepository,
+        langgraph_adapter: LangGraphAdapter | None = None,
+    ):
         """
         Args:
             primary_repo: Source of truth (Neo4j)
             target_repo: Target index (Chroma)
+            langgraph_adapter: LangGraph Adapter (for checkpointer reset)
         """
         self.primary_repo = primary_repo
         self.target_repo = target_repo
+        self.adapter = langgraph_adapter
+
+    async def reset_all(self) -> ResetResult:
+        """
+        Resets all data stores: Neo4j, Chroma, and SQLite Config/Checkpoints.
+        """
+        logger.warning("Initiating FULL SYSTEM RESET...")
+        results = {}
+
+        # 1. Neo4j
+        try:
+            if hasattr(self.primary_repo, "reset_database"):
+                self.primary_repo.reset_database()
+                results["neo4j"] = "Success: All nodes and relationships deleted"
+            else:
+                results["neo4j"] = "Skipped: Primary repo does not support reset"
+        except Exception as e:
+            logger.error(f"Neo4j reset failed: {e}")
+            results["neo4j"] = f"Failed: {e}"
+
+        # 2. Chroma
+        try:
+            if hasattr(self.target_repo, "reset_collection"):
+                self.target_repo.reset_collection()
+                results["chroma"] = "Success: Collection reset"
+            else:
+                results["chroma"] = "Skipped: Target repo does not support reset"
+        except Exception as e:
+            logger.error(f"Chroma reset failed: {e}")
+            results["chroma"] = f"Failed: {e}"
+
+        # 3. SQLite (Checkpointer)
+        try:
+            if self.adapter:
+                await self.adapter.reset_checkpoints()
+                results["sqlite"] = "Success: Checkpoints cleared"
+            else:
+                results["sqlite"] = "Skipped: Adapter not provided"
+        except Exception as e:
+            logger.error(f"SQLite reset failed: {e}")
+            results["sqlite"] = f"Failed: {e}"
+
+        return ResetResult(**results)
 
     def get_drift_report(self) -> dict[str, Any]:
         primary_ids = self.primary_repo.get_all_chunk_ids()

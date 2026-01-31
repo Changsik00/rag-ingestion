@@ -25,7 +25,7 @@ class MockRAG:
 
 
 # Mocking IngestionService
-class MockIngestionService:
+class MockIngestionUseCase:
     pass
 
 
@@ -36,7 +36,7 @@ async def main():
 
     # Setup
     rag_service = MockRAG()
-    ingestion_service = MockIngestionService()
+    ingestion_service = MockIngestionUseCase()
     agent = AdminAgent(rag_service, ingestion_service)
 
     checkpointer = MemorySaver()

@@ -21,7 +21,7 @@
 ### 1-2. Interfaces
 - [ ] **Create**: `app/domain/interfaces/chunker.py` (Protocol)
 - [ ] **Refactor**: `app/infrastructure/chunker/langchain_chunker.py` (Implement Protocol)
-- [ ] **Commit**: `refactor(domain): introduce Chunker protocol (Spec 051)`
+- [x] **Commit**: `refactor(domain): introduce Chunker protocol (Spec 051)`
 
 ### 1-3. Semantic Renaming
 - [ ] **Rename**: `IntegrityService` -> `Integrity`

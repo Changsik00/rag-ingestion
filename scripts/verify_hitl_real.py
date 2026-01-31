@@ -74,7 +74,7 @@ def get_real_services():
                 user_intent=None,
             )
 
-    class MockIngestionService:
+    class MockIngestionUseCase:
         def create_job(self, url):
             logger.info(f"[MockIngestion] Create job for {url}")
 
@@ -96,7 +96,7 @@ def get_real_services():
         job_repository = MockJobRepo()
 
     rag_service = MockRAG()
-    ingestion_service = MockIngestionService()
+    ingestion_service = MockIngestionUseCase()
 
     return rag_service, ingestion_service
 

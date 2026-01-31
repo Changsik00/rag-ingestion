@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, UploadFile, status
 
-from app.application.services.ingestion import Ingestion
+from app.application.services.ingestion import IngestionUseCase
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.scraper import ScraperInterface
@@ -32,7 +32,7 @@ app.include_router(admin_router, prefix="/api/v1/admin")
 async def ingest_web_page(
     request: IngestRequest,
     background_tasks: BackgroundTasks,
-    service: Annotated[Ingestion, Depends(get_ingestion_service)],
+    service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
 ):
     try:
         job = service.create_job(str(request.url))
@@ -45,7 +45,7 @@ async def ingest_web_page(
 @app.post("/ingest/files", status_code=status.HTTP_202_ACCEPTED, response_model=MultiAsyncIngestResponse)
 async def ingest_files(
     background_tasks: BackgroundTasks,
-    service: Annotated[Ingestion, Depends(get_ingestion_service)],
+    service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
     files: list[UploadFile] = File(...),
 ):
     """

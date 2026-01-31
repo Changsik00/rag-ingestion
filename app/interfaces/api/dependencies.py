@@ -6,8 +6,8 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
 from app.application.services.admin_agent import AdminAgent
-from app.application.services.ingestion import Ingestion
-from app.application.services.integrity_service import IntegrityService
+from app.application.services.ingestion import IngestionUseCase
+from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.config import get_settings
@@ -16,7 +16,7 @@ from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
 from app.domain.interfaces.chunker import Chunker
-from app.domain.services.feedback_service import Feedback
+from app.domain.services.feedback import Feedback
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.infrastructure.brain.adapter import LangGraphAdapter
@@ -70,13 +70,8 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 
 
 # Storage Integrity Service 의존성
-@lru_cache
-def get_storage_integrity_service(
-    driver: Annotated[Driver, Depends(get_neo4j_driver)],
-    chroma_storage: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
-) -> IntegrityService:
-    primary_repo = Neo4jDocumentRepository(driver)
-    return IntegrityService(primary_repo, chroma_storage)
+# Deleted get_storage_integrity_service
+
 
 
 # Checkpointer 의존성 (HITL Persistence)
@@ -148,8 +143,8 @@ def get_ingestion_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     chunker: Annotated[Chunker, Depends(get_chunker)],
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
-) -> Ingestion:
-    return Ingestion(
+) -> IngestionUseCase:
+    return IngestionUseCase(
         scraper=scraper,
         repository=repository,
         graph=graph,
@@ -230,7 +225,7 @@ async def get_rag_service(
 # Admin Agent 의존성 (Spec 038)
 async def get_admin_agent(
     rag_service: Annotated[RAG, Depends(get_rag_service)],
-    ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
+    ingestion_service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
 ) -> AdminAgent:
     return AdminAgent(rag_service=rag_service, ingestion_service=ingestion_service)
 
@@ -246,16 +241,16 @@ async def get_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
     chroma_storage: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
-) -> Any:
-    from app.application.admin.integrity_service import IntegrityService
+) -> Integrity:
+    from app.application.services.integrity import Integrity
 
     neo4j_storage = Neo4jDocumentRepository(driver)
     # 어댑터 생성 (Checkpointer 리셋용)
     llm_adapter = LLMFactory.get_llm_adapter()
     langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
 
-    return IntegrityService(
-        neo4j_storage=neo4j_storage,
-        chroma_storage=chroma_storage,
+    return Integrity(
+        primary_repo=neo4j_storage,
+        target_repo=chroma_storage,
         langgraph_adapter=langgraph_adapter,
     )
