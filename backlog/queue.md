@@ -402,6 +402,31 @@
   * **Priority**: High
   * **Status**: Completed (2026-01-30)
 
+* [x] **Spec 050: Clean Architecture Refactoring (4-Layer Structure)**
+  * **Goal**: 프로젝트 구조를 Clean Architecture 4-Layer로 전면 리팩토링
+  * [x] **Phase A**: Dependency Rule 강제, Domain 재구성, Application Layer 통합
+  * [x] **Phase B**: 네이밍 통일, Service Layer 정리, Protocol 적용
+  * [x] **Phase C**: Architecture 문서 업데이트
+  * **Results**:
+    - 80 files changed (+2064, -333)
+    - 22 commits (18 implementation + 4 documentation)
+    - 126 passed tests (20 failed는 기존 이슈)
+  * **Priority**: Critical (Architecture Debt)
+  * **Status**: Completed (2026-01-31)
+  * **PR**: [#55](https://github.com/Changsik00/rag-ingestion/pull/55)
+  * **Follow-up**: DocumentMetadata VO, AdminAgent Renaming (Icebox 참조)
+
+* [ ] **Spec 051: Architecture Refinement (Consistency & Cleanliness)**
+  * **Goal**: Spec 050 P0 수정 이후 남은 구조적 개선 사항(P1~P3)을 반영하여 일관성 확보
+  * **Guide**: [Design Guide 011: Architecture Refinement Strategy](docs/design_guides/011-architecture-refinement.md)
+  * **Scope**:
+    * **P1 (High)**: Service Suffix 제거(`Integrity`, `Feedback`), Chunk VO 이동, Chunker Protocol 도입
+    * **P2 (Medium)**: AI Implementation 폴더 구조화, `file_processor` 위치 정리
+    * **P3 (Low)**: Adapter 명확화(`Extractor`, `Orchestrator`), API v1 활용
+  * **Status**: Ready to Start
+
+
+
 ---
 ---
 
@@ -477,20 +502,6 @@
   * **Problem**: 현재 `Neo4jDocumentRepository`와 `ChromaStorage`는 메타데이터를 `json.dumps`로 직렬화함. `datetime`이나 `bytes` 같은 객체가 포함되면 저장 실패 위험 있음.
   * **Solution**: `json.dumps` 호출 시 `default` 파라미터에 커스텀 인코더(datetime -> isoformat, bytes -> base64 등)를 주입하여 안정성 확보.
   * **Context**: Spec 049 로컬 파일 인제스션 작업 중 잠재적 위험으로 식별되어 등록.
-
-* [x] **Spec 050: Clean Architecture Refactoring (4-Layer Structure)**
-  * **Goal**: 프로젝트 구조를 Clean Architecture 4-Layer로 전면 리팩토링
-  * [x] **Phase A**: Dependency Rule 강제, Domain 재구성, Application Layer 통합
-  * [x] **Phase B**: 네이밍 통일, Service Layer 정리, Protocol 적용
-  * [x] **Phase C**: Architecture 문서 업데이트
-  * **Results**:
-    - 80 files changed (+2064, -333)
-    - 22 commits (18 implementation + 4 documentation)
-    - 126 passed tests (20 failed는 기존 이슈)
-  * **Priority**: Critical (Architecture Debt)
-  * **Status**: Completed (2026-01-31)
-  * **PR**: [#55](https://github.com/Changsik00/rag-ingestion/pull/55)
-  * **Follow-up**: DocumentMetadata VO, AdminAgent Renaming (Icebox 참조)
 
 
 * **[Refactor] DocumentMetadata Value Object (Spec 050 Follow-up)**
