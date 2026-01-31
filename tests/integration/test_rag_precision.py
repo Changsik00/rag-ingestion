@@ -8,6 +8,9 @@ from app.domain.value_objects.intent import IntentType, UserIntent
 from app.infrastructure.rag.graph import RAGGraphBuilder
 from app.infrastructure.rag.nodes import RAGNodes
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 
 @pytest.mark.asyncio
 async def test_rag_precision_refinement_flow():

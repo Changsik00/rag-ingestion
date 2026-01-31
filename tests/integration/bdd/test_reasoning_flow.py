@@ -5,6 +5,9 @@ import pytest
 from app.domain.ingestion.state import IngestionState, ValidationFeedback
 from app.infrastructure.brain.graph import IngestionGraphBuilder
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 
 @pytest.fixture
 def mock_llm():

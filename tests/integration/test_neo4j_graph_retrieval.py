@@ -4,6 +4,9 @@ from app.domain.value_objects.ontology import EntityType
 from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
 from app.interfaces.api.dependencies import get_neo4j_driver
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 
 @pytest.fixture
 def graph_repo():

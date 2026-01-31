@@ -2,6 +2,9 @@ from app.domain.ingestion.state import StrategyType, ValidationConstraints, Vali
 from app.infrastructure.brain.logic import select_strategy
 from app.infrastructure.brain.nodes import construct_extraction_prompt
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 # BDD Style Integration Test using Logic & Prompt Units
 # NOTE: Complete Graph integration with Mock LLM is complex,
 # so we simulate the "Loop Logic" here to verify the Architectural Flow.

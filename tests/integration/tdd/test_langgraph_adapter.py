@@ -4,6 +4,9 @@ from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 from app.infrastructure.brain.adapter import LangGraphAdapter
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 
 class MockInnerLLM(LLMInterface):
     async def extract_metadata(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:

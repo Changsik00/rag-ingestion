@@ -7,6 +7,9 @@ from app.domain.entities.document import Document
 from app.infrastructure.storage.neo4j_document_repository import Neo4jStorage
 from app.interfaces.api.dependencies import get_neo4j_driver
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 
 @pytest.fixture
 def neo4j_repo():

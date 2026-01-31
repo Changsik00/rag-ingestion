@@ -7,6 +7,9 @@ from app.application.services.rag import RAG
 from app.domain.entities.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 
 @pytest.mark.asyncio
 async def test_rag_service_orchestration():

@@ -48,6 +48,27 @@
 
 * [x] **Spec 006: Clean Architecture Refactoring**
   > **목표**: 코드 품질 및 아키텍처 개선을 위한 리팩토링 작업. Phase 계획에는 없었지만 프로젝트 진행 중 필요성이 대두되어 수행한 작업들.
+
+* [ ] **Integration Test Infrastructure Improvement** 🆕
+  > **문서**: [specs/integration-test-improvement.md](../specs/integration-test-improvement.md)  
+  > **우선순위**: Medium  
+  > **예상 소요**: 2-3일  
+  > **목표**: Mock 데이터가 아닌 실제 데이터로 integration test를 수행할 수 있도록 테스트 인프라 개선
+  > 
+  > **현재 상태**: 16개 integration tests가 skip 처리됨 (실제 인프라 필요)
+  > 
+  > **주요 작업**:
+  > * [ ] Docker 인프라 자동 확인 및 준비
+  > * [ ] 테스트 데이터 시드 fixture 구현
+  > * [ ] 시나리오 기반 테스트 재구성
+  > * [ ] 테스트 격리 및 독립성 보장
+  > 
+  > **현재 문제점**:
+  > - ❌ 특정 DB 상태를 가정하고 작성됨
+  > - ❌ Docker 서비스 실행 여부 확인 안함
+  > - ❌ 테스트 간 데이터 격리 미흡
+  > - ❌ 실행 순서 의존성 존재
+
   * [x] Domain 레이어를 외부 프레임워크로부터 격리
   * [x] Python Protocol을 활용한 LLM 인터페이스 추상화
   * [x] Infrastructure에 LangChain Adapter 분리

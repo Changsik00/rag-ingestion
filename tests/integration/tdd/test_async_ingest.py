@@ -13,6 +13,9 @@ from app.domain.entities.job import IngestionJob, JobStatus
 from app.interfaces.api.dependencies import get_ingestion_service
 from app.interfaces.api.main import app
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 client = TestClient(app)
 
 

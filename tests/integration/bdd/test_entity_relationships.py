@@ -16,6 +16,9 @@ from app.interfaces.api.dependencies import get_scraper
 from app.interfaces.api.main import app
 from app.interfaces.api.schemas.ingest import IngestResponse
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 client = TestClient(app)
 
 

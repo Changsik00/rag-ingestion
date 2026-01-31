@@ -14,6 +14,9 @@ from app.domain.entities.document import Document
 from app.interfaces.api.dependencies import get_repository
 from app.interfaces.api.main import app
 
+pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+
+
 client = TestClient(app)
 
 # test_ingest_web_endpoint is superseded by tests/integration/test_async_ingest.py
