@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
 
 

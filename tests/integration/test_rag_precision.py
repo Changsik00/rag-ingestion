@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
 from app.infrastructure.rag.graph import RAGGraphBuilder
 from app.infrastructure.rag.nodes import RAGNodes

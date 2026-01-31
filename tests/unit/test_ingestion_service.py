@@ -62,7 +62,7 @@ async def test_process_job_handles_infrastructure_exception(service_deps):
     mock_result = Mock()
     mock_result.markdown = "content"
     mock_result.url = "http://success.com"
-    mock_result.metadata = {}
+    mock_result.metadata = {"source_id": "test"}
     service_deps["scraper"].scrape.return_value = mock_result
 
     # Repo fails
@@ -113,7 +113,7 @@ async def test_process_job_chunks_document(service_deps):
     mock_result = Mock()
     mock_result.markdown = "Full content that will be chunked"
     mock_result.url = "http://chunk.com"
-    mock_result.metadata = {}
+    mock_result.metadata = {"source_id": "test"}
     service_deps["scraper"].scrape.return_value = mock_result
 
     # Chunker Mock

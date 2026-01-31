@@ -5,7 +5,7 @@ RAG Nodes Citation Parsing 단위 테스트.
 import re
 from unittest.mock import Mock
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.infrastructure.rag.nodes import RAGNodes
 
 

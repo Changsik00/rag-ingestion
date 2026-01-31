@@ -18,7 +18,7 @@ def document():
     return Document(
         id=str(uuid4()),
         content="Hello world. " * 300,  # Long content (~3900 chars)
-        metadata={"source": "test"},
+        metadata={"source_id": "test"},
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )

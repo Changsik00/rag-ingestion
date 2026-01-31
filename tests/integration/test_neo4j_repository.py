@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import pytest
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
 from app.interfaces.api.dependencies import get_neo4j_driver
 from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
@@ -35,7 +35,7 @@ def test_neo4j_fulltext_search_flow(neo4j_repo):
     unique_keyword = f"Neo4jKeyword{uuid4().hex[:6]}"
     chunk_content = f"This content contains {unique_keyword} for search."
 
-    doc = Document(id=doc_id, content="Doc Content", metadata={"title": "Neo4j Test"})
+    doc = Document(id=doc_id, content="Doc Content", metadata={"source_id": "test_neo4j", "title": "Neo4j Test"})
     chunk = Chunk(id=chunk_id, content=chunk_content, parent_id=doc_id, index=0, metadata={"page": 1})
 
     neo4j_repo.save_with_chunks(doc, [chunk])

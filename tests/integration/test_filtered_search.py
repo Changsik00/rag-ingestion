@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import pytest
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
 from app.interfaces.api.dependencies import get_neo4j_driver
 from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
@@ -30,7 +30,7 @@ def stored_data():
     doc_a = Document(
         id=doc_a_id,
         content="Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories.",
-        metadata={"title": "Apple (Tech)", "source": "tech_wiki"},
+        metadata={"title": "Apple (Tech)", "source_id": "tech_wiki"},
     )
     chunks_a = [
         Chunk(
@@ -54,7 +54,7 @@ def stored_data():
     doc_b = Document(
         id=doc_b_id,
         content="An apple is a round, edible fruit produced by an apple tree (Malus spp.).",
-        metadata={"title": "Apple (Fruit)", "source": "fruit_wiki"},
+        metadata={"title": "Apple (Fruit)", "source_id": "fruit_wiki"},
     )
     chunks_b = [
         Chunk(

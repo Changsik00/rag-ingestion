@@ -53,7 +53,7 @@ async def test_process_job_success():
     mock_job = IngestionJob(source_url="http://example.com", status=JobStatus.PENDING)
     mock_job_repo.get_job.return_value = mock_job
 
-    expected_response = IngestResponse(url="http://example.com/", markdown="# Example", metadata={})
+    expected_response = IngestResponse(url="http://example.com/", markdown="# Example", metadata={"source_id": "example"})
     mock_scraper.scrape.return_value = expected_response
 
     # Mock extractor to return None (no semantic data)

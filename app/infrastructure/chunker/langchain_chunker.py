@@ -3,7 +3,7 @@ import uuid
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.core.config import get_settings
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
 from app.domain.services.chunker import Chunker
 

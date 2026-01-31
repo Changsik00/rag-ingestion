@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 

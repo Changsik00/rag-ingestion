@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 
 from app.application.services.integrity_service import IntegrityService
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 
 
 @pytest.fixture

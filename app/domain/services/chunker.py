@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
 
 

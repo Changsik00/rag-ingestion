@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, Mock
 from uuid import uuid4
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
 from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 
@@ -17,7 +17,7 @@ def test_neo4j_storage_save_with_chunks():
 
     storage = Neo4jDocumentRepository(driver=mock_driver)
 
-    doc = Document(id=str(uuid4()), content="Test Content", metadata={"source": "test"})
+    doc = Document(id=str(uuid4()), content="Test Content", metadata={"source_id": "test"})
     chunk1 = Chunk(id="c1", content="Chunk 1", parent_id=doc.id, index=0, metadata={})
     chunk2 = Chunk(id="c2", content="Chunk 2", parent_id=doc.id, index=1, metadata={})
     chunks = [chunk1, chunk2]

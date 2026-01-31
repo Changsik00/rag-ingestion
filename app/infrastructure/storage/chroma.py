@@ -8,7 +8,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from app.core.config import get_settings
 from app.core.exceptions import InfrastructureException
 from app.core.logging_config import setup_logger
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 
@@ -84,7 +84,8 @@ class ChromaVectorRepository(DocumentRepository):
     def save(self, document: Document) -> None:
         try:
             # Document Metadata Flattening
-            flattened_metadata = self._flatten_metadata(document.metadata)
+            meta_dict = document.metadata.model_dump() if hasattr(document.metadata, "model_dump") else document.metadata
+            flattened_metadata = self._flatten_metadata(meta_dict)
 
             # source_url handling if explicit parameter is needed, but mostly it's in metadata
             # Ensure mandatory fields or fallbacks if needed?
