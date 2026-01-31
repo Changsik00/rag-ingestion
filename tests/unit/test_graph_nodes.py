@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.domain.ingestion.state import IngestionState
+from app.domain.ingestion.state import IngestionGraphState
 from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
@@ -43,7 +43,7 @@ async def test_extract_metadata_node():
 
     nodes = IngestionNodes(llm=mock_llm)
 
-    state: IngestionState = {
+    state: IngestionGraphState = {
         "original_url": "http://test.com",
         "raw_content": "test content",
         "metadata": None,

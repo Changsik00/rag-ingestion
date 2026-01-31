@@ -5,7 +5,7 @@ import uuid
 from dotenv import load_dotenv
 from langgraph.checkpoint.memory import MemorySaver
 
-from app.application.services.admin_agent import AdminAgent
+from app.application.services.admin_agent import ConversationalRAGAgent
 
 
 # Mocking RAG to isolate Agent logic
@@ -37,7 +37,7 @@ async def main():
     # Setup
     rag_service = MockRAG()
     ingestion_service = MockIngestionUseCase()
-    agent = AdminAgent(rag_service, ingestion_service)
+    agent = ConversationalRAGAgent(rag_service, ingestion_service)
 
     checkpointer = MemorySaver()
 

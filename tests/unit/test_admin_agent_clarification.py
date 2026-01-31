@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 
-from app.application.services.admin_agent import AdminAgent, AdminState
+from app.application.services.admin_agent import AgentState, ConversationalRAGAgent
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ async def test_admin_state_schema():
     """AdminState에 새로운 필드가 추가되었는지 검증"""
     # This is a static check, but effective to ensure type definition update
     # Note: TypedDict at runtime doesn't enforce keys, but we check if we can instantiate it
-    state: AdminState = {
+    state: AgentState = {
         "messages": [],
         "intent": "search",
         "tool_output": "",
@@ -39,7 +39,7 @@ async def test_admin_state_schema():
 async def test_ambiguity_detection_in_router(mock_services):
     """Router가 모호한 입력에 대해 clarify 인텐트를 반환하는지 테스트"""
     rag_service, ingestion_service = mock_services
-    agent = AdminAgent(rag_service, ingestion_service)
+    agent = ConversationalRAGAgent(rag_service, ingestion_service)
 
     # Use AsyncMock for asynchronous ainvoke
     agent.llm = MagicMock()
@@ -82,7 +82,7 @@ async def test_ambiguity_detection_in_router(mock_services):
 async def test_clarify_node(mock_services):
     """Clarify Node가 적절한 역질문을 생성하는지 테스트"""
     rag_service, ingestion_service = mock_services
-    agent = AdminAgent(rag_service, ingestion_service)
+    agent = ConversationalRAGAgent(rag_service, ingestion_service)
 
     state = {
         "messages": [HumanMessage(content="요약해줘")],
@@ -108,7 +108,7 @@ async def test_clarify_node(mock_services):
 async def test_human_review_feedback_loop(mock_services):
     """Human Review 단계에서 피드백이 들어오면 Router로 순환하는지 테스트"""
     rag_service, ingestion_service = mock_services
-    agent = AdminAgent(rag_service, ingestion_service)
+    agent = ConversationalRAGAgent(rag_service, ingestion_service)
 
     # Verify that if we call router_node with feedback, it detects 'search' intent (contextual).
     agent.llm = MagicMock()

@@ -5,7 +5,7 @@ from fastapi import Depends
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
-from app.application.services.admin_agent import AdminAgent
+from app.application.services.admin_agent import ConversationalRAGAgent
 from app.application.services.ingestion import IngestionUseCase
 from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
@@ -226,8 +226,8 @@ async def get_rag_service(
 async def get_admin_agent(
     rag_service: Annotated[RAG, Depends(get_rag_service)],
     ingestion_service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
-) -> AdminAgent:
-    return AdminAgent(rag_service=rag_service, ingestion_service=ingestion_service)
+) -> ConversationalRAGAgent:
+    return ConversationalRAGAgent(rag_service=rag_service, ingestion_service=ingestion_service)
 
 
 # Feedback Service 의존성

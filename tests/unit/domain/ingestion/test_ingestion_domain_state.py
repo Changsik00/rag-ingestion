@@ -1,9 +1,9 @@
-from app.domain.ingestion.state import Attempt, IngestionState, StrategyType, ValidationConstraints, ValidationFeedback
+from app.domain.ingestion.state import Attempt, IngestionGraphState, StrategyType, ValidationConstraints, ValidationFeedback
 
 
 def test_ingestion_state_initialization():
-    """IngestionState의 필수 필드와 새로운 Reflexion 필드가 올바르게 타입 정의되었는지 확인"""
-    state: IngestionState = {
+    """IngestionGraphState의 필수 필드와 새로운 Reflexion 필드가 올바르게 타입 정의되었는지 확인"""
+    state: IngestionGraphState = {
         "original_url": "http://example.com",
         "raw_content": "test content",
         "metadata": None,

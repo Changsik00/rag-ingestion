@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.domain.ingestion.state import IngestionState, StrategyType, ValidationConstraints, ValidationFeedback
+from app.domain.ingestion.state import IngestionGraphState, StrategyType, ValidationConstraints, ValidationFeedback
 from app.domain.interfaces.llm import LLMInterface
 
 
@@ -70,12 +70,12 @@ class IngestionNodes:
     def __init__(self, llm: LLMInterface):
         self.llm = llm
 
-    async def extract_metadata(self, state: IngestionState) -> dict[str, Any]:
+    async def extract_metadata(self, state: IngestionGraphState) -> dict[str, Any]:
         """
         Raw Content에서 메타데이터(Title, Summary, Entities 등)를 추출합니다.
 
         Args:
-            state (IngestionState): 현재 파이프라인 상태
+            state (IngestionGraphState): 현재 파이프라인 상태
 
         Returns:
             Dict[str, Any]: 상태 업데이트 (metadata, steps_history)
@@ -110,7 +110,7 @@ class IngestionNodes:
 
         return {"metadata": extracted, "steps_history": new_history}
 
-    def validate_content(self, state: IngestionState) -> dict[str, Any]:
+    def validate_content(self, state: IngestionGraphState) -> dict[str, Any]:
         """
         추출된 콘텐츠의 유효성을 검사합니다.
         (현재는 Placeholder implementation. Actual validation logic to be added.)
@@ -127,7 +127,7 @@ class IngestionNodes:
 
         return {"steps_history": new_history}
 
-    def resolve_logic(self, state: IngestionState) -> dict[str, Any]:
+    def resolve_logic(self, state: IngestionGraphState) -> dict[str, Any]:
         """
         [Logic Resolver Node]
         검증 결과(Feedback)와 에러 상태를 기반으로 다음 전략(Strategy)을 결정합니다.
@@ -160,7 +160,7 @@ class IngestionNodes:
             "steps_history": state.get("steps_history", []) + ["resolve_logic"],
         }
 
-    def human_review(self, state: IngestionState) -> dict[str, Any]:
+    def human_review(self, state: IngestionGraphState) -> dict[str, Any]:
         """
         [Human Review Node]
         사용자 개입을 위한 일시 정지 지점 (Passthrough).
@@ -173,7 +173,7 @@ class IngestionNodes:
         """
         return {"steps_history": state.get("steps_history", []) + ["human_review"]}
 
-    def analyze_failure(self, state: IngestionState) -> dict[str, Any]:
+    def analyze_failure(self, state: IngestionGraphState) -> dict[str, Any]:
         """
         [Failure Analysis Node] (Spec 023)
         검증 실패 원인을 분석하여 FailureHypothesis를 생성합니다.

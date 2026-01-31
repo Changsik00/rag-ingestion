@@ -3,7 +3,7 @@ from typing import Any
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from app.domain.ingestion.state import IngestionState
+from app.domain.ingestion.state import IngestionGraphState
 from app.domain.interfaces.llm import LLMInterface
 from app.infrastructure.ai.nodes.ingestion_nodes import IngestionNodes
 
@@ -27,7 +27,7 @@ class IngestionGraphBuilder:
             checkpointer (Any, optional): LangGraph Checkpointer (MemorySaver etc). Defaults to None.
         """
         # 1. StateGraph 생성
-        workflow = StateGraph(IngestionState)
+        workflow = StateGraph(IngestionGraphState)
 
         # 2. Node 추가
         workflow.add_node("extract_metadata", self.nodes.extract_metadata)
@@ -43,7 +43,7 @@ class IngestionGraphBuilder:
         workflow.add_edge("extract_metadata", "validate_content")
 
         # Conditional Edge Logic
-        def route_after_validation(state: IngestionState):
+        def route_after_validation(state: IngestionGraphState):
             # 0. Check Forced HITL (Feature Flag)
             if state.get("hitl_enabled"):
                 return "human_review"
