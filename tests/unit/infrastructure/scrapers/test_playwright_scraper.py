@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from app.infrastructure.scrapers.playwright_scraper import PlaywrightScraper
-from app.interfaces.api.schemas.ingest import IngestResponse
+from app.interfaces.api.dto.ingest import IngestResponse
 
 
 @pytest.mark.asyncio

@@ -2,7 +2,7 @@ import requests
 from markdownify import markdownify as md
 
 from app.domain.interfaces.scraper import ScraperInterface
-from app.interfaces.api.schemas.ingest import IngestResponse
+from app.interfaces.api.dto.ingest import IngestResponse
 
 
 class BasicWebScraper(ScraperInterface):

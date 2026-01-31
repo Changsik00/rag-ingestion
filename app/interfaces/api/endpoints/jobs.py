@@ -12,7 +12,7 @@ from app.interfaces.api.dependencies import (
     get_ingestion_service,
     get_ingestion_orchestrator,
 )
-from app.interfaces.api.schemas.ingest import AsyncIngestResponse
+from app.interfaces.api.dto.ingest import AsyncIngestResponse
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 

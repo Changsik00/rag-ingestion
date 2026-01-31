@@ -9,7 +9,7 @@ from app.domain.interfaces.scraper import ScraperInterface
 from app.interfaces.api.dependencies import get_ingestion_service, get_repository, get_scraper
 from app.interfaces.api.endpoints.entities import router as entities_router
 from app.interfaces.api.endpoints.jobs import router as jobs_router
-from app.interfaces.api.schemas.ingest import (
+from app.interfaces.api.dto.ingest import (
     AsyncIngestResponse,
     IngestRequest,
     IngestResponse,

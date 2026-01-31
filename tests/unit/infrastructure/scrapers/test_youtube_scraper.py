@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.infrastructure.scrapers.youtube_scraper import YouTubeScraper
-from app.interfaces.api.schemas.ingest import IngestResponse
+from app.interfaces.api.dto.ingest import IngestResponse
 
 
 @pytest.fixture
