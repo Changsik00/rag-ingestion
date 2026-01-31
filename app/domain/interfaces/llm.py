@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Any, Protocol
 
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
@@ -22,3 +22,12 @@ class LLMInterface(Protocol):
     async def agenerate(self, prompt: str) -> str:
         """단순 텍스트 생성 (비동기)"""
         ...
+
+    async def ainvoke(self, messages: Any) -> Any:
+        """Asynchronously invoke the LLM with messages (LangChain compatibility)"""
+        ...
+
+    def invoke(self, messages: Any) -> Any:
+        """Synchronously invoke the LLM with messages (LangChain compatibility)"""
+        ...
+

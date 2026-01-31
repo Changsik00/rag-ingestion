@@ -3,7 +3,7 @@ from functools import lru_cache
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import get_settings
-from app.domain.interfaces.llm_interface import LLMInterface
+from app.domain.interfaces.llm import LLMInterface
 from app.infrastructure.llm import LangChainLLMAdapter
 
 
