@@ -1,4 +1,4 @@
-from app.domain.ingestion.state import FailureHypothesis, StrategyType
+from app.domain.ingestion.graph_state import FailureHypothesis, StrategyType
 from app.infrastructure.ai.nodes.ingestion_nodes import construct_extraction_prompt
 
 

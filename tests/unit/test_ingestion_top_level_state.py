@@ -9,14 +9,14 @@ def test_ingestion_state_import():
         pytest.fail("app.domain.ingestion.state module not found")
 
     try:
-        from app.domain.ingestion.state import IngestionGraphState  # noqa: F401
+        from app.domain.ingestion.graph_state import IngestionGraphState  # noqa: F401
     except ImportError:
         pytest.fail("app.domain.ingestion.state module or IngestionGraphState class not found")
 
 
 def test_ingestion_state_structure():
     """IngestionGraphState가 정의된 스키마(TypedDict)를 준수하는지 검증"""
-    from app.domain.ingestion.state import IngestionGraphState
+    from app.domain.ingestion.graph_state import IngestionGraphState
 
     # TypedDict는 인스턴스화가 아니라 type check용이지만,
     # 런타임에 dict와 호환되는지 확인

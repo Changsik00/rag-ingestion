@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.domain.ingestion.state import IngestionGraphState, StrategyType, ValidationConstraints, ValidationFeedback
+from app.domain.ingestion.graph_state import IngestionGraphState, StrategyType, ValidationConstraints, ValidationFeedback
 from app.application.interfaces.llm import LLMInterface
 
 
@@ -135,7 +135,7 @@ class IngestionNodes:
         Returns:
             dict: Updates current_strategy, attempts, retry_count
         """
-        from app.domain.ingestion.state import Attempt
+        from app.domain.ingestion.graph_state import Attempt
         from app.infrastructure.ai.nodes.logic import select_strategy
 
         current_retry = state.get("retry_count", 0)
@@ -183,7 +183,7 @@ class IngestionNodes:
         2. If error exists, map error to hypothesis.
         3. Else, unknown error.
         """
-        from app.domain.ingestion.state import BacktrackingContext, FailureHypothesis
+        from app.domain.ingestion.graph_state import BacktrackingContext, FailureHypothesis
 
         error = state.get("error")
         feedback = state.get("last_feedback")

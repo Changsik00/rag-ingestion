@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from app.domain.ingestion.state import IngestionGraphState, ValidationFeedback
+from app.domain.ingestion.graph_state import IngestionGraphState, ValidationFeedback
 from app.infrastructure.ai.nodes.ingestion_nodes import IngestionNodes
 
 

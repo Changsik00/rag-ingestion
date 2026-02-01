@@ -1,7 +1,7 @@
 import pytest
 from langgraph.checkpoint.memory import MemorySaver
 
-from app.domain.ingestion.state import IngestionGraphState
+from app.domain.ingestion.graph_state import IngestionGraphState
 from app.infrastructure.ai.graphs.ingestion_graph import IngestionGraphBuilder
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")

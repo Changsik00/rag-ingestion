@@ -1,4 +1,4 @@
-from app.domain.ingestion.state import StrategyType, ValidationFeedback
+from app.domain.ingestion.graph_state import StrategyType, ValidationFeedback
 from app.infrastructure.ai.nodes.ingestion_nodes import construct_extraction_prompt
 
 

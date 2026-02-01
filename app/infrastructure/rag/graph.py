@@ -12,7 +12,7 @@ from typing import Any
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from app.domain.rag.state import RAGGraphState
+from app.domain.rag.graph_state import RAGGraphState
 from app.infrastructure.rag.nodes import RAGNodes
 
 
