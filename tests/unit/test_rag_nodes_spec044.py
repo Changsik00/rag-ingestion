@@ -2,9 +2,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.domain.value_objects.rag_state import RAGGraphState
 from app.domain.value_objects.intent import IntentType, UserIntent
-from app.infrastructure.rag.nodes import RAGNodes
+from app.domain.value_objects.rag_state import RAGGraphState
+from app.infrastructure.ai.rag_nodes import RAGNodes
 
 
 @pytest.fixture

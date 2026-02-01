@@ -6,7 +6,7 @@ import re
 from unittest.mock import Mock
 
 from app.domain.value_objects.chunk import Chunk
-from app.infrastructure.rag.nodes import RAGNodes
+from app.infrastructure.ai.rag_nodes import RAGNodes
 
 
 def test_extract_citations_from_answer():

@@ -9,6 +9,8 @@ Spec 051 작업 이후, 여전히 남아있는 클린 아키텍처 계층 위반
 - [x] **Interface 이동**: `LLMInterface`, `ScraperInterface`를 `domain`에서 `application/interfaces`로 이동 (계층 구조 교정)
 - [x] **Service 이동**: `Feedback` 서비스를 `domain`에서 `application/services`로 이동
 - [x] **Value Object 이동**: `DocumentMetadata`를 `domain/models`에서, `GraphState`를 `domain/{ingestion,rag}`에서 `domain/value_objects`로 이동 (파일명 `ingestion_state.py`, `rag_state.py`로 변경).
+- [x] **인프라 통합 및 단순화**: `app/infrastructure/rag`를 `ai` 패키지로 통합하고, `ai` 하위의 불필요한 디렉토리 구조를 평탄화하여 가독성 개선.
+- [X] **로직 통합**: `logic.py`의 전략 선택 로직을 `ingestion_nodes.py`로 병합.
 - [x] **네이밍 표준화**: `admin_agent` → `agent`, `IngestionUseCase` → `Ingestion`, `logging_config` → `logger`, `state` → `graph_state`
 - [x] **코드 정리**: 중복된 Legacy API 엔드포인트(`app/interfaces/api/endpoints/jobs.py`) 제거
 

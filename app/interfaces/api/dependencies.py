@@ -19,7 +19,7 @@ from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
-from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
+from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.factories.llm_factory import LLMFactory
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
@@ -187,7 +187,7 @@ def get_rag_nodes(
     intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
     chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ):
-    from app.infrastructure.rag.nodes import RAGNodes
+    from app.infrastructure.ai.rag_nodes import RAGNodes
 
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
@@ -205,7 +205,7 @@ def get_rag_nodes(
 
 # RAG Graph Builder 의존성 (Spec 033)
 def get_rag_graph_builder(nodes=Depends(get_rag_nodes)):
-    from app.infrastructure.rag.graph import RAGGraphBuilder
+    from app.infrastructure.ai.rag_graph import RAGGraphBuilder
 
     return RAGGraphBuilder(nodes)
 

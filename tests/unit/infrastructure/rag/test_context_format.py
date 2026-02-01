@@ -5,7 +5,7 @@ RAG Nodes Context Formatting 단위 테스트.
 from unittest.mock import Mock
 
 from app.domain.value_objects.chunk import Chunk
-from app.infrastructure.rag.nodes import RAGNodes
+from app.infrastructure.ai.rag_nodes import RAGNodes
 
 
 def test_merge_and_format_context_injects_explicit_ids():

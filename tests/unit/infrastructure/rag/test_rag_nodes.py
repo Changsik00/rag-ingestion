@@ -68,7 +68,7 @@ class TestRAGNodesClassifyIntent:
         When: classify_intent 노드 실행
         Then: user_intent와 rewritten_query가 State에 추가됨
         """
-        from app.infrastructure.rag.nodes import RAGNodes
+        from app.infrastructure.ai.rag_nodes import RAGNodes
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -117,7 +117,7 @@ class TestRAGNodesRouteDecision:
         When: route_decision 노드 실행
         Then: auto_filters가 Intent로부터 도출됨
         """
-        from app.infrastructure.rag.nodes import RAGNodes
+        from app.infrastructure.ai.rag_nodes import RAGNodes
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -160,7 +160,7 @@ class TestRAGNodesRouteDecision:
         When: route_decision 노드 실행
         Then: Manual Filters가 우선 적용됨 (Auto Filters 무시)
         """
-        from app.infrastructure.rag.nodes import RAGNodes
+        from app.infrastructure.ai.rag_nodes import RAGNodes
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -207,7 +207,7 @@ class TestRAGNodesRetrieveHybrid:
         When: retrieve_hybrid 노드 실행
         Then: vector_chunks, keyword_chunks, graph_data가 모두 State에 추가됨
         """
-        from app.infrastructure.rag.nodes import RAGNodes
+        from app.infrastructure.ai.rag_nodes import RAGNodes
 
         # Mock 검색 결과
         mock_chunk = Chunk(
@@ -273,7 +273,7 @@ class TestRAGNodesGenerateAnswer:
         """
         from unittest.mock import Mock
 
-        from app.infrastructure.rag.nodes import RAGNodes
+        from app.infrastructure.ai.rag_nodes import RAGNodes
 
         # Mock LLM Response
         mock_response = Mock()
@@ -335,7 +335,7 @@ class TestRAGNodesFallback:
         When: retrieve_hybrid 노드 실행
         Then: fallback_triggered가 True로 설정되고, 필터 없이 재검색 수행
         """
-        from app.infrastructure.rag.nodes import RAGNodes
+        from app.infrastructure.ai.rag_nodes import RAGNodes
 
         mock_chunk = Chunk(
             id="fallback_chunk",
@@ -404,7 +404,7 @@ class TestRAGNodesPromptGuard:
         When: generate_answer 노드 실행
         Then: LLM에게 전달되는 프롬프트에 KNOWLEDGE MIXING RULES가 포함되어야 함
         """
-        from app.infrastructure.rag.nodes import RAGNodes
+        from app.infrastructure.ai.rag_nodes import RAGNodes
 
         mock_llm.agenerate = AsyncMock(return_value=Mock(content="답변"))
 

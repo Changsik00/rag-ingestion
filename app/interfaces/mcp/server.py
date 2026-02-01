@@ -48,8 +48,8 @@ async def provide_ingestion_service() -> Ingestion:
 
 async def provide_rag_service() -> RAG:
     from app.domain.services.intent_classifier import IntentClassifier
-    from app.infrastructure.rag.graph import RAGGraphBuilder
-    from app.infrastructure.rag.nodes import RAGNodes
+    from app.infrastructure.ai.rag_graph import RAGGraphBuilder
+    from app.infrastructure.ai.rag_nodes import RAGNodes
     from app.infrastructure.repositories.chroma import ChromaVectorRepository
     from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 

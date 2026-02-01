@@ -4,7 +4,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.application.interfaces.llm import LLMInvoker
 from app.core.config import get_settings
-from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtractor
+from app.infrastructure.ai.langchain_extractor import LangChainExtractor
 
 
 class LLMFactory:

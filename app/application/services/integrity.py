@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any, NamedTuple
 
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
+from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -227,7 +227,7 @@ class Integrity:
 
     async def get_cleaned_context(self, doc_id: str) -> str:
         """LLM에게 전달될 정제된 컨텍스트 미리보기"""
-        from app.infrastructure.rag.nodes import RAGNodes
+        from app.infrastructure.ai.rag_nodes import RAGNodes
 
         chunks = self.primary_repo.get_chunks(doc_id)
         if not chunks:

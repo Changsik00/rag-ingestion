@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtractor
+from app.infrastructure.ai.langchain_extractor import LangChainExtractor
 
 
 @pytest.fixture

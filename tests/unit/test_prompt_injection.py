@@ -1,5 +1,5 @@
 from app.domain.value_objects.ingestion_state import FailureHypothesis, StrategyType
-from app.infrastructure.ai.nodes.ingestion_nodes import construct_extraction_prompt
+from app.infrastructure.ai.ingestion_nodes import construct_extraction_prompt
 
 
 def test_prompt_includes_reasoning_context():

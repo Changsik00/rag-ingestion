@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
-from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
+from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 from app.interfaces.api.dependencies import get_ingestion_orchestrator, get_ingestion_service, get_job_repository
 
 router = APIRouter(tags=["Jobs"])

@@ -215,7 +215,7 @@ async def reset_session(id: str, checkpointer=Depends(get_checkpointer)):
 async def list_threads(checkpointer=Depends(get_checkpointer)):
     """활성 스레드 목록 조회"""
     try:
-        from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
+        from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
         from app.infrastructure.factories.llm_factory import LLMFactory
 
         adapter = IngestionOrchestrator(llm=LLMFactory.get_llm_adapter(), checkpointer=checkpointer)

@@ -3,9 +3,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from app.domain.value_objects.rag_state import RAGGraphState
 from app.domain.value_objects.chunk import Chunk
-from app.infrastructure.rag.nodes import RAGNodes
+from app.domain.value_objects.rag_state import RAGGraphState
+from app.infrastructure.ai.rag_nodes import RAGNodes
 
 
 @pytest.mark.asyncio
