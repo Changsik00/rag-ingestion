@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
 
 

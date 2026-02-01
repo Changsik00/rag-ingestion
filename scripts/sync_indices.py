@@ -7,7 +7,7 @@ from tqdm import tqdm
 # Add project root to path
 sys.path.append(os.getcwd())
 
-from app.domain.services.storage_integrity_service import StorageIntegrityService
+from app.application.services.integrity import Integrity
 from app.infrastructure.storage.chroma import ChromaVectorRepository
 from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
 from app.interfaces.api.dependencies import get_neo4j_driver
@@ -21,7 +21,7 @@ async def main():
     primary_repo = Neo4jDocumentRepository(driver)
     target_repo = ChromaVectorRepository()
 
-    service = StorageIntegrityService(primary_repo, target_repo)
+    service = Integrity(primary_repo, target_repo)
 
     # 2. Get initial report
     print("Checking current status...")

@@ -10,7 +10,7 @@ Design Guide 005의 3-Layer 아키텍처를 구현합니다:
 
 from typing import TypedDict
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import UserIntent
 
 

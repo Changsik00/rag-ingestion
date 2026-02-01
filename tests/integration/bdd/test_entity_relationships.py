@@ -13,8 +13,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.interfaces.api.dependencies import get_scraper
+from app.interfaces.api.dto.ingest import IngestResponse
 from app.interfaces.api.main import app
-from app.interfaces.api.schemas.ingest import IngestResponse
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
@@ -65,7 +65,7 @@ def test_scenario_1_to_4_entity_relationships_flow(sample_document_with_relation
 
     try:
         # When: 문서 수집 요청
-        response = client.post("/ingest/web", json={"url": sample_document_with_relationships["url"]})
+        response = client.post("/v1/ingest/web", json={"url": sample_document_with_relationships["url"]})
 
         # Then: 202 Accepted 응답
         assert response.status_code == 202, f"Ingestion failed: {response.text}"

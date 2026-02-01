@@ -9,10 +9,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from app.application.services.ingestion import Ingestion
+from app.application.services.ingestion import IngestionUseCase
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.scraper import ScraperInterface
-from app.interfaces.api.schemas.ingest import IngestResponse
+from app.interfaces.api.dto.ingest import IngestResponse
 
 
 def test_create_job():
@@ -22,7 +22,7 @@ def test_create_job():
     mock_graph_repo = Mock()
     mock_job_repo = Mock()
     mock_chunker = Mock()
-    service = Ingestion(
+    service = IngestionUseCase(
         scraper=mock_scraper,
         repository=mock_doc_repo,
         graph=mock_graph_repo,
@@ -53,7 +53,7 @@ async def test_process_job_success():
     mock_job = IngestionJob(source_url="http://example.com", status=JobStatus.PENDING)
     mock_job_repo.get_job.return_value = mock_job
 
-    expected_response = IngestResponse(url="http://example.com/", markdown="# Example", metadata={})
+    expected_response = IngestResponse(url="http://example.com/", markdown="# Example", metadata={"source_id": "example"})
     mock_scraper.scrape.return_value = expected_response
 
     # Mock extractor to return None (no semantic data)
@@ -64,7 +64,7 @@ async def test_process_job_success():
     mock_extractor.extract.return_value = future
 
     mock_chunker = Mock()
-    service = Ingestion(
+    service = IngestionUseCase(
         scraper=mock_scraper,
         repository=mock_doc_repo,
         graph=mock_graph_repo,
@@ -100,7 +100,7 @@ async def test_process_job_failure():
     mock_job_repo.get_job.return_value = mock_job
 
     mock_chunker = Mock()
-    service = Ingestion(
+    service = IngestionUseCase(
         scraper=mock_scraper,
         repository=mock_doc_repo,
         graph=mock_graph_repo,

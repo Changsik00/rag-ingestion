@@ -31,7 +31,7 @@ class ScrapingQualityChecker:
     async def is_poor_async(self, markdown: str) -> bool:
         """
         결과물이 부실하면 True, 충분하면 False 반환 (비동기 분석 지원)
-        
+
         Args:
             markdown: 검사할 마크다운 문자열
         """
@@ -68,7 +68,7 @@ class ScrapingQualityChecker:
     def is_poor(self, markdown: str) -> bool:
         """
         동적 로직 없이 단순 휴리스틱만 검사 (Sync)
-        
+
         Args:
             markdown: 검사할 마크다운 문자열
         """

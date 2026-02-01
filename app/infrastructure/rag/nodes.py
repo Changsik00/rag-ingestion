@@ -13,11 +13,11 @@ import re
 from typing import Any
 
 from app.core.logging_config import setup_logger
-from app.domain.entities.chunk import Chunk
 from app.domain.rag.state import RAGGraphState
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.prompts.reranker import RERANKER_PROMPT
 from app.domain.services.query_rewriter import QueryRewriter
+from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
 
 logger = setup_logger(__name__)
@@ -190,9 +190,11 @@ class RAGNodes:
 
         # [Spec 037] Context Noise Cleaning
         # 검색된 각 청크의 내용에 대해 전처리를 수행합니다.
-        for group in [vector_results, keyword_results]:
-            for chunk in group:
-                chunk.content = self._clean_context_noise(chunk.content)
+        for i, chunk in enumerate(vector_results):
+            vector_results[i] = chunk.model_copy(update={"content": self._clean_context_noise(chunk.content)})
+
+        for i, chunk in enumerate(keyword_results):
+            keyword_results[i] = chunk.model_copy(update={"content": self._clean_context_noise(chunk.content)})
 
         # Update State
         state["vector_chunks"] = vector_results

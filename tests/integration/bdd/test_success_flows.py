@@ -50,7 +50,7 @@ def test_successful_web_ingestion_basic_flow():
     url = "https://httpbin.org/html"
 
     # When: 수집 요청
-    response = client.post("/ingest/web", json={"url": url, "enable_extraction": True})
+    response = client.post("/v1/ingest/web", json={"url": url, "enable_extraction": True})
 
     # Then: 202 Accepted 응답 및 job_id 반환
     assert response.status_code == 202
@@ -65,7 +65,7 @@ def test_successful_web_ingestion_basic_flow():
     assert job.get("error_message") is None
 
     # Then: Document가 저장되었는지 확인
-    docs_response = client.get("/documents")
+    docs_response = client.get("/v1/documents")
     assert docs_response.status_code == 200
 
     docs = docs_response.json()
@@ -91,7 +91,7 @@ def test_successful_ingestion_without_extraction():
     url = "https://httpbin.org/links/5"
 
     # When: 수집 요청 (extraction 비활성화)
-    response = client.post("/ingest/web", json={"url": url, "enable_extraction": False})
+    response = client.post("/v1/ingest/web", json={"url": url, "enable_extraction": False})
 
     # Then: 202 Accepted
     assert response.status_code == 202
@@ -104,7 +104,7 @@ def test_successful_ingestion_without_extraction():
     assert job["status"] == "COMPLETED"
 
     # Then: Document 검증
-    docs_response = client.get("/documents")
+    docs_response = client.get("/v1/documents")
     docs = docs_response.json()
 
     doc = next((d for d in docs if d["metadata"]["source_url"] == url), None)

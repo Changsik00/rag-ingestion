@@ -3,12 +3,16 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from app.application.services.ingestion import Ingestion
+from app.application.services.ingestion import IngestionUseCase
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
-from app.infrastructure.brain.adapter import LangGraphAdapter
-from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository, get_langgraph_adapter
-from app.interfaces.api.schemas.ingest import AsyncIngestResponse
+from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
+from app.interfaces.api.dependencies import (
+    get_ingestion_orchestrator,
+    get_ingestion_service,
+    get_job_repository,
+)
+from app.interfaces.api.dto.ingest import AsyncIngestResponse
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -31,7 +35,7 @@ async def retry_job(
     job_id: str,
     background_tasks: BackgroundTasks,
     repo: JobRepository = Depends(get_job_repository),
-    service: Ingestion = Depends(get_ingestion_service),
+    service: IngestionUseCase = Depends(get_ingestion_service),
 ):
     job = repo.get_job(job_id)
     if not job:
@@ -54,7 +58,7 @@ class ResumeRequest(BaseModel):
 
 
 @router.get("/active/threads")
-async def list_active_threads(limit: int = 10, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
+async def list_active_threads(limit: int = 10, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
     """List threads managed by LangGraph checkpointer."""
     try:
         threads = await adapter.list_threads(limit=limit)
@@ -72,7 +76,7 @@ async def list_active_threads(limit: int = 10, adapter: LangGraphAdapter = Depen
 
 
 @router.get("/{job_id}/status")
-async def get_job_status(job_id: str, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
+async def get_job_status(job_id: str, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
     """Get LangGraph execution status for a job/thread."""
     try:
         status = await adapter.get_thread_status(job_id)
@@ -82,7 +86,7 @@ async def get_job_status(job_id: str, adapter: LangGraphAdapter = Depends(get_la
 
 
 @router.get("/{job_id}/trace")
-async def get_job_trace(job_id: str, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
+async def get_job_trace(job_id: str, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
     """Get LangGraph state snapshot."""
     try:
         snapshot = await adapter.get_state(job_id)
@@ -97,7 +101,7 @@ async def get_job_trace(job_id: str, adapter: LangGraphAdapter = Depends(get_lan
 
 
 @router.post("/{job_id}/resume")
-async def resume_job(job_id: str, request: ResumeRequest, adapter: LangGraphAdapter = Depends(get_langgraph_adapter)):
+async def resume_job(job_id: str, request: ResumeRequest, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
     """Resume an interrupted job."""
     try:
         # Resume implies invoking with new input

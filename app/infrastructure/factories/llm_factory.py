@@ -4,7 +4,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import get_settings
 from app.domain.interfaces.llm import LLMInvoker
-from app.infrastructure.llm import LangChainLLMAdapter
+from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtractor
 
 
 class LLMFactory:
@@ -28,7 +28,7 @@ class LLMFactory:
     def get_llm_adapter(model: str | None = None, temperature: float = 0.0) -> LLMInvoker:
         """LangChain Adapter 반환 (LLMInterface Protocol 구현체)"""
         llm = LLMFactory.get_google_llm(model, temperature)
-        return LangChainLLMAdapter(llm)
+        return LangChainExtractor(llm)
 
 
 def get_llm() -> LLMInvoker:

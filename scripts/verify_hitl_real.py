@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 
-from app.application.services.admin_agent import AdminAgent
+from app.application.services.admin_agent import ConversationalRAGAgent
 
 # App Modules (Real)
 from app.core.config import get_settings
@@ -74,7 +74,7 @@ def get_real_services():
                 user_intent=None,
             )
 
-    class MockIngestionService:
+    class MockIngestionUseCase:
         def create_job(self, url):
             logger.info(f"[MockIngestion] Create job for {url}")
 
@@ -96,7 +96,7 @@ def get_real_services():
         job_repository = MockJobRepo()
 
     rag_service = MockRAG()
-    ingestion_service = MockIngestionService()
+    ingestion_service = MockIngestionUseCase()
 
     return rag_service, ingestion_service
 
@@ -110,7 +110,7 @@ async def main():
     checkpointer = MemorySaver()
     rag_service, ingestion_service = get_real_services()
 
-    agent = AdminAgent(rag_service, ingestion_service)
+    agent = ConversationalRAGAgent(rag_service, ingestion_service)
     workflow = agent.build_workflow(checkpointer=checkpointer)
 
     # 2. Config

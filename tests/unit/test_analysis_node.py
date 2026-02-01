@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
-from app.domain.ingestion.state import IngestionState, ValidationFeedback
-from app.infrastructure.brain.nodes import IngestionNodes
+from app.domain.ingestion.state import IngestionGraphState, ValidationFeedback
+from app.infrastructure.ai.nodes.ingestion_nodes import IngestionNodes
 
 
 def test_analyze_failure_creates_hypothesis():
@@ -10,7 +10,7 @@ def test_analyze_failure_creates_hypothesis():
     nodes = IngestionNodes(llm=mock_llm)
 
     # Given: 실패한 상태 (Missing Field)
-    state: IngestionState = {
+    state: IngestionGraphState = {
         "error": "Validation Failed",
         "last_feedback": ValidationFeedback(
             source="validator", message="Required field 'summary' is missing", target_fields=["summary"]
@@ -38,7 +38,7 @@ def test_analyze_failure_handles_unknown_error():
     mock_llm = Mock()
     nodes = IngestionNodes(llm=mock_llm)
 
-    state: IngestionState = {
+    state: IngestionGraphState = {
         "error": "Unknown System Error",
         "last_feedback": None,
         "retry_count": 1,

@@ -338,7 +338,7 @@ with st.sidebar:
     if st.button("🚀 Upload & Chat", use_container_width=True, disabled=not quick_files):
         with st.spinner(f"Ingesting {len(quick_files)} files..."):
             file_list = [("files", (f.name, f.getvalue(), f.type)) for f in quick_files]
-            res = api_client.upload_file("/../../../ingest/files", files=file_list)
+            res = api_client.upload_file("ingest/files", files=file_list)
             if res and "jobs" in res:
                 file_names = ", ".join([f.name for f in quick_files])
                 st.success(f"Ingested {len(quick_files)} files")

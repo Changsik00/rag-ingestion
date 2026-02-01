@@ -4,7 +4,7 @@ RAG Nodes Context Formatting 단위 테스트.
 
 from unittest.mock import Mock
 
-from app.domain.entities.chunk import Chunk
+from app.domain.value_objects.chunk import Chunk
 from app.infrastructure.rag.nodes import RAGNodes
 
 

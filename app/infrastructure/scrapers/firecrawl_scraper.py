@@ -6,7 +6,7 @@ from firecrawl import FirecrawlApp
 from app.core.config import get_settings
 from app.domain.interfaces.scraper import ScraperInterface
 from app.infrastructure.scrapers.cleaner import MarkdownCleaner
-from app.interfaces.api.schemas.ingest import IngestResponse
+from app.interfaces.api.dto.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)
 

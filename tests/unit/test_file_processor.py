@@ -1,6 +1,6 @@
 import pytest
 
-from app.domain.services.file_processor import FileProcessor
+from app.core.utils.file_processor import FileProcessor
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-from app.domain.ingestion.state import DecisionTrace, FailureHypothesis, IngestionState
+from app.domain.ingestion.state import DecisionTrace, FailureHypothesis, IngestionGraphState
 
 
 def test_failure_hypothesis_structure():
@@ -23,8 +23,8 @@ def test_decision_trace_structure():
 
 
 def test_ingestion_state_has_backtracking_context():
-    """IngestionState에 backtracking_context 필드가 존재하는지 검증"""
-    state = IngestionState(
+    """IngestionGraphState에 backtracking_context 필드가 존재하는지 검증"""
+    state = IngestionGraphState(
         original_url="http://test.com",
         raw_content="content",
         metadata=None,

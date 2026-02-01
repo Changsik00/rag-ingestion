@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.application.admin.integrity_service import ResetResult
+from app.application.services.integrity import ResetResult
 from app.interfaces.api.dependencies import get_integrity_service
 from app.interfaces.api.main import app
 
@@ -27,7 +27,7 @@ def test_reset_all_data_success(mock_integrity_service):
 
     try:
         # When
-        response = client.post("/api/v1/admin/integrity/reset")
+        response = client.post("/v1/integrity/reset")
 
         # Then
         assert response.status_code == 200

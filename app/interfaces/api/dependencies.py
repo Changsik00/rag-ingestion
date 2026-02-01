@@ -5,29 +5,29 @@ from fastapi import Depends
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
-from app.application.services.admin_agent import AdminAgent
-from app.application.services.ingestion import Ingestion
-from app.application.services.integrity_service import IntegrityService
+from app.application.services.admin_agent import ConversationalRAGAgent
+from app.application.services.ingestion import IngestionUseCase
+from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.config import get_settings
+from app.domain.interfaces.chunker import Chunker
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.services.chunker import Chunker
-from app.domain.services.feedback_service import Feedback
+from app.domain.services.feedback import Feedback
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
-from app.infrastructure.brain.adapter import LangGraphAdapter
+from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.factories.llm_factory import LLMFactory
+from app.infrastructure.repositories.chroma import ChromaVectorRepository
+from app.infrastructure.repositories.composite import CompositeDocumentRepository
+from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
+from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
+from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
-from app.infrastructure.storage.chroma import ChromaVectorRepository
-from app.infrastructure.storage.composite import CompositeDocumentRepository
-from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
-from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
-from app.infrastructure.storage.neo4j_job_repository import Neo4jJobRepository
 
 # === Dependency Injection 컨테이너 ===
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
@@ -60,7 +60,7 @@ def get_repository() -> DocumentRepository:
     neo4j_storage = Neo4jDocumentRepository(driver)
     chroma_storage = get_chroma_vector_repository() # Use the dependency function
 
-    return CompositeDocumentRepository([neo4j_storage, chroma_storage])
+    return CompositeDocumentRepository(neo4j=neo4j_storage, chroma=chroma_storage)
 
 
 # Job Repository 의존성 (IngestionJob 관리)
@@ -70,13 +70,8 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 
 
 # Storage Integrity Service 의존성
-@lru_cache
-def get_storage_integrity_service(
-    driver: Annotated[Driver, Depends(get_neo4j_driver)],
-    chroma_storage: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
-) -> IntegrityService:
-    primary_repo = Neo4jDocumentRepository(driver)
-    return IntegrityService(primary_repo, chroma_storage)
+# Deleted get_storage_integrity_service
+
 
 
 # Checkpointer 의존성 (HITL Persistence)
@@ -121,11 +116,11 @@ async def get_checkpointer() -> AsyncSqliteSaver:
 async def get_semantic_extractor(
     checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
 ) -> SemanticExtractor:
-    llm_adapter = LLMFactory.get_llm_adapter()  # LangChainLLMAdapter를 반환
+    llm_adapter = LLMFactory.get_llm_adapter()  # LangChainExtractor를 반환
     # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
     # Spec 024: Checkpointer 주입
-    langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
-    return SemanticExtractor(llm=langgraph_adapter)
+    orchestrator = IngestionOrchestrator(llm=llm_adapter, checkpointer=checkpointer)
+    return SemanticExtractor(llm=orchestrator)
 
 
 # Graph Repository 의존성 (Entity 및 관계 저장)
@@ -148,8 +143,8 @@ def get_ingestion_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     chunker: Annotated[Chunker, Depends(get_chunker)],
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
-) -> Ingestion:
-    return Ingestion(
+) -> IngestionUseCase:
+    return IngestionUseCase(
         scraper=scraper,
         repository=repository,
         graph=graph,
@@ -159,14 +154,14 @@ def get_ingestion_service(
     )
 
 
-# Spec 024: LangGraphAdapter 직접 접근 (HITL Control용)
-async def get_langgraph_adapter(
+# Spec 024: IngestionOrchestrator 직접 접근 (HITL Control용)
+async def get_ingestion_orchestrator(
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
-) -> LangGraphAdapter:
-    # SemanticExtractor.llm is the LangGraphAdapter
-    if isinstance(extractor.llm, LangGraphAdapter):
+) -> IngestionOrchestrator:
+    # SemanticExtractor.llm is the IngestionOrchestrator
+    if isinstance(extractor.llm, IngestionOrchestrator):
         return extractor.llm
-    raise ValueError("SemanticExtractor is not using LangGraphAdapter")
+    raise ValueError("SemanticExtractor is not using IngestionOrchestrator")
 
 
 # === RAG Service Dependencies (Spec 032) ===
@@ -228,11 +223,11 @@ async def get_rag_service(
 
 
 # Admin Agent 의존성 (Spec 038)
-async def get_admin_agent(
+async def get_conversational_rag_agent(
     rag_service: Annotated[RAG, Depends(get_rag_service)],
-    ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
-) -> AdminAgent:
-    return AdminAgent(rag_service=rag_service, ingestion_service=ingestion_service)
+    ingestion_service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
+) -> ConversationalRAGAgent:
+    return ConversationalRAGAgent(rag_service=rag_service, ingestion_service=ingestion_service)
 
 
 # Feedback Service 의존성
@@ -246,16 +241,17 @@ async def get_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
     chroma_storage: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
-) -> Any:
-    from app.application.admin.integrity_service import IntegrityService
+) -> Integrity:
+    from app.application.services.integrity import Integrity
 
     neo4j_storage = Neo4jDocumentRepository(driver)
     # 어댑터 생성 (Checkpointer 리셋용)
     llm_adapter = LLMFactory.get_llm_adapter()
-    langgraph_adapter = LangGraphAdapter(llm=llm_adapter, checkpointer=checkpointer)
+    # SemanticExtractor는 LLMInterface(IngestionOrchestrator)를 사용
+    orchestrator = IngestionOrchestrator(llm=llm_adapter, checkpointer=checkpointer)
 
-    return IntegrityService(
-        neo4j_storage=neo4j_storage,
-        chroma_storage=chroma_storage,
-        langgraph_adapter=langgraph_adapter,
+    return Integrity(
+        primary_repo=neo4j_storage,
+        target_repo=chroma_storage,
+        langgraph_adapter=orchestrator,
     )

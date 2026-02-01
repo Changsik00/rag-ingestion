@@ -1,4 +1,10 @@
-from app.domain.ingestion.state import Attempt, IngestionState, StrategyType, ValidationConstraints, ValidationFeedback
+from app.domain.ingestion.state import (
+    Attempt,
+    IngestionGraphState,
+    StrategyType,
+    ValidationConstraints,
+    ValidationFeedback,
+)
 
 
 def test_strategy_enum_values():
@@ -44,8 +50,8 @@ def test_attempt_tracking_polymorphic():
 
 
 def test_ingestion_state_initialization():
-    """확장된 필드를 포함한 IngestionState 초기화"""
-    state: IngestionState = {
+    """확장된 필드를 포함한 IngestionGraphState 초기화"""
+    state: IngestionGraphState = {
         "original_url": "http://example.com",
         "raw_content": "",
         "metadata": None,

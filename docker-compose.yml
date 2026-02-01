@@ -52,7 +52,7 @@ services:
     volumes:
       - ./admin:/app/admin
     environment:
-      - ADMIN_API_URL=http://backend:8000/api/v1/admin
+      - ADMIN_API_URL=http://backend:8000/v1
       - PYTHONPATH=/app
     command: ["uv", "run", "streamlit", "run", "admin/dashboard.py", "--server.address=0.0.0.0", "--server.port=8501"]
 

@@ -24,7 +24,7 @@ if threads:
     snapshot = checkpointer.get(config)
 
     if snapshot:
-        # snapshot.values는 RAGGraphState 또는 IngestionState의 딕셔너리입니다.
+        # snapshot.values는 RAGGraphState 또는 IngestionGraphState의 딕셔너리입니다.
         state = snapshot.values
         print("✅ 최신 스냅샷 데이터:")
         for key, value in state.items():

@@ -4,19 +4,19 @@ from uuid import UUID
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.exceptions import DoitException
 from app.core.logging_config import setup_logger
+from app.core.utils.file_processor import FileProcessor
 from app.domain.entities.document import Document
 from app.domain.entities.job import IngestionJob, JobStatus
+from app.domain.interfaces.chunker import Chunker
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.services.chunker import Chunker
-from app.domain.services.file_processor import FileProcessor
 
 logger = setup_logger(__name__)
 
 
-class Ingestion:
+class IngestionUseCase:
     def __init__(
         self,
         scraper: ScraperInterface,

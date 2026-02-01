@@ -1,8 +1,8 @@
 import pytest
 from langgraph.checkpoint.memory import MemorySaver
 
-from app.domain.ingestion.state import IngestionState
-from app.infrastructure.brain.graph import IngestionGraphBuilder
+from app.domain.ingestion.state import IngestionGraphState
+from app.infrastructure.ai.graphs.ingestion_graph import IngestionGraphBuilder
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
@@ -37,7 +37,7 @@ async def test_human_in_the_loop_workflow():
 
     call_count = {"validate": 0}
 
-    def mock_validate(state: IngestionState):
+    def mock_validate(state: IngestionGraphState):
         call_count["validate"] += 1
         if call_count["validate"] == 1:
             # Simulate Critical Error
@@ -52,7 +52,7 @@ async def test_human_in_the_loop_workflow():
 
     app = builder.build(checkpointer=checkpointer)
 
-    initial_state = IngestionState(
+    initial_state = IngestionGraphState(
         original_url="http://test.com",
         raw_content="Dummy content",
         metadata=None,

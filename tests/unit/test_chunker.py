@@ -18,7 +18,7 @@ def document():
     return Document(
         id=str(uuid4()),
         content="Hello world. " * 300,  # Long content (~3900 chars)
-        metadata={"source": "test"},
+        metadata={"source_id": "test"},
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
@@ -43,7 +43,7 @@ def test_chunk_document_preserves_metadata(chunker, document):
     assert len(chunks) > 0
     for chunk in chunks:
         assert chunk.parent_id == document.id
-        assert chunk.metadata["source"] == document.metadata["source"]
+        assert chunk.metadata["source_id"] == document.metadata.source_id
         assert "start_index" in chunk.metadata  # Splitter usually adds this
 
 
@@ -63,7 +63,7 @@ def test_chunk_overlap_preservation(chunker):
     doc = Document(
         id="test-doc",
         content=content,
-        metadata={},
+        metadata={"source_id": "test"},
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )

@@ -39,7 +39,7 @@ def test_async_ingest_web_endpoint():
 
     # When: POST /ingest/web 요청
     with TestClient(app) as client:
-        response = client.post("/ingest/web", json={"url": "http://example.com"})
+        response = client.post("/v1/ingest/web", json={"url": "http://example.com"})
 
     # Then: 202 응답 및 Job 생성 확인
     assert response.status_code == 202

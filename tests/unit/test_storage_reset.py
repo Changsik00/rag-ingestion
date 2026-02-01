@@ -1,12 +1,11 @@
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
-
-from app.infrastructure.storage.chroma import ChromaVectorRepository
-from app.infrastructure.storage.neo4j_document_repository import Neo4jDocumentRepository
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-from app.infrastructure.brain.adapter import LangGraphAdapter
+from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
+from app.infrastructure.repositories.chroma import ChromaVectorRepository
+from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 
 
 @pytest.fixture
@@ -38,9 +37,9 @@ def test_neo4j_reset_database(mock_neo4j_driver):
     session.run.assert_called_with("MATCH (n) DETACH DELETE n")
 
 
-@patch("app.infrastructure.storage.chroma.get_settings")
-@patch("app.infrastructure.storage.chroma.GoogleGenerativeAIEmbeddings")
-@patch("app.infrastructure.storage.chroma.chromadb.HttpClient")
+@patch("app.infrastructure.repositories.chroma.get_settings")
+@patch("app.infrastructure.repositories.chroma.GoogleGenerativeAIEmbeddings")
+@patch("app.infrastructure.repositories.chroma.chromadb.HttpClient")
 def test_chroma_reset_collection(mock_http_client, mock_embeddings, mock_settings):
     # Given
     mock_settings.return_value.GEMINI_API_KEY = "dummy"
@@ -86,7 +85,7 @@ async def test_langgraph_adapter_reset_checkpoints():
     # Commit is an async method in aiosqlite
     mock_conn.commit = AsyncMock()
 
-    adapter = LangGraphAdapter(llm=mock_llm, checkpointer=mock_checkpointer)
+    adapter = IngestionOrchestrator(llm=mock_llm, checkpointer=mock_checkpointer)
 
     # When
     await adapter.reset_checkpoints()

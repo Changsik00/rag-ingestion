@@ -1,9 +1,5 @@
-import pytest
-
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
-
 """
-Dependency Injection container verification tests.
+Dependency Injection verification tests.
 
 These tests verify that the DI container correctly initializes storage instances
 and environment variables are properly consumed.
@@ -20,12 +16,11 @@ def test_get_repository_returns_composite_storage():
     with both Neo4j and Chroma storages.
     """
     # Given: DI container with repository
+    from app.infrastructure.repositories.composite import CompositeDocumentRepository
     from app.interfaces.api.dependencies import get_neo4j_driver, get_repository
-    from app.infrastructure.storage.composite import CompositeDocumentRepository
 
     # When: DI container provides repository
-    driver = get_neo4j_driver()
-    repository = get_repository(driver)
+    repository = get_repository()
 
     # Then: Instance is CompositeStorage
     assert repository is not None
@@ -60,7 +55,7 @@ def test_get_graph_repository():
     Verify that get_graph_repository() creates a valid Neo4jGraphRepository instance
     """
     # Given: DI container
-    from app.infrastructure.storage.neo4j_graph_repository import Neo4jGraphRepository
+    from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
     from app.interfaces.api.dependencies import get_graph_repository, get_neo4j_driver
 
     # When: DI container provides GraphRepository
@@ -90,7 +85,7 @@ def test_environment_variable_based_initialization():
 
     # When: Dependencies are initialized
     driver = get_neo4j_driver()
-    repository = get_repository(driver)
+    repository = get_repository()
 
     # Then: They use the environment variables
     # (We can't easily verify this without accessing internals,

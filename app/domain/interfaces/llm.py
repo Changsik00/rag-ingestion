@@ -9,7 +9,8 @@ class LLMInterface(Protocol):
 
     Python Protocol을 사용하여 Duck Typing 기반 인터페이스 정의.
     구체적 구현체는 Infrastructure 레이어에서 제공.
-    
+
+
     주로 메타데이터 추출 및 텍스트 생성에 사용됨.
     """
 
@@ -29,7 +30,8 @@ class LLMInterface(Protocol):
 class LLMInvoker(Protocol):
     """
     LLM Invoker 인터페이스 - LangChain 호환용
-    
+
+
     LangChain의 ChatModel 인터페이스와 호환되는 Protocol.
     주로 Factory나 범용 LLM 호출에 사용됨.
     """

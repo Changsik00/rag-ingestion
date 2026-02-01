@@ -7,7 +7,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from app.core.config import get_settings
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.value_objects.intent import IntentType
-from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
+from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtractor
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
@@ -28,7 +28,7 @@ def llm_adapter():
         pytest.skip("GEMINI_API_KEY not found")
 
     base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0)
-    return LangChainLLMAdapter(base_llm)
+    return LangChainExtractor(base_llm)
 
 
 @pytest.mark.integration
@@ -100,7 +100,7 @@ async def test_intent_classifier_with_history_context(llm_adapter):
     """
     # Given
     base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0)
-    llm = LangChainLLMAdapter(base_llm)
+    llm = LangChainExtractor(base_llm)
     classifier = IntentClassifier(llm)
 
     query = "GPT-4랑 비교해줘"
@@ -132,7 +132,7 @@ async def test_intent_classifier_summarize_with_pronoun(llm_adapter):
     """
     # Given
     base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0)
-    llm = LangChainLLMAdapter(base_llm)
+    llm = LangChainExtractor(base_llm)
     classifier = IntentClassifier(llm)
 
     query = "이 문서 요약해줘"
@@ -163,7 +163,7 @@ async def test_intent_classifier_filter_by_topic(llm_adapter):
     """
     # Given
     base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0)
-    llm = LangChainLLMAdapter(base_llm)
+    llm = LangChainExtractor(base_llm)
     classifier = IntentClassifier(llm)
 
     query = "Python 관련된 것만 보여줘"

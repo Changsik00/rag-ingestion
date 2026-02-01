@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.interfaces.api.schemas.ingest import IngestResponse
+from app.interfaces.api.dto.ingest import IngestResponse
 
 
 class ScraperInterface(ABC):

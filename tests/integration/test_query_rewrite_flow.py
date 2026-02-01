@@ -4,7 +4,7 @@ import pytest
 
 from app.core.config import get_settings
 from app.domain.services.query_rewriter import QueryRewriter
-from app.infrastructure.llm.langchain_adapter import LangChainLLMAdapter
+from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtractor
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
@@ -26,7 +26,7 @@ class TestQueryRewriteFlow:
         from langchain_google_genai import ChatGoogleGenerativeAI
 
         base_llm = ChatGoogleGenerativeAI(model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=api_key)
-        llm = LangChainLLMAdapter(llm=base_llm)
+        llm = LangChainExtractor(llm=base_llm)
         return QueryRewriter(llm)
 
     @pytest.mark.asyncio

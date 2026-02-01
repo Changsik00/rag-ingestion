@@ -3,8 +3,8 @@ from uuid import uuid4
 import pytest
 from chromadb.utils import embedding_functions
 
-from app.domain.entities.chunk import Chunk
-from app.infrastructure.storage.chroma import ChromaVectorRepository
+from app.domain.value_objects.chunk import Chunk
+from app.infrastructure.repositories.chroma import ChromaVectorRepository
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 

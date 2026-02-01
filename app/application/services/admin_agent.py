@@ -10,14 +10,13 @@ from langgraph.graph import END, StateGraph, add_messages
 from app.core.config import get_settings
 from app.domain.entities.job import JobStatus
 
-
 if TYPE_CHECKING:
-    from app.application.services.ingestion import Ingestion
+    from app.application.services.ingestion import IngestionUseCase
     from app.application.services.rag import RAG
 logger = logging.getLogger(__name__)
 
 
-class AdminState(TypedDict):
+class AgentState(TypedDict):
     """Admin Agent의 상태를 정의하는 TypedDict"""
 
     messages: Annotated[list[AnyMessage], add_messages]
@@ -33,13 +32,13 @@ class AdminState(TypedDict):
     missing_slots: list[str]
 
 
-class AdminAgent:
+class ConversationalRAGAgent:
     """
     RAG Playground 및 관리자용 Orchestration Agent.
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
 
-    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
+    def __init__(self, rag_service: "RAG", ingestion_service: "IngestionUseCase"):
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
         self.llm = ChatGoogleGenerativeAI(
@@ -48,7 +47,7 @@ class AdminAgent:
 
     def build_workflow(self, checkpointer: Any = None, interrupt_before: list[str] | None = None):
         """LangGraph 워크플로우를 빌드하고 컴파일합니다."""
-        workflow = StateGraph(AdminState)
+        workflow = StateGraph(AgentState)
 
         workflow.add_node("router", self.router_node)
         workflow.add_node("ingest", self.ingest_node)
@@ -71,7 +70,7 @@ class AdminAgent:
         workflow.add_edge("ingest", "search")  # 수집 완료 후 요약을 위해 검색 노드로 이동
 
         # Conditional Edge after Search: Check HITL
-        def route_after_search(state: AdminState):
+        def route_after_search(state: AgentState):
             if state.get("hitl_enabled"):
                 return "human_review"
             return END
@@ -79,7 +78,7 @@ class AdminAgent:
         workflow.add_conditional_edges("search", route_after_search, {"human_review": "human_review", END: END})
 
         # Feedback Loop Logic
-        def route_after_review(state: AdminState):
+        def route_after_review(state: AgentState):
             messages = state.get("messages", [])
             if messages and isinstance(messages[-1], HumanMessage):
                 logger.info("🔄 Feedback detected, looping back to router.")
@@ -110,14 +109,14 @@ class AdminAgent:
 
         return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
-    def route_logic(self, state: AdminState) -> Literal["ingest", "search", "clarify"]:
+    def route_logic(self, state: AgentState) -> Literal["ingest", "search", "clarify"]:
         return state["intent"]
 
-    def human_review_node(self, state: AdminState) -> dict:
+    def human_review_node(self, state: AgentState) -> dict:
         """HITL Review Node (Pass-through)"""
         return {"tool_output": "Human Review Completed"}
 
-    async def clarify_node(self, state: AdminState) -> dict:
+    async def clarify_node(self, state: AgentState) -> dict:
         """사용자에게 역질문을 하는 노드 (LLM 기반 다국어 지원)"""
         missing_slots = state.get("missing_slots", [])
         messages = state.get("messages", [])
@@ -146,7 +145,7 @@ class AdminAgent:
 
         return {"messages": [response], "is_clarification": True, "tool_output": "Clarification Requested"}
 
-    async def router_node(self, state: AdminState) -> dict:
+    async def router_node(self, state: AgentState) -> dict:
         messages = state["messages"]
         last_user_msg = messages[-1].content if messages else ""
 
@@ -194,7 +193,7 @@ class AdminAgent:
 
         return {"intent": intent, "missing_slots": missing_slots}
 
-    def ingest_node(self, state: AdminState) -> dict:
+    def ingest_node(self, state: AgentState) -> dict:
         messages = state["messages"]
         last_user_msg = messages[-1].content
 
@@ -229,7 +228,7 @@ class AdminAgent:
 
         return {"messages": [AIMessage(content=msg)], "tool_output": msg}
 
-    async def search_node(self, state: AdminState) -> dict:
+    async def search_node(self, state: AgentState) -> dict:
         messages = state["messages"]
         last_user_msg = messages[-1].content
 

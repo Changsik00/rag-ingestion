@@ -3,25 +3,25 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.domain.ingestion.state import IngestionState
+from app.domain.ingestion.state import IngestionGraphState
 from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
 
 def test_nodes_module_import():
-    if not importlib.util.find_spec("app.infrastructure.brain.nodes"):
-        pytest.fail("app.infrastructure.brain.nodes module not found")
+    if not importlib.util.find_spec("app.infrastructure.ai.nodes.ingestion_nodes"):
+        pytest.fail("app.infrastructure.ai.nodes.ingestion_nodes module not found")
 
     # Try importing class
     try:
-        from app.infrastructure.brain.nodes import IngestionNodes  # noqa: F401
+        from app.infrastructure.ai.nodes.ingestion_nodes import IngestionNodes  # noqa: F401
     except ImportError:
-        pytest.fail("IngestionNodes class not found in app.infrastructure.brain.nodes")
+        pytest.fail("IngestionNodes class not found in app.infrastructure.ai.nodes.ingestion_nodes")
 
 
 def test_nodes_initialization():
     """IngestionNodes 클래스가 LLMInterface를 주입받아 초기화되는지 검증"""
-    from app.infrastructure.brain.nodes import IngestionNodes
+    from app.infrastructure.ai.nodes.ingestion_nodes import IngestionNodes
 
     mock_llm = MagicMock(spec=LLMInterface)
     nodes = IngestionNodes(llm=mock_llm)
@@ -33,7 +33,7 @@ async def test_extract_metadata_node():
     """extract_metadata 노드가 LLM을 호출하고 State를 갱신하는지 검증"""
     from unittest.mock import AsyncMock
 
-    from app.infrastructure.brain.nodes import IngestionNodes
+    from app.infrastructure.ai.nodes.ingestion_nodes import IngestionNodes
 
     mock_llm = AsyncMock(spec=LLMInterface)
     mock_metadata = ExtractedMetadata(
@@ -43,7 +43,7 @@ async def test_extract_metadata_node():
 
     nodes = IngestionNodes(llm=mock_llm)
 
-    state: IngestionState = {
+    state: IngestionGraphState = {
         "original_url": "http://test.com",
         "raw_content": "test content",
         "metadata": None,
@@ -68,7 +68,7 @@ async def test_extract_metadata_node():
 
 def test_validate_content_node():
     """validate_content 노드 존재 여부 확인"""
-    from app.infrastructure.brain.nodes import IngestionNodes
+    from app.infrastructure.ai.nodes.ingestion_nodes import IngestionNodes
 
     mock_llm = MagicMock(spec=LLMInterface)
     nodes = IngestionNodes(llm=mock_llm)

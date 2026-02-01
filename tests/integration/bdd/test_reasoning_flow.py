@@ -2,8 +2,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.domain.ingestion.state import IngestionState, ValidationFeedback
-from app.infrastructure.brain.graph import IngestionGraphBuilder
+from app.domain.ingestion.state import IngestionGraphState, ValidationFeedback
+from app.infrastructure.ai.graphs.ingestion_graph import IngestionGraphBuilder
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
@@ -37,7 +37,7 @@ async def test_reasoning_flow_integration(mock_llm):
     # 2. validate_content 노드를 몽키패치하여 실패 시나리오 구성
     original_validate = nodes.validate_content
 
-    async def failing_validate(state: IngestionState):
+    async def failing_validate(state: IngestionGraphState):
         current_history = state.get("steps_history", [])
 
         # analyze_failure가 이미 실행되었다면, 루프를 종료하기 위해 성공으로 간주
@@ -58,7 +58,7 @@ async def test_reasoning_flow_integration(mock_llm):
     app = builder.build()
 
     # 4. 초기 State 설정
-    input_state = IngestionState(
+    input_state = IngestionGraphState(
         original_url="http://test.com",
         raw_content="content",
         metadata=None,
