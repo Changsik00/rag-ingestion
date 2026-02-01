@@ -1,4 +1,4 @@
-from app.domain.ingestion.graph_state import StrategyType, ValidationFeedback
+from app.domain.value_objects.ingestion_state import StrategyType, ValidationFeedback
 
 
 def select_strategy(retry_count: int, feedbacks: list[ValidationFeedback]) -> StrategyType:

@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.domain.ingestion.graph_state import IngestionGraphState, ValidationFeedback
+from app.domain.value_objects.ingestion_state import IngestionGraphState, ValidationFeedback
 from app.infrastructure.ai.graphs.ingestion_graph import IngestionGraphBuilder
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")

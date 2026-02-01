@@ -1,4 +1,4 @@
-from app.domain.ingestion.graph_state import (
+from app.domain.value_objects.ingestion_state import (
     Attempt,
     IngestionGraphState,
     StrategyType,

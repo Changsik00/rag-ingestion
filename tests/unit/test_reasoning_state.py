@@ -1,4 +1,4 @@
-from app.domain.ingestion.graph_state import DecisionTrace, FailureHypothesis, IngestionGraphState
+from app.domain.value_objects.ingestion_state import DecisionTrace, FailureHypothesis, IngestionGraphState
 
 
 def test_failure_hypothesis_structure():

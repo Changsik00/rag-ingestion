@@ -1,6 +1,6 @@
 import pytest
 
-from app.domain.ingestion.graph_state import StrategyType, ValidationConstraints, ValidationFeedback
+from app.domain.value_objects.ingestion_state import StrategyType, ValidationConstraints, ValidationFeedback
 from app.infrastructure.ai.nodes.ingestion_nodes import construct_extraction_prompt
 from app.infrastructure.ai.nodes.logic import select_strategy
 

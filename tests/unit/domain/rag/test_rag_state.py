@@ -2,7 +2,7 @@
 RAGGraphState 단위 테스트.
 """
 
-from app.domain.rag.graph_state import RAGGraphState
+from app.domain.value_objects.rag_state import RAGGraphState
 
 
 def test_rag_graph_state_has_citations_field():
