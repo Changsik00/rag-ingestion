@@ -7,7 +7,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from app.core.config import get_settings
 from app.core.exceptions import InfrastructureException
-from app.core.logging_config import setup_logger
+from app.core.logger import setup_logger
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.value_objects.chunk import Chunk

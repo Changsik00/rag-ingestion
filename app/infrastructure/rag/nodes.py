@@ -12,7 +12,7 @@ import asyncio
 import re
 from typing import Any
 
-from app.core.logging_config import setup_logger
+from app.core.logger import setup_logger
 from app.domain.rag.state import RAGGraphState
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.prompts.reranker import RERANKER_PROMPT

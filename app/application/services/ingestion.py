@@ -3,8 +3,8 @@ from uuid import UUID
 
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.exceptions import DoitException
-from app.core.logging_config import setup_logger
-from app.core.utils.file_processor import FileProcessor
+from app.core.logger import setup_logger
+from app.core.file_processor import FileProcessor
 from app.domain.entities.document import Document
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.chunker import Chunker

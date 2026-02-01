@@ -4,7 +4,7 @@ from uuid import UUID
 from neo4j import Driver
 
 from app.core.exceptions import InfrastructureException
-from app.core.logging_config import setup_logger
+from app.core.logger import setup_logger
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.value_objects.chunk import Chunk
