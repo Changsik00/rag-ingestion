@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from app.domain.interfaces.llm import LLMInterface
+from app.application.interfaces.llm import LLMInterface
 
 # Import will succeed after implementation
 try:
@@ -26,7 +26,9 @@ async def test_classify_general_query():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.agenerate = AsyncMock(return_value='{"intent": "general_query", "targets": [], "reasoning": "No specific target mentioned"}')
+    llm.agenerate = AsyncMock(
+        return_value='{"intent": "general_query", "targets": [], "reasoning": "No specific target mentioned"}'
+    )
     classifier = IntentClassifier(llm)
 
     query = "인공지능이 뭐야?"
@@ -54,7 +56,9 @@ async def test_classify_compare_intent():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.agenerate = AsyncMock(return_value='{"intent": "compare", "targets": ["claude", "gpt-4"], "reasoning": "User wants comparison between two models"}')
+    llm.agenerate = AsyncMock(
+        return_value='{"intent": "compare", "targets": ["claude", "gpt-4"], "reasoning": "User wants comparison between two models"}'
+    )
     classifier = IntentClassifier(llm)
 
     query = "Claude와 GPT-4를 비교해줘"
@@ -82,7 +86,9 @@ async def test_classify_summarize_intent():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.agenerate = AsyncMock(return_value='{"intent": "summarize", "targets": ["langchain-docs"], "reasoning": "User requests summary of previously mentioned document"}')
+    llm.agenerate = AsyncMock(
+        return_value='{"intent": "summarize", "targets": ["langchain-docs"], "reasoning": "User requests summary of previously mentioned document"}'
+    )
     classifier = IntentClassifier(llm)
 
     query = "이 문서 요약해줘"
@@ -111,7 +117,9 @@ async def test_classify_filter_by_topic():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.agenerate = AsyncMock(return_value='{"intent": "filter_by_topic", "targets": ["python"], "reasoning": "User wants to filter by Python topic"}')
+    llm.agenerate = AsyncMock(
+        return_value='{"intent": "filter_by_topic", "targets": ["python"], "reasoning": "User wants to filter by Python topic"}'
+    )
     classifier = IntentClassifier(llm)
 
     query = "Python 관련된 것만 보여줘"
@@ -181,7 +189,9 @@ async def test_classify_with_history_includes_context_in_prompt():
     """
     # Given
     llm = Mock(spec=LLMInterface)
-    llm.agenerate = AsyncMock(return_value='{"intent": "compare", "targets": ["claude", "gpt-4"], "reasoning": "Comparing with previously mentioned model"}')
+    llm.agenerate = AsyncMock(
+        return_value='{"intent": "compare", "targets": ["claude", "gpt-4"], "reasoning": "Comparing with previously mentioned model"}'
+    )
     classifier = IntentClassifier(llm)
 
     query = "GPT-4랑 비교해줘"

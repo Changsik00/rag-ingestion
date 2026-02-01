@@ -1,6 +1,6 @@
 import logging
 
-from app.domain.interfaces.llm import LLMInterface
+from app.application.interfaces.llm import LLMInterface
 
 logger = logging.getLogger(__name__)
 

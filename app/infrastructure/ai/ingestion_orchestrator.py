@@ -1,8 +1,8 @@
 import logging
 
-from app.domain.interfaces.llm import LLMInterface
+from app.application.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
-from app.infrastructure.ai.graphs.ingestion_graph import IngestionGraphBuilder
+from app.infrastructure.ai.ingestion_graph import IngestionGraphBuilder
 
 logger = logging.getLogger(__name__)
 

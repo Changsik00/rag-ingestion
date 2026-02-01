@@ -3,10 +3,10 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.application.services.ingestion import IngestionUseCase
+from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob
 from app.domain.interfaces.job_repository import JobRepository
-from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
+from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 from app.interfaces.api.dependencies import get_ingestion_orchestrator, get_ingestion_service, get_job_repository
 
 router = APIRouter(tags=["Jobs"])
@@ -72,7 +72,9 @@ async def get_job_trace(job_id: str, adapter: IngestionOrchestrator = Depends(ge
 
 
 @router.post("/{job_id}/resume")
-async def resume_job(job_id: str, request: ResumeRequest, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
+async def resume_job(
+    job_id: str, request: ResumeRequest, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)
+):
     """Resume an interrupted job."""
     try:
         result = await adapter.resume(job_id, request.input)
@@ -86,7 +88,7 @@ async def retry_job(
     job_id: str,
     background_tasks: BackgroundTasks,
     repo: JobRepository = Depends(get_job_repository),
-    service: IngestionUseCase = Depends(get_ingestion_service),
+    service: Ingestion = Depends(get_ingestion_service),
 ):
     job = repo.get_job(job_id)
     if not job:

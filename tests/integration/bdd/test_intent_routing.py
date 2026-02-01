@@ -7,7 +7,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from app.core.config import get_settings
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.value_objects.intent import IntentType
-from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtractor
+from app.infrastructure.ai.langchain_extractor import LangChainExtractor
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 

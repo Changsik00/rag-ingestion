@@ -1,8 +1,9 @@
 from typing import Annotated
+
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
 
-from app.application.services.ingestion import IngestionUseCase
-from app.domain.interfaces.scraper import ScraperInterface
+from app.application.interfaces.scraper import ScraperInterface
+from app.application.services.ingestion import Ingestion
 from app.interfaces.api.dependencies import get_ingestion_service, get_scraper
 from app.interfaces.api.dto.ingest import (
     AsyncIngestResponse,
@@ -13,11 +14,12 @@ from app.interfaces.api.dto.ingest import (
 
 router = APIRouter(prefix="/ingest", tags=["Ingest"])
 
+
 @router.post("/web", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
 async def ingest_web_page(
     request: IngestRequest,
     background_tasks: BackgroundTasks,
-    service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
+    service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ):
     try:
         job = service.create_job(str(request.url))
@@ -26,10 +28,11 @@ async def ingest_web_page(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/files", status_code=status.HTTP_202_ACCEPTED, response_model=MultiAsyncIngestResponse)
 async def ingest_files(
     background_tasks: BackgroundTasks,
-    service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
+    service: Annotated[Ingestion, Depends(get_ingestion_service)],
     files: list[UploadFile] = File(...),
 ):
     """
@@ -47,6 +50,7 @@ async def ingest_files(
         return {"jobs": job_responses}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/debug/scrape", response_model=IngestResponse)
 async def debug_scrape(

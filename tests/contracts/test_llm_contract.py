@@ -4,7 +4,7 @@ Contract tests for LLM interface implementations.
 
 import pytest
 
-from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtractor
+from app.infrastructure.ai.langchain_extractor import LangChainExtractor
 
 
 @pytest.fixture(

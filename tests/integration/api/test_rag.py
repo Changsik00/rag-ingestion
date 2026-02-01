@@ -24,7 +24,7 @@ async def test_rag_ask():
     """POST /v1/rag/sessions/{id}/ask 테스트"""
     # LLM 호출 등을 mocking 해야 할 수 있음
     payload = {"message": "Hello", "filters": {}}
-    with patch("app.application.services.admin_agent.ChatGoogleGenerativeAI") as mock_llm:
+    with patch("app.application.services.agent.ChatGoogleGenerativeAI") as mock_llm:
         mock_llm.return_value.invoke.return_value = MagicMock(content="search")
         # RAG.retrieve_and_generate 도 mocking 필요할 수 있음
         # 하지만 여기서는 엔드포인트 도달 여부를 확인하는 수준으로 warming up

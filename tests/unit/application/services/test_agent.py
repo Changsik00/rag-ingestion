@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 
-from app.application.services.admin_agent import AgentState, ConversationalRAGAgent
+from app.application.services.agent import AgentState, ConversationalRAGAgent
 
 
 @pytest.fixture
@@ -15,7 +15,7 @@ def mock_services():
 
 @pytest.fixture
 def mock_llm_class():
-    with patch("app.application.services.admin_agent.ChatGoogleGenerativeAI") as mock:
+    with patch("app.application.services.agent.ChatGoogleGenerativeAI") as mock:
         yield mock
 
 
@@ -23,7 +23,7 @@ def mock_llm_class():
 async def test_router_detects_url_intent(mock_services, mock_llm_class):
     ingestion, rag = mock_services
     mock_llm_instance = mock_llm_class.return_value
-    mock_llm_instance.ainvoke = AsyncMock(return_value = AIMessage(content="ingest"))
+    mock_llm_instance.ainvoke = AsyncMock(return_value=AIMessage(content="ingest"))
 
     agent = ConversationalRAGAgent(rag, ingestion)
 
@@ -37,7 +37,7 @@ async def test_router_detects_url_intent(mock_services, mock_llm_class):
 async def test_router_detects_search_intent(mock_services, mock_llm_class):
     ingestion, rag = mock_services
     mock_llm_instance = mock_llm_class.return_value
-    mock_llm_instance.ainvoke = AsyncMock(return_value = AIMessage(content="search"))
+    mock_llm_instance.ainvoke = AsyncMock(return_value=AIMessage(content="search"))
 
     agent = ConversationalRAGAgent(rag, ingestion)
 

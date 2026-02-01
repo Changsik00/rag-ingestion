@@ -1,5 +1,5 @@
-from app.domain.ingestion.state import StrategyType, ValidationFeedback
-from app.infrastructure.ai.nodes.logic import select_strategy
+from app.domain.value_objects.ingestion_state import StrategyType, ValidationFeedback
+from app.infrastructure.ai.ingestion_nodes import select_strategy
 
 
 def test_select_correction_strategy_on_first_error():

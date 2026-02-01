@@ -1,4 +1,4 @@
-from app.infrastructure.rag.nodes import RAGNodes
+from app.infrastructure.ai.rag_nodes import RAGNodes
 
 
 def test_clean_context_noise_removes_wiki_templates():

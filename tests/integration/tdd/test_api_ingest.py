@@ -28,7 +28,9 @@ def test_list_documents_endpoint():
     mock_repo = Mock()
     doc_id = uuid4()
     mock_docs = [
-        Document(id=str(doc_id), content="Doc 1", metadata={"source_id": "http://test.com/1", "url": "http://test.com/1"}),
+        Document(
+            id=str(doc_id), content="Doc 1", metadata={"source_id": "http://test.com/1", "url": "http://test.com/1"}
+        ),
         Document(content="Doc 2", metadata={"source_id": "http://test.com/2", "url": "http://test.com/2"}),
     ]
     mock_repo.list_documents.return_value = mock_docs

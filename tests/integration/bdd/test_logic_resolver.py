@@ -1,8 +1,7 @@
 import pytest
 
-from app.domain.ingestion.state import StrategyType, ValidationConstraints, ValidationFeedback
-from app.infrastructure.ai.nodes.ingestion_nodes import construct_extraction_prompt
-from app.infrastructure.ai.nodes.logic import select_strategy
+from app.domain.value_objects.ingestion_state import StrategyType, ValidationConstraints, ValidationFeedback
+from app.infrastructure.ai.ingestion_nodes import construct_extraction_prompt, select_strategy
 
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 

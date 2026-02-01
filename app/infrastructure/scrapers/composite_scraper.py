@@ -1,6 +1,6 @@
 import logging
 
-from app.domain.interfaces.scraper import ScraperInterface
+from app.application.interfaces.scraper import ScraperInterface
 from app.infrastructure.scrapers.checker import ScrapingQualityChecker
 from app.infrastructure.scrapers.firecrawl_scraper import FirecrawlWebScraper
 from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper

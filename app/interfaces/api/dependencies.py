@@ -5,8 +5,10 @@ from fastapi import Depends
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
-from app.application.services.admin_agent import ConversationalRAGAgent
-from app.application.services.ingestion import IngestionUseCase
+from app.application.interfaces.scraper import ScraperInterface
+from app.application.services.agent import ConversationalRAGAgent
+from app.application.services.feedback import Feedback
+from app.application.services.ingestion import Ingestion
 from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
 from app.application.services.semantic_extractor import SemanticExtractor
@@ -15,11 +17,9 @@ from app.domain.interfaces.chunker import Chunker
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
-from app.domain.interfaces.scraper import ScraperInterface
-from app.domain.services.feedback import Feedback
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
-from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
+from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.factories.llm_factory import LLMFactory
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
@@ -58,7 +58,7 @@ def get_repository() -> DocumentRepository:
     """Composite Storage를 DI로 제공"""
     driver = get_neo4j_driver()
     neo4j_storage = Neo4jDocumentRepository(driver)
-    chroma_storage = get_chroma_vector_repository() # Use the dependency function
+    chroma_storage = get_chroma_vector_repository()  # Use the dependency function
 
     return CompositeDocumentRepository(neo4j=neo4j_storage, chroma=chroma_storage)
 
@@ -71,7 +71,6 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 
 # Storage Integrity Service 의존성
 # Deleted get_storage_integrity_service
-
 
 
 # Checkpointer 의존성 (HITL Persistence)
@@ -143,8 +142,8 @@ def get_ingestion_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     chunker: Annotated[Chunker, Depends(get_chunker)],
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
-) -> IngestionUseCase:
-    return IngestionUseCase(
+) -> Ingestion:
+    return Ingestion(
         scraper=scraper,
         repository=repository,
         graph=graph,
@@ -188,7 +187,7 @@ def get_rag_nodes(
     intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
     chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ):
-    from app.infrastructure.rag.nodes import RAGNodes
+    from app.infrastructure.ai.rag_nodes import RAGNodes
 
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
@@ -206,7 +205,7 @@ def get_rag_nodes(
 
 # RAG Graph Builder 의존성 (Spec 033)
 def get_rag_graph_builder(nodes=Depends(get_rag_nodes)):
-    from app.infrastructure.rag.graph import RAGGraphBuilder
+    from app.infrastructure.ai.rag_graph import RAGGraphBuilder
 
     return RAGGraphBuilder(nodes)
 
@@ -225,7 +224,7 @@ async def get_rag_service(
 # Admin Agent 의존성 (Spec 038)
 async def get_conversational_rag_agent(
     rag_service: Annotated[RAG, Depends(get_rag_service)],
-    ingestion_service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
+    ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ) -> ConversationalRAGAgent:
     return ConversationalRAGAgent(rag_service=rag_service, ingestion_service=ingestion_service)
 

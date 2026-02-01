@@ -1,7 +1,12 @@
 from typing import Any
 
-from app.domain.ingestion.state import IngestionGraphState, StrategyType, ValidationConstraints, ValidationFeedback
-from app.domain.interfaces.llm import LLMInterface
+from app.application.interfaces.llm import LLMInterface
+from app.domain.value_objects.ingestion_state import (
+    IngestionGraphState,
+    StrategyType,
+    ValidationConstraints,
+    ValidationFeedback,
+)
 
 
 def construct_extraction_prompt(
@@ -135,8 +140,7 @@ class IngestionNodes:
         Returns:
             dict: Updates current_strategy, attempts, retry_count
         """
-        from app.domain.ingestion.state import Attempt
-        from app.infrastructure.ai.nodes.logic import select_strategy
+        from app.domain.value_objects.ingestion_state import Attempt
 
         current_retry = state.get("retry_count", 0)
         feedbacks = []
@@ -183,7 +187,7 @@ class IngestionNodes:
         2. If error exists, map error to hypothesis.
         3. Else, unknown error.
         """
-        from app.domain.ingestion.state import BacktrackingContext, FailureHypothesis
+        from app.domain.value_objects.ingestion_state import BacktrackingContext, FailureHypothesis
 
         error = state.get("error")
         feedback = state.get("last_feedback")
@@ -230,3 +234,25 @@ class IngestionNodes:
             "backtracking_context": new_context,
             "steps_history": state.get("steps_history", []) + ["analyze_failure"],
         }
+
+
+def select_strategy(retry_count: int, feedbacks: list[ValidationFeedback]) -> StrategyType:
+    """
+    Meta-Reasoner: 현재 상황(재시도 횟수, 피드백)을 분석하여 최적의 재시도 전략을 선택합니다.
+
+    Rules:
+    - Retry 0~1: CORRECTION (Reasoning Retry)
+    - Retry >= 2: RELAXATION (Constraint Re-evaluation) - 반복된 실패 시 완화
+    """
+    if not feedbacks:
+        # 피드백이 없으면 재시도 의미가 모호하므로 기본(방어) 로직
+        return StrategyType.STANDARD
+
+    # Level 3: Constraint Re-evaluation (Relaxation)
+    # 2번 이상 시도했는데도 실패했다면, 기준이 너무 높은 것일 수 있음.
+    if retry_count >= 2:
+        return StrategyType.RELAXATION
+
+    # Level 2: Reasoning Retry (Correction)
+    # 초기 실패는 LLM의 단순 실수일 확률이 높으므로 교정 시도.
+    return StrategyType.CORRECTION

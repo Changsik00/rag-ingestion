@@ -12,8 +12,8 @@ from typing import Any
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from app.domain.rag.state import RAGGraphState
-from app.infrastructure.rag.nodes import RAGNodes
+from app.domain.value_objects.rag_state import RAGGraphState
+from app.infrastructure.ai.rag_nodes import RAGNodes
 
 
 class RAGGraphBuilder:

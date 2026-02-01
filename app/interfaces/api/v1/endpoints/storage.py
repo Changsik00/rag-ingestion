@@ -34,9 +34,7 @@ async def get_diagnostic(doc_id: str, service: Annotated[Integrity, Depends(get_
 
 
 @router.get("/documents/{doc_id}/preview-context")
-async def get_preview_context(
-    doc_id: str, service: Annotated[Integrity, Depends(get_integrity_service)]
-):
+async def get_preview_context(doc_id: str, service: Annotated[Integrity, Depends(get_integrity_service)]):
     try:
         context = await service.get_cleaned_context(doc_id)
         return {"doc_id": doc_id, "content": context}

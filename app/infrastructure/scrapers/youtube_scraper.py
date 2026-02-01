@@ -8,7 +8,7 @@ from typing import Any
 import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
 
-from app.domain.interfaces.scraper import ScraperInterface
+from app.application.interfaces.scraper import ScraperInterface
 from app.interfaces.api.dto.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)

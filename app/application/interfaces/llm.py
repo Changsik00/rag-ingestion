@@ -43,5 +43,3 @@ class LLMInvoker(Protocol):
     def invoke(self, messages: Any) -> Any:
         """Synchronously invoke the LLM with messages (LangChain compatibility)"""
         ...
-
-

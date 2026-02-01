@@ -33,7 +33,9 @@ def test_composite_storage_get():
     neo4j_mock = Mock()
     chroma_mock = Mock()
     doc_id = uuid4()
-    expected_doc = Document(id=str(doc_id), content="Test", metadata={"source_id": "http://test.com", "url": "http://test.com"})
+    expected_doc = Document(
+        id=str(doc_id), content="Test", metadata={"source_id": "http://test.com", "url": "http://test.com"}
+    )
 
     # Neo4j is the source of truth for metadata/structure
     neo4j_mock.get.return_value = expected_doc
