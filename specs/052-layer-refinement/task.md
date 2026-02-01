@@ -67,39 +67,39 @@
 ### 3-3. Core 파일 단순화
 - [x] **이동**: `app/core/utils/file_processor.py` → `app/core/file_processor.py`
 - [x] **이름 변경**: `app/core/logging_config.py` → `app/core/logger.py`
-- [ ] **업데이트**: 모든 import (~15개 파일)
-- [ ] **정리**: `app/core/utils/` 디렉토리 제거
-- [ ] **테스트**: `uv run pytest`
-- [ ] **커밋**: `refactor(core): simplify core structure and naming (Spec 052)`
+- [x] **업데이트**: 모든 import (~15개 파일)
+- [x] **정리**: `app/core/utils/` 디렉토리 제거
+- [x] **테스트**: `uv run pytest`
+- [x] **커밋**: `refactor(core): simplify core structure and naming (Spec 052)`
 
 ---
 
 ## Task 4: State 객체 정제 (P3 - 낮음)
 
 ### 4-1. State 파일 이름 변경
-- [ ] **이름 변경**: `app/domain/ingestion/state.py` → `app/domain/ingestion/graph_state.py`
-- [ ] **이름 변경**: `app/domain/rag/state.py` → `app/domain/rag/graph_state.py`
-- [ ] **업데이트**: 모든 import (~10개 파일)
-- [ ] **테스트**: `uv run pytest`
-- [ ] **커밋**: `refactor(naming): rename state files to graph_state for clarity (Spec 052)`
+- [x] **이름 변경**: `app/domain/ingestion/state.py` → `app/domain/ingestion/graph_state.py`
+- [x] **이름 변경**: `app/domain/rag/state.py` → `app/domain/rag/graph_state.py`
+- [x] **업데이트**: 모든 import (~10개 파일)
+- [x] **테스트**: `uv run pytest`
+- [x] **커밋**: `refactor(naming): rename state files to graph_state for clarity (Spec 052)`
 
 ---
 
 ## Task 5: 중복 파일 정리 (P3 - 낮음)
 
 ### 5-1. 중복 파일 찾기 및 제거
-- [ ] **조사**: `find app/interfaces/api -name "*.py" | sort`
-- [ ] **검증**: `app/interfaces/api/endpoints/jobs.py`가 `v1/endpoints/jobs.py`와 중복인지 확인
-- [ ] **제거**: 중복 확인 시 삭제
-- [ ] **테스트**: `uv run pytest`
-- [ ] **커밋**: `chore(cleanup): remove duplicate endpoint files (Spec 052)`
+- [x] **조사**: `find app/interfaces/api -name "*.py" | sort`
+- [x] **검증**: `app/interfaces/api/endpoints/jobs.py`가 `v1/endpoints/jobs.py`와 중복인지 확인
+- [x] **제거**: 중복 확인 시 삭제
+- [x] **테스트**: `uv run pytest`
+- [x] **커밋**: `chore(cleanup): remove duplicate endpoint files (Spec 052)`
 
 ---
 
 ## Task N: 최종 검증 및 PR
 
-- [ ] **Lint 확인**: `uv run ruff check .` (0 오류)
-- [ ] **Format 확인**: `uv run ruff format --check .`
+- [x] **Lint 확인**: `uv run ruff check .` (0 오류)
+- [x] **Format 확인**: `uv run ruff format --check .`
 - [ ] **전체 테스트**: `uv run pytest` (194+ 통과)
 - [ ] **Import 검증**: 주요 import 수동 테스트
 - [ ] **문서화**: walkthrough.md 작성

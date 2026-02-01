@@ -5,8 +5,8 @@ import pytest
 
 def test_ingestion_state_import():
     """IngestionGraphState 모듈이 존재하고 임포트 가능한지 검증"""
-    if not importlib.util.find_spec("app.domain.ingestion.state"):
-        pytest.fail("app.domain.ingestion.state module not found")
+    if not importlib.util.find_spec("app.domain.ingestion.graph_state"):
+        pytest.fail("app.domain.ingestion.graph_state module not found")
 
     try:
         from app.domain.ingestion.graph_state import IngestionGraphState  # noqa: F401
