@@ -5,7 +5,7 @@ from fastapi import Depends
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
-from app.application.services.admin_agent import ConversationalRAGAgent
+from app.application.services.agent import ConversationalRAGAgent
 from app.application.services.ingestion import IngestionUseCase
 from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
