@@ -1,7 +1,7 @@
 from typing import Any
 
 from app.domain.ingestion.state import IngestionGraphState, StrategyType, ValidationConstraints, ValidationFeedback
-from app.domain.interfaces.llm import LLMInterface
+from app.application.interfaces.llm import LLMInterface
 
 
 def construct_extraction_prompt(

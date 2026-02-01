@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from app.domain.interfaces.llm import LLMInterface
+from app.application.interfaces.llm import LLMInterface
 
 # Import will succeed after implementation
 try:

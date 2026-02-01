@@ -1,6 +1,6 @@
 import logging
 
-from app.domain.interfaces.llm import LLMInterface
+from app.application.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
 logger = logging.getLogger(__name__)

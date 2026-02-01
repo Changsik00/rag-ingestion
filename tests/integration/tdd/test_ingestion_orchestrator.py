@@ -1,6 +1,6 @@
 import pytest
 
-from app.domain.interfaces.llm import LLMInterface
+from app.application.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
 
