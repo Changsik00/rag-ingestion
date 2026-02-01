@@ -6,7 +6,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
 from app.application.services.agent import ConversationalRAGAgent
-from app.application.services.ingestion import IngestionUseCase
+from app.application.services.ingestion import Ingestion
 from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
 from app.application.services.semantic_extractor import SemanticExtractor
@@ -143,8 +143,8 @@ def get_ingestion_service(
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     chunker: Annotated[Chunker, Depends(get_chunker)],
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
-) -> IngestionUseCase:
-    return IngestionUseCase(
+) -> Ingestion:
+    return Ingestion(
         scraper=scraper,
         repository=repository,
         graph=graph,
@@ -225,7 +225,7 @@ async def get_rag_service(
 # Admin Agent 의존성 (Spec 038)
 async def get_conversational_rag_agent(
     rag_service: Annotated[RAG, Depends(get_rag_service)],
-    ingestion_service: Annotated[IngestionUseCase, Depends(get_ingestion_service)],
+    ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ) -> ConversationalRAGAgent:
     return ConversationalRAGAgent(rag_service=rag_service, ingestion_service=ingestion_service)
 

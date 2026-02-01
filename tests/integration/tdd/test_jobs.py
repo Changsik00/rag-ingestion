@@ -10,7 +10,7 @@ from unittest.mock import Mock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.application.services.ingestion import IngestionUseCase
+from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.interfaces.api.dependencies import get_ingestion_service, get_job_repository
 from app.interfaces.api.main import app
@@ -75,7 +75,7 @@ def test_retry_job_endpoint():
     job = IngestionJob(job_id="test-id", source_url="http://test.com", status=JobStatus.FAILED)
     mock_job_repo.get_job.return_value = job
 
-    mock_service = Mock(spec=IngestionUseCase)
+    mock_service = Mock(spec=Ingestion)
     new_job = IngestionJob(
         job_id="new-job-id", source_url="http://test.com", status=JobStatus.PENDING, retry_of="test-id"
     )

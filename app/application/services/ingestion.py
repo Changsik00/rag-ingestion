@@ -16,7 +16,7 @@ from app.application.interfaces.scraper import ScraperInterface
 logger = setup_logger(__name__)
 
 
-class IngestionUseCase:
+class Ingestion:
     def __init__(
         self,
         scraper: ScraperInterface,
