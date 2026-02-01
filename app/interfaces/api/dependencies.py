@@ -16,7 +16,7 @@ from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.application.interfaces.scraper import ScraperInterface
-from app.domain.services.feedback import Feedback
+from app.application.services.feedback import Feedback
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
