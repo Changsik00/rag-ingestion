@@ -10,20 +10,37 @@
 
 > **목표**: 구축된 그래프 위에서 추론(Reasoning)하고, 외부 도구와 연동하여 자동화된 지식 생산 생태계를 완성한다.
 
-* [ ] **Spec 051: Architecture Refinement (Consistency & Cleanliness)**
+* [x] **Spec 051: Architecture Refinement (Consistency & Cleanliness)** ✅
   * **Goal**: Spec 050 P0 수정 이후 남은 구조적 개선 사항(P1~P3)을 반영하여 일관성 확보
-  * **Guide**: [Design Guide 011: Architecture Refinement Strategy](../docs/design_guides/011-architecture-refinement.md)
+  * **Guide**: [Design Guide 012: Architecture Refinement Strategy](../docs/design_guides/012-architecture-refinement.md)
   * **Scope**:
     * **P1 (High)**: 
         - Service Suffix 제거(`Integrity`, `Feedback`)
         - Chunk VO 이동 및 Chunker Protocol 도입
-        - **DocumentMetadata Value Object** (Type-safe Metadata, Icebox Migrated)
+        - **DocumentMetadata Value Object** (Type-safe Metadata)
     * **P2 (Medium)**: AI Implementation 폴더 구조화, `file_processor` 위치 정리
     * **P3 (Low)**: 
         - Adapter 명확화(`Extractor`, `Orchestrator`)
-        - API v1 활용
-        - **AdminAgent Renaming** (`ConversationalRAGAgent`로 변경, Icebox Migrated)
+        - API v1 통합 및 `/admin/` 제거
+        - **AdminAgent Renaming** (`ConversationalRAGAgent`로 변경)
+  * **Status**: ✅ Completed & Merged
+  * **PR**: [refactor: architecture refinement and api standardization (spec 051)](https://github.com/Changsik00/rag-ingestion/pull/XXX)
+
+* [ ] **Spec 052: Clean Architecture Layer Refinement** 🆕
+  * **Goal**: Spec 051 이후 남은 계층 경계 위반 및 네이밍 불일치 수정
+  * **Scope**:
+    * **P1 (High)**: 
+        - Interface 계층 이동 (`llm`, `scraper` → `application/interfaces/`)
+        - Service 계층 이동 (`feedback` → `application/services/`)
+        - Value Object 정리 (`DocumentMetadata` → `value_objects/`)
+    * **P2 (Medium)**: 
+        - 파일명 표준화 (`admin_agent` → `agent`, `IngestionUseCase` → `Ingestion`)
+        - Core 구조 단순화 (`core/utils/` 중첩 제거, `logger` 이름 통일)
+    * **P3 (Low)**: 
+        - State 파일 명확화 (`state.py` → `graph_state.py`)
+        - 중복 파일 정리
   * **Status**: Ready to Start
+
 
 * [ ] **Integration Test Infrastructure Improvement** 🆕
   > **문서**: [specs/integration-test-improvement.md](../specs/integration-test-improvement.md)  
