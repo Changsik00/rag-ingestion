@@ -102,7 +102,7 @@
 - [x] **Format 확인**: `uv run ruff format --check .`
 - [ ] **전체 테스트**: `uv run pytest` (194+ 통과)
 - [ ] **Import 검증**: 주요 import 수동 테스트
-- [ ] **문서화**: walkthrough.md 작성
-- [ ] **문서화**: pr_description.md 작성
-- [ ] **커밋**: `docs(spec-052): archive walkthrough and pr description`
-- [ ] **PR 생성**: 리뷰 요청
+- [x] **문서화**: walkthrough.md 작성
+- [x] **문서화**: pr_description.md 작성
+- [x] **커밋**: `docs(spec-052): archive walkthrough and pr description`
+- [x] **PR 생성**: 리뷰 요청
