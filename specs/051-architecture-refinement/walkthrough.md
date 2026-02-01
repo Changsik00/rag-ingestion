@@ -28,11 +28,17 @@ Renamed `infrastructure/storage` to `infrastructure/repositories` to align with 
 ### 4. Core Utils
 Moved `domain/services/file_processor.py` to `core/utils/file_processor.py` as it contains generic file handling logic, not domain business rules.
 
-### 5. API DTOs
-Renamed `interfaces/api/schemas` to `interfaces/api/dto` to clearly distinguish Data Transfer Objects from database schemas.
+### 5. API Path Standardization (Spec 051)
+- Unified all API endpoints under the `/v1/` prefix.
+- Removed the redundant `/admin/` prefix from all routes.
+- Introduced a centralized `v1` router in `app/interfaces/api/v1/endpoints/`.
+- Updated all Streamlit pages and integration tests to use the new path structure.
+- Fixed 404 errors by updating `ADMIN_API_URL` in `docker-compose.yml`.
 
 ## Verification
-- **Unit & Integration Tests**: 190 tests passed.
+- **Unit & Integration Tests**: 194 tests passed (including corrected DI and BDD tests).
+- **Backend Routing**: Verified all active paths using custom inspection script.
+- **Frontend Connectivity**: Validated `AdminConfig` and `docker-compose` environment variables.
 - **Linting**: `ruff check` passed.
 
 ## Next Steps
