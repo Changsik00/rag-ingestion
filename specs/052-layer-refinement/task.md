@@ -1,108 +1,108 @@
-# Task List: Spec 052 - Clean Architecture Layer Refinement
+# 작업 목록: Spec 052 - Clean Architecture 계층 정제
 
-## Progress
-- [x] Spec number confirmed and branch created
-- [x] spec.md written
-- [x] plan.md written
-- [ ] task.md written
-- [ ] Backlog updated
-- [ ] User plan acceptance
-
----
-
-## Task 1: Interface Layer Migration (P1 - High)
-
-### 1-1. LLM Interface to Application Layer
-- [ ] **Create Dir**: `app/application/interfaces/` (if not exists)
-- [ ] **Move**: `app/domain/interfaces/llm.py` → `app/application/interfaces/llm.py`
-- [ ] **Find Imports**: `grep -r "from app.domain.interfaces.llm" app/ tests/`
-- [ ] **Update**: All import statements (~15 files)
-- [ ] **Test**: `uv run pytest`
-- [ ] **Commit**: `refactor(layer): move llm interface to application layer (Spec 052)`
-
-### 1-2. Scraper Interface to Application Layer
-- [ ] **Move**: `app/domain/interfaces/scraper.py` → `app/application/interfaces/scraper.py`
-- [ ] **Update**: All imports (~8 files)
-- [ ] **Test**: `uv run pytest`
-- [ ] **Commit**: `refactor(layer): move scraper interface to application layer (Spec 052)`
-
-### 1-3. Feedback Service to Application Layer
-- [ ] **Move**: `app/domain/services/feedback.py` → `app/application/services/feedback.py`
-- [ ] **Move Test**: `tests/unit/domain/services/test_feedback.py` → `tests/unit/application/services/test_feedback.py` (if exists)
-- [ ] **Update**: All imports (~10 files)
-- [ ] **Update**: Dependency injection in `dependencies.py`
-- [ ] **Test**: `uv run pytest`
-- [ ] **Commit**: `refactor(layer): move feedback service to application layer (Spec 052)`
+## 진행 상황
+- [x] Spec 번호 확정 및 브랜치 생성
+- [x] spec.md 작성
+- [x] plan.md 작성
+- [ ] task.md 작성
+- [ ] 백로그 업데이트
+- [ ] 사용자 계획 승인
 
 ---
 
-## Task 2: Value Object Reorganization (P1 - High)
+## Task 1: 인터페이스 계층 마이그레이션 (P1 - 높음)
 
-### 2-1. DocumentMetadata to Value Objects
-- [ ] **Move**: `app/domain/models/document_metadata.py` → `app/domain/value_objects/document_metadata.py`
-- [ ] **Update**: All imports (~20 files)
-- [ ] **Cleanup**: Remove `app/domain/models/` if empty
-- [ ] **Test**: `uv run pytest`
-- [ ] **Commit**: `refactor(vo): move DocumentMetadata to value_objects (Spec 052)`
+### 1-1. LLM 인터페이스를 Application 계층으로
+- [ ] **디렉토리 생성**: `app/application/interfaces/` (없는 경우)
+- [ ] **이동**: `app/domain/interfaces/llm.py` → `app/application/interfaces/llm.py`
+- [ ] **Import 찾기**: `grep -r "from app.domain.interfaces.llm" app/ tests/`
+- [ ] **업데이트**: 모든 import 문 (~15개 파일)
+- [ ] **테스트**: `uv run pytest`
+- [ ] **커밋**: `refactor(layer): move llm interface to application layer (Spec 052)`
+
+### 1-2. Scraper 인터페이스를 Application 계층으로
+- [ ] **이동**: `app/domain/interfaces/scraper.py` → `app/application/interfaces/scraper.py`
+- [ ] **업데이트**: 모든 import (~8개 파일)
+- [ ] **테스트**: `uv run pytest`
+- [ ] **커밋**: `refactor(layer): move scraper interface to application layer (Spec 052)`
+
+### 1-3. Feedback 서비스를 Application 계층으로
+- [ ] **이동**: `app/domain/services/feedback.py` → `app/application/services/feedback.py`
+- [ ] **테스트 이동**: `tests/unit/domain/services/test_feedback.py` → `tests/unit/application/services/test_feedback.py` (존재 시)
+- [ ] **업데이트**: 모든 import (~10개 파일)
+- [ ] **업데이트**: `dependencies.py`의 의존성 주입
+- [ ] **테스트**: `uv run pytest`
+- [ ] **커밋**: `refactor(layer): move feedback service to application layer (Spec 052)`
 
 ---
 
-## Task 3: Naming Consistency (P2 - Medium)
+## Task 2: Value Object 재정리 (P1 - 높음)
+
+### 2-1. DocumentMetadata를 Value Objects로
+- [ ] **이동**: `app/domain/models/document_metadata.py` → `app/domain/value_objects/document_metadata.py`
+- [ ] **업데이트**: 모든 import (~20개 파일)
+- [ ] **정리**: `app/domain/models/` 비어있으면 제거
+- [ ] **테스트**: `uv run pytest`
+- [ ] **커밋**: `refactor(vo): move DocumentMetadata to value_objects (Spec 052)`
+
+---
+
+## Task 3: 네이밍 일관성 (P2 - 중간)
 
 ### 3-1. Admin Agent → Agent
-- [ ] **Rename File**: `app/application/services/admin_agent.py` → `app/application/services/agent.py`
-- [ ] **Rename Test**: `tests/unit/application/services/test_admin_agent.py` → `test_agent.py` (if exists)
-- [ ] **Update**: All imports (~12 files)
-- [ ] **Test**: `uv run pytest`
-- [ ] **Commit**: `refactor(naming): rename admin_agent to agent (Spec 052)`
+- [ ] **파일 이름 변경**: `app/application/services/admin_agent.py` → `app/application/services/agent.py`
+- [ ] **테스트 이름 변경**: `tests/unit/application/services/test_admin_agent.py` → `test_agent.py` (존재 시)
+- [ ] **업데이트**: 모든 import (~12개 파일)
+- [ ] **테스트**: `uv run pytest`
+- [ ] **커밋**: `refactor(naming): rename admin_agent to agent (Spec 052)`
 
 ### 3-2. IngestionUseCase → Ingestion
-- [ ] **Rename Class**: In `app/application/services/ingestion.py`: `IngestionUseCase` → `Ingestion`
-- [ ] **Rename Test**: `tests/unit/test_ingestion_use_case.py` → `tests/unit/application/services/test_ingestion.py`
-- [ ] **Update**: All class references (~25 files)
-- [ ] **Update**: Dependency injection
-- [ ] **Test**: `uv run pytest`
-- [ ] **Commit**: `refactor(naming): rename IngestionUseCase to Ingestion (Spec 052)`
+- [ ] **클래스 이름 변경**: `app/application/services/ingestion.py`에서 `IngestionUseCase` → `Ingestion`
+- [ ] **테스트 이름 변경**: `tests/unit/test_ingestion_use_case.py` → `tests/unit/application/services/test_ingestion.py`
+- [ ] **업데이트**: 모든 클래스 참조 (~25개 파일)
+- [ ] **업데이트**: 의존성 주입
+- [ ] **테스트**: `uv run pytest`
+- [ ] **커밋**: `refactor(naming): rename IngestionUseCase to Ingestion (Spec 052)`
 
-### 3-3. Core File Simplification
-- [ ] **Move**: `app/core/utils/file_processor.py` → `app/core/file_processor.py`
-- [ ] **Rename**: `app/core/logging_config.py` → `app/core/logger.py`
-- [ ] **Update**: All imports (~15 files)
-- [ ] **Cleanup**: Remove `app/core/utils/` directory
-- [ ] **Test**: `uv run pytest`
-- [ ] **Commit**: `refactor(core): simplify core structure and naming (Spec 052)`
-
----
-
-## Task 4: State Object Refinement (P3 - Low)
-
-### 4-1. Rename State Files
-- [ ] **Rename**: `app/domain/ingestion/state.py` → `app/domain/ingestion/graph_state.py`
-- [ ] **Rename**: `app/domain/rag/state.py` → `app/domain/rag/graph_state.py`
-- [ ] **Update**: All imports (~10 files)
-- [ ] **Test**: `uv run pytest`
-- [ ] **Commit**: `refactor(naming): rename state files to graph_state for clarity (Spec 052)`
+### 3-3. Core 파일 단순화
+- [ ] **이동**: `app/core/utils/file_processor.py` → `app/core/file_processor.py`
+- [ ] **이름 변경**: `app/core/logging_config.py` → `app/core/logger.py`
+- [ ] **업데이트**: 모든 import (~15개 파일)
+- [ ] **정리**: `app/core/utils/` 디렉토리 제거
+- [ ] **테스트**: `uv run pytest`
+- [ ] **커밋**: `refactor(core): simplify core structure and naming (Spec 052)`
 
 ---
 
-## Task 5: Duplicate File Cleanup (P3 - Low)
+## Task 4: State 객체 정제 (P3 - 낮음)
 
-### 5-1. Find and Remove Duplicates
-- [ ] **Investigate**: `find app/interfaces/api -name "*.py" | sort`
-- [ ] **Verify**: Check if `app/interfaces/api/endpoints/jobs.py` duplicates `v1/endpoints/jobs.py`
-- [ ] **Remove**: Delete duplicate if confirmed
-- [ ] **Test**: `uv run pytest`
-- [ ] **Commit**: `chore(cleanup): remove duplicate endpoint files (Spec 052)`
+### 4-1. State 파일 이름 변경
+- [ ] **이름 변경**: `app/domain/ingestion/state.py` → `app/domain/ingestion/graph_state.py`
+- [ ] **이름 변경**: `app/domain/rag/state.py` → `app/domain/rag/graph_state.py`
+- [ ] **업데이트**: 모든 import (~10개 파일)
+- [ ] **테스트**: `uv run pytest`
+- [ ] **커밋**: `refactor(naming): rename state files to graph_state for clarity (Spec 052)`
 
 ---
 
-## Task N: Final Verification & PR
+## Task 5: 중복 파일 정리 (P3 - 낮음)
 
-- [ ] **Lint Check**: `uv run ruff check .` (0 errors)
-- [ ] **Format Check**: `uv run ruff format --check .`
-- [ ] **Full Test Suite**: `uv run pytest` (194+ passing)
-- [ ] **Import Verification**: Test key imports manually
-- [ ] **Documentation**: Write walkthrough.md
-- [ ] **Documentation**: Write pr_description.md
-- [ ] **Commit**: `docs(spec-052): archive walkthrough and pr description`
-- [ ] **Create PR**: Submit for review
+### 5-1. 중복 파일 찾기 및 제거
+- [ ] **조사**: `find app/interfaces/api -name "*.py" | sort`
+- [ ] **검증**: `app/interfaces/api/endpoints/jobs.py`가 `v1/endpoints/jobs.py`와 중복인지 확인
+- [ ] **제거**: 중복 확인 시 삭제
+- [ ] **테스트**: `uv run pytest`
+- [ ] **커밋**: `chore(cleanup): remove duplicate endpoint files (Spec 052)`
+
+---
+
+## Task N: 최종 검증 및 PR
+
+- [ ] **Lint 확인**: `uv run ruff check .` (0 오류)
+- [ ] **Format 확인**: `uv run ruff format --check .`
+- [ ] **전체 테스트**: `uv run pytest` (194+ 통과)
+- [ ] **Import 검증**: 주요 import 수동 테스트
+- [ ] **문서화**: walkthrough.md 작성
+- [ ] **문서화**: pr_description.md 작성
+- [ ] **커밋**: `docs(spec-052): archive walkthrough and pr description`
+- [ ] **PR 생성**: 리뷰 요청
