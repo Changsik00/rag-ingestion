@@ -3,8 +3,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from app.domain.value_objects.document_metadata import DocumentMetadata
 from app.domain.value_objects.chunk import Chunk
+from app.domain.value_objects.document_metadata import DocumentMetadata
 
 
 class Document(BaseModel):

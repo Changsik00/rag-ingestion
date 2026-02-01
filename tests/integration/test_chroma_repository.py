@@ -9,7 +9,6 @@ from app.infrastructure.repositories.chroma import ChromaVectorRepository
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
-
 # Mock Embedding Function for Deterministic Tests
 class MockEmbeddingFunction(embedding_functions.EmbeddingFunction):
     def __call__(self, input: list[str]) -> list[list[float]]:

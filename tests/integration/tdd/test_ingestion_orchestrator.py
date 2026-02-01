@@ -7,7 +7,6 @@ from app.infrastructure.ai.orchestrators.ingestion_orchestrator import Ingestion
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
-
 class MockInnerLLM(LLMInterface):
     async def extract_metadata(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:
         return ExtractedMetadata(

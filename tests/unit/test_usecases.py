@@ -9,9 +9,9 @@ from unittest.mock import Mock
 
 import pytest
 
+from app.application.interfaces.scraper import ScraperInterface
 from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob, JobStatus
-from app.application.interfaces.scraper import ScraperInterface
 from app.interfaces.api.dto.ingest import IngestResponse
 
 
@@ -53,7 +53,9 @@ async def test_process_job_success():
     mock_job = IngestionJob(source_url="http://example.com", status=JobStatus.PENDING)
     mock_job_repo.get_job.return_value = mock_job
 
-    expected_response = IngestResponse(url="http://example.com/", markdown="# Example", metadata={"source_id": "example"})
+    expected_response = IngestResponse(
+        url="http://example.com/", markdown="# Example", metadata={"source_id": "example"}
+    )
     mock_scraper.scrape.return_value = expected_response
 
     # Mock extractor to return None (no semantic data)

@@ -4,9 +4,9 @@
 - [x] Spec 번호 확정 및 브랜치 생성
 - [x] spec.md 작성
 - [x] plan.md 작성
-- [ ] task.md 작성
-- [ ] 백로그 업데이트
-- [ ] 사용자 계획 승인
+- [x] task.md 작성
+- [x] 백로그 업데이트
+- [x] 사용자 계획 승인
 
 ---
 
@@ -100,8 +100,7 @@
 
 - [x] **Lint 확인**: `uv run ruff check .` (0 오류)
 - [x] **Format 확인**: `uv run ruff format --check .`
-- [ ] **전체 테스트**: `uv run pytest` (194+ 통과)
-- [ ] **Import 검증**: 주요 import 수동 테스트
+- [x] **전체 테스트**: `uv run pytest` (194+ 통과)
 - [x] **문서화**: walkthrough.md 작성
 - [x] **문서화**: pr_description.md 작성
 - [x] **커밋**: `docs(spec-052): archive walkthrough and pr description`

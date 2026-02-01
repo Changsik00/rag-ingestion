@@ -5,7 +5,9 @@ from fastapi import Depends
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from neo4j import Driver, GraphDatabase
 
+from app.application.interfaces.scraper import ScraperInterface
 from app.application.services.agent import ConversationalRAGAgent
+from app.application.services.feedback import Feedback
 from app.application.services.ingestion import Ingestion
 from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
@@ -15,8 +17,6 @@ from app.domain.interfaces.chunker import Chunker
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
-from app.application.interfaces.scraper import ScraperInterface
-from app.application.services.feedback import Feedback
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.infrastructure.ai.orchestrators.ingestion_orchestrator import IngestionOrchestrator
@@ -58,7 +58,7 @@ def get_repository() -> DocumentRepository:
     """Composite Storage를 DI로 제공"""
     driver = get_neo4j_driver()
     neo4j_storage = Neo4jDocumentRepository(driver)
-    chroma_storage = get_chroma_vector_repository() # Use the dependency function
+    chroma_storage = get_chroma_vector_repository()  # Use the dependency function
 
     return CompositeDocumentRepository(neo4j=neo4j_storage, chroma=chroma_storage)
 
@@ -71,7 +71,6 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 
 # Storage Integrity Service 의존성
 # Deleted get_storage_integrity_service
-
 
 
 # Checkpointer 의존성 (HITL Persistence)

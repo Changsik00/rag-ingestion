@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.domain.ingestion.graph_state import IngestionGraphState
 from app.application.interfaces.llm import LLMInterface
+from app.domain.ingestion.graph_state import IngestionGraphState
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
 
@@ -39,7 +39,7 @@ async def test_extract_metadata_node():
     mock_metadata = ExtractedMetadata(
         title="Test Title", summary="Test Summary", keywords=["test"], entities={}, language="en"
     )
-    mock_llm.aextract_metadata = AsyncMock(return_value = mock_metadata)
+    mock_llm.aextract_metadata = AsyncMock(return_value=mock_metadata)
 
     nodes = IngestionNodes(llm=mock_llm)
 

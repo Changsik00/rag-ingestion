@@ -11,7 +11,6 @@ from app.infrastructure.rag.nodes import RAGNodes
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
-
 @pytest.mark.asyncio
 async def test_rag_precision_refinement_flow():
     """

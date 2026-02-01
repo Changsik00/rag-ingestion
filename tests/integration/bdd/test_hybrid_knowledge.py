@@ -19,7 +19,6 @@ from app.infrastructure.rag.nodes import RAGNodes
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
-
 @pytest.fixture
 def mock_dependencies():
     neo4j_doc = Mock()

@@ -84,7 +84,9 @@ class ChromaVectorRepository(DocumentRepository):
     def save(self, document: Document) -> None:
         try:
             # Document Metadata Flattening
-            meta_dict = document.metadata.model_dump() if hasattr(document.metadata, "model_dump") else document.metadata
+            meta_dict = (
+                document.metadata.model_dump() if hasattr(document.metadata, "model_dump") else document.metadata
+            )
             flattened_metadata = self._flatten_metadata(meta_dict)
 
             # source_url handling if explicit parameter is needed, but mostly it's in metadata

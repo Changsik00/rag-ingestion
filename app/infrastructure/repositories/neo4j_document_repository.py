@@ -57,7 +57,9 @@ class Neo4jDocumentRepository(DocumentRepository):
     def save(self, document: Document) -> None:
         try:
             # DocumentMetadata -> dict 변환
-            meta_dict = document.metadata.model_dump() if hasattr(document.metadata, "model_dump") else document.metadata
+            meta_dict = (
+                document.metadata.model_dump() if hasattr(document.metadata, "model_dump") else document.metadata
+            )
             flattened_metadata = self._flatten_metadata(meta_dict)
 
             query = """

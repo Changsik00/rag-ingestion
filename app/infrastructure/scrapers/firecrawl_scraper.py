@@ -3,8 +3,8 @@ from typing import Any
 
 from firecrawl import FirecrawlApp
 
-from app.core.config import get_settings
 from app.application.interfaces.scraper import ScraperInterface
+from app.core.config import get_settings
 from app.infrastructure.scrapers.cleaner import MarkdownCleaner
 from app.interfaces.api.dto.ingest import IngestResponse
 

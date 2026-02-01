@@ -72,7 +72,9 @@ async def get_job_trace(job_id: str, adapter: IngestionOrchestrator = Depends(ge
 
 
 @router.post("/{job_id}/resume")
-async def resume_job(job_id: str, request: ResumeRequest, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
+async def resume_job(
+    job_id: str, request: ResumeRequest, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)
+):
     """Resume an interrupted job."""
     try:
         result = await adapter.resume(job_id, request.input)

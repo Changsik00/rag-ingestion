@@ -9,7 +9,6 @@ from app.infrastructure.ai.extractors.langchain_extractor import LangChainExtrac
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
-
 @pytest.mark.integration
 class TestQueryRewriteFlow:
     @pytest.fixture

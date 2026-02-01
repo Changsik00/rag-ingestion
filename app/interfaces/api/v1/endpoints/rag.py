@@ -3,9 +3,14 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.application.services.agent import ConversationalRAGAgent
-from app.domain.interfaces.document_repository import DocumentRepository
 from app.application.services.feedback import Feedback
-from app.interfaces.api.dependencies import get_conversational_rag_agent, get_checkpointer, get_feedback_service, get_repository
+from app.domain.interfaces.document_repository import DocumentRepository
+from app.interfaces.api.dependencies import (
+    get_checkpointer,
+    get_conversational_rag_agent,
+    get_feedback_service,
+    get_repository,
+)
 
 router = APIRouter(tags=["RAG"])
 

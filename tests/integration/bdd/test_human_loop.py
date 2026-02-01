@@ -7,7 +7,6 @@ from app.infrastructure.ai.graphs.ingestion_graph import IngestionGraphBuilder
 pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
-
 class MockLLM:
     def __init__(self):
         pass
