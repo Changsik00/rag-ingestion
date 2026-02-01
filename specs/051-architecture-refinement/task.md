@@ -5,8 +5,8 @@
 - [x] spec.md 작성
 - [x] plan.md 작성
 - [x] task.md 작성
-- [ ] 백로그 업데이트 (Note 추가)
-- [ ] User Plan Accept
+- [x] 백로그 업데이트 (Note 추가)
+- [x] User Plan Accept
 
 ---
 
@@ -19,55 +19,68 @@
 - [x] **Commit**: `refactor(domain): introduce DocumentMetadata and Chunk VOs (Spec 051)`
 
 ### 1-2. Interfaces
-- [ ] **Create**: `app/domain/interfaces/chunker.py` (Protocol)
-- [ ] **Refactor**: `app/infrastructure/chunker/langchain_chunker.py` (Implement Protocol)
+- [x] **Create**: `app/domain/interfaces/chunker.py` (Protocol)
+- [x] **Refactor**: `app/infrastructure/chunker/langchain_chunker.py` (Implement Protocol)
 - [x] **Commit**: `refactor(domain): introduce Chunker protocol (Spec 051)`
 
 ### 1-3. Semantic Renaming
-- [ ] **Rename**: `IntegrityService` -> `Integrity`
-- [ ] **Rename**: `FeedbackService` -> `Feedback`
-- [ ] **Rename**: `IngestionService` -> `IngestionUseCase`
-- [ ] **Commit**: `refactor(service): rename services to domain concepts (Spec 051)`
+- [x] **Rename**: `IntegrityService` -> `Integrity`
+- [x] **Rename**: `FeedbackService` -> `Feedback`
+- [x] **Rename**: `IngestionService` -> `IngestionUseCase`
+- [x] **Commit**: `refactor(service): rename services to domain concepts (Spec 051)`
 
 ## Task 2: P2 - AI Consolidaton & Cleanup (Medium)
 ### 2-1. AI Hierarchy Setup
-- [ ] **Create Dirs**: `app/infrastructure/ai/{extractors,orchestrators,nodes,graphs}`
-- [ ] **Commit**: `chore(infra): setup hierarchical ai folder structure (Spec 051)`
+- [x] **Create Dirs**: `app/infrastructure/ai/{extractors,orchestrators,nodes,graphs}`
+- [x] **Commit**: `chore(infra): setup hierarchical ai folder structure (Spec 051)`
 
 ### 2-2. Move & Rename (LLM/Brain -> AI)
-- [ ] **Move**: `infrastructure/llm/langchain_adapter.py` -> `ai/extractors/langchain_extractor.py`
-- [ ] **Move**: `infrastructure/brain/adapter.py` -> `ai/orchestrators/ingestion_orchestrator.py`
-- [ ] **Move**: `infrastructure/brain/nodes.py` -> `ai/nodes/ingestion_nodes.py`
-- [ ] **Move**: `infrastructure/brain/graph.py` -> `ai/graphs/ingestion_graph.py`
-- [ ] **Delete**: `infrastructure/llm`, `infrastructure/brain` folders
-- [ ] **Commit**: `refactor(infra): consolidate llm and brain into ai hierarchy (Spec 051)`
+- [x] **Move**: `infrastructure/llm/langchain_adapter.py` -> `ai/extractors/langchain_extractor.py`
+- [x] **Move**: `infrastructure/brain/adapter.py` -> `ai/orchestrators/ingestion_orchestrator.py`
+- [x] **Move**: `infrastructure/brain/nodes.py` -> `ai/nodes/ingestion_nodes.py`
+- [x] **Move**: `infrastructure/brain/graph.py` -> `ai/graphs/ingestion_graph.py`
+- [x] **Delete**: `infrastructure/llm`, `infrastructure/brain` folders
+- [x] **Refactor**: Update all imports to use new paths (Global Find & Replace)
+- [x] **Commit**: `refactor(infra): consolidate ai modules into hierarchy (Spec 051)`
 
-### 2-3. Generic Utils
-- [ ] **Move**: `domain/services/file_processor.py` -> `core/utils/file_processor.py`
-- [ ] **Commit**: `refactor(core): move file_processor to core utils (Spec 051)`
+### 2-3. Admin Agent (Consolidate)
+- [x] **Refactor**: Ensure `AdminAgent` uses `IngestionOrchestrator` if applicable
+- [x] **Move**: `infrastructure/brain/logic.py` -> `ai/nodes/logic.py`
+- [x] **Commit**: `refactor(admin): update admin agent dependencies (Spec 051)`
 
 ### 2-4. Repositories
-- [ ] **Rename Dir**: `infrastructure/storage` -> `infrastructure/repositories`
-- [ ] **Rename Files**: Ensure `_repository.py` suffix
-- [ ] **Commit**: `refactor(infra): rename storage to repositories (Spec 051)`
+- [x] **Rename Dir**: `infrastructure/storage` -> `infrastructure/repositories`
+- [x] **Refactor**: Update all imports `app.infrastructure.storage` -> `app.infrastructure.repositories`
+- [x] **Commit**: `refactor(infra): rename storage to repositories (Spec 051)`
+
+### 2-5. Generic Utils (Core)
+- [x] **Move**: `domain/services/file_processor.py` -> `core/utils/file_processor.py`
+- [x] **Commit**: `refactor(core): move file_processor to core utils (Spec 051)`
 
 ## Task 3: P3 - Standardization (Low)
 ### 3-1. State & Agent
-- [ ] **Rename**: `IngestionState` -> `IngestionGraphState`
-- [ ] **Rename**: `RAGState` -> `RAGGraphState`
-- [ ] **Rename**: `AdminAgent` -> `ConversationalRAGAgent`
-- [ ] **Commit**: `refactor(std): standardize state and agent names (Spec 051)`
+- [x] **Rename**: `IngestionState` -> `IngestionGraphState`
+- [x] **Rename**: `RAGState` -> `RAGGraphState`
+- [x] **Rename**: `AdminAgent` -> `ConversationalRAGAgent`
+- [x] **Commit**: `refactor(std): standardize state and agent names (Spec 051)`
 
 ### 3-2. DTO
-- [ ] **Rename Dir**: `interfaces/api/schemas` -> `interfaces/api/dto`
-- [ ] **Refactor**: All imports
-- [ ] **Commit**: `refactor(api): rename schemas to dto (Spec 051)`
+- [x] **Rename Dir**: `interfaces/api/schemas` -> `interfaces/api/dto`
+- [x] **Refactor**: All imports
+- [x] **Commit**: `refactor(api): rename schemas to dto (Spec 051)`
+
+### 3-3. API Path Unification (Spec 051)
+- [x] **Consolidate**: Move all v1 routers to `v1/endpoints/`
+- [x] **Standardize**: Remove `/admin/` prefix from all paths
+- [x] **Prefix**: Use `/v1/` for all endpoints centrally in `main.py`
+- [x] **Frontend**: Update Streamlit pages to use new paths
+- [x] **Commit**: `refactor(api): unify paths under /v1 and remove /admin (Spec 051)`
 
 ---
 
 ## Task N: PR Creation & Archiving
-- [ ] Code Quality Check: `uv run ruff check .`
-- [ ] Test: `uv run pytest`
-- [ ] Documentation: Walkthrough & PR Description
-- [ ] Archive Commit: `docs(spec-051): archive walkthrough and pr description`
-- [ ] Create PR
+- [x] Code Quality Check: `uv run ruff check .`
+- [x] Test: `uv run pytest`
+- [x] Documentation: Walkthrough & PR Description
+- [x] Archive Commit: `docs(spec-051): archive walkthrough and pr description`
+- [x] Create PR
