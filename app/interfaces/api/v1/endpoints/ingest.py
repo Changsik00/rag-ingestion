@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
 
 from app.application.services.ingestion import IngestionUseCase
-from app.domain.interfaces.scraper import ScraperInterface
+from app.application.interfaces.scraper import ScraperInterface
 from app.interfaces.api.dependencies import get_ingestion_service, get_scraper
 from app.interfaces.api.dto.ingest import (
     AsyncIngestResponse,
