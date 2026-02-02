@@ -19,7 +19,8 @@ We introduced a set of Pydantic models in `app/interfaces/api/v1/dto/` to define
     - `JobResponse`, `JobStatusResponse` (Jobs API)
     - `RAGResponse`, `ChatResponse`, `AutocompleteResponse` (Top-level RAG API)
     - `DocumentDTO`, `SystemStatusResponse` (System/Entity API)
-    - `GraphSchemaResponse`, `GraphQueryResponse` (Graph API)
+    - `GraphPresetResponse`, `GraphSchemaResponse`, `GraphQueryResponse` (Graph API)
+    - `ResetResultResponse`, `DriftReportResponse`, `EnrichResponse` (Integrity/Storage API)
 
 ### 2. Global Exception Handling
 Replaced scattered `try-except` blocks with a centralized exception handling strategy in `app/interfaces/api/error_handlers.py`.
@@ -43,17 +44,17 @@ async def entity_not_found_handler(request, exc):
     )
 ```
 
-### 3. Endpoint Refactoring
-Refactored major API endpoints to use the new DTOs and remove manual error handling.
+### 3. Endpoint Refactoring & Status Code Standardization
+Refactored all major API endpoints to use the new DTOs, remove manual `try-except` re-raising, and standardize HTTP status codes.
 
-- **Jobs API** (`/v1/jobs`): Returns `JobResponse`.
-- **Ingest API** (`/v1/ingest`): Returns `IngestResponse`.
-- **RAG API** (`/v1/rag`): 
-    - `/sessions/{id}/ask` returns `ChatResponse`.
-    - `/documents/autocomplete` returns `list[AutocompleteResponse]`.
-- **System API** (`/v1/system`): Returns `SystemStatusResponse`.
-- **Entities API** (`/v1/entities`): Returns `list[DocumentDTO]`.
-- **Graph API** (`/v1/graph`): Returns `GraphSchemaResponse` and `GraphQueryResponse` with redundant `try-except` blocks removed (leveraging global handlers).
+- **100% `response_model` Coverage**: All v1 endpoints now have explicit Pydantic DTOs for responses, enabling full Swagger UI documentation.
+- **`202 Accepted` for Async Operations**: Applied to endpoints that initiate background or long-running tasks:
+    - Ingest: `/v1/ingest/web`, `/v1/ingest/files`
+    - Jobs: `/{job_id}/retry`, `/{job_id}/resume`
+    - RAG: `/sessions/{id}/ask`, `/sessions/{id}/resume`
+    - Storage: `/documents/{id}/sync`, `/documents/{id}/enrich`, `/sync-all`
+    - Integrity: `/reset`
+- **Redundant Exception Cleanup**: Removed endpoint-level `try-except Exception` blocks in `graph.py` and `storage.py`.
 
 ## Verification Results
 
