@@ -3,8 +3,8 @@ from uuid import uuid4
 
 import pytest
 
-from app.core.exceptions import InfrastructureException
 from app.domain.entities.document import Document
+from app.infrastructure.exceptions import InfrastructureError
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
 from app.infrastructure.repositories.composite import CompositeDocumentRepository
 from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
@@ -74,7 +74,7 @@ def test_chroma_storage_save_exception_handling(mock_client_cls):
     """
     Given: ChromaDB client raises an exception during save
     When: save() is called
-    Then: It should be wrapped in InfrastructureException
+    Then: It should be wrapped in InfrastructureError
     """
     # Setup
     mock_client = Mock()
@@ -89,7 +89,7 @@ def test_chroma_storage_save_exception_handling(mock_client_cls):
     doc = Document(content="Test", metadata={"source_id": "http://test.com", "url": "http://test.com"})
 
     # Verify exception wrapping
-    with pytest.raises(InfrastructureException) as exc_info:
+    with pytest.raises(InfrastructureError) as exc_info:
         storage.save(doc)
 
     assert "Failed to save document to ChromaDB" in str(exc_info.value) or "Connection Refused" in str(exc_info.value)
@@ -133,7 +133,7 @@ def test_neo4j_storage_save_exception_handling():
     """
     Given: Neo4j driver raises an exception
     When: save() is called
-    Then: It should be wrapped in InfrastructureException
+    Then: It should be wrapped in InfrastructureError
     """
     mock_driver = Mock()
     mock_session = Mock()
@@ -152,7 +152,7 @@ def test_neo4j_storage_save_exception_handling():
     storage = Neo4jDocumentRepository(driver=mock_driver)
     doc = Document(content="Test", metadata={"source_id": "http://test.com", "url": "http://test.com"})
 
-    with pytest.raises(InfrastructureException) as exc_info:
+    with pytest.raises(InfrastructureError) as exc_info:
         storage.save(doc)
 
     assert "Failed to save document to Neo4j" in str(exc_info.value)

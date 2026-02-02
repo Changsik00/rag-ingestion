@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.infrastructure.scrapers.trafilatura_scraper import TrafilaturaWebScraper
-from app.interfaces.api.dto.ingest import IngestResponse
+from app.interfaces.api.v1.dto.ingest import IngestResponse
 
 # Mock HTML with ads and noise
 MOCK_HTML_WITH_ADS = """

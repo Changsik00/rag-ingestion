@@ -1,8 +1,8 @@
-from app.core.exceptions import (
+from app.core.exceptions import BaseAppError
+from app.domain.exceptions import DomainError
+from app.infrastructure.exceptions import (
     DatabaseError,
-    DoitException,
-    DomainException,
-    InfrastructureException,
+    InfrastructureError,
     LLMError,
     ScrapingError,
 )
@@ -10,18 +10,18 @@ from app.core.exceptions import (
 
 def test_exception_inheritance():
     """Verify exception hierarchy"""
-    assert issubclass(DoitException, Exception)
-    assert issubclass(DomainException, DoitException)
-    assert issubclass(InfrastructureException, DoitException)
-    assert issubclass(ScrapingError, InfrastructureException)
-    assert issubclass(LLMError, InfrastructureException)
-    assert issubclass(DatabaseError, InfrastructureException)
+    assert issubclass(BaseAppError, Exception)
+    assert issubclass(DomainError, BaseAppError)
+    assert issubclass(InfrastructureError, BaseAppError)
+    assert issubclass(ScrapingError, InfrastructureError)
+    assert issubclass(LLMError, InfrastructureError)
+    assert issubclass(DatabaseError, InfrastructureError)
 
 
 def test_exception_messages():
     """Verify exception messages are preserved"""
     msg = "Something went wrong"
-    exc = DomainException(msg)
+    exc = DomainError(msg)
     assert str(exc) == msg
 
 
@@ -35,4 +35,4 @@ def test_exception_with_cause():
         pass
 
     # Just verifying instantiation works
-    assert isinstance(DatabaseError("test"), DoitException)
+    assert isinstance(DatabaseError("test"), BaseAppError)
