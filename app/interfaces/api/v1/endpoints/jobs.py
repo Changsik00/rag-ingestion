@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 
 from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob
@@ -76,7 +76,7 @@ async def get_job_trace(job_id: str, adapter: IngestionOrchestrator = Depends(ge
     )
 
 
-@router.post("/{job_id}/resume", response_model=ResumeResponse)
+@router.post("/{job_id}/resume", response_model=ResumeResponse, status_code=status.HTTP_202_ACCEPTED)
 async def resume_job(
     job_id: str, request: ResumeRequest, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)
 ):
@@ -85,7 +85,7 @@ async def resume_job(
     return ResumeResponse(result_metadata=result.get("metadata", None))
 
 
-@router.post("/{job_id}/retry", response_model=JobResponse)
+@router.post("/{job_id}/retry", response_model=JobResponse, status_code=status.HTTP_202_ACCEPTED)
 async def retry_job(
     job_id: str,
     background_tasks: BackgroundTasks,

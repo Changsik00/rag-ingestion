@@ -23,3 +23,7 @@ class GraphEdgeDTO(BaseModel):
 class GraphQueryResponse(BaseModel):
     nodes: list[GraphNodeDTO]
     edges: list[GraphEdgeDTO]
+
+
+class GraphPresetResponse(BaseModel):
+    presets: dict[str, str]

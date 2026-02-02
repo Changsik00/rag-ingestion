@@ -10,10 +10,10 @@
     - API 계층 구조(`v1/endpoints`)와 DTO 구조가 불일치함.
 
 ### 주요 변경 사항
-- **DTO 표준화**: `app/interfaces/api/v1/dto/` 디렉토리에 `BaseResponse` 및 도메인별 DTO(Jobs, IO, RAG, Graph 등) 구현.
-- **예외 처리 통합**: `app/interfaces/api/error_handlers.py`에서 전역 예외 처리기 구현 (Custom Errors -> HTTP Status 매핑). 불필요한 엔드포인트 내 `try-except` 제거.
-- **Clean Architecture 준수**:
-    - `DoitException` -> `BaseAppError` (Core)
+- **Response Model 전수 적용 (100% Coverage)**: `entities`, `graph`, `integrity`, `storage` 등 모든 v1 엔드포인트에 Pydantic DTO 기반 `response_model` 적용.
+- **Status Code 표준화**: `Accept-Post` 패턴을 따라 비동기 또는 장기 실행 작업(`ingest`, `retry`, `resume`, `sync`, `enrich`, `reset` 등)에 `HTTP 202 Accepted` 일관되게 적용.
+- **DTO 통합 및 확장**: `app/interfaces/api/v1/dto/` 하위에 도메인별 응답 규격 정의 및 통합.
+- **예외 처리 통합**: `app/interfaces/api/error_handlers.py`에서 전역 예외 처리기 구현 및 엔드포인트 내 불필요한 `try-except` 제거.
     - `DomainError` 등 -> `app/domain/exceptions.py`
     - `InfrastructureError` 등 -> `app/infrastructure/exceptions.py`
 - **구조 개선**: `app/interfaces/api/dto` 제거 및 `v1/dto`로 통합.

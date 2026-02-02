@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.application.services.agent import ConversationalRAGAgent
 from app.application.services.feedback import Feedback
@@ -59,7 +59,7 @@ def map_to_chat_response(result: dict, status: str, next_steps: Any) -> ChatResp
     )
 
 
-@router.post("/sessions/{id}/ask", response_model=ChatResponse)
+@router.post("/sessions/{id}/ask", response_model=ChatResponse, status_code=status.HTTP_202_ACCEPTED)
 async def ask_agent(
     id: str,
     payload: dict[str, Any],
@@ -125,7 +125,7 @@ async def save_feedback(feedback: dict[str, Any], service: Annotated[Feedback, D
     raise HTTPException(status_code=500, detail="Failed to save feedback")
 
 
-@router.post("/sessions/{id}/resume", response_model=ChatResponse)
+@router.post("/sessions/{id}/resume", response_model=ChatResponse, status_code=status.HTTP_202_ACCEPTED)
 async def resume_session(
     id: str,
     payload: dict[str, Any],

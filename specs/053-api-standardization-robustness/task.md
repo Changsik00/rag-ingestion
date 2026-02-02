@@ -55,6 +55,7 @@
 - [x] `app/interfaces/api/v1/endpoints/entities.py` -> `DocumentResponse`
 - [x] `app/interfaces/api/v1/endpoints/graph.py`: Remove redundant `try-except` blocks (User Feedback)
 - [x] `app/interfaces/api/v1/endpoints/graph.py` -> `GraphResponse` (DTO application)
+- [x] Apply `status_code=202` to all async/long-running endpoints (User Feedback)
 
 ---
 
