@@ -1,5 +1,6 @@
 import json
 from uuid import UUID
+from datetime import datetime
 
 from neo4j import Driver
 
@@ -52,6 +53,11 @@ class Neo4jDocumentRepository(DocumentRepository):
                     metadata[k] = v
             else:
                 metadata[k] = v
+        
+        # [Spec-054] Ensure source_id exists for DocumentMetadata validation
+        if "source_id" not in metadata:
+            metadata["source_id"] = metadata.get("url") or metadata.get("source") or node_items.get("id", "unknown_source")
+            
         return metadata
 
     def save(self, document: Document) -> None:
@@ -145,7 +151,7 @@ class Neo4jDocumentRepository(DocumentRepository):
                         id=str(node["id"]),
                         content=node.get("content", ""),
                         metadata=self._unflatten_metadata(node),
-                        created_at=node.get("created_at"),
+                        created_at=node.get("created_at") or datetime.now(),
                     )
             return None
         except Exception as e:
@@ -173,9 +179,10 @@ class Neo4jDocumentRepository(DocumentRepository):
                     node = record["d"]
                     docs.append(
                         Document(
-                            id=node["chunk_id"],
+                            id=node["id"],
                             content=node.get("content", ""),
                             metadata=self._unflatten_metadata(node),
+                            created_at=node.get("created_at") or datetime.now(),
                         )
                     )
             return docs

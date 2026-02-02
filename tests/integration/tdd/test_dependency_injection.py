@@ -67,14 +67,16 @@ def test_get_graph_repository():
     assert isinstance(graph_repo, Neo4jGraphRepository)
 
 
-@pytest.mark.skipif(
-    not all([os.getenv("NEO4J_URI"), os.getenv("CHROMA_HOST")]), reason="Database environment variables not set"
-)
-def test_environment_variable_based_initialization():
+@pytest.mark.integration
+def test_environment_variable_based_initialization(monkeypatch):
     """
     Verify that storage instances are initialized using environment variables
     """
     # Given: Environment variables are set
+    monkeypatch.setenv("NEO4J_URI", "bolt://localhost:7687")
+    monkeypatch.setenv("CHROMA_HOST", "localhost")
+    monkeypatch.setenv("CHROMA_PORT", "8000")
+    
     from app.interfaces.api.dependencies import get_neo4j_driver, get_repository
 
     neo4j_uri = os.getenv("NEO4J_URI")

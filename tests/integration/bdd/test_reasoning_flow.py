@@ -5,7 +5,7 @@ import pytest
 from app.domain.value_objects.ingestion_state import IngestionGraphState, ValidationFeedback
 from app.infrastructure.ai.ingestion_graph import IngestionGraphBuilder
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 @pytest.fixture

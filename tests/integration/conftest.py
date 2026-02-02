@@ -20,7 +20,7 @@ def is_port_open(host: str, port: int, timeout: float = 1.0) -> bool:
     except (socket.timeout, ConnectionRefusedError, OSError):
         return False
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def check_infrastructure():
     """
     Verify that required infrastructure (Neo4j, ChromaDB) is running before starting tests.
@@ -81,7 +81,8 @@ def seed_test_data(check_infrastructure, api_client):
             # Assumes endpoint to check job status exists
             job_res = api_client.get(f"/v1/jobs/{job_id}")
             if job_res.status_code == 200:
-                status = job_res.json().get("status")
+                data = job_res.json()
+                status = data.get("current_status") or data.get("status")
                 if status == "COMPLETED":
                     break
                 elif status == "FAILED":

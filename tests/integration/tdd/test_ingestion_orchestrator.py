@@ -4,11 +4,11 @@ from app.application.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 class MockInnerLLM(LLMInterface):
-    async def extract_metadata(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:
+    async def aextract_metadata(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:
         return ExtractedMetadata(
             title="Mock Title", summary="Mock Summary", keywords=["mock"], entities={}, language="en"
         )
@@ -30,7 +30,7 @@ async def test_langgraph_adapter_integration():
     # 3. Execute
     text = "This is a test content."
     # Adapter methods are now async
-    result = await adapter.extract_metadata(text)
+    result = await adapter.aextract_metadata(text)
 
     # 4. Verify
     assert result is not None

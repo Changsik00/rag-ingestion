@@ -16,20 +16,26 @@ from app.domain.value_objects.intent import IntentType, UserIntent
 from app.infrastructure.ai.rag_graph import RAGGraphBuilder
 from app.infrastructure.ai.rag_nodes import RAGNodes
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 @pytest.fixture
 def mock_dependencies():
+    # Repos are called synchronously via asyncio.to_thread in RAGNodes
     neo4j_doc = Mock()
     neo4j_graph = Mock()
     chroma = Mock()
+    
+    # LLM & Services are awaited
     llm = Mock()
+    llm.generate = AsyncMock(return_value=Mock(content="Mock Answer")) 
+    llm.agenerate = AsyncMock(return_value=Mock(content="Mock Answer")) # Used in RAGNodes
 
-    # Default returns to prevent errors
+    # Default returns for repos (Sync)
     neo4j_doc.search.return_value = []
     neo4j_graph.get_subgraph.return_value = []
     chroma.search_mmr.return_value = []
+    neo4j_graph.find_shortest_path.return_value = []
 
     return {
         "neo4j_doc": neo4j_doc,
@@ -105,13 +111,19 @@ SpaceX는 일론 머스크가 설립한 우주 탐사 기업입니다."""
     # LLM Mock: Should generate citations [1] and [2]
     # We use a side_effect to verify the context actually contains our noisy data
     def llm_side_effect(prompt):
-        assert "SpaceX는 일론 머스크가 설립" in prompt
-        assert "테슬라의 CEO이기도 하며" in prompt
+        if "relevance score" in prompt.lower() or "rerank" in prompt.lower():
+            return Mock(content='{"score": 10, "reasoning": "High relevance"}')
+
+        # Only assert for generation prompt validation
+        if "Provide Context (DB)" in prompt:
+             assert "SpaceX는 일론 머스크가 설립" in prompt
+             assert "테슬라의 CEO이기도 하며" in prompt
+        
         return Mock(
             content="일론 머스크는 SpaceX를 설립하여 2008년 팰컨 1 발사에 성공했습니다[1]. 또한 그는 테슬라의 CEO로서 자신의 개인 제트기를 사용합니다[2]."
         )
 
-    mock_dependencies["llm"].generate.side_effect = llm_side_effect
+    mock_dependencies["llm"].agenerate.side_effect = llm_side_effect
 
     # 2. When
     result = await hybrid_rag_service.retrieve_and_generate(query, [])
@@ -156,9 +168,14 @@ async def test_scenario_hallucinated_citation_protection(hybrid_rag_service, moc
     mock_dependencies["chroma"].search_mmr.return_value = [chunk]
 
     # LLM Answer with hallucinated [99]
-    mock_dependencies["llm"].generate.return_value = Mock(
-        content="테슬라의 주요 라인업은 S, 3, X, Y입니다[1]. 그리고 곧 모델 2도 출시될 예정입니다[99]."
-    )
+    def llm_side_effect(prompt):
+        if "relevance score" in prompt.lower() or "rate the relevance" in prompt.lower() or "rerank" in prompt.lower():
+             return Mock(content='{"score": 10, "reasoning": "High relevance"}')
+        return Mock(
+            content="테슬라의 주요 라인업은 S, 3, X, Y입니다[1]. 그리고 곧 모델 2도 출시될 예정입니다[99]."
+        )
+    
+    mock_dependencies["llm"].agenerate.side_effect = llm_side_effect
 
     # 2. When
     result = await hybrid_rag_service.retrieve_and_generate(query, [])
@@ -190,7 +207,7 @@ async def test_scenario_pure_llm_fallback_no_citation(hybrid_rag_service, mock_d
     mock_dependencies["rewriter"].rewrite.return_value = query
 
     # LLM answer without citations
-    mock_dependencies["llm"].generate.return_value = Mock(
+    mock_dependencies["llm"].agenerate.return_value = Mock(
         content="라면의 맛은 주관적이지만, 신라면과 진라면이 한국에서 가장 인기가 많습니다."
     )
 

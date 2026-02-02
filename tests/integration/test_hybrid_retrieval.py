@@ -5,7 +5,7 @@ from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocum
 from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
 from app.interfaces.api.dependencies import get_neo4j_driver
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 # Skip if explicit flag not set, to avoid slow CI runs if desired

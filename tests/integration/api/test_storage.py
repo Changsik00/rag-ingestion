@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 
 from app.interfaces.api.main import app
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 client = TestClient(app)

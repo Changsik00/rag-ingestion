@@ -6,7 +6,7 @@ from chromadb.utils import embedding_functions
 from app.domain.value_objects.chunk import Chunk
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 # Mock Embedding Function for Deterministic Tests

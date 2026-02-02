@@ -91,6 +91,8 @@ class Ingestion:
                 # Map to Domain Entity
                 doc_metadata = metadata.copy()
                 doc_metadata["source_url"] = str(job.source_url)
+                if "source_id" not in doc_metadata:
+                    doc_metadata["source_id"] = str(job.source_url)
                 doc = Document(content=text, metadata=doc_metadata)
 
                 # Chunking & Save

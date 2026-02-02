@@ -7,7 +7,7 @@ from app.application.services.rag import RAG
 from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 @pytest.mark.asyncio
@@ -27,10 +27,10 @@ async def test_rag_service_orchestration():
 
     # Mock ainvoke: 완전한 RAGGraphState 반환
     chunk_v = Chunk(
-        id=uuid4(), content="Vector Content", parent_id="doc-1", index=0, metadata={"source": "wiki", "title": "V"}
+        id=str(uuid4()), content="Vector Content", parent_id="doc-1", index=0, metadata={"source": "wiki", "title": "V"}
     )
     chunk_k = Chunk(
-        id=uuid4(), content="Keyword Content", parent_id="doc-1", index=0, metadata={"source": "news", "title": "K"}
+        id=str(uuid4()), content="Keyword Content", parent_id="doc-1", index=0, metadata={"source": "news", "title": "K"}
     )
 
     mock_result_state = {

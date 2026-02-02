@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from app.interfaces.api.main import app
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 client = TestClient(app)
@@ -25,37 +25,57 @@ def test_url_with_special_characters():
     This verifies URL encoding/decoding works correctly.
     """
     import time
+    from unittest.mock import Mock, AsyncMock
+    from app.interfaces.api.dependencies import get_scraper
+    from app.interfaces.api.v1.dto.ingest import IngestResponse
 
-    # Given: 한글이 포함된 URL (URL encoding 필요)
-    # Note: httpbin 사용 (404 방지)
-    url_with_korean = "https://httpbin.org/anything/테스트"
+    # Given: Mock Scraper
+    mock_scraper = Mock()
+    mock_scraper.scrape = AsyncMock(return_value=IngestResponse(
+        url="https://httpbin.org/anything/테스트",
+        markdown="Test Content",
+        metadata={"title": "Test", "source_id": "https://httpbin.org/anything/테스트"},
+        message="Success"
+    ))
+    
+    app.dependency_overrides[get_scraper] = lambda: mock_scraper
 
-    # When: 수집 요청
-    response = client.post("/v1/ingest/web", json={"url": url_with_korean})
+    try:
+        # Given: 한글이 포함된 URL (URL encoding 필요)
+        # Note: httpbin 사용 (404 방지)
+        url_with_korean = "https://httpbin.org/anything/테스트"
 
-    # Then: 요청 성공 (400 에러가 아니어야 함)
-    # URL validation이 한글을 허용하는지 확인
-    assert response.status_code in [202, 400]
+        # When: 수집 요청
+        response = client.post("/v1/ingest/web", json={"url": url_with_korean})
 
-    if response.status_code == 202:
-        job_id = response.json()["job_id"]
+        # Then: 요청 성공 (400 에러가 아니어야 함)
+        # URL validation이 한글을 허용하는지 확인
+        assert response.status_code in [202, 400]
 
-        # Job 완료 대기
-        for _ in range(30):
-            job_response = client.get(f"/jobs/{job_id}")
-            job = job_response.json()
+        if response.status_code == 202:
+            job_id = response.json()["job_id"]
 
-            if job["status"] in ["COMPLETED", "FAILED"]:
-                break
+            # Job 완료 대기
+            for _ in range(30):
+                job_response = client.get(f"/v1/jobs/{job_id}")
+                if job_response.status_code == 200:
+                    job = job_response.json()
+                    status = job.get("current_status") or job.get("status")
 
-            time.sleep(1)
+                    if status in ["COMPLETED", "FAILED"]:
+                        job["status"] = status
+                        break
 
-        # Job이 명확한 상태여야 함 (RUNNING에서 멈추지 않음)
-        assert job["status"] in ["COMPLETED", "FAILED"]
+                time.sleep(0.1)
 
-        # FAILED라면 명확한 이유가 있어야 함
-        if job["status"] == "FAILED":
-            assert job.get("error_message") is not None
+            # Job이 명확한 상태여야 함 (RUNNING에서 멈추지 않음)
+            assert job["status"] in ["COMPLETED", "FAILED"]
+
+            # FAILED라면 명확한 이유가 있어야 함
+            if job["status"] == "FAILED":
+                assert job.get("error_message") is not None
+    finally:
+        app.dependency_overrides = {}
 
 
 @pytest.mark.integration
@@ -64,54 +84,77 @@ def test_concurrent_ingestion_requests():
     Given: 여러 수집 요청을 동시에 보내고
     When: 모든 Job이 실행되면
     Then: 각 Job이 독립적으로 처리되고 ID 충돌이 없다
-
-    This verifies the system can handle concurrent requests safely.
     """
     import time
+    from unittest.mock import Mock, AsyncMock
+    from app.interfaces.api.dependencies import get_scraper
+    from app.interfaces.api.v1.dto.ingest import IngestResponse
 
-    # Given: 5개의 서로 다른 URL
-    urls = [
-        "https://httpbin.org/status/200",
-        "https://httpbin.org/delay/0",
-        "https://httpbin.org/base64/SFRUUEJJTiBpcyBhd2Vzb21l",
-        "https://httpbin.org/headers",
-        "https://httpbin.org/user-agent",
-    ]
-
-    # When: 동시에 요청 (빠르게 연속 요청)
-    job_ids = []
-    for url in urls:
-        response = client.post(
-            "/v1/ingest/web",
-            json={
-                "url": url,
-                "enable_extraction": False,  # 빠른 테스트를 위해
-            },
+    # Given: Mock Scraper
+    mock_scraper = Mock()
+    
+    async def mock_scrape(url, **kwargs):
+        return IngestResponse(
+            url=url,
+            markdown="Mock Content",
+            metadata={"title": "Mock", "source_id": url},
+            message="Success"
         )
-        assert response.status_code == 202
-        job_ids.append(response.json()["job_id"])
+        
+    mock_scraper.scrape = AsyncMock(side_effect=mock_scrape)
+    
+    app.dependency_overrides[get_scraper] = lambda: mock_scraper
 
-    # Then: 모든 Job ID가 고유해야 함
-    assert len(job_ids) == len(set(job_ids)), "Job IDs are not unique!"
+    try:
+        # Given: 5개의 서로 다른 URL
+        urls = [
+            "https://httpbin.org/status/200",
+            "https://httpbin.org/delay/0",
+            "https://httpbin.org/base64/SFRUUEJJTiBpcyBhd2Vzb21l",
+            "https://httpbin.org/headers",
+            "https://httpbin.org/user-agent",
+        ]
 
-    # When: 모든 Job 완료 대기
-    completed_jobs = []
-    for job_id in job_ids:
-        for _ in range(30):
-            job_response = client.get(f"/jobs/{job_id}")
-            job = job_response.json()
+        # When: 동시에 요청 (빠르게 연속 요청)
+        job_ids = []
+        for url in urls:
+            response = client.post(
+                "/v1/ingest/web",
+                json={
+                    "url": url,
+                    "enable_extraction": False,  # 빠른 테스트를 위해
+                },
+            )
+            assert response.status_code == 202
+            job_ids.append(response.json()["job_id"])
 
-            if job["status"] in ["COMPLETED", "FAILED"]:
-                completed_jobs.append(job)
-                break
+        # Then: 모든 Job ID가 고유해야 함
+        assert len(job_ids) == len(set(job_ids)), "Job IDs are not unique!"
 
-            time.sleep(0.5)  # 더 빠른 폴링
+        # When: 모든 Job 완료 대기
+        completed_jobs = []
+        for job_id in job_ids:
+            for _ in range(30):
+                job_response = client.get(f"/v1/jobs/{job_id}")
+                if job_response.status_code == 200:
+                    job = job_response.json()
+                    status = job.get("current_status") or job.get("status")
 
-    # Then: 모든 Job이 완료되어야 함
-    assert len(completed_jobs) == len(job_ids)
+                    if status in ["COMPLETED", "FAILED"]:
+                        job["status"] = status
+                        completed_jobs.append(job)
+                        break
 
-    # Then: 각 Job이 독립적으로 처리되었는지 확인
-    for job in completed_jobs:
-        assert job["status"] in ["COMPLETED", "FAILED"]
-        # Job ID가 각각 다른지 확인
-        assert job["job_id"] in job_ids
+                time.sleep(0.1)  # 더 빠른 폴링
+
+        # Then: 모든 Job이 완료되어야 함
+        assert len(completed_jobs) == len(job_ids)
+
+        # Then: 각 Job이 독립적으로 처리되었는지 확인
+        for job in completed_jobs:
+            assert job["status"] in ["COMPLETED", "FAILED"]
+            # Job ID가 각각 다른지 확인
+            assert job["job_id"] in job_ids
+
+    finally:
+        app.dependency_overrides = {}

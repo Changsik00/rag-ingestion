@@ -11,7 +11,7 @@ import time
 import pytest
 import requests
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 # Base URL for the API
@@ -25,6 +25,12 @@ class TestHighPriorityScenarios:
     Verifies critical failure paths and idempotency logic.
     """
 
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from app.interfaces.api.main import app
+        from fastapi.testclient import TestClient
+        self.client = TestClient(app)
+
     def _wait_for_job_completion(self, job_id: str, timeout: int = 30) -> None:
         """
         Helper: Job이 COMPLETED 또는 FAILED 상태가 될 때까지 대기
@@ -32,7 +38,12 @@ class TestHighPriorityScenarios:
         start_time = time.time()
         while time.time() - start_time < timeout:
             job = self._get_job_status(job_id)
-            if job["status"] in ["COMPLETED", "FAILED"]:
+            if job.get("status") == "NOT_FOUND":
+                time.sleep(1)
+                continue
+                
+            status = job.get("current_status") or job.get("status")
+            if status in ["COMPLETED", "FAILED"]:
                 return
             time.sleep(1)
         raise TimeoutError(f"Job {job_id} did not complete within {timeout}s")
@@ -41,8 +52,9 @@ class TestHighPriorityScenarios:
         """
         Helper: Job 상태 조회
         """
-        response = requests.get(f"{BASE_URL}/jobs/{job_id}")
-        response.raise_for_status()
+        response = self.client.get(f"/v1/jobs/{job_id}")
+        if response.status_code != 200:
+             return {"status": "NOT_FOUND"}
         return response.json()
 
     @pytest.mark.integration
@@ -58,15 +70,17 @@ class TestHighPriorityScenarios:
         non_existent_job_id = "non-existent-job-id-12345"
 
         # When
-        response = requests.get(f"{BASE_URL}/jobs/{non_existent_job_id}")
+        response = self.client.get(f"/v1/jobs/{non_existent_job_id}")
 
         # Then
         assert response.status_code == 404, f"Expected 404 but got {response.status_code}"
 
-        error_detail = response.json().get("detail", "")
+        error_response = response.json()
+        error_detail = error_response.get("message") or error_response.get("detail") or ""
+        
         # Note: API might return "Job {job_id} not found" or similar.
         # Checking for "not found" is generally safe.
-        assert "not found" in error_detail.lower(), f"Error message should contain 'not found', but got: {error_detail}"
+        assert "not found" in str(error_detail).lower(), f"Error message should contain 'not found', but got: {error_detail}"
 
     @pytest.mark.integration
     def test_should_handle_duplicate_url_sequentially(self):
@@ -79,40 +93,61 @@ class TestHighPriorityScenarios:
           - 두 Job 모두 COMPLETED 상태
           - 2개의 별도 Document가 생성됨 (현재 정책: UUID 기반 ID, 중복 허용)
         """
-        # Given
-        url = "https://httpbin.org/html"
+        # Setup mocks
+        from app.interfaces.api.v1.dto.ingest import IngestResponse
+        from app.interfaces.api.dependencies import get_scraper
+        from app.interfaces.api.main import app
+        from unittest.mock import Mock, AsyncMock
 
-        # When 1: 첫 번째 수집
-        response1 = requests.post(f"{BASE_URL}/ingest/web", json={"url": url})
-        assert response1.status_code == 202, f"Expected 202 but got {response1.status_code}"
-        job_id_1 = response1.json()["job_id"]
+        mock_scraper = Mock()
+        mock_scraper.scrape = AsyncMock(return_value=IngestResponse(
+            url="https://httpbin.org/html", 
+            markdown="# Dummy Content", 
+            metadata={"title": "Dummy", "source_id": "https://httpbin.org/html"}
+        ))
+        app.dependency_overrides[get_scraper] = lambda: mock_scraper
 
-        self._wait_for_job_completion(job_id_1)
+        try:
+            # Given
+            url = "https://httpbin.org/html"
 
-        # When 2: 두 번째 수집 (동일 URL)
-        response2 = requests.post(f"{BASE_URL}/ingest/web", json={"url": url})
-        assert response2.status_code == 202, f"Expected 202 but got {response2.status_code}"
-        job_id_2 = response2.json()["job_id"]
+            # When 1: 첫 번째 수집
+            response1 = self.client.post("/v1/ingest/web", json={"url": url})
+            assert response1.status_code == 202, f"Expected 202 but got {response1.status_code}"
+            job_id_1 = response1.json()["job_id"]
 
-        self._wait_for_job_completion(job_id_2)
+            self._wait_for_job_completion(job_id_1)
 
-        # Then: 두 Job 모두 COMPLETED
-        job1 = self._get_job_status(job_id_1)
-        job2 = self._get_job_status(job_id_2)
+            # When 2: 두 번째 수집 (동일 URL)
+            response2 = self.client.post("/v1/ingest/web", json={"url": url})
+            assert response2.status_code == 202, f"Expected 202 but got {response2.status_code}"
+            job_id_2 = response2.json()["job_id"]
 
-        assert job1["status"] == "COMPLETED", f"Job 1 Status: {job1['status']}"
-        assert job2["status"] == "COMPLETED", f"Job 2 Status: {job2['status']}"
+            self._wait_for_job_completion(job_id_2)
 
-        # Then: 2개의 별도 Document 생성 확인
-        docs_response = requests.get(f"{BASE_URL}/documents?limit=100")
-        docs_response.raise_for_status()
-        docs = docs_response.json()
+            # Then: 두 Job 모두 COMPLETED
+            job1 = self._get_job_status(job_id_1)
+            job2 = self._get_job_status(job_id_2)
 
-        matching_docs = [d for d in docs if d.get("metadata", {}).get("source_url") == url]
+            status1 = job1.get("current_status") or job1.get("status")
+            status2 = job2.get("current_status") or job2.get("status")
 
-        # 최소 2개 이상
-        assert len(matching_docs) >= 2, f"Expected at least 2 documents with URL {url}, but got {len(matching_docs)}"
+            assert status1 == "COMPLETED", f"Job 1 Status: {status1}"
+            assert status2 == "COMPLETED", f"Job 2 Status: {status2}"
 
-        # ID 유니크 확인
-        doc_ids = [d["id"] for d in matching_docs]
-        assert len(set(doc_ids)) == len(doc_ids), "All document IDs should be unique"
+            # Then: 2개의 별도 Document 생성 확인
+            docs_response = self.client.get("/v1/documents", params={"limit": 100})
+            assert docs_response.status_code == 200
+            docs = docs_response.json()
+
+            matching_docs = [d for d in docs if d.get("metadata", {}).get("source_url") == url]
+
+            # 최소 2개 이상
+            assert len(matching_docs) >= 2, f"Expected at least 2 documents with URL {url}, but got {len(matching_docs)}"
+
+            # ID 유니크 확인
+            doc_ids = [d["id"] for d in matching_docs]
+            assert len(set(doc_ids)) == len(doc_ids), "All document IDs should be unique"
+        
+        finally:
+            app.dependency_overrides = {}

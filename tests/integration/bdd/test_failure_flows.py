@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 
 from app.interfaces.api.main import app
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 client = TestClient(app)
@@ -67,10 +67,13 @@ def test_url_404_fails_job():
 
     # When: Job 완료 대기
     for _ in range(30):
-        job_response = client.get(f"/jobs/{job_id}")
+        # Update endpoint to /v1/jobs
+        job_response = client.get(f"/v1/jobs/{job_id}")
         job = job_response.json()
+        status = job.get("current_status") or job.get("status")
 
-        if job["status"] in ["COMPLETED", "FAILED"]:
+        if status in ["COMPLETED", "FAILED"]:
+            job["status"] = status
             break
 
         time.sleep(1)
@@ -93,7 +96,7 @@ def test_llm_failure_still_saves_document():
     This verifies graceful degradation - partial failures don't break the entire flow.
     """
     import time
-    from unittest.mock import Mock
+    from unittest.mock import Mock, AsyncMock
 
     from app.application.services.ingestion import Ingestion
 
@@ -141,9 +144,10 @@ def test_llm_failure_still_saves_document():
 
     # Use generic Any or simple dict for Pydantic model construction if needed,
     # but IngestResponse expects url=HttpUrl. Pydantic handles string conversion.
-    mock_scraper.scrape.return_value = IngestResponse(
+    # Must use AsyncMock for async method
+    mock_scraper.scrape = AsyncMock(return_value=IngestResponse(
         url="https://httpbin.org/html", markdown="# Dummy Content", metadata={}
-    )
+    ))
 
     # Mock Extractor wrapping Mock LLM
     mock_extractor = Mock()
@@ -175,10 +179,12 @@ def test_llm_failure_still_saves_document():
 
         # When: Job 완료 대기
         for _ in range(30):
-            job_response = client.get(f"/jobs/{job_id}")
+            job_response = client.get(f"/v1/jobs/{job_id}")
             job = job_response.json()
+            status = job.get("current_status") or job.get("status")
 
-            if job["status"] in ["COMPLETED", "FAILED"]:
+            if status in ["COMPLETED", "FAILED"]:
+                job["status"] = status
                 break
             time.sleep(1)
 
@@ -193,8 +199,14 @@ def test_llm_failure_still_saves_document():
         # Args verification
         saved_doc = mock_repo.save_with_chunks.call_args[0][0]
         # source_url is now in metadata
-        assert saved_doc.metadata["source_url"] == url
-        assert "semantic_data" not in saved_doc.metadata
+        
+        # Check if metadata is dict or object
+        if hasattr(saved_doc.metadata, "source_url"):
+            assert saved_doc.metadata.source_url == url
+            assert not hasattr(saved_doc.metadata, "semantic_data") or saved_doc.metadata.semantic_data is None
+        else:
+            assert saved_doc.metadata["source_url"] == url
+            assert "semantic_data" not in saved_doc.metadata
 
     finally:
         app.dependency_overrides.pop(get_ingestion_service, None)

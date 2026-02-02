@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 
 from app.interfaces.api.main import app
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 client = TestClient(app)
@@ -21,14 +21,15 @@ client = TestClient(app)
 def wait_for_job_completion(job_id: str, timeout: int = 30):
     """Helper function to wait for job completion"""
     for _ in range(timeout):
-        response = client.get(f"/jobs/{job_id}")
+        response = client.get(f"/v1/jobs/{job_id}")
         if response.status_code != 200:
             break
 
         job = response.json()
-        status = job.get("status")
+        status = job.get("current_status") or job.get("status")
 
         if status in ["COMPLETED", "FAILED"]:
+            job["status"] = status
             return job
 
         time.sleep(1)
@@ -45,36 +46,69 @@ def test_successful_web_ingestion_basic_flow():
 
     This is the most critical success scenario - the basic happy path.
     """
-    # Given: 유효한 URL
-    # Note: httpbin.org는 테스트용 실제 웹사이트
-    url = "https://httpbin.org/html"
+    from app.interfaces.api.dependencies import get_scraper, get_semantic_extractor, get_chroma_vector_repository
+    from app.application.interfaces.scraper import ScraperInterface
+    from app.interfaces.api.v1.dto.ingest import IngestResponse
+    from app.domain.value_objects.extracted_metadata import ExtractedMetadata
+    from unittest.mock import MagicMock
 
-    # When: 수집 요청
-    response = client.post("/v1/ingest/web", json={"url": url, "enable_extraction": True})
+    class MockScraper(ScraperInterface):
+        async def scrape(self, url: str) -> IngestResponse:
+            return IngestResponse(
+                url=url,
+                markdown="# Mock Title\n\nContent",
+                metadata={"title": "Mock Title", "source_id": url},
+                message="Mock scrape success"
+            )
 
-    # Then: 202 Accepted 응답 및 job_id 반환
-    assert response.status_code == 202
-    job_id = response.json()["job_id"]
-    assert job_id is not None
+    class MockSemanticExtractor:
+        async def extract(self, text: str, thread_id: str = None) -> ExtractedMetadata:
+             return ExtractedMetadata(
+                 title="Mock Title", 
+                 summary="Mock Summary", 
+                 keywords=["test"], 
+                 entities={}, 
+                 language="en"
+             )
 
-    # When: Job 완료 대기
-    job = wait_for_job_completion(job_id)
+    mock_chroma = MagicMock()
+    app.dependency_overrides[get_chroma_vector_repository] = lambda: mock_chroma
+    app.dependency_overrides[get_scraper] = lambda: MockScraper()
+    app.dependency_overrides[get_semantic_extractor] = lambda: MockSemanticExtractor()
 
-    # Then: Job이 COMPLETED 상태
-    assert job["status"] == "COMPLETED"
-    assert job.get("error_message") is None
+    try:
+        # Given: 유효한 URL
+        url = "https://httpbin.org/html"
+
+        # When: 수집 요청
+        response = client.post("/v1/ingest/web", json={"url": url, "enable_extraction": True})
+
+        # Then: 202 Accepted 응답 및 job_id 반환
+        assert response.status_code == 202
+        job_id = response.json()["job_id"]
+        assert job_id is not None
+
+        # When: Job 완료 대기
+        job = wait_for_job_completion(job_id)
+
+        # Then: Job이 COMPLETED 상태
+        assert job["status"] == "COMPLETED"
+        assert job.get("error_message") is None
 
     # Then: Document가 저장되었는지 확인
-    docs_response = client.get("/v1/documents")
-    assert docs_response.status_code == 200
+        docs_response = client.get("/v1/documents", params={"limit": 50})
+        assert docs_response.status_code == 200
 
-    docs = docs_response.json()
-    assert len(docs) > 0
+        docs = docs_response.json()
+        assert len(docs) > 0
 
-    # 해당 URL의 document가 있는지 확인
-    doc = next((d for d in docs if d["metadata"]["source_url"] == url), None)
-    assert doc is not None
-    assert len(doc["content"]) > 0
+        # 해당 URL의 document가 있는지 확인
+        doc = next((d for d in docs if d["metadata"].get("source_url") == url), None)
+        assert doc is not None
+        assert len(doc["content"]) > 0
+
+    finally:
+        app.dependency_overrides = {}
 
 
 @pytest.mark.integration

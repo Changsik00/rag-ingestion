@@ -4,7 +4,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from app.domain.value_objects.ingestion_state import IngestionGraphState
 from app.infrastructure.ai.ingestion_graph import IngestionGraphBuilder
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 class MockLLM:
@@ -20,6 +20,9 @@ class MockLLM:
             "language": "en",
             "category": "test",
         }
+
+    async def aextract_metadata(self, content: str, *args, **kwargs):
+      return self.extract_metadata(content, *args, **kwargs)
 
 
 @pytest.mark.asyncio

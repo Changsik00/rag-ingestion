@@ -11,7 +11,7 @@ import pytest
 
 from app.domain.value_objects.intent import IntentType
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 @pytest.mark.integration
