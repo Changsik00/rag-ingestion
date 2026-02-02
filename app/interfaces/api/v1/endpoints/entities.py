@@ -1,9 +1,3 @@
-"""
-Entity API Endpoints
-
-Entity 기반 조회 및 Document 검색 API
-"""
-
 from typing import Annotated
 from uuid import UUID
 
@@ -13,6 +7,7 @@ from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.value_objects.ontology import RelationshipType
 from app.interfaces.api.dependencies import get_graph_repository, get_repository
+from app.interfaces.api.v1.dto.rag import DocumentDTO
 
 router = APIRouter(tags=["Entities"])
 
@@ -23,7 +18,7 @@ async def list_entities(graph: Annotated[GraphRepository, Depends(get_graph_repo
     return graph.list_all_entities(limit=limit)
 
 
-@router.get("/{name:path}/documents")
+@router.get("/{name:path}/documents", response_model=list[DocumentDTO])
 async def get_documents_by_entity(
     name: str,
     graph: Annotated[GraphRepository, Depends(get_graph_repository)],
@@ -38,9 +33,14 @@ async def get_documents_by_entity(
         try:
             doc = storage.get(UUID(doc_id))
             if doc:
-                docs.append(doc)
+                docs.append(DocumentDTO(
+                    id=str(doc.id),
+                    content=doc.content,
+                    metadata=doc.metadata.model_dump(),
+                    score=None
+                ))
         except ValueError:
-            # Invalid UUID format
+            # Invalid UUID format string in graph results
             continue
 
     return docs
@@ -60,18 +60,6 @@ async def get_entity_relationships(
 ):
     """
     Entity의 관계 목록 조회
-
-    Args:
-        name: Entity 이름 (예: "Elon Musk")
-        relationship_type: 필터링할 관계 타입 (optional)
-            - FOUNDED, WORKS_FOR, USES, RELATED_TO, SUPPORTS, PERFORMED, PART_OF
-
-    Returns:
-        List of relationships with target entity info
-
-    Example:
-        GET /entities/Elon%20Musk/relationships
-        GET /entities/Tesla/relationships?relationship_type=USES
     """
     # Convert string to RelationshipType enum
     rel_type = None

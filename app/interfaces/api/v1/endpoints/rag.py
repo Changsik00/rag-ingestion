@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 
 from app.application.services.agent import ConversationalRAGAgent
 from app.application.services.feedback import Feedback
@@ -11,23 +11,53 @@ from app.interfaces.api.dependencies import (
     get_feedback_service,
     get_repository,
 )
+from app.interfaces.api.v1.dto.rag import (
+    AutocompleteResponse,
+    ChatResponse,
+    MessageDTO,
+    SessionTraceResponse,
+)
+from app.interfaces.api.v1.dto.jobs import ThreadResponse
+from app.interfaces.api.v1.dto.common import BaseResponse
 
 router = APIRouter(tags=["RAG"])
 
 
-@router.get("/documents/autocomplete")
+@router.get("/documents/autocomplete", response_model=list[AutocompleteResponse])
 async def autocomplete_documents(
     q: str = Query(..., min_length=1), repository: Annotated[DocumentRepository, Depends(get_repository)] = None
 ):
     """검색어 기반 문서 제목 자동완성"""
-    try:
-        docs = repository.list_documents(limit=10, search_term=q)
-        return [{"id": str(d.id), "title": d.metadata.get("title", "Untitled")} for d in docs]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    docs = repository.list_documents(limit=10, search_term=q)
+    return [AutocompleteResponse(id=str(d.id), title=d.metadata.title or "Untitled") for d in docs]
 
 
-@router.post("/sessions/{id}/ask")
+def map_to_chat_response(result: dict, status: str, next_steps: Any) -> ChatResponse:
+    output_messages = []
+    # result['messages'] might be AIMessage objects or dicts (ainvoke returns dict? output checks msg.type)
+    # The original code: result.get("messages", []) -> msg.type, msg.content
+    # LangGraph returns objects in "messages" usually.
+    # We should handle objects.
+    for msg in result.get("messages", []):
+        role = getattr(msg, "type", "assistant") 
+        if role == "human": role = "user"
+        if role == "ai": role = "assistant"
+        content = getattr(msg, "content", str(msg))
+        output_messages.append(MessageDTO(role=role, content=content))
+    
+    return ChatResponse(
+        current_status=status,
+        messages=output_messages,
+        context_data=result.get("context_data"),
+        intent=result.get("intent"),
+        next=list(next_steps) if next_steps else None,
+        draft_content=result.get("draft_content"),
+        is_clarification=result.get("is_clarification", False),
+        missing_slots=result.get("missing_slots"),
+    )
+
+
+@router.post("/sessions/{id}/ask", response_model=ChatResponse)
 async def ask_agent(
     id: str,
     payload: dict[str, Any],
@@ -42,83 +72,61 @@ async def ask_agent(
     if not message:
         raise HTTPException(status_code=400, detail="Message is required")
 
-    try:
-        # LangGraph Workflow 실행
-        config = {"configurable": {"thread_id": id}}
-        workflow = agent.build_workflow(checkpointer=checkpointer)
+    # LangGraph Workflow 실행
+    config = {"configurable": {"thread_id": id}}
+    workflow = agent.build_workflow(checkpointer=checkpointer)
 
-        # input state 구성
-        input_state = {
-            "messages": [{"role": "user", "content": message}],
-            "filters": filters,
-            "thread_id": id,
-            "hitl_enabled": hitl_enabled,
-        }
+    input_state = {
+        "messages": [{"role": "user", "content": message}],
+        "filters": filters,
+        "thread_id": id,
+        "hitl_enabled": hitl_enabled,
+    }
 
-        # 마지막 노드 결과 반환
-        # ainvoke는 실행이 중단되거나 완료될 때까지 실행됨
-        result = await workflow.ainvoke(input_state, config=config)
+    result = await workflow.ainvoke(input_state, config=config)
 
-        # 상태 확인 (HITL 중단 여부 체크)
-        snapshot = await workflow.aget_state(config)
-        next_steps = snapshot.next
+    # 상태 확인
+    snapshot = await workflow.aget_state(config)
+    next_steps = snapshot.next
 
-        status = "completed"
-        if next_steps:
-            status = "paused"
+    status = "completed"
+    if next_steps:
+        status = "paused"
 
-        # AIMessage 객체를 직렬화 가능한 형식으로 변환
-        output_messages = []
-        for msg in result.get("messages", []):
-            output_messages.append({"role": msg.type, "content": msg.content})
-
-        return {
-            "messages": output_messages,
-            "context_data": result.get("context_data"),
-            "intent": result.get("intent"),
-            "status": status,
-            "next": next_steps,
-            # Spec 045
-            "draft_content": result.get("draft_content"),
-            "is_clarification": result.get("is_clarification"),
-            "missing_slots": result.get("missing_slots"),
-        }
-    except Exception as e:
-        import traceback
-
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    return map_to_chat_response(result, status, next_steps)
 
 
-@router.get("/sessions/{id}/trace")
+@router.get("/sessions/{id}/trace", response_model=SessionTraceResponse)
 async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
     """특정 세션의 대화 이력 및 상태 추적 (HITL 용)"""
-    try:
-        config = {"configurable": {"thread_id": id}}
-        state = await checkpointer.aget(config)
-        if not state:
-            return {"messages": [], "values": {}}
+    config = {"configurable": {"thread_id": id}}
+    state = await checkpointer.aget(config)
+    if not state:
+        return SessionTraceResponse(messages=[], values={})
 
-        # AIMessage 등을 직렬화
-        values = state["channel_values"]
-        messages = []
-        for m in values.get("messages", []):
-            messages.append({"role": m.type, "content": m.content})
+    values = state["channel_values"]
+    messages = []
+    # State messages are objects
+    for m in values.get("messages", []):
+         role = getattr(m, "type", "assistant")
+         content = getattr(m, "content", str(m))
+         messages.append(MessageDTO(role=role, content=content))
 
-        return {"messages": messages, "values": {k: v for k, v in values.items() if k != "messages"}}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return SessionTraceResponse(
+        messages=messages,
+        values={k: v for k, v in values.items() if k != "messages"}
+    )
 
 
-@router.post("/feedback")
+@router.post("/feedback", response_model=BaseResponse)
 async def save_feedback(feedback: dict[str, Any], service: Annotated[Feedback, Depends(get_feedback_service)]):
     """사용자 피드백 저장"""
     if service.save_feedback(feedback):
-        return {"success": True}
+        return BaseResponse(message="Feedback saved successfully")
     raise HTTPException(status_code=500, detail="Failed to save feedback")
 
 
-@router.post("/sessions/{id}/resume")
+@router.post("/sessions/{id}/resume", response_model=ChatResponse)
 async def resume_session(
     id: str,
     payload: dict[str, Any],
@@ -130,103 +138,48 @@ async def resume_session(
     if user_input is None:
         raise HTTPException(status_code=400, detail="Input is required")
 
-    try:
-        # Resume (State update or command)
-        # LangGraph 0.2+ style: workflow.ainvoke(Command(resume=v), config) to resume from interrupt
+    workflow = agent.build_workflow(checkpointer=checkpointer)
+    config = {"configurable": {"thread_id": id}}
 
-        # 1. Rebuild Workflow
-        # checkpointer is required for resume
-        workflow = agent.build_workflow(checkpointer=checkpointer)
-        config = {"configurable": {"thread_id": id}}
+    if user_input and user_input != "Approved":
+        from langchain_core.messages import HumanMessage
+        feedback_msg = HumanMessage(content=user_input)
+        await workflow.aupdate_state(config, {"messages": [feedback_msg]})
+        result = await workflow.ainvoke(None, config=config)
+    else:
+        result = await workflow.ainvoke(None, config=config)
 
-        # 2. Invoke with Command(resume=...)
-        # The value passed to resume become the result of the interrupted node/edge?
-        # For 'human_review' edge interruption or node interruption?
-        # If we interrupted using interrupt_before=["human_review"], we are BEFORE the node.
-        # But wait, AdminAgent logic uses conditional edge to "human_review".
-        # And build_workflow sets interrupt_before=["human_review"].
-        # So we are paused right before 'human_review' node executes.
-        # If we send a Command(resume="Approved"), LangGraph will continue execution.
-        # However, ainvoke might need None as input if we just want to proceed, OR updates if we want to change state.
+    snapshot = await workflow.aget_state(config)
+    next_steps = snapshot.next
 
-        # If we use `Command(resume="value")`, this value is returned by the `interrupt` call inside a node.
-        # BUT we are using `interrupt_before`.
-        # When using `interrupt_before`, we usually just invoke with None to proceed, OR invoke with state update to change state.
-        # To pass feedback, we likely want to update the state (e.g. `tool_output` or `messages`) before proceeding.
+    status = "completed"
+    if next_steps:
+        status = "paused"
 
-        # Let's try invoke(None) first, but wait, the user provided input (e.g. "Approved" or feedback).
-        # We should probably update the state with this feedback.
-        # AdminState has 'tool_output'. Let's update that? Or add a message?
-
-        # 2. Handle Feedback vs Approval
-        if user_input and user_input != "Approved":
-            # Feedback provided: Add as HumanMessage to state
-            from langchain_core.messages import HumanMessage
-
-            feedback_msg = HumanMessage(content=user_input)
-            await workflow.aupdate_state(config, {"messages": [feedback_msg]})
-
-            # Resume execution (will route to router due to new message)
-            result = await workflow.ainvoke(None, config=config)
-        else:
-            # Approval: Just resume (will route to END)
-            result = await workflow.ainvoke(None, config=config)
-
-        # Status Check to ensure it finished or paused again
-        snapshot = await workflow.aget_state(config)
-        next_steps = snapshot.next
-
-        status = "completed"
-        if next_steps:
-            status = "paused"
-
-        output_messages = []
-        for msg in result.get("messages", []):
-            output_messages.append({"role": msg.type, "content": msg.content})
-
-        return {
-            "status": status,
-            "result": {
-                "messages": output_messages,
-                "context_data": result.get("context_data"),
-                "intent": result.get("intent"),
-                "draft_content": result.get("draft_content"),
-                "is_clarification": result.get("is_clarification"),
-                "missing_slots": result.get("missing_slots"),
-            },
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return map_to_chat_response(result, status, next_steps)
 
 
-@router.post("/sessions/{id}/reset")
+@router.post("/sessions/{id}/reset", response_model=BaseResponse)
 async def reset_session(id: str, checkpointer=Depends(get_checkpointer)):
     """세션 상태 초기화"""
-    try:
-        # SQLiteSaver 에서 해당 thread_id 데이터 삭제 로직 (Best effort)
-        # 실제로는 새로운 thread_id 를 사용하도록 유도하는 것이 나음
-        # 여기서는 placeholder
-        return {"success": True, "message": f"Session {id} reset requested"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # SQLiteSaver 에서 해당 thread_id 데이터 삭제 로직 (Best effort)
+    # Placeholder implementation
+    return BaseResponse(message=f"Session {id} reset requested")
 
 
-@router.get("/threads")
+@router.get("/threads", response_model=list[ThreadResponse])
 async def list_threads(checkpointer=Depends(get_checkpointer)):
     """활성 스레드 목록 조회"""
-    try:
-        from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
-        from app.infrastructure.factories.llm_factory import LLMFactory
-
-        adapter = IngestionOrchestrator(llm=LLMFactory.get_llm_adapter(), checkpointer=checkpointer)
-        threads = await adapter.list_threads(limit=50)
-        return [
-            {
-                "thread_id": t.config["configurable"]["thread_id"],
-                "checkpoint_id": t.checkpoint["id"],
-                "metadata": t.metadata,
-            }
-            for t in threads
-        ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
+    from app.infrastructure.factories.llm_factory import LLMFactory
+    
+    adapter = IngestionOrchestrator(llm=LLMFactory.get_llm_adapter(), checkpointer=checkpointer)
+    threads = await adapter.list_threads(limit=50)
+    return [
+        ThreadResponse(
+            thread_id=t.config["configurable"]["thread_id"],
+            checkpoint_id=t.checkpoint["id"],
+            metadata=t.metadata,
+        )
+        for t in threads
+    ]

@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from app.core.exceptions import InfrastructureException
+from app.infrastructure.exceptions import InfrastructureException
 from app.domain.entities.document import Document
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
 from app.infrastructure.repositories.composite import CompositeDocumentRepository

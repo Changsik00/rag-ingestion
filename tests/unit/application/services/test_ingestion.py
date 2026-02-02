@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from app.application.services.ingestion import Ingestion
-from app.core.exceptions import InfrastructureException, ScrapingError
+from app.infrastructure.exceptions import InfrastructureException, ScrapingError
 from app.domain.entities.job import IngestionJob, JobStatus
 
 

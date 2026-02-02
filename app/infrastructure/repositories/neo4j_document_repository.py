@@ -3,7 +3,7 @@ from uuid import UUID
 
 from neo4j import Driver
 
-from app.core.exceptions import InfrastructureException
+from app.infrastructure.exceptions import InfrastructureException
 from app.core.logger import setup_logger
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository

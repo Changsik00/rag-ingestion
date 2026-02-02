@@ -4,7 +4,7 @@ import trafilatura
 from playwright.async_api import async_playwright
 
 from app.application.interfaces.scraper import ScraperInterface
-from app.interfaces.api.dto.ingest import IngestResponse
+from app.interfaces.api.v1.dto.ingest import IngestResponse
 
 logger = logging.getLogger(__name__)
 

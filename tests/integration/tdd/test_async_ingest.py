@@ -14,7 +14,7 @@ from app.domain.entities.job import IngestionJob, JobStatus
 from app.interfaces.api.dependencies import get_ingestion_service
 from app.interfaces.api.main import app
 
-pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
+# pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
 
 client = TestClient(app)
@@ -45,7 +45,8 @@ def test_async_ingest_web_endpoint():
     assert response.status_code == 202
     data = response.json()
     assert data["job_id"] == "test-job-id"
-    assert data["status"] == "PENDING"
+    assert data["status"] == "success"
+    assert data["current_status"] == "PENDING"
 
     # Cleanup
     app.dependency_overrides.clear()
