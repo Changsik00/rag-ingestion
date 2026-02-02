@@ -1,7 +1,7 @@
-from app.core.exceptions import (
+from app.core.exceptions import BaseAppException
+from app.domain.exceptions import DomainException
+from app.infrastructure.exceptions import (
     DatabaseError,
-    DoitException,
-    DomainException,
     InfrastructureException,
     LLMError,
     ScrapingError,
@@ -10,9 +10,9 @@ from app.core.exceptions import (
 
 def test_exception_inheritance():
     """Verify exception hierarchy"""
-    assert issubclass(DoitException, Exception)
-    assert issubclass(DomainException, DoitException)
-    assert issubclass(InfrastructureException, DoitException)
+    assert issubclass(BaseAppException, Exception)
+    assert issubclass(DomainException, BaseAppException)
+    assert issubclass(InfrastructureException, BaseAppException)
     assert issubclass(ScrapingError, InfrastructureException)
     assert issubclass(LLMError, InfrastructureException)
     assert issubclass(DatabaseError, InfrastructureException)
@@ -35,4 +35,4 @@ def test_exception_with_cause():
         pass
 
     # Just verifying instantiation works
-    assert isinstance(DatabaseError("test"), DoitException)
+    assert isinstance(DatabaseError("test"), BaseAppException)
