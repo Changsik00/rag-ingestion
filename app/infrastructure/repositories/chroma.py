@@ -6,11 +6,11 @@ from chromadb.utils import embedding_functions
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from app.core.config import get_settings
-from app.infrastructure.exceptions import InfrastructureException
 from app.core.logger import setup_logger
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.value_objects.chunk import Chunk
+from app.infrastructure.exceptions import InfrastructureError
 
 logger = setup_logger(__name__)
 
@@ -58,7 +58,7 @@ class ChromaVectorRepository(DocumentRepository):
             logger.warning("ChromaDB Collection 'documents' has been reset.")
         except Exception as e:
             logger.error(f"Failed to reset ChromaDB collection: {e}")
-            raise InfrastructureException(f"Failed to reset ChromaDB collection: {e}") from e
+            raise InfrastructureError(f"Failed to reset ChromaDB collection: {e}") from e
 
     def _flatten_metadata(self, metadata: dict) -> dict:
         flattened = {}
@@ -96,7 +96,7 @@ class ChromaVectorRepository(DocumentRepository):
             self.collection.add(documents=[document.content], metadatas=[flattened_metadata], ids=[str(document.id)])
         except Exception as e:
             logger.error(f"Failed to save document to ChromaDB: {e}")
-            raise InfrastructureException(f"Failed to save document to ChromaDB: {e}") from e
+            raise InfrastructureError(f"Failed to save document to ChromaDB: {e}") from e
 
     def save_with_chunks(self, document: Document, chunks: list[Chunk]) -> None:
         """DocumentRepository 인터페이스 구현: 문서와 청크 저장"""
@@ -160,7 +160,7 @@ class ChromaVectorRepository(DocumentRepository):
                         continue
 
                     logger.error(f"Failed to save batch to ChromaDB after {max_retries} attempts: {e}")
-                    raise InfrastructureException(f"Failed to save chunks batch to ChromaDB: {e}") from e
+                    raise InfrastructureError(f"Failed to save chunks batch to ChromaDB: {e}") from e
 
     def get(self, doc_id: UUID) -> Document | None:
         try:
@@ -210,7 +210,7 @@ class ChromaVectorRepository(DocumentRepository):
             return docs
         except Exception as e:
             logger.error(f"Failed to list documents from ChromaDB: {e}")
-            raise InfrastructureException(f"Failed to list documents from ChromaDB: {e}") from e
+            raise InfrastructureError(f"Failed to list documents from ChromaDB: {e}") from e
 
     def get_chunks(self, doc_id: UUID) -> list[Chunk]:
         """Retrieve all chunks for a document from Chroma."""

@@ -1,20 +1,19 @@
-import pytest
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock, Mock
+
 from fastapi.testclient import TestClient
-from app.interfaces.api.main import app
-from app.interfaces.api.dependencies import get_repository, get_conversational_rag_agent, get_checkpointer
+
 from app.domain.entities.document import Document
 from app.domain.value_objects.document_metadata import DocumentMetadata
+from app.interfaces.api.dependencies import get_checkpointer, get_conversational_rag_agent, get_repository
+from app.interfaces.api.main import app
 
 client = TestClient(app)
+
 
 def test_autocomplete_endpoint():
     mock_repo = Mock()
     mock_repo.list_documents.return_value = [
-        Document(
-            content="content", 
-            metadata=DocumentMetadata(source_id="src-1", title="Doc 1")
-        )
+        Document(content="content", metadata=DocumentMetadata(source_id="src-1", title="Doc 1"))
     ]
     app.dependency_overrides[get_repository] = lambda: mock_repo
 
@@ -23,8 +22,9 @@ def test_autocomplete_endpoint():
     data = response.json()
     assert len(data) == 1
     assert data[0]["title"] == "Doc 1"
-    
+
     app.dependency_overrides.clear()
+
 
 def test_ask_agent_endpoint():
     mock_agent = Mock()
@@ -33,6 +33,7 @@ def test_ask_agent_endpoint():
 
     # Mock Message object using SimpleNamespace to avoid Mock magic issues
     from types import SimpleNamespace
+
     mock_msg = SimpleNamespace(type="ai", content="Hello")
 
     # Mock ainvoke result
@@ -40,9 +41,9 @@ def test_ask_agent_endpoint():
         "messages": [mock_msg],
         "context_data": {},
         "intent": "greeting",
-        "draft_content": None
+        "draft_content": None,
     }
-    
+
     # Mock aget_state result (snapshot)
     mock_snapshot = Mock()
     mock_snapshot.next = ()
@@ -52,7 +53,7 @@ def test_ask_agent_endpoint():
     app.dependency_overrides[get_checkpointer] = lambda: AsyncMock()
 
     response = client.post("/v1/rag/sessions/thread-1/ask", json={"message": "Hi"})
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"

@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+from app.domain.exceptions import DomainError, DuplicateEntityError, EntityNotFoundError
 from app.interfaces.api.error_handlers import register_exception_handlers
-from app.domain.exceptions import EntityNotFoundException, DuplicateEntityException, DomainException
+
 
 def test_exception_handlers():
     test_app = FastAPI()
@@ -9,15 +11,15 @@ def test_exception_handlers():
 
     @test_app.get("/404")
     def raise_404():
-        raise EntityNotFoundException("TestEntity", "123")
+        raise EntityNotFoundError("TestEntity", "123")
 
     @test_app.get("/409")
     def raise_409():
-        raise DuplicateEntityException("TestEntity", "123")
-    
+        raise DuplicateEntityError("TestEntity", "123")
+
     @test_app.get("/400")
     def raise_400():
-        raise DomainException("Invalid domain logic")
+        raise DomainError("Invalid domain logic")
 
     @test_app.get("/500")
     def raise_500():
@@ -31,7 +33,7 @@ def test_exception_handlers():
     data = resp.json()
     assert data["status"] == "error"
     assert data["error_code"] == "ENTITY_NOT_FOUND"
-    
+
     # Test 409
     resp = client.get("/409")
     assert resp.status_code == 409

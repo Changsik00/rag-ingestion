@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.application.services.agent import ConversationalRAGAgent
 from app.application.services.feedback import Feedback
@@ -11,14 +11,14 @@ from app.interfaces.api.dependencies import (
     get_feedback_service,
     get_repository,
 )
+from app.interfaces.api.v1.dto.common import BaseResponse
+from app.interfaces.api.v1.dto.jobs import ThreadResponse
 from app.interfaces.api.v1.dto.rag import (
     AutocompleteResponse,
     ChatResponse,
     MessageDTO,
     SessionTraceResponse,
 )
-from app.interfaces.api.v1.dto.jobs import ThreadResponse
-from app.interfaces.api.v1.dto.common import BaseResponse
 
 router = APIRouter(tags=["RAG"])
 
@@ -39,12 +39,14 @@ def map_to_chat_response(result: dict, status: str, next_steps: Any) -> ChatResp
     # LangGraph returns objects in "messages" usually.
     # We should handle objects.
     for msg in result.get("messages", []):
-        role = getattr(msg, "type", "assistant") 
-        if role == "human": role = "user"
-        if role == "ai": role = "assistant"
+        role = getattr(msg, "type", "assistant")
+        if role == "human":
+            role = "user"
+        if role == "ai":
+            role = "assistant"
         content = getattr(msg, "content", str(msg))
         output_messages.append(MessageDTO(role=role, content=content))
-    
+
     return ChatResponse(
         current_status=status,
         messages=output_messages,
@@ -108,14 +110,11 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
     messages = []
     # State messages are objects
     for m in values.get("messages", []):
-         role = getattr(m, "type", "assistant")
-         content = getattr(m, "content", str(m))
-         messages.append(MessageDTO(role=role, content=content))
+        role = getattr(m, "type", "assistant")
+        content = getattr(m, "content", str(m))
+        messages.append(MessageDTO(role=role, content=content))
 
-    return SessionTraceResponse(
-        messages=messages,
-        values={k: v for k, v in values.items() if k != "messages"}
-    )
+    return SessionTraceResponse(messages=messages, values={k: v for k, v in values.items() if k != "messages"})
 
 
 @router.post("/feedback", response_model=BaseResponse)
@@ -143,6 +142,7 @@ async def resume_session(
 
     if user_input and user_input != "Approved":
         from langchain_core.messages import HumanMessage
+
         feedback_msg = HumanMessage(content=user_input)
         await workflow.aupdate_state(config, {"messages": [feedback_msg]})
         result = await workflow.ainvoke(None, config=config)
@@ -172,7 +172,7 @@ async def list_threads(checkpointer=Depends(get_checkpointer)):
     """활성 스레드 목록 조회"""
     from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
     from app.infrastructure.factories.llm_factory import LLMFactory
-    
+
     adapter = IngestionOrchestrator(llm=LLMFactory.get_llm_adapter(), checkpointer=checkpointer)
     threads = await adapter.list_threads(limit=50)
     return [

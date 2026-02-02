@@ -23,14 +23,14 @@ We introduced a set of Pydantic models in `app/interfaces/api/v1/dto/` to define
 ### 2. Global Exception Handling
 Replaced scattered `try-except` blocks with a centralized exception handling strategy in `app/interfaces/api/error_handlers.py`.
 
-- **Custom Exceptions**: `EntityNotFoundException`, `DuplicateEntityException`, `DomainException` (Moved to `app/domain/exceptions.py`).
+- **Custom Exceptions**: `EntityNotFoundError`, `DuplicateEntityError`, `DomainError` (Moved to `app/domain/exceptions.py`).
 - **Handlers**: Automatically map these exceptions to `ErrorResponse` with appropriate HTTP status codes (404, 409, 500).
 
 > [!NOTE]
-> `DoitException` has been renamed to `BaseAppException`, situated in `app/core/exceptions.py` as the root of the hierarchy. Concrete exceptions were moved to `app/domain` and `app/infrastructure`.
+> `DoitException` has been renamed to `BaseAppError`, situated in `app/core/exceptions.py` as the root of the hierarchy. Concrete exceptions were moved to `app/domain` and `app/infrastructure`.
 
 ```python
-@app.exception_handler(EntityNotFoundException)
+@app.exception_handler(EntityNotFoundError)
 async def entity_not_found_handler(request, exc):
     return JSONResponse(
         status_code=404,

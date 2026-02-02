@@ -1,22 +1,21 @@
-from unittest.mock import Mock, AsyncMock
 from datetime import datetime
+from unittest.mock import Mock
+
 from fastapi.testclient import TestClient
-from app.interfaces.api.main import app
-from app.interfaces.api.dependencies import get_job_repository
+
 from app.domain.entities.job import IngestionJob
+from app.interfaces.api.dependencies import get_job_repository
+from app.interfaces.api.main import app
 
 client = TestClient(app)
+
 
 def test_list_jobs_endpoint():
     # Given
     mock_repo = Mock()
     now = datetime.now()
     job = IngestionJob(
-        job_id="job-123",
-        status="COMPLETED",
-        source_url="http://example.com/1",
-        created_at=now,
-        updated_at=now
+        job_id="job-123", status="COMPLETED", source_url="http://example.com/1", created_at=now, updated_at=now
     )
     mock_repo.list_jobs.return_value = [job]
     app.dependency_overrides[get_job_repository] = lambda: mock_repo
@@ -39,15 +38,16 @@ def test_list_jobs_endpoint():
 
     app.dependency_overrides.clear()
 
+
 def test_get_job_not_found():
     mock_repo = Mock()
     mock_repo.get_job.return_value = None
     app.dependency_overrides[get_job_repository] = lambda: mock_repo
 
     response = client.get("/v1/jobs/non-existent")
-    
-    # Global handler should catch EntityNotFoundException (if raised)
-    # But get_job logic: if not job: raise EntityNotFoundException
+
+    # Global handler should catch EntityNotFoundError (if raised)
+    # But get_job logic: if not job: raise EntityNotFoundError
     assert response.status_code == 404
     err = response.json()
     assert err["error_code"] == "ENTITY_NOT_FOUND"

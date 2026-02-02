@@ -3,11 +3,11 @@ from uuid import UUID
 
 from neo4j import Driver
 
-from app.infrastructure.exceptions import InfrastructureException
 from app.core.logger import setup_logger
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.value_objects.chunk import Chunk
+from app.infrastructure.exceptions import InfrastructureError
 
 logger = setup_logger(__name__)
 
@@ -27,7 +27,7 @@ class Neo4jDocumentRepository(DocumentRepository):
             logger.warning("Neo4j Database has been reset (All nodes and relationships deleted).")
         except Exception as e:
             logger.error(f"Failed to reset Neo4j database: {e}")
-            raise InfrastructureException(f"Failed to reset Neo4j database: {e}") from e
+            raise InfrastructureError(f"Failed to reset Neo4j database: {e}") from e
 
     def _flatten_metadata(self, metadata: dict) -> dict:
         """Neo4j 호환을 위해 메타데이터 평탄화"""
@@ -96,7 +96,7 @@ class Neo4jDocumentRepository(DocumentRepository):
                 )
         except Exception as e:
             logger.error(f"Failed to save document to Neo4j: {e}")
-            raise InfrastructureException(f"Failed to save document to Neo4j: {e}") from e
+            raise InfrastructureError(f"Failed to save document to Neo4j: {e}") from e
 
     def save_with_chunks(self, document: Document, chunks: list[Chunk]) -> None:
         """문서와 청크를 함께 저장하고 관계를 형성합니다."""
@@ -132,7 +132,7 @@ class Neo4jDocumentRepository(DocumentRepository):
 
         except Exception as e:
             logger.error(f"Failed to save chunks to Neo4j: {e}")
-            raise InfrastructureException(f"Failed to save chunks to Neo4j: {e}") from e
+            raise InfrastructureError(f"Failed to save chunks to Neo4j: {e}") from e
 
     def get(self, doc_id: UUID) -> Document | None:
         try:
@@ -150,7 +150,7 @@ class Neo4jDocumentRepository(DocumentRepository):
             return None
         except Exception as e:
             logger.error(f"Failed to get document from Neo4j (id={doc_id}): {e}")
-            raise InfrastructureException(f"Failed to get document from Neo4j: {e}") from e
+            raise InfrastructureError(f"Failed to get document from Neo4j: {e}") from e
 
     def list_documents(self, limit: int = 10, search_term: str | None = None) -> list[Document]:
         """
@@ -181,7 +181,7 @@ class Neo4jDocumentRepository(DocumentRepository):
             return docs
         except Exception as e:
             logger.error(f"Failed to list documents from Neo4j: {e}")
-            raise InfrastructureException(f"Failed to list documents from Neo4j: {e}") from e
+            raise InfrastructureError(f"Failed to list documents from Neo4j: {e}") from e
 
     def get_chunks(self, doc_id: UUID) -> list[Chunk]:
         try:
@@ -207,7 +207,7 @@ class Neo4jDocumentRepository(DocumentRepository):
             return chunks
         except Exception as e:
             logger.error(f"Failed to get chunks from Neo4j: {e}")
-            raise InfrastructureException(f"Failed to get chunks from Neo4j: {e}") from e
+            raise InfrastructureError(f"Failed to get chunks from Neo4j: {e}") from e
 
     def create_fulltext_index(self):
         """Chunk Content에 대한 Fulltext Index 생성"""
@@ -222,7 +222,7 @@ class Neo4jDocumentRepository(DocumentRepository):
                 session.run(query)
         except Exception as e:
             logger.error(f"Failed to create fulltext index: {e}")
-            raise InfrastructureException(f"Failed to create fulltext index: {e}") from e
+            raise InfrastructureError(f"Failed to create fulltext index: {e}") from e
 
     def search(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
         """Fulltext Index를 이용한 키워드 검색"""

@@ -1,10 +1,12 @@
-from app.interfaces.api.v1.dto.common import GenericResponse, ErrorResponse, PaginationResponse
+from app.interfaces.api.v1.dto.common import ErrorResponse, GenericResponse, PaginationResponse
+
 
 def test_generic_response_creation():
     response = GenericResponse[str](data="test_data")
     assert response.status == "success"
     assert response.data == "test_data"
     assert response.message is None
+
 
 def test_generic_response_json():
     response = GenericResponse[int](data=123, message="ok")
@@ -13,12 +15,14 @@ def test_generic_response_json():
     assert json_data["data"] == 123
     assert json_data["message"] == "ok"
 
+
 def test_error_response_creation():
     response = ErrorResponse(error_code="ERR_001", message="Something wrong")
     assert response.status == "error"
     assert response.error_code == "ERR_001"
     assert response.message == "Something wrong"
     assert response.details is None
+
 
 def test_pagination_response():
     items = ["a", "b", "c"]

@@ -1,11 +1,14 @@
 from unittest.mock import Mock
+
 from fastapi.testclient import TestClient
-from app.interfaces.api.main import app
-from app.interfaces.api.dependencies import get_repository
+
 from app.domain.entities.document import Document
 from app.domain.value_objects.document_metadata import DocumentMetadata
+from app.interfaces.api.dependencies import get_repository
+from app.interfaces.api.main import app
 
 client = TestClient(app)
+
 
 def test_health_check():
     response = client.get("/v1/health")
@@ -15,16 +18,14 @@ def test_health_check():
     # So /v1/health
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "success" # BaseResponse
+    assert data["status"] == "success"  # BaseResponse
     assert data["components"]["api"] == "ok"
+
 
 def test_list_documents_endpoint():
     mock_repo = Mock()
     mock_repo.list_documents.return_value = [
-        Document(
-            content="content",
-            metadata=DocumentMetadata(source_id="src-1", title="Doc 1")
-        )
+        Document(content="content", metadata=DocumentMetadata(source_id="src-1", title="Doc 1"))
     ]
     app.dependency_overrides[get_repository] = lambda: mock_repo
 

@@ -2,13 +2,18 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob
+from app.domain.exceptions import EntityNotFoundError
 from app.domain.interfaces.job_repository import JobRepository
 from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 from app.interfaces.api.dependencies import get_ingestion_orchestrator, get_ingestion_service, get_job_repository
 from app.interfaces.api.v1.dto.jobs import (
-    JobResponse, JobStatusResponse, ResumeRequest, ResumeResponse, ThreadResponse, TraceResponse
+    JobResponse,
+    JobStatusResponse,
+    ResumeRequest,
+    ResumeResponse,
+    ThreadResponse,
+    TraceResponse,
 )
-from app.domain.exceptions import EntityNotFoundException
 
 router = APIRouter(tags=["Jobs"])
 
@@ -20,7 +25,7 @@ def map_job_to_response(job: IngestionJob) -> JobResponse:
         source_url=job.source_url,
         created_at=job.created_at,
         updated_at=job.updated_at,
-        metadata={}
+        metadata={},
     )
 
 
@@ -48,7 +53,7 @@ async def list_active_threads(limit: int = 10, adapter: IngestionOrchestrator = 
 async def get_job(job_id: str, repo: JobRepository = Depends(get_job_repository)):
     job = repo.get_job(job_id)
     if not job:
-        raise EntityNotFoundException("Job", job_id)
+        raise EntityNotFoundError("Job", job_id)
     return map_job_to_response(job)
 
 
@@ -89,7 +94,7 @@ async def retry_job(
 ):
     job = repo.get_job(job_id)
     if not job:
-        raise EntityNotFoundException("Job", job_id)
+        raise EntityNotFoundError("Job", job_id)
 
     new_job = service.create_job(job.source_url, retry_of=job_id)
     background_tasks.add_task(service.process_job, new_job.job_id)

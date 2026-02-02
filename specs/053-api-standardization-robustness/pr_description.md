@@ -13,13 +13,13 @@
 - **DTO 표준화**: `app/interfaces/api/v1/dto/` 디렉토리에 `BaseResponse` 및 도메인별 DTO(Jobs, IO, RAG 등) 구현.
 - **예외 처리 통합**: `app/interfaces/api/error_handlers.py`에서 전역 예외 처리기 구현 (Custom Exceptions -> HTTP Status 매핑).
 - **Clean Architecture 준수**:
-    - `DoitException` -> `BaseAppException` (Core)
-    - `DomainException` 등 -> `app/domain/exceptions.py`
-    - `InfrastructureException` 등 -> `app/infrastructure/exceptions.py`
+    - `DoitException` -> `BaseAppError` (Core)
+    - `DomainError` 등 -> `app/domain/exceptions.py`
+    - `InfrastructureError` 등 -> `app/infrastructure/exceptions.py`
 - **구조 개선**: `app/interfaces/api/dto` 제거 및 `v1/dto`로 통합.
 
 ## 🎯 Key Review Points
-1. **Exception Hierarchy**: `BaseAppException` (Core) -> `DomainException` (Domain) / `InfrastructureException` (Infra) 상속 구조 확인.
+1. **Exception Hierarchy**: `BaseAppError` (Core) -> `DomainError` (Domain) / `InfrastructureError` (Infra) 상속 구조 확인.
 2. **DTO Usage**: API 엔드포인트들이 `BaseResponse`로 감싸진 데이터를 반환하는지, 명시적 매핑(`map_job_to_response` 등)이 적절한지.
 3. **Circular Import**: 예외 클래스 이동으로 인한 순환 참조 문제 여부 (현재 테스트로 검증됨).
 
@@ -49,7 +49,7 @@ uv run pytest tests/
 - `tests/integration/test_error_handling.py`: 에러 핸들링 테스트
 
 ### 🛠 Modified Files
-- `app/core/exceptions.py`: `DoitException` -> `BaseAppException` 변경 및 하위 예외 제거
+- `app/core/exceptions.py`: `DoitException` -> `BaseAppError` 변경 및 하위 예외 제거
 - `app/interfaces/api/v1/endpoints/*.py`: DTO 적용 및 `try-except` 제거 (전역 핸들러 위임)
 - `tests/*`: 변경된 예외 및 DTO 경로 반영
 

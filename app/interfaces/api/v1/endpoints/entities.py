@@ -33,12 +33,9 @@ async def get_documents_by_entity(
         try:
             doc = storage.get(UUID(doc_id))
             if doc:
-                docs.append(DocumentDTO(
-                    id=str(doc.id),
-                    content=doc.content,
-                    metadata=doc.metadata.model_dump(),
-                    score=None
-                ))
+                docs.append(
+                    DocumentDTO(id=str(doc.id), content=doc.content, metadata=doc.metadata.model_dump(), score=None)
+                )
         except ValueError:
             # Invalid UUID format string in graph results
             continue

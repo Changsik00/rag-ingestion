@@ -3,7 +3,7 @@ from uuid import UUID
 
 from app.application.interfaces.scraper import ScraperInterface
 from app.application.services.semantic_extractor import SemanticExtractor
-from app.core.exceptions import BaseAppException
+from app.core.exceptions import BaseAppError
 from app.core.file_processor import FileProcessor
 from app.core.logger import setup_logger
 from app.domain.entities.document import Document
@@ -108,7 +108,7 @@ class Ingestion:
             self.job_repository.update_job(job)
             logger.info(f"Ingestion job {job_id} completed with {len(job.docs_ids)} documents")
 
-        except BaseAppException as e:
+        except BaseAppError as e:
             # Known domain/infrastructure exceptions
             logger.error(f"Ingestion failed for job {job_id}: {str(e)}")
             self._fail_job(job, str(e))

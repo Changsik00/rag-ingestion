@@ -3,8 +3,8 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from app.application.services.ingestion import Ingestion
-from app.infrastructure.exceptions import InfrastructureException, ScrapingError
 from app.domain.entities.job import IngestionJob, JobStatus
+from app.infrastructure.exceptions import InfrastructureError, ScrapingError
 
 
 @pytest.fixture
@@ -48,7 +48,7 @@ async def test_process_job_handles_scraping_error(service_deps):
 @pytest.mark.asyncio
 async def test_process_job_handles_infrastructure_exception(service_deps):
     """
-    Given: Repository raises InfrastructureException
+    Given: Repository raises InfrastructureError
     When: process_job is called
     Then: Job status becomes FAILED
     """
@@ -66,7 +66,7 @@ async def test_process_job_handles_infrastructure_exception(service_deps):
     service_deps["scraper"].scrape.return_value = mock_result
 
     # Repo fails
-    service_deps["repository"].save_with_chunks.side_effect = InfrastructureException("DB Connection Failed")
+    service_deps["repository"].save_with_chunks.side_effect = InfrastructureError("DB Connection Failed")
 
     # Async Extractor Mock
     import asyncio
