@@ -10,8 +10,8 @@
     - API 계층 구조(`v1/endpoints`)와 DTO 구조가 불일치함.
 
 ### 주요 변경 사항
-- **DTO 표준화**: `app/interfaces/api/v1/dto/` 디렉토리에 `BaseResponse` 및 도메인별 DTO(Jobs, IO, RAG 등) 구현.
-- **예외 처리 통합**: `app/interfaces/api/error_handlers.py`에서 전역 예외 처리기 구현 (Custom Exceptions -> HTTP Status 매핑).
+- **DTO 표준화**: `app/interfaces/api/v1/dto/` 디렉토리에 `BaseResponse` 및 도메인별 DTO(Jobs, IO, RAG, Graph 등) 구현.
+- **예외 처리 통합**: `app/interfaces/api/error_handlers.py`에서 전역 예외 처리기 구현 (Custom Errors -> HTTP Status 매핑). 불필요한 엔드포인트 내 `try-except` 제거.
 - **Clean Architecture 준수**:
     - `DoitException` -> `BaseAppError` (Core)
     - `DomainError` 등 -> `app/domain/exceptions.py`

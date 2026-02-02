@@ -4,24 +4,22 @@ from fastapi import APIRouter, Depends, HTTPException
 from neo4j import Driver
 
 from app.interfaces.api.dependencies import get_neo4j_driver
+from app.interfaces.api.v1.dto.graph import GraphQueryResponse, GraphSchemaResponse
 
 router = APIRouter(tags=["Graph"])
 
 
-@router.get("/schema")
+@router.get("/schema", response_model=GraphSchemaResponse)
 async def get_schema(driver: Annotated[Driver, Depends(get_neo4j_driver)]):
     """지석 그래프 노드 라벨 및 관계 타입 조회"""
-    try:
-        with driver.session() as session:
-            labels_res = session.run("CALL db.labels()")
-            labels = [record[0] for record in labels_res]
+    with driver.session() as session:
+        labels_res = session.run("CALL db.labels()")
+        labels = [record[0] for record in labels_res]
 
-            rels_res = session.run("CALL db.relationshipTypes()")
-            rels = [record[0] for record in rels_res]
+        rels_res = session.run("CALL db.relationshipTypes()")
+        rels = [record[0] for record in rels_res]
 
-            return {"labels": labels, "relationship_types": rels}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return GraphSchemaResponse(labels=labels, relationship_types=rels)
 
 
 @router.get("/presets")
@@ -36,34 +34,31 @@ async def get_presets():
     }
 
 
-@router.post("/query")
+@router.post("/query", response_model=GraphQueryResponse)
 async def execute_query(query: dict[str, str], driver: Annotated[Driver, Depends(get_neo4j_driver)]):
     """Cypher 쿼리 실행 후 agraph 형식(nodes, edges)으로 변환하여 반환"""
     cypher = query.get("query")
     if not cypher:
         raise HTTPException(status_code=400, detail="Query is required")
 
-    try:
-        with driver.session() as session:
-            result = session.run(cypher)
-            graph = result.graph()
+    with driver.session() as session:
+        result = session.run(cypher)
+        graph = result.graph()
 
-            nodes = []
-            for node in graph.nodes:
-                nodes.append({"id": node.element_id, "labels": list(node.labels), "properties": dict(node._properties)})
+        nodes = []
+        for node in graph.nodes:
+            nodes.append({"id": node.element_id, "labels": list(node.labels), "properties": dict(node._properties)})
 
-            edges = []
-            for rel in graph.relationships:
-                edges.append(
-                    {
-                        "id": rel.element_id,
-                        "source": rel.start_node.element_id,
-                        "target": rel.end_node.element_id,
-                        "type": rel.type,
-                        "properties": dict(rel._properties),
-                    }
-                )
+        edges = []
+        for rel in graph.relationships:
+            edges.append(
+                {
+                    "id": rel.element_id,
+                    "source": rel.start_node.element_id,
+                    "target": rel.end_node.element_id,
+                    "type": rel.type,
+                    "properties": dict(rel._properties),
+                }
+            )
 
-            return {"nodes": nodes, "edges": edges}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return GraphQueryResponse(nodes=nodes, edges=edges)

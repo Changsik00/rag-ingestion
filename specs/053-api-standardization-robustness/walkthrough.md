@@ -19,18 +19,19 @@ We introduced a set of Pydantic models in `app/interfaces/api/v1/dto/` to define
     - `JobResponse`, `JobStatusResponse` (Jobs API)
     - `RAGResponse`, `ChatResponse`, `AutocompleteResponse` (Top-level RAG API)
     - `DocumentDTO`, `SystemStatusResponse` (System/Entity API)
+    - `GraphSchemaResponse`, `GraphQueryResponse` (Graph API)
 
 ### 2. Global Exception Handling
 Replaced scattered `try-except` blocks with a centralized exception handling strategy in `app/interfaces/api/error_handlers.py`.
 
-- **Custom Exceptions**: `EntityNotFoundError`, `DuplicateEntityError`, `DomainError` (Moved to `app/domain/exceptions.py`).
+- **Custom Exceptions**: `EntityNotFoundException`, `DuplicateEntityException`, `DomainException` (Moved to `app/domain/exceptions.py`).
 - **Handlers**: Automatically map these exceptions to `ErrorResponse` with appropriate HTTP status codes (404, 409, 500).
 
 > [!NOTE]
-> `DoitException` has been renamed to `BaseAppError`, situated in `app/core/exceptions.py` as the root of the hierarchy. Concrete exceptions were moved to `app/domain` and `app/infrastructure`.
+> `DoitException` has been renamed to `BaseAppException`, situated in `app/core/exceptions.py` as the root of the hierarchy. Concrete exceptions were moved to `app/domain` and `app/infrastructure`.
 
 ```python
-@app.exception_handler(EntityNotFoundError)
+@app.exception_handler(EntityNotFoundException)
 async def entity_not_found_handler(request, exc):
     return JSONResponse(
         status_code=404,
@@ -52,6 +53,7 @@ Refactored major API endpoints to use the new DTOs and remove manual error handl
     - `/documents/autocomplete` returns `list[AutocompleteResponse]`.
 - **System API** (`/v1/system`): Returns `SystemStatusResponse`.
 - **Entities API** (`/v1/entities`): Returns `list[DocumentDTO]`.
+- **Graph API** (`/v1/graph`): Returns `GraphSchemaResponse` and `GraphQueryResponse` with redundant `try-except` blocks removed (leveraging global handlers).
 
 ## Verification Results
 

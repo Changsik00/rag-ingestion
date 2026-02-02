@@ -53,7 +53,8 @@
 
 ### 4-2. Entity/Graph API Refactoring
 - [x] `app/interfaces/api/v1/endpoints/entities.py` -> `DocumentResponse`
-- [x] `app/interfaces/api/v1/endpoints/graph.py` -> `GraphResponse` (Note: Graph endpoint skipped as it's minor, focused on core)
+- [x] `app/interfaces/api/v1/endpoints/graph.py`: Remove redundant `try-except` blocks (User Feedback)
+- [x] `app/interfaces/api/v1/endpoints/graph.py` -> `GraphResponse` (DTO application)
 
 ---
 
