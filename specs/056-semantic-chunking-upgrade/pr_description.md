@@ -30,6 +30,23 @@ uv run pytest tests/integration/functional/test_ingestion_with_semantic.py
 - ✅ `test_semantic_chunker_splitting`: 서로 다른 주제의 문장을 구분하여 청킹 완료.
 - ✅ `test_ingestion_with_semantic_chunking`: API 호출 시 주입된 설정에 따라 실제 DB에 청크가 생성됨을 확인.
 
+### Database Verification (Direct Query)
+수집된 데이터에 `semantic` 전략이 적용되었는지 직접 DB에서 확인할 수 있습니다.
+
+**ChromaDB (Vector DB):**
+```python
+# Semantic 전략으로 생성된 청크 조회
+res = repo.collection.get(where={'chunking_strategy': 'semantic'}, limit=2)
+```
+
+**Neo4j (Graph DB):**
+```cypher
+MATCH (j:IngestionJob)
+WHERE j.status = 'COMPLETED'
+RETURN j.job_id, j.source_url, j.chunking_config
+ORDER BY j.created_at DESC LIMIT 5
+```
+
 ## 📦 Files Changed
 
 ### 🆕 New Files
