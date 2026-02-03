@@ -41,5 +41,6 @@
 - Streamlit Admin UI에서 "Semantic" 모드를 선택하고 샘플 문서를 업로드하여 기존 "Recursive" 방식과 청크 분할 결과 비교.
 
 ## ⚠️ Consideration
+- **임베딩 모델 확장성**: 현재는 비용 효율성을 위해 Google(Gemini) 임베딩을 기본으로 사용하지만, `langchain-experimental` 인터페이스를 사용하므로 OpenAI 등 타 모델로의 교체가 매우 용이하도록 설계되었습니다. 향후 필요에 따라 런타임에 모델을 선택할 수 있는 기능을 추가할 수 있습니다.
 - **비용/속도**: Semantic Chunking은 각 문장마다 임베딩을 생성하므로 API 비용과 처리 시간이 증가합니다. 이를 위해 기본값 최적화 및 사용자 경고 UI가 필요할 수 있습니다.
 - **의존성**: `langchain-experimental` 패키지가 필요할 수 있으므로 `pyproject.toml` 업데이트가 필요합니다.

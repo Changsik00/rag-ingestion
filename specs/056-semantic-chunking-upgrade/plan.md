@@ -21,6 +21,7 @@ graph TD
 | Component | Strategy | Reasoning |
 |:---:|:---|:---|
 | **Semantic Chunker** | Similarity-based split | Preserve context continuity |
+| **Embedding Model** | Pluggable (Default: Gemini) | Google/OpenAI easily swappable |
 | **Factory Pattern** | Dynamic switching | High extensibility & Backward compatibility |
 | **Admin UI** | Parametrized Control | User-driven optimization |
 

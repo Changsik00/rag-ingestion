@@ -34,3 +34,4 @@ tests/integration/functional/test_ingestion_with_semantic.py .          [100%]
 
 ## 🔍 Key Findings
 - Semantic Chunking의 경우 문법적 분리보다 의미의 변화를 포착하므로, 임계값(Threshold) 설정이 결과 품질에 큰 영향을 미침을 확인했습니다. 기본값을 90.0(Percentile)으로 설정하여 안정성을 확보했습니다.
+- **임베딩 모델 교체 가능성**: 현재 Gemini 임베딩을 기본으로 사용하나, LangChain 추상화 레이어를 통해 OpenAI 임베딩 등으로 손쉽게 교체하거나 병용할 수 있는 구조임을 문서화했습니다.
