@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.document_metadata import DocumentMetadata
@@ -15,5 +15,4 @@ class Document(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
-    class Config:
-        frozen = False
+    model_config = ConfigDict(frozen=False)

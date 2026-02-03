@@ -36,6 +36,10 @@ class ChromaVectorRepository(DocumentRepository):
 
         # ChromaDB가 요구하는 embedding function 형식으로 래핑
         class GeminiEmbeddingFunction(embedding_functions.EmbeddingFunction):
+            def __init__(self):
+                # Standard __init__ for ChromaDB EmbeddingFunction compatibility
+                pass
+
             def __call__(self, input: list[str]) -> list[list[float]]:
                 # LangChain의 embed_documents 메서드 사용
                 return langchain_embeddings.embed_documents(input)
@@ -225,10 +229,10 @@ class ChromaVectorRepository(DocumentRepository):
                     metadata = result["metadatas"][i]
                     chunks.append(
                         Chunk(
-                            id=UUID(chunk_id),
+                            id=chunk_id,
                             content=content,
                             metadata=metadata,
-                            parent_id=UUID(metadata.get("parent_id")) if metadata.get("parent_id") else str(doc_id),
+                            parent_id=metadata.get("parent_id") if metadata.get("parent_id") else str(doc_id),
                             index=int(metadata.get("index", 0)),
                         )
                     )
@@ -293,10 +297,10 @@ class ChromaVectorRepository(DocumentRepository):
 
                     chunks.append(
                         Chunk(
-                            id=UUID(chunk_id),
+                            id=chunk_id,
                             content=content,
                             metadata=metadata,
-                            parent_id=UUID(metadata.get("parent_id")) if metadata.get("parent_id") else None,
+                            parent_id=metadata.get("parent_id") if metadata.get("parent_id") else None,
                             index=int(metadata.get("index", 0)),
                         )
                     )
@@ -407,15 +411,14 @@ class ChromaVectorRepository(DocumentRepository):
 
                 mmr_chunks.append(
                     Chunk(
-                        id=UUID(chunk_id),
+                        id=chunk_id,
                         content=content,
                         metadata=meta,
-                        parent_id=UUID(meta.get("parent_id")) if meta.get("parent_id") else None,
+                        parent_id=meta.get("parent_id") if meta.get("parent_id") else None,
                         index=int(meta.get("index", 0)),
                     )
                 )
             return mmr_chunks
-
         except Exception as e:
             logger.error(f"MMR search logic failed: {e}")
             return self.search(query, limit, filters=filters)

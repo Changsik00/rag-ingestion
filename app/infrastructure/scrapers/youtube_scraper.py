@@ -79,7 +79,7 @@ class YouTubeScraper(ScraperInterface):
     async def _get_transcript(self, video_id: str) -> str | None:
         try:
             # 우선순위: 수동 자막 -> 자동 자막
-            transcript_list = YouTubeTranscriptApi().list(video_id)
+            transcript_list = await asyncio.to_thread(YouTubeTranscriptApi().list, video_id)
             try:
                 # 한국어 또는 영어 수동 자막 시도
                 transcript = transcript_list.find_transcript(["ko", "en"])
@@ -87,7 +87,7 @@ class YouTubeScraper(ScraperInterface):
                 # 아무 자막이나 가져오기 (자동 생성 포함)
                 transcript = transcript_list.find_generated_transcript(["ko", "en"])
 
-            data = transcript.fetch()
+            data = await asyncio.to_thread(transcript.fetch)
             # 딕셔너리 형태와 객체 형태(FetchedTranscriptSnippet) 모두 대응
             return " ".join([d["text"] if isinstance(d, dict) else getattr(d, "text", "") for d in data])
         except Exception as e:

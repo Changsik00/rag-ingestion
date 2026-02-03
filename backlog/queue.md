@@ -26,7 +26,7 @@
   * **Status**: ✅ Completed & Merged
   * **PR**: [refactor: architecture refinement and api standardization (spec 051)](https://github.com/Changsik00/rag-ingestion/pull/XXX)
 
-* [ ] **Spec 052: Clean Architecture Layer Refinement** 🆕
+* [x] **Spec 052: Clean Architecture Layer Refinement** ✅
   * **Goal**: Spec 051 이후 남은 계층 경계 위반 및 네이밍 불일치 수정
   * **Scope**:
     * **P1 (High)**: 
@@ -39,22 +39,15 @@
     * **P3 (Low)**: 
         - State 파일 명확화 (`state.py` → `graph_state.py`)
         - 중복 파일 정리
-  * **Status**: Ready to Start
+  * **Status**: ✅ Completed (Verified in codebase)
 
-
-* [ ] **Integration Test Infrastructure Improvement** 🆕
-  > **문서**: [specs/integration-test-improvement.md](../specs/integration-test-improvement.md)  
-  > **우선순위**: Medium  
-  > **예상 소요**: 2-3일  
-  > **목표**: Mock 데이터가 아닌 실제 데이터로 integration test를 수행할 수 있도록 테스트 인프라 개선
-  > 
-  > **현재 상태**: 16개 integration tests가 skip 처리됨 (실제 인프라 필요)
-  > 
-  > **주요 작업**:
-  > * [ ] Docker 인프라 자동 확인 및 준비
-  > * [ ] 테스트 데이터 시드 fixture 구현
-  > * [ ] 시나리오 기반 테스트 재구성
-  > * [ ] 테스트 격리 및 독립성 보장
+* [x] **Spec 053: API Standardization & Robustness** ✅
+  * **Goal**: API Response 표준화(DTO) 및 전역 예외 처리(Global Exception Handling) 적용
+  * **Scope**:
+    * **P1**: Common DTO (`BaseResponse`, `ErrorResponse`) 및 Domain DTO 정의
+    * **P2**: 전역 예외 핸들러 (`error_handlers.py`) 구현 및 `try-except` 제거
+    * **P3**: 모든 v1 Endpoint에 `response_model` 적용 및 Status Code 표준화 (`202 Accepted`)
+  * **Status**: ✅ Completed (Verified in codebase)
 
 ---
 
