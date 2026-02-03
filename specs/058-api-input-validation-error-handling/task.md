@@ -20,12 +20,16 @@
 - [x] 에러 코드(`VALIDATION_ERROR` 등) 정의 및 매핑
 - [x] Commit: `feat(spec-058): implement standardized global error handlers`
 
+## Task 2.5: Admin UI Improvement (User Request)
+- [x] `APIClient._handle_response` 개선: 표준 에러 JSON 파싱 및 포맷팅 (`admin/utils/api_client.py`)
+- [x] Commit: `feat(spec-058): improve admin api client error display`
+
 ## Task 3: Verification & Integration Tests
 - [x] API 유효성 검증 통합 테스트 작성 (`tests/integration/functional/test_api_validation.py`)
 - [x] 전체 기능 테스트 실행 및 사이드 이펙트 확인
 - [ ] Commit: `test(spec-058): add comprehensive API validation tests`
 
 ## Task 4: PR Creation & Archiving
-- [/] Code Quality Check (`ruff`)
-- [ ] `walkthrough.md` 및 `pr_description.md` 작성
-- [ ] PR 생성 (`gh pr create`)
+- [x] Code Quality Check (`ruff`)
+- [x] `walkthrough.md` 및 `pr_description.md` 작성
+- [x] PR 생성 (`gh pr create`)

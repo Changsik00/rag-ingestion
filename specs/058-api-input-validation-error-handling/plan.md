@@ -24,6 +24,14 @@
 - `RequestValidationError` 핸들러 구현: Pydantic 에러 메시지를 추출하여 `ErrorResponse` 형식의 `details` 필드에 담아 반환.
 - `HTTPException` 핸들러 추가: FastAPI 내부 HTTPException(예: 405 Method Not Allowed)도 표준 형식으로 반환하도록 처리.
 
+### [Admin UI]
+
+#### [MODIFY] [api_client.py](file:///Users/ck/Project/doit/rag-ingestion/admin/utils/api_client.py)
+- `_handle_response` 메서드 개선:
+    - 4xx/5xx 에러 발생 시 response body가 JSON인지 확인.
+    - 표준 `ErrorResponse` 포맷(`message`, `details`)인 경우, 보기 좋게 파싱하여 `st.error`로 출력.
+    - 단순 텍스트인 경우 기존대로 출력.
+
 ---
 
 ### [Testing]
