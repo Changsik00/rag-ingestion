@@ -453,8 +453,15 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 
                 answer = "No response generated."
                 if res.get("messages"):
-                    # Last AI message
-                    answer = next((m["content"] for m in reversed(res["messages"]) if m["role"] == "ai"), answer)
+                    # Check both 'ai' and 'assistant' roles
+                    for m in reversed(res["messages"]):
+                        if m.get("role") in ["ai", "assistant"]:
+                            answer = m["content"]
+                            break
+                
+                # Spec 055 Debug: Show Raw Response
+                with st.expander("📝 Raw API Response (JSON)"):
+                     st.json(res)
 
                 context_data = res.get("context_data") or {}
                 intent = res.get("intent", "search")

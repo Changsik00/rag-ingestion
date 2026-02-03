@@ -35,6 +35,8 @@ class AgentState(TypedDict):
     missing_slots: list[str]
 
 
+
+class ConversationalRAGAgent:
     """
     RAG Playground 및 관리자용 Orchestration Agent.
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.

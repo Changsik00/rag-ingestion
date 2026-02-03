@@ -43,7 +43,7 @@ def map_to_chat_response(result: dict, status: str, next_steps: Any) -> ChatResp
         role = getattr(msg, "type", "assistant")
         if role == "human":
             role = "user"
-        if role == "ai":
+        if role in ["ai", "assistant"]:
             role = "assistant"
         content = getattr(msg, "content", str(msg))
         output_messages.append(MessageDTO(role=role, content=content))

@@ -263,7 +263,7 @@ class RAGNodes:
 
         return state
 
-    async def rerank_results(self, state: RAGGraphState) -> RAGGraphState:
+    async def rerank_results(self, state: RAGGraphState, config: RunnableConfig) -> RAGGraphState:
         """
         Node 3.5: LLM Reranker (Body Layer - Precision Refinement)
 
@@ -309,12 +309,16 @@ class RAGNodes:
         # 상위 15개로 확장하여 키워드 매칭 결과가 충분히 포함되도록 함
         rerank_targets = all_chunks[:15]
 
+        # Spec 055: Configuration for Reranker
+        retrieval_config = config.get("configurable", {}).get("retrieval_config", {})
+        temperature = retrieval_config.get("temperature", 0.0)
+
         rerank_log = []
         rerank_tasks = []
 
         for chunk in rerank_targets:
             prompt = RERANKER_PROMPT.format(query=rewritten_query, chunk_text=chunk.content)
-            rerank_tasks.append(self._get_rerank_score(chunk, prompt))
+            rerank_tasks.append(self._get_rerank_score(chunk, prompt, temperature))
 
         # Run 리랭킹 in parallel
         rerank_results = await asyncio.gather(*rerank_tasks)
@@ -349,12 +353,14 @@ class RAGNodes:
 
         return state
 
-    async def _get_rerank_score(self, chunk: Chunk, prompt: str) -> dict:
+    async def _get_rerank_score(self, chunk: Chunk, prompt: str, temperature: float = 0.0) -> dict:
         """LLM을 호출하여 청크의 관련성 점수를 가져옵니다."""
         import json
 
         try:
-            response = await self.llm.agenerate(prompt)
+            # Propagate temperature to reranker
+            llm = self.llm.bind(temperature=temperature)
+            response = await llm.agenerate(prompt)
             if hasattr(response, "content"):
                  content = self._extract_text_content(response.content)
             else:
@@ -430,14 +436,24 @@ class RAGNodes:
         # Format Context
         context_str, mapped_chunks = self._merge_and_format_context(target_chunks, [], graph_data)
 
-        # [Spec 035] Hybrid Knowledge PromptING
+        # Spec 055: Conditional Strictness
+        strict_rag_instruction = ""
+        if temperature < 0.1:
+            strict_rag_instruction = (
+                "CRITICAL: STRICT RAG MODE ENABLED (Temperature 0).\n"
+                "1. If the 'Provided Context (DB)' is empty or irrelevant, you MUST say 'I cannot find relevant information in the uploaded documents.'\n"
+                "2. DO NOT answer from your internal knowledge regarding the specific subject of the question.\n"
+                "3. ONLY use internal knowledge for language translation or explaining general terms mentioned IN the context.\n"
+            )
+
         prompt = (
-            "You are a professional AI assistant. Answer the question by combining the provided Context (DB) and your internal knowledge.\n\n"
+            "You are a professional AI assistant. Answer the question using ONLY the provided Context (DB) as your primary source.\n\n"
+            f"{strict_rag_instruction}"
             "KNOWLEDGE MIXING RULES:\n"
             "1. PRIORITIZE KNOWLEDGE GRAPH: The 'Graph Facts' section contains high-precision structured relationships. Treat these as the most reliable source of truth.\n"
             "2. PRIORITIZE DOCUMENT CONTEXT: If information is not in the Graph, use 'Document Context'. It MUST be prioritized over your internal knowledge.\n"
             "3. CITATION REQUIREMENT: For every sentence or fact derived from the Document Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
-            "4. ENRICH WITH INTERNAL KNOWLEDGE: Use your internal knowledge ONLY to enrich the answer with context that doesn't conflict with the provided Context.\n"
+            "4. INTERNAL KNOWLEDGE LIMITATION: Use your internal knowledge ONLY to bridge small gaps or provide basic context (e.g. definitions). Do NOT introduce major facts that are not in the DB if the temperature is 0.\n"
             "5. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n\n"
             f"Question: {query}\n"
             f"(Rewritten Query for Search): {rewritten_query}\n\n"
