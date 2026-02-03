@@ -31,7 +31,7 @@ class ChromaVectorRepository(DocumentRepository):
 
         # LangChain GoogleGenerativeAIEmbeddings를 ChromaDB embedding function wrapper로 변환
         langchain_embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/text-embedding-004", google_api_key=gemini_api_key
+            model=settings.GEMINI_EMBEDDING_MODEL_NAME, google_api_key=gemini_api_key
         )
 
         # ChromaDB가 요구하는 embedding function 형식으로 래핑

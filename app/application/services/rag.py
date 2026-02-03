@@ -49,7 +49,12 @@ class RAG:
         self.graph = graph
 
     async def retrieve_and_generate(
-        self, query: str, history: list[dict], filters: dict | None = None, thread_id: str | None = None
+        self,
+        query: str,
+        history: list[dict],
+        filters: dict | None = None,
+        thread_id: str | None = None,
+        retrieval_config: dict | None = None,
     ) -> RAGResult:
         """
         RAG Pipeline 실행: Intent → Rewrite → Hybrid Search → Generate.
@@ -59,6 +64,7 @@ class RAG:
             history: 대화 이력
             filters: 수동 필터 (Optional)
             thread_id: Checkpointer Thread ID (Optional)
+            retrieval_config: Advanced Settings (Optional)
 
         Returns:
             RAGResult: 최종 답변 및 중간 결과
@@ -81,7 +87,11 @@ class RAG:
         }
 
         # Config 설정 (Thread ID가 있으면 Checkpointer 사용)
-        config = {"configurable": {"thread_id": thread_id}} if thread_id else {}
+        config = {"configurable": {"thread_id": thread_id}} if thread_id else {"configurable": {}}
+        
+        # Spec 055: Inject retrieval_config
+        if retrieval_config:
+            config["configurable"]["retrieval_config"] = retrieval_config
 
         # Graph 실행
         result_state = await self.graph.ainvoke(initial_state, config=config)

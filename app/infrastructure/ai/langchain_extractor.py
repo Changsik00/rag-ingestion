@@ -140,3 +140,7 @@ class LangChainExtractor:
         except Exception as e:
             logger.error(f"Failed to generate text (Async): {e}")
             return f"Error: {str(e)}"
+
+    def bind(self, **kwargs):
+        """LangChain Runnable binding delegation"""
+        return self.llm.bind(**kwargs)
