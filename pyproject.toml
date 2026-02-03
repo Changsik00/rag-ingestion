@@ -35,6 +35,7 @@ dependencies = [
     "faster-whisper>=1.2.1",
     "pymupdf>=1.26.7",
     "python-magic>=0.4.27",
+    "langchain-experimental>=0.4.1",
 ]
 
 [dependency-groups]
