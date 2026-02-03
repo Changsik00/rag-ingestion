@@ -67,8 +67,16 @@ class TestApiEndpoints:
 
     @pytest.mark.asyncio
     async def test_rag_ask_flow(self):
-        # Given: Mocked LLM and valid payload
-        payload = {"message": "Hello", "filters": {}}
+        # Given: Valid payload with advanced settings
+        payload = {
+            "message": "Hello", 
+            "filters": {},
+            "advanced_settings": {
+                "top_k": 5,
+                "temperature": 0.5,
+                "search_strategy": "hybrid"
+            }
+        }
 
         # Use patch to avoid external API calls
         with patch("app.application.services.agent.ChatGoogleGenerativeAI") as mock_llm_cls:
@@ -78,8 +86,24 @@ class TestApiEndpoints:
             # When: POST /v1/rag/sessions/{id}/ask
             response = client.post("/v1/rag/sessions/test_session/ask", json=payload)
 
-            # Then: Returns 202 Accepted for async reasoning
+            # Then: Returns 202 Accepted
             assert response.status_code == 202
+
+    @pytest.mark.asyncio
+    async def test_rag_ask_validation_error(self):
+        """Spec 055: Test validation logic for AdvancedSettings"""
+        # Given: Invalid payload (top_k=0, allowed range 1-100)
+        payload = {
+            "message": "Hello",
+            "advanced_settings": {"top_k": 0}
+        }
+
+        # When: POST /v1/rag/sessions/{id}/ask
+        response = client.post("/v1/rag/sessions/test_validation/ask", json=payload)
+
+        # Then: Should return 422 Unprocessable Entity (Validation Error)
+        # Current implementation (dict) will return 202, so this will FAIL until ChatRequest is applied.
+        assert response.status_code == 422
 
     def test_graph_schema_retrieval(self):
         # Given: Active Neo4j connection
