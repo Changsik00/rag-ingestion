@@ -23,79 +23,69 @@
 
 ---
 
-## 🧪 TDD vs BDD
+## 🧪 테스트 계층 (Test Layers)
 
-### TDD (Test-Driven Development)
+본 프로젝트는 **Clean Architecture** 계층과 **테스트 성격**에 따라 다음과 같이 테스트를 분류합니다.
 
-**목적:** 기능이 의도대로 동작하는지 검증
+### 1. Unit Tests (단위 테스트)
+**목적:** 개별 컴포넌트의 순수 로직 검증  
+**경로:** `tests/unit/`
 
-**특징:**
-- 개발자 관점의 테스트
-- 함수/메서드 레벨의 단위 검증
-- 빠른 피드백 루프
-- Mock 사용 가능
-
-**적용:**
-- Unit Tests (개별 함수, 클래스)
-- Contract Tests (인터페이스 준수 여부)
-
-**예시:**
-```python
-def test_scraper_extracts_title_from_html():
-    """주어진 HTML에서 title을 정확히 추출한다"""
-    scraper = BasicScraper()
-    html = "<html><head><title>Test Page</title></head></html>"
-    
-    result = scraper.scrape(html)
-    
-    assert result.title == "Test Page"
-```
+- **`domain/`**: 엔티티 생명주기, 밸류 오브젝트 불변성, 도메인 예외 검증 (Mock 지양)
+- **`application/`**: 유스케이스 로직, 서비스 오케스트레이션 검증 (Interface 기반 Mock 활용)
+- **`infrastructure/`**: 어댑터 구현체, 외부 라이브러리 연동 로직 (LLM Factory, Scraper 등)
+- **`interfaces/`**: API DTO 변환, 요청 유효성 검사
 
 ---
 
-### BDD (Behavior-Driven Development)
+### 2. Integration Tests (통합 테스트)
+**목적:** 여러 컴포넌트 및 인프라(DB, Redis 등)와의 상호작용 검증  
+**경로:** `tests/integration/`
 
-**목적:** 사용자 관점에서 시스템이 어떻게 행동하는지 검증
+사용자의 피드백에 따라 **기술적 단위(Functional)**와 **비즈니스 시나리오(Scenarios)**로 엄격하게 분배합니다.
 
-**특징:**
-- 사용자 관점의 시나리오 테스트
-- Given-When-Then 구조
-- **예외 상황 집중** ⭐
-- 실제 환경 사용
+#### **A. Functional Tests (`functional/`)**
+- **정의**: "기술적 정합성" 중심의 통합 테스트.
+- **범위**: 개별 모듈이 인프라와 통신하며 의도한 기술적 명세를 충족하는지 확인.
+- **예시**:
+    - 리포지토리의 CRUD 동작 및 트랜잭션.
+    - API 엔드포인트의 기술적 규격 (404 처리, 스키마 검증).
+    - `IntentClassifier`나 `StrategySelection`과 같은 핵심 알고리즘의 기술적 정확성.
 
-**적용:**
-- Integration Tests (실제 사용자 시나리오)
-- E2E Tests (전체 워크플로우)
-
-**예시:**
-```python
-def test_user_submits_invalid_url_should_return_clear_error():
-    """
-    Given: 사용자가 잘못된 URL 형식을 입력하고
-    When: 웹 수집 요청을 보내면
-    Then: 400 Bad Request와 명확한 에러 메시지를 받는다
-    """
-    # Given
-    invalid_url = "not-a-valid-url"
-    
-    # When
-    response = client.post("/ingest/web", json={"url": invalid_url})
-    
-    # Then
-    assert response.status_code == 400
-    assert "Invalid URL format" in response.json()["detail"]
-```
+#### **B. Scenario Tests (`scenarios/`)**
+- **정의**: "비즈니스 흐름" 중심의 시나리오 테스트.
+- **범위**: 사용자의 가치 전달 관점에서 여러 모듈이 협력하는 전체 워크플로우를 검증.
+- **예시**:
+    - **Ingestion Pipeline**: URL 입력 → 스크래핑 → 청킹 → 저장까지의 전체 성공 시나리오.
+    - **HITL Workflow**: 검증 실패 시 Human-in-the-loop 대기 및 재개 흐름.
+    - **RAG Pipeline**: 질문 입력 → 검색 → 추론 → 답변 생성 및 출처 표시.
 
 ---
 
-### 언제 무엇을 사용할까?
+## 🛠 인프라 및 환경 격리
 
-| 테스트 타입 | 접근 방식 | 우선순위 | 목적 |
-|------------|----------|---------|------|
-| **Unit Tests** | TDD | 기본 | 기능이 정상 동작하는지 검증 |
-| **Contract Tests** | TDD | 높음 | 인터페이스-구현체 계약 검증 |
-| **Integration Tests** | **BDD** | **최우선** | **예외 상황 검증** ⭐ |
-| **E2E Tests** | BDD | 선택적 | 전체 워크플로우 검증 |
+### Infrastructure Check Fixture
+모든 통합 테스트는 `check_infrastructure` 픽스처를 통해 인프라 가동 여부를 확인하며, 준비되지 않은 경우 테스트를 자동으로 **Skip** 처리합니다.
+
+```python
+@pytest.fixture(scope="session", autouse=True)
+def check_infrastructure():
+    """인프라(DB, Redis 등) 연결 가능 여부 확인"""
+    if not all_services_ready():
+        pytest.skip("Infrastructure not ready. Run 'docker compose up -d'.")
+```
+
+### Session-based Seeding
+테스트 데이터 간섭을 방지하고 실행 속도를 높이기 위해 **세션 단위 시딩**을 수행합니다.
+
+```python
+@pytest.fixture(scope="session")
+def seed_test_data(check_infrastructure, api_client):
+    """표준 테스트 데이터 자동 주입"""
+    # 1. 시딩 여부 확인
+    # 2. 필요 시 데이터 주입 (Idempotency 보장)
+    return seeded_metadata
+```
 
 ---
 
@@ -529,6 +519,6 @@ jobs:
 
 이 문서는 프로젝트가 진화함에 따라 지속적으로 업데이트됩니다.
 
-**마지막 업데이트:** 2026-01-19 (Spec 015: Documentation Update)  
+**마지막 업데이트:** 2026-02-03 (Spec 054: Testing Infrastructure & Taxonomy Reorganization)  
 **작성일:** 2026-01-17 (Spec 009: Testing Strategy)
 
