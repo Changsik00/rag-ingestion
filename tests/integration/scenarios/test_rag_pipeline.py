@@ -12,24 +12,35 @@ from app.domain.value_objects.intent import IntentType, UserIntent
 @pytest.fixture
 def mock_llm_intent():
     mock = MagicMock()
+
     async def agenerate(prompt: str):
         prompt_lower = prompt.lower()
         # Isolate the current query to avoid matching keywords in instructions/examples
-        query_part = prompt_lower.split("**current query:**")[-1] if "**current query:**" in prompt_lower else prompt_lower
+        query_part = (
+            prompt_lower.split("**current query:**")[-1] if "**current query:**" in prompt_lower else prompt_lower
+        )
 
         if "요약해줘" in query_part:
-            return MagicMock(__str__=lambda x: json.dumps({
-                "intent": "summarize", "targets": ["LangChain"], "entities": [], "reasoning": "Summarization"
-            }))
+            return MagicMock(
+                __str__=lambda x: json.dumps(
+                    {"intent": "summarize", "targets": ["LangChain"], "entities": [], "reasoning": "Summarization"}
+                )
+            )
         if "비교" in query_part or "tell me more" in query_part:
-            return MagicMock(__str__=lambda x: json.dumps({
-                "intent": "compare", "targets": ["Claude", "GPT-4"], "entities": [], "reasoning": "Comparison"
-            }))
-        return MagicMock(__str__=lambda x: json.dumps({
-            "intent": "general_query", "targets": [], "entities": [], "reasoning": "General"
-        }))
+            return MagicMock(
+                __str__=lambda x: json.dumps(
+                    {"intent": "compare", "targets": ["Claude", "GPT-4"], "entities": [], "reasoning": "Comparison"}
+                )
+            )
+        return MagicMock(
+            __str__=lambda x: json.dumps(
+                {"intent": "general_query", "targets": [], "entities": [], "reasoning": "General"}
+            )
+        )
+
     mock.agenerate = agenerate
     return mock
+
 
 @pytest.mark.integration
 @pytest.mark.asyncio
@@ -48,6 +59,7 @@ class TestRagPipelineScenarios:
         mock_rewriter_llm.ainvoke = AsyncMock(return_value=MagicMock(content="Rewritten: What is Claude?"))
 
         from app.infrastructure.ai.langchain_extractor import LangChainExtractor
+
         extractor = LangChainExtractor(llm=mock_rewriter_llm)
         extractor.agenerate = AsyncMock(return_value="Rewritten: What is Claude?")
         rewriter = QueryRewriter(extractor)
@@ -74,7 +86,7 @@ class TestRagPipelineScenarios:
             "keyword_chunks": [],
             "graph_data": [],
             "full_context": "Mock Context",
-            "final_answer": "Final Result"
+            "final_answer": "Final Result",
         }
         mock_graph.ainvoke = AsyncMock(return_value=mock_result_state)
         rag_service = RAG(graph=mock_graph)
@@ -100,6 +112,3 @@ class TestRagPipelineScenarios:
         # Then: System identifies the failure hypothesis (Logic verified via functional tests previously)
         assert "summary" in feedback.target_fields
         assert feedback.source == "validator"
-
-
-

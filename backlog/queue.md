@@ -23,7 +23,7 @@
 
 > **목표**: 시스템의 응답 속도, 처리량, 비용 효율성을 극대화하고 대규모 트래픽/데이터를 견딜 수 있는 구조로 최적화한다.
 
-* [ ] **Spec 055: RAG Precision & Advanced Settings** (High)
+* [ ] **[Spec 055: RAG Precision & Advanced Settings](../specs/055-rag-precision-advanced-settings/spec.md)** (High) 🏃
   * **Goal**: 검색 품질 최적화 및 고급 튜닝 옵션 제공
   * **Scope**: Hyperparameter Tuning, Advanced Debug View, Search Strategy Selector
 

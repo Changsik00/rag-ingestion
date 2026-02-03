@@ -15,10 +15,10 @@ from app.interfaces.api.v1.dto.common import BaseResponse
 from app.interfaces.api.v1.dto.jobs import ThreadResponse
 from app.interfaces.api.v1.dto.rag import (
     AutocompleteResponse,
+    ChatRequest,
     ChatResponse,
     MessageDTO,
     SessionTraceResponse,
-    ChatRequest,
 )
 
 router = APIRouter(tags=["RAG"])
@@ -77,12 +77,7 @@ async def ask_agent(
 
     # LangGraph Workflow 실행
     # Spec 055: Inject retrieval_config into configurable
-    config = {
-        "configurable": {
-            "thread_id": id,
-            "retrieval_config": retrieval_config
-        }
-    }
+    config = {"configurable": {"thread_id": id, "retrieval_config": retrieval_config}}
     workflow = agent.build_workflow(checkpointer=checkpointer)
 
     input_state = {

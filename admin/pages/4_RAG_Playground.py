@@ -363,7 +363,7 @@ with st.sidebar:
             min_value=1,
             max_value=20,
             value=st.session_state.get("settings_top_k", 5),
-            help="검색할 문서의 최대 개수입니다."
+            help="검색할 문서의 최대 개수입니다.",
         )
 
         # Temperature
@@ -373,21 +373,22 @@ with st.sidebar:
             max_value=1.0,
             value=st.session_state.get("settings_temp", 0.0),
             step=0.1,
-            help="생성 다양성을 결정합니다. 높을수록 창의적입니다."
+            help="생성 다양성을 결정합니다. 높을수록 창의적입니다.",
         )
 
         # Search Strategy
         st.session_state.settings_strategy = st.radio(
             "Search Strategy",
             options=["hybrid", "vector", "keyword"],
-            index=0 if "settings_strategy" not in st.session_state 
+            index=0
+            if "settings_strategy" not in st.session_state
             else ["hybrid", "vector", "keyword"].index(st.session_state.get("settings_strategy", "hybrid")),
             horizontal=True,
-            help="검색 방식을 선택합니다."
+            help="검색 방식을 선택합니다.",
         )
 
         st.divider()
-        
+
         if st.button("🗑️ Delete Thread History", use_container_width=True):
             try:
                 api_client.post(f"/rag/sessions/{current_thread_id}/reset")
@@ -397,7 +398,7 @@ with st.sidebar:
                 st.rerun()
             except Exception as e:
                 st.error(f"Failed to clear history: {e}")
- 
+
         if st.button("🔄 New Conversation (Reset Thread)", use_container_width=True):
             st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
             st.query_params["thread_id"] = f"playground-{st.session_state.thread_id_seed}"
@@ -438,8 +439,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 "advanced_settings": {
                     "top_k": st.session_state.get("settings_top_k", 5),
                     "temperature": st.session_state.get("settings_temp", 0.0),
-                    "search_strategy": st.session_state.get("settings_strategy", "hybrid")
-                }
+                    "search_strategy": st.session_state.get("settings_strategy", "hybrid"),
+                },
             }
 
             res = api_client.post(f"/rag/sessions/{current_thread_id}/ask", json=payload)

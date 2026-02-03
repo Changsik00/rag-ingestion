@@ -85,9 +85,7 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="사용자 질문 메시지")
     filters: dict[str, Any] = Field(default_factory=dict, description="메타데이터 필터")
     hitl_enabled: bool = Field(default=False, description="Human-in-the-Loop 활성화 여부")
-    advanced_settings: AdvancedSettings = Field(
-        default_factory=AdvancedSettings, description="고급 검색 설정"
-    )
+    advanced_settings: AdvancedSettings = Field(default_factory=AdvancedSettings, description="고급 검색 설정")
 
 
 class SessionTraceResponse(BaseResponse):

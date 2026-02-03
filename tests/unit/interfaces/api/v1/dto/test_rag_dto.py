@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.interfaces.api.v1.dto.rag import ChatRequest, AdvancedSettings
+from app.interfaces.api.v1.dto.rag import AdvancedSettings, ChatRequest
 
 
 def test_advanced_settings_defaults():
@@ -17,7 +17,7 @@ def test_advanced_settings_validation():
     # top_k min limit
     with pytest.raises(ValidationError):
         AdvancedSettings(top_k=0)
-    
+
     # temperature range limit
     with pytest.raises(ValidationError):
         AdvancedSettings(temperature=2.0)
@@ -48,7 +48,7 @@ def test_chat_request_with_custom_settings():
     """ChatRequest에 커스텀 설정을 전달했을 때 반영 확인"""
     custom_settings = AdvancedSettings(top_k=20, search_strategy="keyword")
     req = ChatRequest(message="Test", advanced_settings=custom_settings)
-    
+
     assert req.advanced_settings.top_k == 20
     assert req.advanced_settings.search_strategy == "keyword"
 

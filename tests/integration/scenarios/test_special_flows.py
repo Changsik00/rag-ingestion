@@ -9,6 +9,7 @@ from app.interfaces.api.main import app
 
 client = TestClient(app)
 
+
 @pytest.mark.integration
 @pytest.mark.asyncio
 class TestSpecialFlows:

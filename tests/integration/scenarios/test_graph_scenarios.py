@@ -1,21 +1,21 @@
-import pytest
-import asyncio
 import time
 from unittest.mock import AsyncMock, Mock, patch
-from langgraph.checkpoint.memory import MemorySaver
 
-from app.domain.value_objects.ingestion_state import IngestionGraphState, ValidationFeedback
-from app.infrastructure.ai.ingestion_graph import IngestionGraphBuilder
+import pytest
 from fastapi.testclient import TestClient
+from langgraph.checkpoint.memory import MemorySaver
 
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
+from app.domain.value_objects.ingestion_state import IngestionGraphState, ValidationFeedback
 from app.domain.value_objects.ontology import EntityType
+from app.infrastructure.ai.ingestion_graph import IngestionGraphBuilder
 from app.interfaces.api.dependencies import get_scraper
 from app.interfaces.api.main import app
 from app.interfaces.api.v1.dto.ingest import IngestResponse
 
 client = TestClient(app)
+
 
 @pytest.fixture(autouse=True)
 def clean_database():
@@ -26,19 +26,23 @@ def clean_database():
     time.sleep(1)
     yield
 
+
 @pytest.fixture
 def mock_scraper_graph():
     mock = Mock()
-    mock.scrape = AsyncMock(return_value=IngestResponse(
-        url="https://example.com/elon-musk",
-        markdown="""
+    mock.scrape = AsyncMock(
+        return_value=IngestResponse(
+            url="https://example.com/elon-musk",
+            markdown="""
         Elon Musk founded Tesla in 2003. He also founded SpaceX.
         Tesla headquarters is in Austin, Texas. Python is used for software.
         """,
-        metadata={"title": "Elon Musk Bio", "source_id": "https://example.com/elon-musk"},
-        message="Success"
-    ))
+            metadata={"title": "Elon Musk Bio", "source_id": "https://example.com/elon-musk"},
+            message="Success",
+        )
+    )
     return mock
+
 
 @pytest.mark.integration
 class TestGraphScenarios:
@@ -50,6 +54,7 @@ class TestGraphScenarios:
     def test_entity_extraction_and_retrieval_flow(self, mock_scraper_graph):
         # Given: Ingestion request for entity-rich content with a unique URL
         import uuid
+
         url = f"https://example.com/elon-musk-{uuid.uuid4()}"
         unique_name = f"Musk-{uuid.uuid4().hex[:6]}"
         mock_scraper_graph.scrape.return_value.url = url
@@ -62,7 +67,7 @@ class TestGraphScenarios:
                     summary="Elon Musk is the CEO of Tesla.",
                     keywords=["musk", "tesla"],
                     entities={EntityType.PERSON: [unique_name], EntityType.ORGANIZATION: ["Tesla"]},
-                    language="en"
+                    language="en",
                 )
 
                 # When: Ingesting the document
@@ -102,6 +107,7 @@ class TestGraphScenarios:
         """
         # Given: Documents with overlapping info and unique URL
         import uuid
+
         url = f"https://example.com/elon-consistency-{uuid.uuid4()}"
         unique_name = f"Tesla-Consist-{uuid.uuid4().hex[:6]}"
         mock_scraper_graph.scrape.return_value.url = url
@@ -114,7 +120,7 @@ class TestGraphScenarios:
                     summary="Tesla consistency check.",
                     keywords=["tesla"],
                     entities={EntityType.ORGANIZATION: [unique_name]},
-                    language="en"
+                    language="en",
                 )
 
                 response = client.post("/v1/ingest/web", json={"url": url, "enable_extraction": True})
@@ -131,12 +137,16 @@ class TestGraphScenarios:
                 # Then: Found in documents (Vector)
                 doc_res = client.get("/v1/documents")
                 docs = doc_res.json()
-                found = any(url in (d.get("metadata", {}).get("source_url", "")) or url in (d.get("id") or "") for d in docs)
+                found = any(
+                    url in (d.get("metadata", {}).get("source_url", "")) or url in (d.get("id") or "") for d in docs
+                )
                 assert found, f"Could not find document with {url} in {docs}"
 
                 # Then: Found in entities (Graph)
                 ent_res = client.get("/v1/entities")
-                assert any(unique_name.lower() in e["name"].lower() for e in ent_res.json()), f"Expected {unique_name} in {ent_res.json()}"
+                assert any(unique_name.lower() in e["name"].lower() for e in ent_res.json()), (
+                    f"Expected {unique_name} in {ent_res.json()}"
+                )
         finally:
             app.dependency_overrides.clear()
 
@@ -153,11 +163,14 @@ class TestGraphScenarios:
         url = f"https://example.com/dedupe-{int(time.time())}"
 
         mock_scraper = Mock()
-        mock_scraper.scrape = AsyncMock(return_value=IngestResponse(
-            url=url, markdown="Dedupe test content",
-            metadata={"title": "Dedupe Test", "source_id": url},
-            message="Success"
-        ))
+        mock_scraper.scrape = AsyncMock(
+            return_value=IngestResponse(
+                url=url,
+                markdown="Dedupe test content",
+                metadata={"title": "Dedupe Test", "source_id": url},
+                message="Success",
+            )
+        )
 
         app.dependency_overrides[get_scraper] = lambda: mock_scraper
 
@@ -167,19 +180,19 @@ class TestGraphScenarios:
                 current_url = f"{url}-{i}"
                 mock_scraper.scrape.return_value.url = current_url
                 mock_scraper.scrape.return_value.metadata["source_id"] = current_url
-                
+
                 with patch.object(SemanticExtractor, "extract", new_callable=AsyncMock) as mock_extract:
                     mock_extract.return_value = ExtractedMetadata(
                         title=f"Dedupe Doc {i}",
                         summary="Dedupe check",
                         keywords=["dedupe"],
                         entities={EntityType.PERSON: [unique_name]},
-                        language="en"
+                        language="en",
                     )
-                    
+
                     response = client.post("/v1/ingest/web", json={"url": current_url, "enable_extraction": True})
                     job_id = response.json().get("job_id")
-                    
+
                     # Wait for completion
                     for _ in range(20):
                         job_resp = client.get(f"/v1/jobs/{job_id}")
@@ -197,7 +210,7 @@ class TestGraphScenarios:
             assert doc_res.status_code == 200
             docs = doc_res.json()
             assert len(docs) >= 2
-            
+
             # Then: Entity info should be accessible
             info_res = client.get(f"/v1/entities/{unique_name}/info")
             assert info_res.status_code == 200
@@ -213,24 +226,22 @@ class TestGraphScenarios:
         """
         # Given: A mock LLM that will trigger the validator
         mock_llm = Mock()
-        mock_llm.aextract_metadata = AsyncMock(return_value={
-            "title": "HIITL Test",
-            "summary": "Needs manual fix",
-            "entities": {},
-            "language": "en"
-        })
-        
+        mock_llm.aextract_metadata = AsyncMock(
+            return_value={"title": "HIITL Test", "summary": "Needs manual fix", "entities": {}, "language": "en"}
+        )
+
         checkpointer = MemorySaver()
         builder = IngestionGraphBuilder(mock_llm)
 
         # When: Validator is mocked to return a critical error once
         call_count = {"validate": 0}
+
         async def mock_validate(state: IngestionGraphState):
             call_count["validate"] += 1
             if call_count["validate"] == 1:
                 return {
                     "error": "Critical validation failure",
-                    "steps_history": state.get("steps_history", []) + ["validate_content"]
+                    "steps_history": state.get("steps_history", []) + ["validate_content"],
                 }
             return {"error": None, "steps_history": state.get("steps_history", []) + ["validate_content"]}
 
@@ -244,7 +255,7 @@ class TestGraphScenarios:
             retry_count=0,
             max_retries=3,
             current_strategy="STANDARD",
-            active_constraints={"strict_mode": True}
+            active_constraints={"strict_mode": True},
         )
 
         thread_config = {"configurable": {"thread_id": "hiitl_thread"}}
@@ -257,12 +268,12 @@ class TestGraphScenarios:
         # Then: Graph is interrupted at human_review
         state_snapshot = graph.get_state(thread_config)
         assert "human_review" in state_snapshot.next
-        
+
         # When: Manually providing feedback to resume
         graph.update_state(
             thread_config,
             {"error": None, "steps_history": state_snapshot.values["steps_history"] + ["human_review"]},
-            as_node="human_review"
+            as_node="human_review",
         )
 
         # When: Resuming the graph
@@ -281,19 +292,21 @@ class TestGraphScenarios:
         """
         mock_llm = AsyncMock()
         mock_llm.aextract_metadata.return_value = {"title": "Reasoning Test", "summary": "Initial summary"}
-        
+
         builder = IngestionGraphBuilder(mock_llm)
-        
+
         # When: Validator fails on first run but passes on second
         async def failing_validate(state: IngestionGraphState):
             history = state.get("steps_history", [])
             if "analyze_failure" in history:
                 return {"error": None, "steps_history": history + ["validate_content"], "last_feedback": None}
-            
+
             return {
                 "error": "Missing key entities",
-                "last_feedback": ValidationFeedback(source="validator", message="Retry with focus", target_fields=["entities"]),
-                "steps_history": history + ["validate_content"]
+                "last_feedback": ValidationFeedback(
+                    source="validator", message="Retry with focus", target_fields=["entities"]
+                ),
+                "steps_history": history + ["validate_content"],
             }
 
         builder.nodes.validate_content = failing_validate
@@ -305,7 +318,7 @@ class TestGraphScenarios:
             steps_history=[],
             retry_count=0,
             max_retries=2,
-            current_strategy="STANDARD"
+            current_strategy="STANDARD",
         )
 
         # When: Invoking the graph
@@ -317,4 +330,3 @@ class TestGraphScenarios:
         assert "analyze_failure" in history
         assert "backtracking_context" in final_state
         assert "failure_hypothesis" in final_state["backtracking_context"]
-

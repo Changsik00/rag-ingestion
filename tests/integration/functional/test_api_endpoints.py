@@ -8,6 +8,7 @@ from app.interfaces.api.main import app
 
 client = TestClient(app)
 
+
 @pytest.mark.integration
 class TestApiEndpoints:
     """
@@ -69,13 +70,9 @@ class TestApiEndpoints:
     async def test_rag_ask_flow(self):
         # Given: Valid payload with advanced settings
         payload = {
-            "message": "Hello", 
+            "message": "Hello",
             "filters": {},
-            "advanced_settings": {
-                "top_k": 5,
-                "temperature": 0.5,
-                "search_strategy": "hybrid"
-            }
+            "advanced_settings": {"top_k": 5, "temperature": 0.5, "search_strategy": "hybrid"},
         }
 
         # Use patch to avoid external API calls
@@ -93,10 +90,7 @@ class TestApiEndpoints:
     async def test_rag_ask_validation_error(self):
         """Spec 055: Test validation logic for AdvancedSettings"""
         # Given: Invalid payload (top_k=0, allowed range 1-100)
-        payload = {
-            "message": "Hello",
-            "advanced_settings": {"top_k": 0}
-        }
+        payload = {"message": "Hello", "advanced_settings": {"top_k": 0}}
 
         # When: POST /v1/rag/sessions/{id}/ask
         response = client.post("/v1/rag/sessions/test_validation/ask", json=payload)
@@ -129,8 +123,7 @@ class TestApiEndpoints:
         mock_repo = MagicMock()
         now = datetime.now(timezone.utc)
         job = IngestionJob(
-            job_id="job-123", status="COMPLETED", source_url="http://example.com",
-            created_at=now, updated_at=now
+            job_id="job-123", status="COMPLETED", source_url="http://example.com", created_at=now, updated_at=now
         )
         mock_repo.list_jobs.return_value = [job]
         app.dependency_overrides[get_job_repository] = lambda: mock_repo
@@ -162,8 +155,8 @@ class TestApiEndpoints:
         # Check for any unique identifier
         assert "id" in first_doc or "metadata" in first_doc
         if "metadata" in first_doc:
-             meta = first_doc["metadata"]
-             assert any(k in meta for k in ["source_id", "url", "source_url", "title"])
+            meta = first_doc["metadata"]
+            assert any(k in meta for k in ["source_id", "url", "source_url", "title"])
 
     def test_invalid_job_id_lookup(self):
         """

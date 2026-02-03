@@ -1,15 +1,15 @@
+import json
+from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
 
+from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.value_objects.chunk import Chunk
+from app.domain.value_objects.intent import IntentType
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
 from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
-import json
-from unittest.mock import AsyncMock, MagicMock
-from app.domain.value_objects.intent import IntentType, UserIntent
-from app.domain.services.intent_classifier import IntentClassifier
 from app.interfaces.api.dependencies import get_neo4j_driver
 
 
@@ -17,38 +17,53 @@ from app.interfaces.api.dependencies import get_neo4j_driver
 def driver():
     return get_neo4j_driver()
 
+
 @pytest.fixture(scope="module")
 def chroma_repo():
     return ChromaVectorRepository()
+
 
 @pytest.fixture(scope="module")
 def neo4j_repo(driver):
     return Neo4jDocumentRepository(driver)
 
+
 @pytest.fixture(scope="module")
 def graph_repo(driver):
     return Neo4jGraphRepository(driver)
 
+
 @pytest.fixture
 def mock_llm_intent():
     mock = MagicMock()
+
     async def agenerate(prompt: str):
         prompt_lower = prompt.lower()
-        query_part = prompt_lower.split("**current query:**")[-1] if "**current query:**" in prompt_lower else prompt_lower
+        query_part = (
+            prompt_lower.split("**current query:**")[-1] if "**current query:**" in prompt_lower else prompt_lower
+        )
 
         if "요약해줘" in query_part:
-            return MagicMock(__str__=lambda x: json.dumps({
-                "intent": "summarize", "targets": ["LangChain"], "entities": [], "reasoning": "Summarization"
-            }))
+            return MagicMock(
+                __str__=lambda x: json.dumps(
+                    {"intent": "summarize", "targets": ["LangChain"], "entities": [], "reasoning": "Summarization"}
+                )
+            )
         if "비교" in query_part or "tell me more" in query_part:
-            return MagicMock(__str__=lambda x: json.dumps({
-                "intent": "compare", "targets": ["Claude", "GPT-4"], "entities": [], "reasoning": "Comparison"
-            }))
-        return MagicMock(__str__=lambda x: json.dumps({
-            "intent": "general_query", "targets": [], "entities": [], "reasoning": "General"
-        }))
+            return MagicMock(
+                __str__=lambda x: json.dumps(
+                    {"intent": "compare", "targets": ["Claude", "GPT-4"], "entities": [], "reasoning": "Comparison"}
+                )
+            )
+        return MagicMock(
+            __str__=lambda x: json.dumps(
+                {"intent": "general_query", "targets": [], "entities": [], "reasoning": "General"}
+            )
+        )
+
     mock.agenerate = agenerate
     return mock
+
 
 @pytest.mark.integration
 class TestRetrievalLogic:
@@ -83,7 +98,9 @@ class TestRetrievalLogic:
 
         chunks = [
             Chunk(id=str(uuid4()), content="Apple macOS is an operating system.", parent_id=doc_tech_id, index=0),
-            Chunk(id=str(uuid4()), content="Apple is a red edible fruit with high fiber.", parent_id=doc_fruit_id, index=0),
+            Chunk(
+                id=str(uuid4()), content="Apple is a red edible fruit with high fiber.", parent_id=doc_fruit_id, index=0
+            ),
         ]
         chroma_repo.save_chunks(chunks)
 

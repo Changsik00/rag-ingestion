@@ -16,6 +16,7 @@ def neo4j_repo():
     repo = Neo4jDocumentRepository(driver)
     yield repo
 
+
 @pytest.mark.integration
 def test_neo4j_fulltext_search_logic(neo4j_repo):
     """
