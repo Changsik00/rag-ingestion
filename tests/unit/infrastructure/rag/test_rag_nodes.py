@@ -18,7 +18,9 @@ from app.domain.value_objects.intent import IntentType, UserIntent
 @pytest.fixture
 def mock_llm():
     """Mock LLM Interface"""
-    return Mock()
+    llm = Mock()
+    llm.bind.return_value = llm
+    return llm
 
 
 @pytest.fixture
@@ -54,6 +56,12 @@ def mock_repositories():
     chroma.search_mmr.return_value = []
 
     return {"neo4j_doc": neo4j_doc, "neo4j_graph": neo4j_graph, "chroma": chroma}
+
+
+@pytest.fixture
+def mock_config():
+    """Mock LangGraph RunnableConfig"""
+    return {"configurable": {"retrieval_config": {"top_k": 5, "search_strategy": "hybrid", "temperature": 0.0}}}
 
 
 class TestRAGNodesClassifyIntent:
@@ -200,7 +208,12 @@ class TestRAGNodesRetrieveHybrid:
 
     @pytest.mark.asyncio
     async def test_parallel_search_updates_all_chunks(
-        self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
+        self,
+        mock_llm,
+        mock_query_rewriter,
+        mock_intent_classifier,
+        mock_repositories,
+        mock_config,
     ):
         """
         Given: rewritten_query와 final_filters가 설정된 State
@@ -250,7 +263,7 @@ class TestRAGNodesRetrieveHybrid:
         }
 
         # When
-        result = await nodes.retrieve_hybrid(state)
+        result = await nodes.retrieve_hybrid(state, config=mock_config)
 
         # Then
         assert len(result["vector_chunks"]) == 1
@@ -264,7 +277,12 @@ class TestRAGNodesGenerateAnswer:
 
     @pytest.mark.asyncio
     async def test_formats_context_and_generates_answer(
-        self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
+        self,
+        mock_llm,
+        mock_query_rewriter,
+        mock_intent_classifier,
+        mock_repositories,
+        mock_config,
     ):
         """
         Given: 검색 결과(chunks, graph_data)가 포함된 State
@@ -278,7 +296,7 @@ class TestRAGNodesGenerateAnswer:
         # Mock LLM Response
         mock_response = Mock()
         mock_response.content = "인공지능은 기계가 인간처럼 학습하고 판단하는 기술입니다."
-        mock_llm.agenerate = AsyncMock(return_value=mock_response)
+        mock_llm.ainvoke = AsyncMock(return_value=mock_response)
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -314,13 +332,13 @@ class TestRAGNodesGenerateAnswer:
         }
 
         # When
-        result = await nodes.generate_answer(state)
+        result = await nodes.generate_answer(state, config=mock_config)
 
         # Then
         assert result["full_context"] != ""
         assert "test.com" in result["full_context"]  # Citation 포함
         assert result["final_answer"] == "인공지능은 기계가 인간처럼 학습하고 판단하는 기술입니다."
-        mock_llm.agenerate.assert_called_once()
+        mock_llm.ainvoke.assert_called_once()
 
 
 class TestRAGNodesFallback:
@@ -328,7 +346,12 @@ class TestRAGNodesFallback:
 
     @pytest.mark.asyncio
     async def test_retrieve_hybrid_triggers_fallback_when_filtered_results_empty(
-        self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
+        self,
+        mock_llm,
+        mock_query_rewriter,
+        mock_intent_classifier,
+        mock_repositories,
+        mock_config,
     ):
         """
         Given: Filters가 적용되었으나 검색 결과가 0건인 상황
@@ -378,7 +401,7 @@ class TestRAGNodesFallback:
         }
 
         # When
-        result = await nodes.retrieve_hybrid(state)
+        result = await nodes.retrieve_hybrid(state, config=mock_config)
 
         # Then
         assert result["fallback_triggered"] is True
@@ -397,7 +420,12 @@ class TestRAGNodesPromptGuard:
 
     @pytest.mark.asyncio
     async def test_generate_answer_includes_knowledge_mixing_rules(
-        self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
+        self,
+        mock_llm,
+        mock_query_rewriter,
+        mock_intent_classifier,
+        mock_repositories,
+        mock_config,
     ):
         """
         Given: RAG State
@@ -406,7 +434,7 @@ class TestRAGNodesPromptGuard:
         """
         from app.infrastructure.ai.rag_nodes import RAGNodes
 
-        mock_llm.agenerate = AsyncMock(return_value=Mock(content="답변"))
+        mock_llm.ainvoke = AsyncMock(return_value=Mock(content="답변"))
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -433,10 +461,10 @@ class TestRAGNodesPromptGuard:
         }
 
         # When
-        await nodes.generate_answer(state)
+        await nodes.generate_answer(state, config=mock_config)
 
         # Then
-        assert mock_llm.agenerate.call_count == 1
-        prompt = mock_llm.agenerate.call_args[0][0]
+        assert mock_llm.ainvoke.call_count == 1
+        prompt = mock_llm.ainvoke.call_args[0][0]
         assert "KNOWLEDGE MIXING RULES" in prompt
         assert "PRIORITIZE KNOWLEDGE GRAPH" in prompt

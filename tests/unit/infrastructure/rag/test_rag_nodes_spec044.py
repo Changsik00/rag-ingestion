@@ -8,19 +8,26 @@ from app.infrastructure.ai.rag_nodes import RAGNodes
 
 
 @pytest.fixture
+def mock_config():
+    return {"configurable": {"retrieval_config": {"top_k": 5}}}
+
+
+@pytest.fixture
 def rag_nodes():
+    llm = MagicMock()
+    llm.bind.return_value = llm
     return RAGNodes(
         neo4j_doc_repo=MagicMock(),
         neo4j_graph_repo=MagicMock(),
         chroma_repo=MagicMock(),
         query_rewriter=MagicMock(),
         intent_classifier=MagicMock(),
-        llm=MagicMock(),
+        llm=llm,
     )
 
 
 @pytest.mark.asyncio
-async def test_retrieve_hybrid_calls_find_shortest_path_when_entities_present(rag_nodes):
+async def test_retrieve_hybrid_calls_find_shortest_path_when_entities_present(rag_nodes, mock_config):
     # Given
     entities = ["Elon Musk", "Twitter"]
     user_intent = UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], entities=entities, reasoning="Test")
@@ -42,7 +49,7 @@ async def test_retrieve_hybrid_calls_find_shortest_path_when_entities_present(ra
     rag_nodes.chroma_repo.search_mmr.return_value = []
 
     # When
-    new_state = await rag_nodes.retrieve_hybrid(state)
+    new_state = await rag_nodes.retrieve_hybrid(state, config=mock_config)
 
     # Then
     rag_nodes.neo4j_graph_repo.find_shortest_path.assert_called_once_with(entities)
@@ -50,7 +57,7 @@ async def test_retrieve_hybrid_calls_find_shortest_path_when_entities_present(ra
 
 
 @pytest.mark.asyncio
-async def test_retrieve_hybrid_calls_get_subgraph_when_no_entities(rag_nodes):
+async def test_retrieve_hybrid_calls_get_subgraph_when_no_entities(rag_nodes, mock_config):
     # Given
     user_intent = UserIntent(
         intent=IntentType.GENERAL_QUERY,
@@ -76,7 +83,7 @@ async def test_retrieve_hybrid_calls_get_subgraph_when_no_entities(rag_nodes):
     rag_nodes.chroma_repo.search_mmr.return_value = []
 
     # When
-    new_state = await rag_nodes.retrieve_hybrid(state)
+    new_state = await rag_nodes.retrieve_hybrid(state, config=mock_config)
 
     # Then
     rag_nodes.neo4j_graph_repo.get_subgraph.assert_called_once_with(["Rewritten General question?"])
