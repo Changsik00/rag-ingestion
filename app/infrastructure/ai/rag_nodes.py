@@ -10,10 +10,8 @@ Design Guide 005: 3-Layer Architecture (Brain → Nervous System → Body)
 
 import asyncio
 import re
-from typing import Any, TYPE_CHECKING
+from typing import Any
 
-
-from typing import Any, TYPE_CHECKING
 from langchain_core.runnables import RunnableConfig
 
 from app.core.logger import setup_logger
@@ -68,7 +66,7 @@ class RAGNodes:
         """
         if isinstance(content, str):
             return content
-        
+
         if isinstance(content, list):
             text_parts = []
             for part in content:
@@ -78,10 +76,10 @@ class RAGNodes:
                 elif isinstance(part, str):
                     text_parts.append(part)
                 elif isinstance(part, dict) and "text" in part:
-                     text_parts.append(part["text"])
+                    text_parts.append(part["text"])
                 # Ignore other types (e.g. dicts without text, blobs) to prevent chaotic noise
             return "".join(text_parts)
-            
+
         return str(content)
 
     async def classify_intent(self, state: RAGGraphState) -> RAGGraphState:
@@ -189,7 +187,7 @@ class RAGNodes:
 
         # [Spec 034] Initial Search reasoning
         reasoning_log = state.get("reasoning_log", [])
-        
+
         tasks = []
         # Strategy Logic
         if strategy in ["hybrid", "vector"]:
@@ -205,8 +203,10 @@ class RAGNodes:
         # Graph Search is always enabled unless restricted? Keeping it enabled.
         tasks.append(asyncio.to_thread(self._search_graph, rewritten_query, entities))
 
-        logger.info(f"RAG Retrieval: query='{rewritten_query}', filters={final_filters}, entities={entities}, strategy={strategy}, top_k={top_k}")
-        
+        logger.info(
+            f"RAG Retrieval: query='{rewritten_query}', filters={final_filters}, entities={entities}, strategy={strategy}, top_k={top_k}"
+        )
+
         results = await asyncio.gather(*tasks)
         vector_results = results[0]
         keyword_results = results[1]
@@ -219,7 +219,7 @@ class RAGNodes:
         # Fallback Logic: 필터링된 결과가 없고 필터가 적용된 상태라면 필터 제거 후 재검색
         # Fallback only if the active strategy yielded nothing?
         active_results_count = len(vector_results) + len(keyword_results)
-        
+
         if final_filters and active_results_count == 0:
             logger.info("No results found with filters. Triggering Fallback (Global Search)...")
             state["fallback_triggered"] = True
@@ -238,7 +238,7 @@ class RAGNodes:
                 fb_tasks.append(asyncio.to_thread(self._search_keyword, rewritten_query, top_k, None))
             else:
                 fb_tasks.append(asyncio.to_thread(lambda: []))
-            
+
             fb_results = await asyncio.gather(*fb_tasks)
             vector_results = fb_results[0]
             keyword_results = fb_results[1]
@@ -362,7 +362,7 @@ class RAGNodes:
             llm = self.llm.bind(temperature=temperature)
             content = await llm.agenerate(prompt)
             # content is already a string here if using our adapter's agenerate
-            
+
             # JSON block 추출 (LLM이 마크다운 형식을 포함할 수 있음)
             json_match = re.search(r"\{.*\}", content, re.DOTALL)
             if json_match:
@@ -421,7 +421,7 @@ class RAGNodes:
         keyword_chunks = state.get("keyword_chunks", [])
         reranked_chunks = state.get("reranked_chunks")
         graph_data = state.get("graph_data", [])
-        
+
         # Spec 055: Configuration
         retrieval_config = config.get("configurable", {}).get("retrieval_config", {})
         temperature = retrieval_config.get("temperature", 0.0)
@@ -588,9 +588,9 @@ class RAGNodes:
                 # Filter out MENTIONS (Internal link metadata) and None values
                 if r == "MENTIONS" or s == "None" or t == "None":
                     continue
-                
+
                 graph_lines.append(f"- ({s}) -[{r}]-> ({t})")
-            
+
             if len(graph_lines) > 1:
                 graph_context = "\n".join(graph_lines)
 

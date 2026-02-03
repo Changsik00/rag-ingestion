@@ -4,7 +4,6 @@ from uuid import UUID
 from app.application.interfaces.scraper import ScraperInterface
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.exceptions import BaseAppError
-from app.core.file_processor import FileProcessor
 from app.core.logger import setup_logger
 from app.domain.entities.document import Document
 from app.domain.entities.job import IngestionJob, JobStatus
@@ -43,10 +42,10 @@ class Ingestion:
     def _get_chunker(self, config_dict: dict | None = None) -> Chunker:
         if self._chunker:
             return self._chunker
-        
+
         from app.domain.value_objects.chunk_config import ChunkingConfig
         from app.infrastructure.chunker.chunker_factory import ChunkerFactory
-        
+
         config = ChunkingConfig(**config_dict) if config_dict else ChunkingConfig()
         return ChunkerFactory.get_chunker(config)
 
@@ -116,6 +115,7 @@ class Ingestion:
             if job.raw_content and job.filename:
                 logger.info(f"Processing local file: {job.filename}")
                 from app.core.file_processor import FileProcessor
+
                 file_processor = FileProcessor()
                 segments = file_processor.extract_segments(job.raw_content, job.filename)
             else:

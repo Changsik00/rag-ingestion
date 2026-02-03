@@ -20,9 +20,9 @@ with st.expander("⚙️ Chunking Settings", expanded=False):
             help="Recursive: 고정 크기 분할, Semantic: 의미 기반 분할",
             horizontal=True,
         )
-    
+
     chunk_config = {"strategy": strategy}
-    
+
     if strategy == "recursive":
         with col2:
             c_size = st.number_input("Chunk Size", value=1000, step=100)
@@ -36,10 +36,9 @@ with st.expander("⚙️ Chunking Settings", expanded=False):
                 index=0,
             )
             threshold_amount = st.slider("Threshold Amount", min_value=0.0, max_value=100.0, value=90.0, step=0.1)
-            chunk_config.update({
-                "breakpoint_threshold_type": threshold_type,
-                "breakpoint_threshold_amount": threshold_amount
-            })
+            chunk_config.update(
+                {"breakpoint_threshold_type": threshold_type, "breakpoint_threshold_amount": threshold_amount}
+            )
 
 st.divider()
 
