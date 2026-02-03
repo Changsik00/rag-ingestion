@@ -8,8 +8,9 @@
 ### 주요 변경 사항
 - [x] **Infrastructure Check (`conftest.py`)**: 테스트 실행 전 Neo4j, Chroma, Redis 연결 상태 확인 (Fail Fast -> Skip)
 - [x] **Session Seeding (`seed_test_data`)**: 테스트 세션 시작 시 표준 데이터 자동 주입
+- [x] **Test Reorganization**: 파편화된 테스트 패키지를 `functional`(기능 단위) 및 `scenarios`(시나리오 기반)로 재편하여 유지보수성 향상
+- [x] **Cleanup**: 기존 `bdd`, `tdd`, `api` 폴더 내 노후화된 테스트 30여 개 삭제 및 최신 인프라 반영
 - [x] **Repository Logic Fix**: `Neo4jDocumentRepository`의 `created_at` 필드 Validation 로직 수정 (Infra Error 방지)
-- [x] **Test Fixes**: Knowledge Graph, RAG Service, Edge Case 테스트 전면 수정 및 Mocking 전략 개선
 
 ## 🎯 Key Review Points
 1. **`conftest.py`**: `check_infrastructure` 및 `seed_test_data` 픽스처의 구현 방식
@@ -36,16 +37,19 @@ uv run pytest tests/integration
 ## 📦 Files Changed
 
 ### 🆕 New Files
-- `tests/integration/README.md`: 통합 테스트 가이드 문서
+- `tests/integration/functional/`: 기능 단위 통합 테스트 모음 (Infrastructure, Repositories, AI Orchestrator 등)
+- `tests/integration/scenarios/`: 실제 사용 시나리오 기반 통합 테스트 (Ingestion, RAG Pipeline 등)
+- `tests/integration/README.md`: 신규 통합 테스트 가이드 문서
 
 ### 🛠 Modified Files
 - `tests/integration/conftest.py`: 인프라 체크 및 시딩 픽스처 추가
-- `tests/integration/bdd/test_knowledge_graph.py`: 리팩토링 및 픽스처 적용
-- `tests/integration/bdd/test_edge_cases.py`: MockScraper 적용
-- `tests/integration/bdd/test_intent_routing.py`: MockLLM 적용
 - `app/infrastructure/repositories/neo4j_document_repository.py`: Validation 로직 수정
+- 기타 `app/` 레이어의 안정성 개선 사항 반영
 
-**Total:** 8 files changed
+### 🗑 Deleted Files
+- `tests/integration/bdd/`, `tests/integration/tdd/`, `tests/integration/api/` 내의 노후화된 테스트 파일 전체 삭제 (30+ files)
+
+**Total:** 52 files changed
 
 ## ✅ Definition of Done
 - [x] 모든 단위/통합 테스트 통과

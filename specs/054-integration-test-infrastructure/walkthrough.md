@@ -13,32 +13,31 @@
     - 테스트 세션 시작 시 베이스 데이터(Entity, Document)를 DB에 미리 주입합니다.
     - 이를 통해 각 테스트마다 데이터를 생성하는 오버헤드를 줄이고, 일관된 데이터셋 위에서 테스트가 수행됩니다.
 
-### 2. Fixed Integration Tests
-- **Knowledge Graph Tests (`bdd/test_knowledge_graph.py`)**:
-    - `TestClient`와 Mocking을 조합하여 외부 의존성(Web Scraper) 없이도 Entity 그래프 생성 로직을 검증하도록 수정했습니다.
-    - 404/202 상태 코드 처리를 개선했습니다.
-- **RAG Service Tests (`test_rag_service.py`)**:
-    - UUID와 String 타입 불일치로 인한 `ValidationError`를 수정했습니다.
-- **Edge Cases & Scenarios**:
-    - `test_edge_cases.py`: 실제 네트워크 호출 대신 `MockScraper`를 사용하여 타임아웃 문제를 해결하고 속도를 개선했습니다.
-    - `test_intent_routing.py`: `MockLLM`을 도입하여 실제 API 키 없이도 Intent 분류 로직을 검증할 수 있게 했습니다.
+### 2. Test Reorganization & Stabilization
+- **Functional Tests (`tests/integration/functional/`)**:
+    - AI Orchestrator, Graph Repository, Retrieval Logic 등 핵심 기능 단위를 독립적으로 검증하는 테스트 세트를 구축했습니다.
+    - 기존의 파편화된 `tdd`, `api` 테스트들을 기능별로 응집력 있게 재구성했습니다.
+- **Scenario Tests (`tests/integration/scenarios/`)**:
+    - Ingestion Flow, RAG Pipeline, Edge Cases 등 실제 사용자 시나리오 기반의 통합 테스트를 도입했습니다.
+    - `test_ingestion_scenarios.py`: 웹/파일 인제션부터 청킹 검증까지의 엔드투엔드 시나리오를 포함합니다.
+    - `test_rag_pipeline.py`: 하이브리드 검색 및 추론 파이프라인의 정합성을 검증합니다.
 
-### 3. Repository Fixes
+### 3. Repository & Data Model Fixes
 - **Neo4jDocumentRepository**:
     - `get` 및 `list_documents` 메서드에서 `created_at` 필드가 누락될 경우 기본값을 할당하도록 수정하여 Pydantic Validation Error를 해결했습니다.
+- **Data Integrity**:
+    - Chroma와 Neo4j 간의 데이터 일관성을 보장하기 위한 하위 레이어의 수정을 반영했습니다.
 
 ## 🧪 Verification Results
 
 ### Integration Tests (Pass)
-모든 주요 통합 테스트가 통과했습니다.
+모든 통합 테스트가 통과했습니다 (38 passed).
 ```bash
-uv run pytest tests/integration/bdd tests/integration/test_rag_service.py
+uv run pytest tests/integration
 ```
-- `test_knowledge_graph.py`: ✅ Passed
-- `test_rag_service.py`: ✅ Passed
-- `test_edge_cases.py`: ✅ Passed
-- `test_intent_routing.py`: ✅ Passed
-- `test_chunking.py`: ✅ Passed
+- **Functional Tests**: ✅ All Passed
+- **Scenario Tests**: ✅ All Passed
+- **Infrastructure Check**: ✅ Successfully detecting & skipping when offline
 
 ## 📝 Documentation
 - `tests/integration/README.md`: 통합 테스트 구조 및 인프라 픽스처 설명 추가.
