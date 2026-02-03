@@ -28,14 +28,11 @@
   * **Status**: ✅ Completed & Merged (Multimodal filter, Graph optimization, Raw API Output)
   * **Scope**: Hyperparameter Tuning, Advanced Debug View (Raw API Output), Search Strategy Selector
 
-* [ ] **Spec 056: Local LLM Optimization** (Medium)
-  * **Goal**: 로컬 모델(Ollama) 연동을 통한 비용 절감 및 속도 향상
-  * **Scope**: Ollama Integration, Hybrid Model Routing
+* [ ] **Spec 056: Semantic Chunking Upgrade** (Medium)
+  * **Goal**: 현재의 고정 크기/구문 기반 청킹을 개선하여 의미 단위의 청킹(Semantic Chunking)을 구현, 검색 밀도를 높입니다.
+  * **Scope**: Embedding Similarity based Splitting, LLM-based Chunking, Statistical Breakpoint Detection
 
-* [ ] **Spec 057: Semantic Chunking Upgrade** (Medium)
-  * **Goal**: AI 기반 청킹 도입으로 인덱싱 품질 향상
-
-* [ ] **Spec 058: API Input Validation & Error Handling** (Medium)
+* [ ] **Spec 057: API Input Validation & Error Handling** (Medium)
   * **Goal**: 클라이언트/프론트엔드 연동성을 위한 API 견고성 강화
 
 ---
