@@ -51,8 +51,10 @@ services:
       - "8501:8501"
     volumes:
       - ./admin:/app/admin
+    depends_on:
+      - backend
     environment:
-      - ADMIN_API_URL=http://backend:8000/v1
+      - ADMIN_API_URL=http://rag-backend:8000/v1
       - PYTHONPATH=/app
     command: ["uv", "run", "streamlit", "run", "admin/dashboard.py", "--server.address=0.0.0.0", "--server.port=8501"]
 

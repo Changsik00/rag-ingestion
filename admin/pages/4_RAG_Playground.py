@@ -354,6 +354,41 @@ with st.sidebar:
     st.divider()
 
     with st.expander("🛠️ Advanced Settings", expanded=False):
+        # Spec 055: Advanced Tuning Controls
+        st.caption("🔍 Retrieval & Generation Tuning")
+
+        # Top-K
+        st.session_state.settings_top_k = st.slider(
+            "Top-K Documents",
+            min_value=1,
+            max_value=20,
+            value=st.session_state.get("settings_top_k", 5),
+            help="검색할 문서의 최대 개수입니다.",
+        )
+
+        # Temperature
+        st.session_state.settings_temp = st.slider(
+            "LLM Temperature",
+            min_value=0.0,
+            max_value=1.0,
+            value=st.session_state.get("settings_temp", 0.0),
+            step=0.1,
+            help="생성 다양성을 결정합니다. 높을수록 창의적입니다.",
+        )
+
+        # Search Strategy
+        st.session_state.settings_strategy = st.radio(
+            "Search Strategy",
+            options=["hybrid", "vector", "keyword"],
+            index=0
+            if "settings_strategy" not in st.session_state
+            else ["hybrid", "vector", "keyword"].index(st.session_state.get("settings_strategy", "hybrid")),
+            horizontal=True,
+            help="검색 방식을 선택합니다.",
+        )
+
+        st.divider()
+
         if st.button("🗑️ Delete Thread History", use_container_width=True):
             try:
                 api_client.post(f"/rag/sessions/{current_thread_id}/reset")
@@ -394,13 +429,18 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
     with st.chat_message("assistant"):
         status_container = st.status("Thinking (Agentic API)...", expanded=True)
         try:
-            filters = {"doc_id": selected_doc_ids} if selected_doc_ids else None
+            filters = {"doc_id": selected_doc_ids} if selected_doc_ids else {}
 
             # API Call
             payload = {
                 "message": prompt,
                 "filters": filters,
                 "hitl_enabled": st.session_state.hitl_enabled,
+                "advanced_settings": {
+                    "top_k": st.session_state.get("settings_top_k", 5),
+                    "temperature": st.session_state.get("settings_temp", 0.0),
+                    "search_strategy": st.session_state.get("settings_strategy", "hybrid"),
+                },
             }
 
             res = api_client.post(f"/rag/sessions/{current_thread_id}/ask", json=payload)
@@ -413,8 +453,15 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 
                 answer = "No response generated."
                 if res.get("messages"):
-                    # Last AI message
-                    answer = next((m["content"] for m in reversed(res["messages"]) if m["role"] == "ai"), answer)
+                    # Check both 'ai' and 'assistant' roles
+                    for m in reversed(res["messages"]):
+                        if m.get("role") in ["ai", "assistant"]:
+                            answer = m["content"]
+                            break
+                
+                # Spec 055 Debug: Show Raw Response
+                with st.expander("📝 Raw API Response (JSON)"):
+                     st.json(res)
 
                 context_data = res.get("context_data") or {}
                 intent = res.get("intent", "search")

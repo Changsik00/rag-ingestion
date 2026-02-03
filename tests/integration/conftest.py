@@ -13,6 +13,7 @@ SEED_URLS = {
     "github": "https://github.com/langchain-ai/langchain",
 }
 
+
 def is_port_open(host: str, port: int, timeout: float = 1.0) -> bool:
     """Check if a TCP port is open on a host"""
     try:
@@ -20,6 +21,7 @@ def is_port_open(host: str, port: int, timeout: float = 1.0) -> bool:
             return True
     except (TimeoutError, ConnectionRefusedError, OSError):
         return False
+
 
 @pytest.fixture(scope="session", autouse=True)
 def check_infrastructure():
@@ -48,10 +50,12 @@ def check_infrastructure():
 
     return True
 
+
 @pytest.fixture(scope="session")
 def api_client():
     """Session-scoped API Client"""
     return TestClient(app)
+
 
 @pytest.fixture(scope="session")
 def seed_test_data(check_infrastructure, api_client):
@@ -72,8 +76,8 @@ def seed_test_data(check_infrastructure, api_client):
             job_id = response.json()["job_id"]
             seeded_jobs[name] = job_id
         elif response.status_code == 200:
-             # Synchronous or already exists
-             pass
+            # Synchronous or already exists
+            pass
 
     # 3. Wait for Completion (Simple Polling)
     max_retries = 30

@@ -56,7 +56,9 @@ class Neo4jDocumentRepository(DocumentRepository):
 
         # [Spec-054] Ensure source_id exists for DocumentMetadata validation
         if "source_id" not in metadata:
-            metadata["source_id"] = metadata.get("url") or metadata.get("source") or node_items.get("id", "unknown_source")
+            metadata["source_id"] = (
+                metadata.get("url") or metadata.get("source") or node_items.get("id", "unknown_source")
+            )
 
         return metadata
 
@@ -408,11 +410,7 @@ class Neo4jDocumentRepository(DocumentRepository):
             query = "MATCH (c:Chunk) RETURN c.id as id, c.parent_id as parent_id"
             with self.driver.session() as session:
                 results = session.run(query)
-                return [
-                    {"id": record["id"], "parent_id": record["parent_id"]}
-                    for record in results
-                    if record["id"]
-                ]
+                return [{"id": record["id"], "parent_id": record["parent_id"]} for record in results if record["id"]]
         except Exception as e:
             logger.error(f"Failed to get all chunk metadata from Neo4j: {e}")
             return []

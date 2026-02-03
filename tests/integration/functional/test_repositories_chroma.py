@@ -28,6 +28,7 @@ class MockEmbeddingFunction(embedding_functions.EmbeddingFunction):
                 embeddings.append([0.1, 0.1])
         return embeddings
 
+
 @pytest.fixture
 def chroma_repo_mmr():
     # Given: Chroma repository with mock embedding function
@@ -46,6 +47,7 @@ def chroma_repo_mmr():
         client.delete_collection("test_mmr")
     except Exception:
         pass
+
 
 @pytest.mark.integration
 def test_chroma_mmr_diversity_logic(chroma_repo_mmr):

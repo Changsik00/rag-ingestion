@@ -147,7 +147,7 @@ class Neo4jGraphRepository:
         WHERE (ANY(name IN $names WHERE toLower(start.name) CONTAINS toLower(name)) OR start.name IN $names)
           AND (ANY(name IN $names WHERE toLower(end.name) CONTAINS toLower(name)) OR end.name IN $names)
           AND start <> end
-        MATCH p = shortestPath((start)-[*]-(end))
+        MATCH p = shortestPath((start)-[*..3]-(end))
         WITH p
         UNWIND relationships(p) AS r
         RETURN startNode(r).name as source, type(r) as relationship, endNode(r).name as target

@@ -8,6 +8,7 @@ from app.interfaces.api.main import app
 
 client = TestClient(app)
 
+
 @pytest.mark.integration
 class TestApiEndpoints:
     """
@@ -67,8 +68,12 @@ class TestApiEndpoints:
 
     @pytest.mark.asyncio
     async def test_rag_ask_flow(self):
-        # Given: Mocked LLM and valid payload
-        payload = {"message": "Hello", "filters": {}}
+        # Given: Valid payload with advanced settings
+        payload = {
+            "message": "Hello",
+            "filters": {},
+            "advanced_settings": {"top_k": 5, "temperature": 0.5, "search_strategy": "hybrid"},
+        }
 
         # Use patch to avoid external API calls
         with patch("app.application.services.agent.ChatGoogleGenerativeAI") as mock_llm_cls:
@@ -78,8 +83,21 @@ class TestApiEndpoints:
             # When: POST /v1/rag/sessions/{id}/ask
             response = client.post("/v1/rag/sessions/test_session/ask", json=payload)
 
-            # Then: Returns 202 Accepted for async reasoning
+            # Then: Returns 202 Accepted
             assert response.status_code == 202
+
+    @pytest.mark.asyncio
+    async def test_rag_ask_validation_error(self):
+        """Spec 055: Test validation logic for AdvancedSettings"""
+        # Given: Invalid payload (top_k=0, allowed range 1-100)
+        payload = {"message": "Hello", "advanced_settings": {"top_k": 0}}
+
+        # When: POST /v1/rag/sessions/{id}/ask
+        response = client.post("/v1/rag/sessions/test_validation/ask", json=payload)
+
+        # Then: Should return 422 Unprocessable Entity (Validation Error)
+        # Current implementation (dict) will return 202, so this will FAIL until ChatRequest is applied.
+        assert response.status_code == 422
 
     def test_graph_schema_retrieval(self):
         # Given: Active Neo4j connection
@@ -105,8 +123,7 @@ class TestApiEndpoints:
         mock_repo = MagicMock()
         now = datetime.now(timezone.utc)
         job = IngestionJob(
-            job_id="job-123", status="COMPLETED", source_url="http://example.com",
-            created_at=now, updated_at=now
+            job_id="job-123", status="COMPLETED", source_url="http://example.com", created_at=now, updated_at=now
         )
         mock_repo.list_jobs.return_value = [job]
         app.dependency_overrides[get_job_repository] = lambda: mock_repo
@@ -138,8 +155,8 @@ class TestApiEndpoints:
         # Check for any unique identifier
         assert "id" in first_doc or "metadata" in first_doc
         if "metadata" in first_doc:
-             meta = first_doc["metadata"]
-             assert any(k in meta for k in ["source_id", "url", "source_url", "title"])
+            meta = first_doc["metadata"]
+            assert any(k in meta for k in ["source_id", "url", "source_url", "title"])
 
     def test_invalid_job_id_lookup(self):
         """

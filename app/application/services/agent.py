@@ -10,9 +10,12 @@ from langgraph.graph import END, StateGraph, add_messages
 from app.core.config import get_settings
 from app.domain.entities.job import JobStatus
 
+from app.application.services.rag import RAG
+from langchain_core.runnables import RunnableConfig
+
 if TYPE_CHECKING:
     from app.application.services.ingestion import Ingestion
-    from app.application.services.rag import RAG
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,11 +35,36 @@ class AgentState(TypedDict):
     missing_slots: list[str]
 
 
+
 class ConversationalRAGAgent:
     """
     RAG Playground 및 관리자용 Orchestration Agent.
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
+
+    def _extract_text_content(self, content: Any) -> str:
+        """
+        Gemini 3.0 Multimodal Response Parsing Helper.
+        - List[Part] 형태에서 Text Part만 추출하여 결합합니다.
+        - Non-text objects (images, blobs) are skipped.
+        """
+        if isinstance(content, str):
+            return content
+        
+        if isinstance(content, list):
+            text_parts = []
+            for part in content:
+                # Check for 'text' attribute (LangChain MessageContent or similar)
+                if hasattr(part, "text"):
+                    text_parts.append(part.text)
+                elif isinstance(part, str):
+                    text_parts.append(part)
+                elif isinstance(part, dict) and "text" in part:
+                     text_parts.append(part["text"])
+                # Ignore other types (e.g. dicts without text, blobs) to prevent chaotic noise
+            return "".join(text_parts)
+            
+        return str(content)
 
     def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
         self.rag_service = rag_service
@@ -143,6 +171,11 @@ class ConversationalRAGAgent:
         formatted_prompt = prompt.invoke({"missing_slots": ", ".join(missing_slots), "input": last_user_msg})
         response = await self.llm.ainvoke(formatted_prompt)
 
+        # Handle Gemini 3.0 content list
+        # Handle Gemini 3.0 content list
+        if hasattr(response, "content"):
+             response.content = self._extract_text_content(response.content)
+
         return {"messages": [response], "is_clarification": True, "tool_output": "Clarification Requested"}
 
     async def router_node(self, state: AgentState) -> dict:
@@ -172,7 +205,7 @@ class ConversationalRAGAgent:
         response = await self.llm.ainvoke(prompt_val)
 
         if hasattr(response, "content"):
-            intent = response.content.strip().lower()
+            intent = self._extract_text_content(response.content).strip().lower()
         else:
             intent = str(response).strip().lower()
 
@@ -228,7 +261,7 @@ class ConversationalRAGAgent:
 
         return {"messages": [AIMessage(content=msg)], "tool_output": msg}
 
-    async def search_node(self, state: AgentState) -> dict:
+    async def search_node(self, state: AgentState, config: RunnableConfig) -> dict:
         messages = state["messages"]
         last_user_msg = messages[-1].content
 
@@ -241,13 +274,17 @@ class ConversationalRAGAgent:
 
         filters = state.get("filters")
         thread_id = state.get("thread_id")
+        
+        # Spec 055: Advanced Settings Propagation
+        retrieval_config = config.get("configurable", {}).get("retrieval_config")
+
         # Spec 040 Fix: AdminAgent와 RAGService가 동일한 Checkpointer/ThreadID를 공유하면 상태 충돌 발생.
         # 따라서 RAGService 호출 시에는 별도의 namespace를 적용한 thread_id를 전달함.
         rag_thread_id = f"rag-{thread_id}" if thread_id else None
 
         # RAG 검색 및 생성 실행
         result = await self.rag_service.retrieve_and_generate(
-            last_user_msg, history, filters=filters, thread_id=rag_thread_id
+            last_user_msg, history, filters=filters, thread_id=rag_thread_id, retrieval_config=retrieval_config
         )
 
         context_data = {

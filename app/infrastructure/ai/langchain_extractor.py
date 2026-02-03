@@ -140,3 +140,14 @@ class LangChainExtractor:
         except Exception as e:
             logger.error(f"Failed to generate text (Async): {e}")
             return f"Error: {str(e)}"
+
+    def bind(self, **kwargs):
+        """LangChain Runnable binding delegation - Returns a new adapter instance"""
+        bound_llm = self.llm.bind(**kwargs)
+        return LangChainExtractor(bound_llm)
+
+    def invoke(self, *args, **kwargs):
+        return self.llm.invoke(*args, **kwargs)
+
+    async def ainvoke(self, *args, **kwargs):
+        return await self.llm.ainvoke(*args, **kwargs)

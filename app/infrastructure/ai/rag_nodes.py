@@ -10,7 +10,11 @@ Design Guide 005: 3-Layer Architecture (Brain → Nervous System → Body)
 
 import asyncio
 import re
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+
+from typing import Any, TYPE_CHECKING
+from langchain_core.runnables import RunnableConfig
 
 from app.core.logger import setup_logger
 from app.domain.services.intent_classifier import IntentClassifier
@@ -55,6 +59,30 @@ class RAGNodes:
         self.query_rewriter = query_rewriter
         self.intent_classifier = intent_classifier
         self.llm = llm
+
+    def _extract_text_content(self, content: Any) -> str:
+        """
+        Gemini 3.0 Multimodal Response Parsing Helper.
+        - List[Part] 형태에서 Text Part만 추출하여 결합합니다.
+        - Non-text objects (images, blobs) are skipped.
+        """
+        if isinstance(content, str):
+            return content
+        
+        if isinstance(content, list):
+            text_parts = []
+            for part in content:
+                # Check for 'text' attribute (LangChain MessageContent or similar)
+                if hasattr(part, "text"):
+                    text_parts.append(part.text)
+                elif isinstance(part, str):
+                    text_parts.append(part)
+                elif isinstance(part, dict) and "text" in part:
+                     text_parts.append(part["text"])
+                # Ignore other types (e.g. dicts without text, blobs) to prevent chaotic noise
+            return "".join(text_parts)
+            
+        return str(content)
 
     async def classify_intent(self, state: RAGGraphState) -> RAGGraphState:
         """
@@ -133,7 +161,7 @@ class RAGNodes:
 
         return state
 
-    async def retrieve_hybrid(self, state: RAGGraphState) -> RAGGraphState:
+    async def retrieve_hybrid(self, state: RAGGraphState, config: RunnableConfig) -> RAGGraphState:
         """
         Node 3: Hybrid Search (Memory/Body Layer)
 
@@ -142,6 +170,7 @@ class RAGNodes:
 
         Args:
             state: RAGGraphState
+            config: LangGraph Config (retrieval_config 포함)
 
         Returns:
             RAGGraphState with updated vector_chunks, keyword_chunks, graph_data
@@ -150,39 +179,69 @@ class RAGNodes:
         user_intent = state.get("user_intent")
         final_filters = state.get("final_filters")
 
+        # Spec 055: Advanced Settings
+        retrieval_config = config.get("configurable", {}).get("retrieval_config", {})
+        top_k = retrieval_config.get("top_k", 5)
+        strategy = retrieval_config.get("search_strategy", "hybrid")
+
         # [Spec 044] Extract entities for Graph Search
         entities = getattr(user_intent, "entities", []) if user_intent else []
 
         # [Spec 034] Initial Search reasoning
         reasoning_log = state.get("reasoning_log", [])
+        
+        tasks = []
+        # Strategy Logic
+        if strategy in ["hybrid", "vector"]:
+            tasks.append(asyncio.to_thread(self._search_vector, rewritten_query, top_k, final_filters))
+        else:
+            tasks.append(asyncio.to_thread(lambda: []))  # Empty task
 
-        # Parallel Hybrid Search (Running sync calls in threads)
-        vector_task = asyncio.to_thread(self._search_vector, rewritten_query, final_filters)
-        keyword_task = asyncio.to_thread(self._search_keyword, rewritten_query, final_filters)
-        graph_task = asyncio.to_thread(self._search_graph, rewritten_query, entities)
+        if strategy in ["hybrid", "keyword"]:
+            tasks.append(asyncio.to_thread(self._search_keyword, rewritten_query, top_k, final_filters))
+        else:
+            tasks.append(asyncio.to_thread(lambda: []))
 
-        logger.info(f"RAG Retrieval: query='{rewritten_query}', filters={final_filters}, entities={entities}")
-        vector_results, keyword_results, graph_results = await asyncio.gather(vector_task, keyword_task, graph_task)
+        # Graph Search is always enabled unless restricted? Keeping it enabled.
+        tasks.append(asyncio.to_thread(self._search_graph, rewritten_query, entities))
+
+        logger.info(f"RAG Retrieval: query='{rewritten_query}', filters={final_filters}, entities={entities}, strategy={strategy}, top_k={top_k}")
+        
+        results = await asyncio.gather(*tasks)
+        vector_results = results[0]
+        keyword_results = results[1]
+        graph_results = results[2]
 
         reasoning_log.append(
-            f"🔍 [Search] Found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks, {len(graph_results)} graph facts."
+            f"🔍 [Search] Strategy: {strategy}, Top-K: {top_k}. Found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks, {len(graph_results)} graph facts."
         )
 
         # Fallback Logic: 필터링된 결과가 없고 필터가 적용된 상태라면 필터 제거 후 재검색
-        if final_filters and not vector_results and not keyword_results:
+        # Fallback only if the active strategy yielded nothing?
+        active_results_count = len(vector_results) + len(keyword_results)
+        
+        if final_filters and active_results_count == 0:
             logger.info("No results found with filters. Triggering Fallback (Global Search)...")
             state["fallback_triggered"] = True
             reasoning_log.append(
                 "🔄 [Fallback] Strict filters returned zero results. Retrying with Global Search (no filters)."
             )
 
-            # 재검색 (필터 없이)
-            v_fallback_task = asyncio.to_thread(self._search_vector, rewritten_query, None)
-            k_fallback_task = asyncio.to_thread(self._search_keyword, rewritten_query, None)
+            # 재검색 (필터 없이) - Respect Strategy
+            fb_tasks = []
+            if strategy in ["hybrid", "vector"]:
+                fb_tasks.append(asyncio.to_thread(self._search_vector, rewritten_query, top_k, None))
+            else:
+                fb_tasks.append(asyncio.to_thread(lambda: []))
 
-            v_fall, k_fall = await asyncio.gather(v_fallback_task, k_fallback_task)
-            vector_results = v_fall
-            keyword_results = k_fall
+            if strategy in ["hybrid", "keyword"]:
+                fb_tasks.append(asyncio.to_thread(self._search_keyword, rewritten_query, top_k, None))
+            else:
+                fb_tasks.append(asyncio.to_thread(lambda: []))
+            
+            fb_results = await asyncio.gather(*fb_tasks)
+            vector_results = fb_results[0]
+            keyword_results = fb_results[1]
 
             reasoning_log.append(
                 f"🔍 [Search/Fallback] Post-fallback found {len(vector_results)} vector chunks, {len(keyword_results)} keyword chunks."
@@ -204,7 +263,7 @@ class RAGNodes:
 
         return state
 
-    async def rerank_results(self, state: RAGGraphState) -> RAGGraphState:
+    async def rerank_results(self, state: RAGGraphState, config: RunnableConfig) -> RAGGraphState:
         """
         Node 3.5: LLM Reranker (Body Layer - Precision Refinement)
 
@@ -250,19 +309,23 @@ class RAGNodes:
         # 상위 15개로 확장하여 키워드 매칭 결과가 충분히 포함되도록 함
         rerank_targets = all_chunks[:15]
 
+        # Spec 055: Configuration for Reranker
+        retrieval_config = config.get("configurable", {}).get("retrieval_config", {})
+        temperature = retrieval_config.get("temperature", 0.0)
+
         rerank_log = []
         rerank_tasks = []
 
         for chunk in rerank_targets:
             prompt = RERANKER_PROMPT.format(query=rewritten_query, chunk_text=chunk.content)
-            rerank_tasks.append(self._get_rerank_score(chunk, prompt))
+            rerank_tasks.append(self._get_rerank_score(chunk, prompt, temperature))
 
         # Run 리랭킹 in parallel
         rerank_results = await asyncio.gather(*rerank_tasks)
 
         # [Spec 048] Filter by threshold
-        # Lowered to 3 to keep contextually useful chunks (e.g. artist info)
-        min_relevance_score = 3
+        # Lowered to 2 to keep contextually useful chunks even if brief
+        min_relevance_score = 2
         final_reranked = []
 
         for chunk, score_data in zip(rerank_targets, rerank_results):
@@ -290,14 +353,16 @@ class RAGNodes:
 
         return state
 
-    async def _get_rerank_score(self, chunk: Chunk, prompt: str) -> dict:
+    async def _get_rerank_score(self, chunk: Chunk, prompt: str, temperature: float = 0.0) -> dict:
         """LLM을 호출하여 청크의 관련성 점수를 가져옵니다."""
         import json
 
         try:
-            response = await self.llm.agenerate(prompt)
-            content = response.content if hasattr(response, "content") else str(response)
-
+            # Propagate temperature to reranker
+            llm = self.llm.bind(temperature=temperature)
+            content = await llm.agenerate(prompt)
+            # content is already a string here if using our adapter's agenerate
+            
             # JSON block 추출 (LLM이 마크다운 형식을 포함할 수 있음)
             json_match = re.search(r"\{.*\}", content, re.DOTALL)
             if json_match:
@@ -337,7 +402,7 @@ class RAGNodes:
 
         return text.strip()
 
-    async def generate_answer(self, state: RAGGraphState) -> RAGGraphState:
+    async def generate_answer(self, state: RAGGraphState, config: RunnableConfig) -> RAGGraphState:
         """
         Node 4: Answer Generation
 
@@ -345,6 +410,7 @@ class RAGNodes:
 
         Args:
             state: RAGGraphState
+            config: LangGraph Config (retrieval_config 포함)
 
         Returns:
             RAGGraphState with updated full_context and final_answer
@@ -355,6 +421,10 @@ class RAGNodes:
         keyword_chunks = state.get("keyword_chunks", [])
         reranked_chunks = state.get("reranked_chunks")
         graph_data = state.get("graph_data", [])
+        
+        # Spec 055: Configuration
+        retrieval_config = config.get("configurable", {}).get("retrieval_config", {})
+        temperature = retrieval_config.get("temperature", 0.0)
 
         # Use reranked_chunks if available, otherwise fallback to original chunks
         # [Spec 048] Dynamic Context Window
@@ -363,14 +433,25 @@ class RAGNodes:
         # Format Context
         context_str, mapped_chunks = self._merge_and_format_context(target_chunks, [], graph_data)
 
-        # [Spec 035] Hybrid Knowledge PromptING
+        # Spec 055: Conditional Strictness
+        strict_rag_instruction = ""
+        if temperature < 0.1:
+            strict_rag_instruction = (
+                "CRITICAL: STRICT RAG MODE ENABLED (Temperature 0).\n"
+                "1. If 'Provided Context (DB)' contains pieces of information (e.g., parents, birth, external links), you MUST synthesize them to answer as best as possible.\n"
+                "2. Even if information is brief, describe what is found. DO NOT say 'No information' if relevant names like 'Steve Jobs' are in the context.\n"
+                "3. If context is COMPLETELY blank or totally irrelevant, say 'I cannot find relevant information in the uploaded documents.'\n"
+                "4. DO NOT use your internal knowledge for facts NOT in the context.\n"
+            )
+
         prompt = (
-            "You are a professional AI assistant. Answer the question by combining the provided Context (DB) and your internal knowledge.\n\n"
+            "You are a professional AI assistant. Answer the question using ONLY the provided Context (DB) as your primary source.\n\n"
+            f"{strict_rag_instruction}"
             "KNOWLEDGE MIXING RULES:\n"
             "1. PRIORITIZE KNOWLEDGE GRAPH: The 'Graph Facts' section contains high-precision structured relationships. Treat these as the most reliable source of truth.\n"
             "2. PRIORITIZE DOCUMENT CONTEXT: If information is not in the Graph, use 'Document Context'. It MUST be prioritized over your internal knowledge.\n"
             "3. CITATION REQUIREMENT: For every sentence or fact derived from the Document Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
-            "4. ENRICH WITH INTERNAL KNOWLEDGE: Use your internal knowledge ONLY to enrich the answer with context that doesn't conflict with the provided Context.\n"
+            "4. INTERNAL KNOWLEDGE LIMITATION: Use your internal knowledge ONLY to bridge small gaps or provide basic context (e.g. definitions). Do NOT introduce major facts that are not in the DB if the temperature is 0.\n"
             "5. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n\n"
             f"Question: {query}\n"
             f"(Rewritten Query for Search): {rewritten_query}\n\n"
@@ -380,10 +461,12 @@ class RAGNodes:
         )
 
         # [Spec 048] Async LLM Refactoring
-        response = await self.llm.agenerate(prompt)
+        # Apply temperature dynamically
+        llm = self.llm.bind(temperature=temperature)
+        response = await llm.ainvoke(prompt)
 
         if hasattr(response, "content"):
-            answer_text = response.content
+            answer_text = self._extract_text_content(response.content)
         else:
             answer_text = str(response)
 
@@ -443,13 +526,13 @@ class RAGNodes:
         else:  # GENERAL_QUERY
             return None
 
-    def _search_vector(self, query: str, filters: dict | None = None) -> list[Chunk]:
+    def _search_vector(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
         """Vector DB(ChromaDB) MMR 검색 (Sync)"""
-        return self.chroma_repo.search_mmr(query, filters=filters)
+        return self.chroma_repo.search_mmr(query, limit=limit, filters=filters)
 
-    def _search_keyword(self, query: str, filters: dict | None = None) -> list[Chunk]:
+    def _search_keyword(self, query: str, limit: int = 5, filters: dict | None = None) -> list[Chunk]:
         """Neo4j Keyword 검색 (Sync)"""
-        return self.neo4j_doc_repo.search(query, filters=filters)
+        return self.neo4j_doc_repo.search(query, limit=limit, filters=filters)
 
     def _search_graph(self, query: str, entities: list[str] | None = None) -> list[dict]:
         """Neo4j Graph Traversal (Sync)"""
@@ -494,20 +577,21 @@ class RAGNodes:
         text_context = "\n\n".join(formatted_chunks)
 
         # Format Graph Context
-        graph_lines = []
+        graph_context = ""
         if graph_data:
-            graph_lines.append("Graph Facts:")
-            for item in graph_data:
-                src = item.get("source")
-                rel = item.get("relationship")
-                tgt = item.get("target")
+            graph_lines = ["Graph Facts:"]
+            for fact in graph_data:
+                s = fact.get("source") or "Unknown"
+                r = fact.get("relationship") or "related to"
+                t = fact.get("target") or "Unknown"
 
                 # Filter out MENTIONS (Internal link metadata) and None values
-                if rel == "MENTIONS" or not src or not tgt or src == "None" or tgt == "None":
+                if r == "MENTIONS" or s == "None" or t == "None":
                     continue
-
-                graph_lines.append(f"- ({src}) -[{rel}]-> ({tgt})")
-
-        graph_context = "\n".join(graph_lines)
+                
+                graph_lines.append(f"- ({s}) -[{r}]-> ({t})")
+            
+            if len(graph_lines) > 1:
+                graph_context = "\n".join(graph_lines)
 
         return f"{graph_context}\n\nDocument Context:\n{text_context}", mapped_chunks
