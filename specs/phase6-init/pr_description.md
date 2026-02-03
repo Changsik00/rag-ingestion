@@ -10,6 +10,7 @@
 - [x] **Phase 5 완료 처리**: `queue.md` 및 `README.md`에서 Phase 5 상태를 `Completed`로 변경.
 - [x] **Phase 6 신설**: 성능 최적화 및 확장성 관련 Spec 후보군(Icebox에서 승격) 정의.
 - [x] **Backlog 정리**: 중복된 Icebox 아이템 제거 및 섹션 구조 개편.
+- [x] **문서 구조 개선**: `docs/design_guides` 정리 및 핵심 기능을 `docs/features`로 승격. `README.md` 링크 개선.
 
 ## 🎯 Key Review Points
 1. **Backlog 구조**: Phase 5 -> Phase 6로의 전환이 명확한지 확인.

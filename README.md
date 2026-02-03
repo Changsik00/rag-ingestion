@@ -61,6 +61,11 @@
 *   [**Testing Strategy**](docs/guides/testing_strategy.md): TDD/BDD 테스트 접근 방식
 
 ### ✨ Features
+*   [**Smart Scraper**](docs/features/ingestion_scraper.md): 멀티소스 콘텐츠 수집 및 정규화
+*   [**YouTube Ingestion**](docs/features/ingestion_youtube.md): 자막 및 메타데이터 자동 추출
+*   [**Contextual RAG**](docs/features/rag_contextual.md): 문맥 보존형 청킹 및 리트리버
+*   [**Graph RAG**](docs/features/rag_graph.md): 지식 그래프 기반 추론 전략
+*   [**HITL Workflow**](docs/features/hitl_workflow.md): 인간 개입(Human-in-the-Loop) 피드백 루프
 *   [**LangGraph Backtracking**](docs/features/langgraph_backtracking.md): 지능형 재시도 및 에러 복구 전략
 
 ---
