@@ -9,6 +9,7 @@ RAG 시스템의 안정성을 위해 API 입력 단계에서 잘못된 데이터
 - [x] **DTO Validation 강화**: `ChunkingConfigDTO`를 도입하여 청킹 전략 및 파라미터의 유효성 검증 로직을 추가했습니다.
 - [x] **IngestRequest 개선**: `dict` 타입을 구체적인 DTO로 대체하여 Type Safety를 확보했습니다.
 - [x] **Global Error Handler**: `RequestValidationError` 및 `HTTPException` 발생 시 프로젝트 표준 `ErrorResponse` 포맷으로 자동 변환되도록 구현했습니다.
+- [x] **Admin UI Improvement**: Streamlit Admin Client가 표준 에러 포맷을 파싱하여 가독성 좋은 에러 메시지를 표시하도록 개선했습니다.
 - [x] **Validation Tests**: 잘못된 입력(URL, Settings 등)에 대한 실패 시나리오 테스트를 추가했습니다.
 
 ## 🎯 Key Review Points
@@ -38,6 +39,7 @@ Swagger UI (`/docs`)를 통해 고의로 잘못된 페이로드를 전송하여 
 ### 🛠 Modified Files
 - `app/interfaces/api/v1/dto/ingest.py`: `ChunkingConfigDTO` 추가 및 `IngestRequest` 수정
 - `app/interfaces/api/error_handlers.py`: `RequestValidationError`, `HTTPException` 핸들러 추가
+- `admin/utils/api_client.py`: 에러 응답 파싱 및 출력 로직 개선
 - `specs/058-api-input-validation-error-handling/`: 관련 문서 일체
 
 ## ✅ Definition of Done
