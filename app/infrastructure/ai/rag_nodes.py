@@ -200,8 +200,11 @@ class RAGNodes:
         else:
             tasks.append(asyncio.to_thread(lambda: []))
 
-        # Graph Search is always enabled unless restricted? Keeping it enabled.
-        tasks.append(asyncio.to_thread(self._search_graph, rewritten_query, entities))
+        # Graph Search Logic
+        if strategy in ["hybrid", "graph"]:
+            tasks.append(asyncio.to_thread(self._search_graph, rewritten_query, entities))
+        else:
+            tasks.append(asyncio.to_thread(lambda: []))
 
         logger.info(
             f"RAG Retrieval: query='{rewritten_query}', filters={final_filters}, entities={entities}, strategy={strategy}, top_k={top_k}"

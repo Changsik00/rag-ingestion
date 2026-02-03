@@ -24,6 +24,14 @@
 ### 3. 코드 품질 관리
 *   파일 이동 후 `ruff check --fix` 및 `ruff format`을 실행하여 임포트 경로를 자동 교정하고 스타일을 통일함.
 
+### 4. 테스트 품질 정제 (Audit & Refine)
+*   **중복 제거**: `test_rag_nodes_spec044.py` 및 `test_usecases.py`를 각각 상위 테스트 파일로 통합하여 유지보수 포인트 일원화.
+*   **안정성 강화**: `SemanticChunker` 테스트 시 실제 임베딩 API 호출을 차단하기 위해 `GoogleGenerativeAIEmbeddings`를 Mocking 처리함.
+*   **커버리지 확대**:
+    *   RAG 검색 전략(`vector`, `graph`, `hybrid`)에 따른 레포지토리 호출 분기 로직 검증 추가.
+    *   `ChunkingConfig` Value Object에 대한 기본값 및 유효성 검사 테스트 추가.
+    *   인제스션 파이프라인 중 Chunker 단계의 하드 페일 시나리오 대응 테스트 보완.
+
 ## 🧪 검증 결과
 
 ### Automated Tests

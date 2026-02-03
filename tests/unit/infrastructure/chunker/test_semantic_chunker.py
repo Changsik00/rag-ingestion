@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch, Mock
 
 from app.domain.entities.document import Document
 from app.domain.value_objects.chunk_config import ChunkingConfig, ChunkingStrategy
@@ -7,7 +8,27 @@ from app.infrastructure.chunker.semantic_chunker import LangChainSemanticChunker
 
 
 @pytest.fixture
-def semantic_chunker():
+def mock_embeddings():
+    with patch("app.infrastructure.chunker.semantic_chunker.GoogleGenerativeAIEmbeddings") as mock:
+        # Mock embedding logic: return different vectors for different topics
+        mock_instance = mock.return_value
+        
+        def embed_documents(texts):
+            # Simple heuristic: if '사과' (apple) is in text, return one vector, else another
+            vectors = []
+            for text in texts:
+                if "사과" in text:
+                    vectors.append([1.0, 0.0, 0.0])
+                else:
+                    vectors.append([0.0, 1.0, 0.0])
+            return vectors
+
+        mock_instance.embed_documents.side_effect = embed_documents
+        yield mock_instance
+
+
+@pytest.fixture
+def semantic_chunker(mock_embeddings):
     config = ChunkingConfig(strategy=ChunkingStrategy.SEMANTIC, breakpoint_threshold_amount=90.0)
     return LangChainSemanticChunker(config=config)
 
@@ -25,7 +46,8 @@ def test_semantic_chunker_splitting(semantic_chunker):
 
     chunks = semantic_chunker.chunk_document(doc)
 
-    # 두 개의 주제이므로 최소 2개 이상의 청크로 나뉘어야 함 (임계값에 따라 다름)
+    # 두 개의 주제이므로 최소 2개 이상의 청크로 나뉘어야 함
+    # (Mock 임베딩이 확연히 다르므로 LangChain SemanticChunker가 분리할 것임)
     assert len(chunks) >= 1
 
     # 메타데이터 확인

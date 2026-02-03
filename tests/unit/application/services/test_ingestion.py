@@ -14,9 +14,64 @@ def service_deps():
         "repository": Mock(),
         "graph": Mock(),
         "job_repository": Mock(),
-        "extractor": Mock(),  # extract() is sync
+        "extractor": Mock(),  # extract() returns a future/awaitable
         "chunker": Mock(),
     }
+
+
+def test_create_job(service_deps):
+    """
+    Given: Ingestion service
+    When: create_job is called
+    Then: Job is created with PENDING status and saved
+    """
+    service = Ingestion(**service_deps)
+    job = service.create_job("http://example.com")
+
+    assert job.source_url == "http://example.com"
+    assert job.status == JobStatus.PENDING
+    service_deps["job_repository"].create_job.assert_called_once_with(job)
+
+
+@pytest.mark.asyncio
+async def test_process_job_success(service_deps):
+    """
+    Given: Successful scraping, chunking, and storage
+    When: process_job is called
+    Then: Job becomes COMPLETED
+    """
+    # Given
+    job_id = "job-success"
+    job = IngestionJob(id=job_id, source_url="http://example.com", status=JobStatus.PENDING)
+    service_deps["job_repository"].get_job.return_value = job
+
+    # Mock Scrape
+    mock_result = Mock()
+    mock_result.markdown = "# Title\nContent"
+    mock_result.url = "http://example.com"
+    mock_result.metadata = {"source_id": "test"}
+    service_deps["scraper"].scrape.return_value = mock_result
+
+    # Mock Extractor (Async)
+    import asyncio
+
+    future = asyncio.Future()
+    future.set_result(None)
+    service_deps["extractor"].extract.return_value = future
+
+    # Mock Chunker
+    service_deps["chunker"].chunk_document.return_value = []
+
+    service = Ingestion(**service_deps)
+
+    # When
+    await service.process_job(job_id)
+
+    # Then
+    service_deps["scraper"].scrape.assert_called_once_with("http://example.com")
+    service_deps["repository"].save_with_chunks.assert_called_once()
+    final_job = service_deps["job_repository"].update_job.call_args[0][0]
+    assert final_job.status == JobStatus.COMPLETED
 
 
 @pytest.mark.asyncio
@@ -145,3 +200,44 @@ async def test_process_job_chunks_document(service_deps):
     # check job completion
     final_job = service_deps["job_repository"].update_job.call_args[0][0]
     assert final_job.status == JobStatus.COMPLETED
+
+
+@pytest.mark.asyncio
+async def test_process_job_handles_chunker_failure(service_deps):
+    """
+    Given: Chunker raises Exception
+    When: process_job is called
+    Then: Job status becomes FAILED
+    """
+    # Given
+    job_id = "job-chunk-fail"
+    job = IngestionJob(id=job_id, source_url="http://example.com", status=JobStatus.PENDING)
+    service_deps["job_repository"].get_job.return_value = job
+
+    # Scrape succeeds
+    mock_result = Mock()
+    mock_result.markdown = "Content"
+    mock_result.url = "http://example.com"
+    mock_result.metadata = {"source_id": "test"}
+    service_deps["scraper"].scrape.return_value = mock_result
+
+    # Mock Extractor (Async)
+    import asyncio
+
+    future = asyncio.Future()
+    future.set_result(None)
+    service_deps["extractor"].extract.return_value = future
+
+    # Chunker fails
+    service_deps["chunker"].chunk_document.side_effect = Exception("Chunking failed")
+
+    service = Ingestion(**service_deps)
+
+    # When
+    await service.process_job(job_id)
+
+    # Then
+    service_deps["job_repository"].update_job.assert_called()
+    updated_job = service_deps["job_repository"].update_job.call_args[0][0]
+    assert updated_job.status == JobStatus.FAILED
+    assert "Chunking failed" in updated_job.error_message

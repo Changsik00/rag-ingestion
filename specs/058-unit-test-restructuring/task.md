@@ -39,6 +39,19 @@
 - [x] **PR Description 작성**: `specs/058-unit-test-restructuring/pr_description.md`
 - [x] **Archive Commit**: 문서 아카이브 (`docs(spec-058): archive walkthrough and pr description`)
 
+---
+
+## Task 4: Test Quality Refinement (Audit Results)
+### 4-1. 중복 테스트 제거 및 통합
+- [x] `test_rag_nodes_spec044.py` 로직을 `test_rag_nodes.py`로 통합 후 삭제
+- [x] `test_usecases.py` 로직을 `test_ingestion.py`로 통합 후 삭제
+
+### 4-2. 테스트 안정성 및 커버리지 보완
+- [x] `test_semantic_chunker.py`의 Embedding 모델 Mocking 처리
+- [x] RAG 검색 전략(`vector`, `graph`) 분기 테스트 추가
+- [x] `ChunkingConfig` 및 주요 VO 유효성 검사 테스트 추가
+- [x] 이격된 레이어 간의 실패 시나리오(인제스션 도중 Chunker 장애 등) 보완
+
 ## Summary
 **총 Task**: 3개 (세부 8개)  
 **예상 커밋 수**: 약 6-8개  
