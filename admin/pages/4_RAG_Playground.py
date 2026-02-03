@@ -429,7 +429,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
     with st.chat_message("assistant"):
         status_container = st.status("Thinking (Agentic API)...", expanded=True)
         try:
-            filters = {"doc_id": selected_doc_ids} if selected_doc_ids else None
+            filters = {"doc_id": selected_doc_ids} if selected_doc_ids else {}
 
             # API Call
             payload = {
