@@ -49,20 +49,6 @@
     * **P3**: 모든 v1 Endpoint에 `response_model` 적용 및 Status Code 표준화 (`202 Accepted`)
   * **Status**: ✅ Completed (Verified in codebase)
 
-* [x] **Spec 054: Integration Test Infrastructure Improvement** ✅
-  > **문서**: [specs/integration-test-improvement.md](../specs/integration-test-improvement.md)  
-  > **우선순위**: Medium  
-  > **예상 소요**: 2-3일  
-  > **목표**: Mock 데이터가 아닌 실제 데이터로 integration test를 수행할 수 있도록 테스트 인프라 개선
-  > 
-  > **현재 상태**: 16개 integration tests가 skip 처리됨 (실제 인프라 필요)
-  > 
-  > **주요 작업**:
-  > * [ ] Docker 인프라 자동 확인 및 준비
-  > * [ ] 테스트 데이터 시드 fixture 구현
-  > * [ ] 시나리오 기반 테스트 재구성
-  > * [ ] 테스트 격리 및 독립성 보장
-
 ---
 
 ## 🔮 Phase 6: Future Vision
