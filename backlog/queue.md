@@ -49,7 +49,7 @@
     * **P3**: 모든 v1 Endpoint에 `response_model` 적용 및 Status Code 표준화 (`202 Accepted`)
   * **Status**: ✅ Completed (Verified in codebase)
 
-* [ ] **Integration Test Infrastructure Improvement** 🆕
+* [x] **Spec 054: Integration Test Infrastructure Improvement** ✅
   > **문서**: [specs/integration-test-improvement.md](../specs/integration-test-improvement.md)  
   > **우선순위**: Medium  
   > **예상 소요**: 2-3일  

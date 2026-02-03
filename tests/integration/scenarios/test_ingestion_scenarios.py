@@ -133,18 +133,6 @@ class TestIngestionScenarios:
         assert len(matching) >= 2
         assert len(set(d["id"] for d in matching)) == len(matching)
 
-    def test_invalid_job_id_lookup(self):
-        """
-        Scenario: Querying a non-existent job ID
-        """
-        # Given: An invalid UUID string
-        invalid_job_id = "00000000-0000-0000-0000-000000000000"
-
-        # When: GET /v1/jobs/{id} is called
-        response = client.get(f"/v1/jobs/{invalid_job_id}")
-
-        # Then: Returns 404 Not Found
-        assert response.status_code == 404
 
     def test_concurrent_ingestion_throughput(self):
         """

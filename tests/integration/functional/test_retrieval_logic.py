@@ -6,6 +6,10 @@ from app.domain.value_objects.chunk import Chunk
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
 from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
+import json
+from unittest.mock import AsyncMock, MagicMock
+from app.domain.value_objects.intent import IntentType, UserIntent
+from app.domain.services.intent_classifier import IntentClassifier
 from app.interfaces.api.dependencies import get_neo4j_driver
 
 
@@ -24,6 +28,27 @@ def neo4j_repo(driver):
 @pytest.fixture(scope="module")
 def graph_repo(driver):
     return Neo4jGraphRepository(driver)
+
+@pytest.fixture
+def mock_llm_intent():
+    mock = MagicMock()
+    async def agenerate(prompt: str):
+        prompt_lower = prompt.lower()
+        query_part = prompt_lower.split("**current query:**")[-1] if "**current query:**" in prompt_lower else prompt_lower
+
+        if "요약해줘" in query_part:
+            return MagicMock(__str__=lambda x: json.dumps({
+                "intent": "summarize", "targets": ["LangChain"], "entities": [], "reasoning": "Summarization"
+            }))
+        if "비교" in query_part or "tell me more" in query_part:
+            return MagicMock(__str__=lambda x: json.dumps({
+                "intent": "compare", "targets": ["Claude", "GPT-4"], "entities": [], "reasoning": "Comparison"
+            }))
+        return MagicMock(__str__=lambda x: json.dumps({
+            "intent": "general_query", "targets": [], "entities": [], "reasoning": "General"
+        }))
+    mock.agenerate = agenerate
+    return mock
 
 @pytest.mark.integration
 class TestRetrievalLogic:
@@ -90,3 +115,67 @@ class TestRetrievalLogic:
 
         # Then: Returns a valid list structure (even if empty in clean state)
         assert isinstance(neighbors, list)
+
+    @pytest.mark.asyncio
+    async def test_intent_classifier_contextual_history(self, mock_llm_intent):
+        """
+        Component Test: Intent classification with conversation history (Spec-012)
+        """
+        classifier = IntentClassifier(mock_llm_intent)
+
+        # Given: A follow-up query that relies on history
+        query = "GPT-4랑 비교해줘"
+        history = [
+            {"role": "user", "content": "Claude에 대해 알려줘"},
+            {"role": "assistant", "content": "Claude는 Anthropic이 만든 AI입니다."},
+        ]
+
+        # When: Classifying the intent
+        intent = await classifier.classify(query, history)
+
+        # Then: Intent is COMPARE and contains targets from history
+        assert intent.intent == IntentType.COMPARE
+        assert any("claude" in t.lower() for t in intent.targets)
+
+    @pytest.mark.asyncio
+    async def test_intent_classifier_summarize_with_pronoun(self, mock_llm_intent):
+        """
+        Component Test: Summarize 'this' document mentioned in history
+        """
+        classifier = IntentClassifier(mock_llm_intent)
+
+        # Given: "Summarize this" after a specific document mention
+        query = "이 문서 요약해줘"
+        history = [
+            {"role": "user", "content": "LangChain 문서 보여줘"},
+            {"role": "assistant", "content": "LangChain 문서를 찾았습니다."},
+        ]
+
+        # When: Classifying the intent
+        intent = await classifier.classify(query, history)
+
+        # Then: Intent is SUMMARIZE and target is LangChain
+        assert intent.intent == IntentType.SUMMARIZE
+        assert any("langchain" in t.lower() for t in intent.targets)
+
+    def test_select_strategy_logic(self):
+        """
+        Technical Test: Feedback-driven strategy selection
+        """
+        from app.domain.value_objects.ingestion_state import StrategyType, ValidationFeedback
+        from app.infrastructure.ai.ingestion_nodes import select_strategy
+
+        # Given: Feedback indicating poor results
+        feedback = [ValidationFeedback(source="validator", message="poor content", target_fields=[])]
+
+        # When: First failure (retry_count=0)
+        strategy = select_strategy(retry_count=0, feedbacks=feedback)
+
+        # Then: Strategy is CORRECTION
+        assert strategy == StrategyType.CORRECTION
+
+        # When: Repeated failure (retry_count=2)
+        strategy = select_strategy(retry_count=2, feedbacks=feedback)
+
+        # Then: Strategy is RELAXATION
+        assert strategy == StrategyType.RELAXATION

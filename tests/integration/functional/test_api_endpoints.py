@@ -140,3 +140,16 @@ class TestApiEndpoints:
         if "metadata" in first_doc:
              meta = first_doc["metadata"]
              assert any(k in meta for k in ["source_id", "url", "source_url", "title"])
+
+    def test_invalid_job_id_lookup(self):
+        """
+        Functional Test: Querying a non-existent job ID
+        """
+        # Given: An invalid UUID string
+        invalid_job_id = "00000000-0000-0000-0000-000000000000"
+
+        # When: GET /v1/jobs/{id} is called
+        response = client.get(f"/v1/jobs/{invalid_job_id}")
+
+        # Then: Returns 404 Not Found
+        assert response.status_code == 404

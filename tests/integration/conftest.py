@@ -67,7 +67,7 @@ def seed_test_data(check_infrastructure, api_client):
 
     # 2. Trigger Ingestion
     for name, url in SEED_URLS.items():
-        response = api_client.post("/v1/ingest", json={"url": url})
+        response = api_client.post("/v1/ingest/web", json={"url": url})
         if response.status_code == 202:
             job_id = response.json()["job_id"]
             seeded_jobs[name] = job_id
