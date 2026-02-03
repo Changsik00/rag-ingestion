@@ -23,17 +23,15 @@ class Ingestion:
         repository: DocumentRepository,
         graph: GraphRepository,
         job_repository: JobRepository,
-        chunker: Chunker,
+        chunker: Chunker | None = None,
         extractor: SemanticExtractor | None = None,
-        file_processor: FileProcessor | None = None,
     ):
         self.scraper = scraper
         self.repository = repository
         self.graph = graph
         self.job_repository = job_repository
-        self.chunker = chunker
+        self._chunker = chunker
         self.extractor = extractor
-        self.file_processor = file_processor or FileProcessor()
 
         # [Spec 046] Inject LLM into Quality Checker if using CompositeScraper
         from app.infrastructure.scrapers.composite_scraper import CompositeScraper
@@ -42,12 +40,53 @@ class Ingestion:
             self.scraper.quality_checker.llm = self.extractor.llm
             self.scraper.youtube_scraper.llm = self.extractor.llm
 
+    def _get_chunker(self, config_dict: dict | None = None) -> Chunker:
+        if self._chunker:
+            return self._chunker
+        
+        from app.domain.value_objects.chunk_config import ChunkingConfig
+        from app.infrastructure.chunker.chunker_factory import ChunkerFactory
+        
+        config = ChunkingConfig(**config_dict) if config_dict else ChunkingConfig()
+        return ChunkerFactory.get_chunker(config)
+
+    async def run(
+        self,
+        source: str,
+        job_id: UUID,
+        user_id: str | None = None,
+        chunking_config: dict | None = None,
+    ) -> list[str]:
+        """인입 프로세스 실행"""
+        try:
+            # 1. 스크래핑
+            logger.info(f"Starting scraping: {source}")
+            content, metadata = await self.scraper.extract(source)
+
+            # 2. 문서 엔티티 생성
+            document = Document(content=content, metadata=metadata)
+
+            # 3. 청킹
+            chunker = self._get_chunker(chunking_config)
+            document.chunks = chunker.chunk_document(document)
+            logger.info(f"Document chunked into {len(document.chunks)} pieces using {type(chunker).__name__}")
+
     def create_job(
-        self, url: str, retry_of: str | None = None, raw_content: bytes | None = None, filename: str | None = None
+        self,
+        url: str,
+        retry_of: str | None = None,
+        raw_content: bytes | None = None,
+        filename: str | None = None,
+        chunking_config: dict | None = None,
     ) -> IngestionJob:
         """Create and persist a new job in PENDING state."""
         job = IngestionJob(
-            source_url=url, status=JobStatus.PENDING, retry_of=retry_of, raw_content=raw_content, filename=filename
+            source_url=url,
+            status=JobStatus.PENDING,
+            retry_of=retry_of,
+            raw_content=raw_content,
+            filename=filename,
+            chunking_config=chunking_config,
         )
         self.job_repository.create_job(job)
         return job
@@ -69,7 +108,9 @@ class Ingestion:
             # 2. Extract Content (Iterative or Single)
             if job.raw_content and job.filename:
                 logger.info(f"Processing local file: {job.filename}")
-                segments = self.file_processor.extract_segments(job.raw_content, job.filename)
+                from app.core.file_processor import FileProcessor
+                file_processor = FileProcessor()
+                segments = file_processor.extract_segments(job.raw_content, job.filename)
             else:
                 result = await self.scraper.scrape(job.source_url)
                 segments = [(result.markdown, result.metadata)]
@@ -96,7 +137,8 @@ class Ingestion:
                 doc = Document(content=text, metadata=doc_metadata)
 
                 # Chunking & Save
-                chunks = self.chunker.chunk_document(doc)
+                chunker = self._get_chunker(job.chunking_config)
+                chunks = chunker.chunk_document(doc)
                 self.repository.save_with_chunks(doc, chunks)
                 job.docs_ids.append(doc.id)
 

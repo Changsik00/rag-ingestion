@@ -140,7 +140,6 @@ def get_ingestion_service(
     repository: Annotated[DocumentRepository, Depends(get_repository)],
     graph: Annotated[GraphRepository, Depends(get_graph_repository)],
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
-    chunker: Annotated[Chunker, Depends(get_chunker)],
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
 ) -> Ingestion:
     return Ingestion(
@@ -148,7 +147,6 @@ def get_ingestion_service(
         repository=repository,
         graph=graph,
         job_repository=job_repository,
-        chunker=chunker,
         extractor=extractor,
     )
 
