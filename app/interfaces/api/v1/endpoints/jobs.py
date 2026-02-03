@@ -25,6 +25,7 @@ def map_job_to_response(job: IngestionJob) -> JobResponse:
         source_url=job.source_url,
         created_at=job.created_at,
         updated_at=job.updated_at,
+        docs_ids=job.docs_ids,
         metadata={},
     )
 

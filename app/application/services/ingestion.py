@@ -70,6 +70,13 @@ class Ingestion:
             chunker = self._get_chunker(chunking_config)
             document.chunks = chunker.chunk_document(document)
             logger.info(f"Document chunked into {len(document.chunks)} pieces using {type(chunker).__name__}")
+            # 4. 저장
+            self.repository.save_with_chunks(document, document.chunks)
+            logger.info(f"Document saved with {len(document.chunks)} chunks")
+            return [document.id]
+        except Exception as e:
+            logger.error(f"Failed to run ingestion: {e}")
+            raise BaseAppError(f"Ingestion failed: {e}")
 
     def create_job(
         self,
