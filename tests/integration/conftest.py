@@ -1,9 +1,10 @@
-import pytest
-import socket
 import os
+import socket
 import time
-from typing import Dict, Any
+
+import pytest
 from fastapi.testclient import TestClient
+
 from app.interfaces.api.main import app
 
 # Standard Seed Data
@@ -17,7 +18,7 @@ def is_port_open(host: str, port: int, timeout: float = 1.0) -> bool:
     try:
         with socket.create_connection((host, port), timeout=timeout):
             return True
-    except (socket.timeout, ConnectionRefusedError, OSError):
+    except (TimeoutError, ConnectionRefusedError, OSError):
         return False
 
 @pytest.fixture(scope="session", autouse=True)
@@ -30,21 +31,21 @@ def check_infrastructure():
     neo4j_port = int(os.getenv("NEO4J_PORT", 7687))
     chroma_host = os.getenv("CHROMA_HOST", "localhost")
     chroma_port = int(os.getenv("CHROMA_PORT", 8000))
-    
+
     services = {
         "Neo4j": (neo4j_host, neo4j_port),
         "ChromaDB": (chroma_host, chroma_port),
     }
-    
+
     missing_services = []
-    
+
     for name, (host, port) in services.items():
         if not is_port_open(host, port):
             missing_services.append(f"{name} ({host}:{port})")
-            
+
     if missing_services:
         pytest.skip(f"Infrastructure not ready: {', '.join(missing_services)}. Please run 'docker compose up -d'.")
-        
+
     return True
 
 @pytest.fixture(scope="session")
@@ -61,9 +62,9 @@ def seed_test_data(check_infrastructure, api_client):
     """
     # 1. Check if data already exists (implied by idempotency or checking specific documents)
     # For now, we'll try to ingest. If duplicate logic exists, it handles it.
-    
+
     seeded_jobs = {}
-    
+
     # 2. Trigger Ingestion
     for name, url in SEED_URLS.items():
         response = api_client.post("/v1/ingest", json={"url": url})
@@ -73,7 +74,7 @@ def seed_test_data(check_infrastructure, api_client):
         elif response.status_code == 200:
              # Synchronous or already exists
              pass
-    
+
     # 3. Wait for Completion (Simple Polling)
     max_retries = 30
     for name, job_id in seeded_jobs.items():
@@ -88,5 +89,5 @@ def seed_test_data(check_infrastructure, api_client):
                 elif status == "FAILED":
                     pytest.fail(f"Seed data ingestion failed for {name} ({job_id})")
             time.sleep(1)
-            
+
     return seeded_jobs

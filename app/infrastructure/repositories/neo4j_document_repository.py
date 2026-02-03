@@ -1,6 +1,6 @@
 import json
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
 
 from neo4j import Driver
 
@@ -53,11 +53,11 @@ class Neo4jDocumentRepository(DocumentRepository):
                     metadata[k] = v
             else:
                 metadata[k] = v
-        
+
         # [Spec-054] Ensure source_id exists for DocumentMetadata validation
         if "source_id" not in metadata:
             metadata["source_id"] = metadata.get("url") or metadata.get("source") or node_items.get("id", "unknown_source")
-            
+
         return metadata
 
     def save(self, document: Document) -> None:
@@ -114,7 +114,7 @@ class Neo4jDocumentRepository(DocumentRepository):
             query = """
             MATCH (d:Document {id: $doc_id})
             UNWIND $chunks AS chunk_data
-            MERGE (c:Chunk {chunk_id: chunk_data.chunk_id})
+            MERGE (c:Chunk {id: chunk_data.id})
             SET c.content = chunk_data.content,
                 c.index = chunk_data.index,
                 c.parent_id = $doc_id,
@@ -126,7 +126,7 @@ class Neo4jDocumentRepository(DocumentRepository):
             chunks_data = []
             for chunk in chunks:
                 chunk_dict = {
-                    "chunk_id": chunk.id,
+                    "id": chunk.id,
                     "content": chunk.content,
                     "index": chunk.index,
                     "metadata": self._flatten_metadata(chunk.metadata),
@@ -148,7 +148,7 @@ class Neo4jDocumentRepository(DocumentRepository):
                 if result:
                     node = result["d"]
                     return Document(
-                        id=str(node["id"]),
+                        id=node["id"],
                         content=node.get("content", ""),
                         metadata=self._unflatten_metadata(node),
                         created_at=node.get("created_at") or datetime.now(),
@@ -204,7 +204,7 @@ class Neo4jDocumentRepository(DocumentRepository):
                     node = record["c"]
                     chunks.append(
                         Chunk(
-                            id=node["chunk_id"],
+                            id=node["id"],
                             content=node.get("content", ""),
                             parent_id=node.get("parent_id"),
                             index=node.get("index", 0),
@@ -297,7 +297,7 @@ class Neo4jDocumentRepository(DocumentRepository):
 
                     chunks.append(
                         Chunk(
-                            id=node["chunk_id"],
+                            id=node["id"],
                             content=node.get("content", ""),
                             parent_id=node.get("parent_id"),
                             index=node.get("index", 0),
@@ -314,10 +314,11 @@ class Neo4jDocumentRepository(DocumentRepository):
     def get_all_chunk_ids(self) -> set[str]:
         """Neo4j의 모든 청크 ID를 가져옵니다."""
         try:
-            query = "MATCH (c:Chunk) RETURN c.chunk_id as id"
+            query = "MATCH (c:Chunk) RETURN c.id as id"
             with self.driver.session() as session:
                 result = session.run(query)
-                return {record["id"] for record in result}
+                # Ensure we only return strings and filter out None
+                return {str(record["id"]) for record in result if record["id"]}
         except Exception as e:
             logger.error(f"Failed to get all chunk IDs from Neo4j: {e}")
             return set()
@@ -327,7 +328,7 @@ class Neo4jDocumentRepository(DocumentRepository):
         try:
             query = """
             MATCH (c:Chunk)
-            WHERE c.chunk_id IN $ids
+            WHERE c.id IN $ids
             RETURN c
             """
             chunks = []
@@ -351,7 +352,7 @@ class Neo4jDocumentRepository(DocumentRepository):
 
                     chunks.append(
                         Chunk(
-                            id=node["chunk_id"],
+                            id=node["id"],
                             content=node.get("content", ""),
                             parent_id=node.get("parent_id"),
                             index=node.get("index", 0),
@@ -373,6 +374,8 @@ class Neo4jDocumentRepository(DocumentRepository):
             with self.driver.session() as session:
                 results = session.run(query)
                 for record in results:
+                    if not record["id"]:
+                        continue
                     stats.append(
                         {
                             "id": record["id"],
@@ -402,10 +405,14 @@ class Neo4jDocumentRepository(DocumentRepository):
         """모든 청크의 핵심 데이터(ID, 부모 ID)를 조인 없이 가볍게 가져옵니다."""
         try:
             # content는 벌크 로드에서 제외 (성능 저하 방지)
-            query = "MATCH (c:Chunk) RETURN c.chunk_id as id, c.parent_id as parent_id"
+            query = "MATCH (c:Chunk) RETURN c.id as id, c.parent_id as parent_id"
             with self.driver.session() as session:
                 results = session.run(query)
-                return [dict(record) for record in results]
+                return [
+                    {"id": record["id"], "parent_id": record["parent_id"]}
+                    for record in results
+                    if record["id"]
+                ]
         except Exception as e:
             logger.error(f"Failed to get all chunk metadata from Neo4j: {e}")
             return []

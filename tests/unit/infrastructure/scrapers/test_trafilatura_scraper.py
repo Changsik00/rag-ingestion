@@ -88,7 +88,7 @@ async def test_scrape_fallback_when_trafilatura_fails(scraper):
         # 현재는 예외를 던지거나 BasicScraper 로직을 탈지 결정해야 함
         # 여기서는 최소한 비어있지 않은 응답이 오거나 에러 처리가 되는지 확인
         try:
-            _ = scraper.scrape("https://example.com/fail")
+            _ = await scraper.scrape("https://example.com/fail")
             # Fallback 구현 시:
             # assert response.markdown is not None
         except Exception:

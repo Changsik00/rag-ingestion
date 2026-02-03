@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class JobStatus(str, Enum):
@@ -24,5 +24,4 @@ class IngestionJob(BaseModel):
     filename: str | None = None  # For local file ingestion
     docs_ids: list[str] = Field(default_factory=list)  # Associated document IDs
 
-    class Config:
-        frozen = False  # Allow updates
+    model_config = ConfigDict(frozen=False)  # Allow updates

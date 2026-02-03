@@ -45,6 +45,8 @@ class PlaywrightScraper(ScraperInterface):
                 title = await page.title()
                 # 원본 HTML 수집
                 html_content = await page.content()
+                # Fallback용 텍스트 미리 확보
+                fallback_text = await page.inner_text("body")
 
                 await browser.close()
 
@@ -59,16 +61,11 @@ class PlaywrightScraper(ScraperInterface):
                 )
 
                 if not markdown_content:
-                    # Trafilatura가 실패할 경우 page.inner_text() 등을 활용한 Fallback 가능
-                    # 여기서는 일단 body 텍스트를 기본으로 활용
                     logger.warning(f"Trafilatura failed to extract from Playwright HTML for {url}. Using fallback.")
-                    # 간단한 fallback: 텍스트만이라도 추출
-                    # markdown_content = await page.inner_text("body") # 브라우저 닫기 전에 수행했어야 함
-                    # 일단 에러 처리 or 기본 빈값 방지
-                    raise ValueError("Failed to extract content even with Playwright")
+                    markdown_content = fallback_text
 
                 # 6. Cleaning
-                markdown_content = self.cleaner.clean(markdown_content)
+                markdown_content = self.cleaner.clean(markdown_content) if markdown_content else ""
 
                 # 7. Metadata
                 metadata = {"title": title, "url": url, "engine": "playwright"}
