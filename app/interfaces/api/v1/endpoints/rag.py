@@ -18,6 +18,7 @@ from app.interfaces.api.v1.dto.rag import (
     ChatResponse,
     MessageDTO,
     SessionTraceResponse,
+    ChatRequest,
 )
 
 router = APIRouter(tags=["RAG"])
@@ -62,20 +63,26 @@ def map_to_chat_response(result: dict, status: str, next_steps: Any) -> ChatResp
 @router.post("/sessions/{id}/ask", response_model=ChatResponse, status_code=status.HTTP_202_ACCEPTED)
 async def ask_agent(
     id: str,
-    payload: dict[str, Any],
+    payload: ChatRequest,
     agent: Annotated[ConversationalRAGAgent, Depends(get_conversational_rag_agent)],
     checkpointer=Depends(get_checkpointer),
 ):
     """Conversational RAG Agent에게 질문을 던지고 결과를 반환 (HITL 지원 가능)"""
-    message = payload.get("message")
-    filters = payload.get("filters")
-    hitl_enabled = payload.get("hitl_enabled", False)
+    message = payload.message
+    filters = payload.filters
+    hitl_enabled = payload.hitl_enabled
 
-    if not message:
-        raise HTTPException(status_code=400, detail="Message is required")
+    # Spec 055: Advanced Settings Extraction
+    retrieval_config = payload.advanced_settings.model_dump()
 
     # LangGraph Workflow 실행
-    config = {"configurable": {"thread_id": id}}
+    # Spec 055: Inject retrieval_config into configurable
+    config = {
+        "configurable": {
+            "thread_id": id,
+            "retrieval_config": retrieval_config
+        }
+    }
     workflow = agent.build_workflow(checkpointer=checkpointer)
 
     input_state = {
