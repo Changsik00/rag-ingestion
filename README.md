@@ -61,6 +61,11 @@
 *   [**Testing Strategy**](docs/guides/testing_strategy.md): TDD/BDD 테스트 접근 방식
 
 ### ✨ Features
+*   [**Smart Scraper**](docs/features/ingestion_scraper.md): 멀티소스 콘텐츠 수집 및 정규화
+*   [**YouTube Ingestion**](docs/features/ingestion_youtube.md): 자막 및 메타데이터 자동 추출
+*   [**Contextual RAG**](docs/features/rag_contextual.md): 문맥 보존형 청킹 및 리트리버
+*   [**Graph RAG**](docs/features/rag_graph.md): 지식 그래프 기반 추론 전략
+*   [**HITL Workflow**](docs/features/hitl_workflow.md): 인간 개입(Human-in-the-Loop) 피드백 루프
 *   [**LangGraph Backtracking**](docs/features/langgraph_backtracking.md): 지능형 재시도 및 에러 복구 전략
 
 ---
@@ -97,12 +102,14 @@ docker compose down
 | **Phase 2** | **Observability**<br>(Admin Dash, Async Jobs) | ✅ **완료** | • Spec 003-004 완료<br>• Streamlit 대시보드 및 비동기 작업 관리 시스템 가동 중 |
 | **Phase 3** | **Intelligence**<br>(Semantic Extraction, Ontology) | ✅ **완료** | • Spec 005-007 완료<br>• LLM 기반 메타데이터/엔티티 추출 및 온톨로지 설계 적용됨 |
 | **Phase 4** | **Graph Construction**<br>(Entity Nodes, Relationships) | ✅ **완료** | • **Spec 010, 016 완료**<br>• 지식 그래프 노드 매핑 및 관계(Relationship) 추출/탐색 기능 구현됨 |
-| **Phase 5** | **Knowledge Reasoning**<br>(Logic Resolver, Graph RAG) | 🚀 **진행 중** | • **핵심 구현 완료**: Logic Resolver(Spec 021), Graph RAG Fix(Spec 044), Agentic Workflow(Spec 029)<br>• **고도화 진행 중**: HITL(Spec 022/041/045), Robustness(Spec 043/049), Hybrid Search(Spec 026) 등 "지능형/자동화" 기능 대거 추가됨 |
+| **Phase 5** | **Knowledge Reasoning**<br>(Logic Resolver, Graph RAG) | ✅ **완료** | • **핵심 구현 완료**: Logic Resolver(Spec 021), Graph RAG Fix(Spec 044), Agentic Workflow(Spec 029)<br>• **고도화 완료**: HITL(Spec 022/041/045), Robustness(Spec 043/049), Hybrid Search(Spec 026) 등 "지능형/자동화" 기능 구현됨 |
+| **Phase 6** | **Performance & Scalability**<br>(RAG Precision, Local LLM) | 🚀 **진행 중** | • **목표**: 시스템 응답 속도/처리량 최적화 및 비용 효율화<br>• **계획**: RAG Precision(Spec 055), Local LLM(Spec 056), Semantic Chunking(Spec 057) |
 
 *   [x] **Phase 1**: Functional Foundation (Scraper, Hybrid Storage)
 *   [x] **Phase 2**: Observability (Admin Dash, Async Jobs)
 *   [x] **Phase 3**: Intelligence (Semantic Extraction, Ontology)
 *   [x] **Phase 4**: Graph Construction (Entity Nodes, Relationships)
-*   [ ] **Phase 5**: Knowledge Reasoning & Agentic Ecosystem (Logic Resolver, Graph RAG) 🚧 *In Progress*
+*   [x] **Phase 5**: Knowledge Reasoning & Agentic Ecosystem (Logic Resolver, Graph RAG)
+*   [ ] **Phase 6**: Performance Optimization & Scalability (RAG Precision, Local LLM) 🚧 *In Progress*
 
 > **Note for AI Agents**: 코드를 구현할 때는 `agent.md`의 규칙을 준수하고, 저장소 계층 구조(Composite Storage)를 유지해야 합니다.
