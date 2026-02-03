@@ -269,3 +269,9 @@
 
 * [x] **Spec 050: Clean Architecture Refactoring (4-Layer Structure)**
   * [x] **Goal**: Clean Architecture 4-Layer 리팩토링 및 Dependency Rule 적용.
+
+* [x] **Spec 055: RAG Precision & Advanced Settings** ✅
+  * **Goal**: 검색 품질 최적화 및 고급 튜닝 옵션 제공 (Multimodal filter, Graph optimization, Raw API Output)
+
+* [x] **Spec 056: Semantic Chunking Upgrade** ✅
+  * **Goal**: Embedding Similarity 기반 의미 단위 청킹(Semantic Chunking) 구현 및 검색 밀도 향상

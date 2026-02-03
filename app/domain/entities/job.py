@@ -23,5 +23,6 @@ class IngestionJob(BaseModel):
     raw_content: bytes | None = Field(default=None, exclude=True)  # For local file ingestion
     filename: str | None = None  # For local file ingestion
     docs_ids: list[str] = Field(default_factory=list)  # Associated document IDs
+    chunking_config: dict | None = None  # Chunking configuration (strategy, size, etc.)
 
     model_config = ConfigDict(frozen=False)  # Allow updates

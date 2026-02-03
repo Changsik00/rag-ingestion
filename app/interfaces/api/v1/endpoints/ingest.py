@@ -21,7 +21,7 @@ async def ingest_web_page(
     background_tasks: BackgroundTasks,
     service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ):
-    job = service.create_job(str(request.url))
+    job = service.create_job(str(request.url), chunking_config=request.chunking_config)
     background_tasks.add_task(service.process_job, job.job_id)
     return AsyncIngestResponse(job_id=job.job_id, current_status=job.status)
 

@@ -23,19 +23,7 @@
 
 > **목표**: 시스템의 응답 속도, 처리량, 비용 효율성을 극대화하고 대규모 트래픽/데이터를 견딜 수 있는 구조로 최적화한다.
 
-* [x] **[Spec 055: RAG Precision & Advanced Settings](../specs/055-rag-precision-advanced-settings/spec.md)** (High) ✅
-  * **Goal**: 검색 품질 최적화 및 고급 튜닝 옵션 제공
-  * **Status**: ✅ Completed & Merged (Multimodal filter, Graph optimization, Raw API Output)
-  * **Scope**: Hyperparameter Tuning, Advanced Debug View (Raw API Output), Search Strategy Selector
-
-* [ ] **Spec 056: Local LLM Optimization** (Medium)
-  * **Goal**: 로컬 모델(Ollama) 연동을 통한 비용 절감 및 속도 향상
-  * **Scope**: Ollama Integration, Hybrid Model Routing
-
-* [ ] **Spec 057: Semantic Chunking Upgrade** (Medium)
-  * **Goal**: AI 기반 청킹 도입으로 인덱싱 품질 향상
-
-* [ ] **Spec 058: API Input Validation & Error Handling** (Medium)
+* [ ] **Spec 057: API Input Validation & Error Handling** (Medium)
   * **Goal**: 클라이언트/프론트엔드 연동성을 위한 API 견고성 강화
 
 ---

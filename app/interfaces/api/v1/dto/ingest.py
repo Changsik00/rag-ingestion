@@ -7,6 +7,7 @@ from app.interfaces.api.v1.dto.common import BaseResponse
 
 class IngestRequest(BaseModel):
     url: HttpUrl = Field(..., description="Target URL to ingest")
+    chunking_config: dict | None = Field(default=None, description="Optional chunking configuration")
 
 
 class IngestResponse(BaseResponse):

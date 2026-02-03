@@ -16,6 +16,7 @@ class JobResponse(BaseResponse):
     source_url: str
     created_at: datetime | None = None
     updated_at: datetime | None = None
+    docs_ids: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 

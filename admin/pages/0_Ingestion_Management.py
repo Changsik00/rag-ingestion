@@ -7,6 +7,42 @@ st.title("📥 Ingestion Management")
 
 api_client = get_api_client()
 
+st.divider()
+
+# --- [Spec 056] Chunking Settings ---
+with st.expander("⚙️ Chunking Settings", expanded=False):
+    col1, col2 = st.columns(2)
+    with col1:
+        strategy = st.radio(
+            "Chunking Strategy",
+            options=["recursive", "semantic"],
+            index=0,
+            help="Recursive: 고정 크기 분할, Semantic: 의미 기반 분할",
+            horizontal=True,
+        )
+    
+    chunk_config = {"strategy": strategy}
+    
+    if strategy == "recursive":
+        with col2:
+            c_size = st.number_input("Chunk Size", value=1000, step=100)
+            c_overlap = st.number_input("Chunk Overlap", value=200, step=50)
+            chunk_config.update({"chunk_size": c_size, "chunk_overlap": c_overlap})
+    else:
+        with col2:
+            threshold_type = st.selectbox(
+                "Breakpoint Threshold Type",
+                options=["percentile", "standard_deviation", "interquartile", "gradient"],
+                index=0,
+            )
+            threshold_amount = st.slider("Threshold Amount", min_value=0.0, max_value=100.0, value=90.0, step=0.1)
+            chunk_config.update({
+                "breakpoint_threshold_type": threshold_type,
+                "breakpoint_threshold_amount": threshold_amount
+            })
+
+st.divider()
+
 tabs = st.tabs(["🌐 Web URL Ingestion", "📁 Local File Ingestion"])
 
 with tabs[0]:
@@ -16,8 +52,7 @@ with tabs[0]:
         if url:
             with st.spinner("Starting ingestion job..."):
                 # URL is handled via standard POST /v1/ingest/web
-                # Admin router is now also under /v1.
-                res = api_client.post("ingest/web", json={"url": url})
+                res = api_client.post("ingest/web", json={"url": url, "chunking_config": chunk_config})
                 if res:
                     st.success(f"Job created: {res.get('job_id')}")
                     st.info("Check 'Job Queue' for status.")
