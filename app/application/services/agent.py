@@ -4,14 +4,13 @@ from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict
 
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableConfig
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, StateGraph, add_messages
 
+from app.application.services.rag import RAG
 from app.core.config import get_settings
 from app.domain.entities.job import JobStatus
-
-from app.application.services.rag import RAG
-from langchain_core.runnables import RunnableConfig
 
 if TYPE_CHECKING:
     from app.application.services.ingestion import Ingestion
@@ -35,7 +34,6 @@ class AgentState(TypedDict):
     missing_slots: list[str]
 
 
-
 class ConversationalRAGAgent:
     """
     RAG Playground 및 관리자용 Orchestration Agent.
@@ -50,7 +48,7 @@ class ConversationalRAGAgent:
         """
         if isinstance(content, str):
             return content
-        
+
         if isinstance(content, list):
             text_parts = []
             for part in content:
@@ -60,10 +58,10 @@ class ConversationalRAGAgent:
                 elif isinstance(part, str):
                     text_parts.append(part)
                 elif isinstance(part, dict) and "text" in part:
-                     text_parts.append(part["text"])
+                    text_parts.append(part["text"])
                 # Ignore other types (e.g. dicts without text, blobs) to prevent chaotic noise
             return "".join(text_parts)
-            
+
         return str(content)
 
     def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
@@ -174,7 +172,7 @@ class ConversationalRAGAgent:
         # Handle Gemini 3.0 content list
         # Handle Gemini 3.0 content list
         if hasattr(response, "content"):
-             response.content = self._extract_text_content(response.content)
+            response.content = self._extract_text_content(response.content)
 
         return {"messages": [response], "is_clarification": True, "tool_output": "Clarification Requested"}
 
@@ -274,7 +272,7 @@ class ConversationalRAGAgent:
 
         filters = state.get("filters")
         thread_id = state.get("thread_id")
-        
+
         # Spec 055: Advanced Settings Propagation
         retrieval_config = config.get("configurable", {}).get("retrieval_config")
 

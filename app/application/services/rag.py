@@ -88,7 +88,7 @@ class RAG:
 
         # Config 설정 (Thread ID가 있으면 Checkpointer 사용)
         config = {"configurable": {"thread_id": thread_id}} if thread_id else {"configurable": {}}
-        
+
         # Spec 055: Inject retrieval_config
         if retrieval_config:
             config["configurable"]["retrieval_config"] = retrieval_config

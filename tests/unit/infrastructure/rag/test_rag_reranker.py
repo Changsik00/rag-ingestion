@@ -12,11 +12,12 @@ from app.infrastructure.ai.rag_nodes import RAGNodes
 async def test_rerank_results_success():
     # Given
     mock_llm = MagicMock()
+    mock_llm.bind.return_value = mock_llm
     # LLM response for 2 chunks
     mock_llm.agenerate = AsyncMock(
         side_effect=[
-            MagicMock(content=json.dumps({"score": 9, "reasoning": "High relevance"})),
-            MagicMock(content=json.dumps({"score": 2, "reasoning": "Low relevance"})),
+            json.dumps({"score": 9, "reasoning": "High relevance"}),
+            json.dumps({"score": 2, "reasoning": "Low relevance"}),
         ]
     )
 
@@ -44,13 +45,12 @@ async def test_rerank_results_success():
     }
 
     # When
-    # We haven't implemented rerank_results yet, so this will fail if we run it now.
-    # But as per TDD, we write it first.
+    config = {"configurable": {"retrieval_config": {"temperature": 0.0}}}
     try:
-        updated_state = await nodes.rerank_results(state)
+        updated_state = await nodes.rerank_results(state, config=config)
 
         # Then
-        assert len(updated_state["reranked_chunks"]) == 1  # Only score 9 should remain (assuming threshold 5)
+        assert len(updated_state["reranked_chunks"]) == 2  # Both scores 9 and 2 are >= 2 (threshold)
         assert updated_state["reranked_chunks"][0].id == "1"
         assert len(updated_state["rerank_log"]) == 2
     except AttributeError:

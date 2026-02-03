@@ -6,12 +6,6 @@ from app.core.config import get_settings
 from app.domain.entities.document import Document
 from app.domain.interfaces.chunker import Chunker
 from app.domain.value_objects.chunk import Chunk
-
-
-from app.core.config import get_settings
-from app.domain.entities.document import Document
-from app.domain.interfaces.chunker import Chunker
-from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.chunk_config import ChunkingConfig
 
 
@@ -19,7 +13,7 @@ class LangChainChunker(Chunker):
     def __init__(self, config: ChunkingConfig | None = None):
         self.settings = get_settings()
         self.config = config or ChunkingConfig()
-        
+
         self.splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.config.chunk_size,
             chunk_overlap=self.config.chunk_overlap,

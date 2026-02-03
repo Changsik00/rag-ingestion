@@ -126,7 +126,7 @@ class TestIngestionScenarios:
                     metadata={"title": "Idempotency Test", "source_id": u},
                     message="Success",
                 )
-        
+
         # Mock Extractor to avoid LLM calls
         class MockExtractor(SemanticExtractor):
             async def extract(self, content: str, url: str) -> dict:
@@ -134,10 +134,10 @@ class TestIngestionScenarios:
                     "title": "Idempotency Test",
                     "summary": "Mock Summary",
                     "keywords": ["mock", "test"],
-                    "entities": []
+                    "entities": [],
                 }
-        
-        mock_extractor_instance = MockExtractor(llm=None) # type: ignore
+
+        mock_extractor_instance = MockExtractor(llm=None)  # type: ignore
 
         app.dependency_overrides[get_scraper] = lambda: MockScraper()
         app.dependency_overrides[get_semantic_extractor] = lambda: mock_extractor_instance
@@ -164,7 +164,7 @@ class TestIngestionScenarios:
             doc_res = client.get("/v1/documents")
             docs = doc_res.json()
             matching = [d for d in docs if d.get("metadata", {}).get("source_url") == url]
-            
+
             # Should have at least 2 entries (duplicates allowed by design or handled as ensuring existence)
             # The original test expected duplicates (len >= 2).
             assert len(matching) >= 2
