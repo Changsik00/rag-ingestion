@@ -26,6 +26,13 @@
 * [ ] **Spec 060: Migrate from SQLite to Postgres Checkpointer** (High) 🔄
   * **Goal**: 분산 환경 지원 및 동시성 처리를 위해 LangGraph Checkpointer를 SQLite에서 PostgreSQL로 마이그레이션
 
+* [ ] **Spec 061: RAG Session TTL & Cleanup Strategy** (Medium)
+  * **Goal**: 무한히 증가하는 RAG 히스토리(`checkpoints`) 관리를 위한 자동 삭제 정책(TTL) 및 백그라운드 스케줄러 도입
+  * **Tasks**:
+    * Cron/Celery 기반의 주기적 Cleanup Job 구현
+    * `adelete_thread`를 활용한 만료된 세션(예: 30일 경과) 일괄 삭제
+    * Admin UI에 '오래된 데이터 정리' 기능 추가
+
 
 * [x] **Spec 057: Unit Test Restructuring & Stability Upgrade** (Medium)
   * **Goal**: Clean Architecture 레이어에 맞춘 테스트 구조 재정비 및 실패 테스트(7건) 정상화
