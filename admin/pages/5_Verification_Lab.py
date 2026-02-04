@@ -37,9 +37,9 @@ if submitted:
                 "advanced_settings": {"top_k": 5}
             }
             
-            # API endpoint: POST /sessions/{id}/ask
+            # API endpoint: POST /rag/sessions/{id}/ask
             # returns ChatResponse
-            resp = api_client.post(f"/sessions/{conv_id}/ask", json=payload)
+            resp = api_client.post(f"/rag/sessions/{conv_id}/ask", json=payload)
 
             if resp:
                 # 1. Answer Display
@@ -96,4 +96,4 @@ if submitted:
             st.exception(e)
 
 st.divider()
-st.caption("Note: 이 기능은 Backend API (`/sessions/{id}/ask`)를 호출하여 동작합니다.")
+st.caption("Note: 이 기능은 Backend API (`/rag/sessions/{id}/ask`)를 호출하여 동작합니다.")
