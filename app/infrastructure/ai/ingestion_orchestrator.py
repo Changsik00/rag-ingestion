@@ -50,7 +50,7 @@ class IngestionOrchestrator:
             "original_url": "",  # Optional, not used in extraction logic yet
             "raw_content": text,
             "metadata": None,
-            "steps_history": [],
+            "messages": [],
             "error": None,
             "retry_count": 0,
         }
