@@ -44,7 +44,32 @@
 
 ---
 
-## 🔮 Phase 7: Future Vision
+## 🖥️ Phase 7: Advanced Admin & Observability
+
+> **목표**: Admin 대시보드를 단순 제어 패널에서 "지식 관리 및 분석 플랫폼"으로 격상시킨다. (Ref: [`docs/features/admin_improvement.md`](../docs/features/admin_improvement.md))
+
+* [ ] **Spec 070: Admin UI/UX & Feature Review** (High)
+  * **Goal**: 그래프 시각화 스타일 개선, 스크립트 기반 검증 도구(Lab) UI 통합, 사용자 피드백(좋아요/싫어요) 기능 활성화
+  * **Tasks**:
+    * **Verification Lab**: `verify_llm.py` 등을 Streamlit 페이지로 이식
+    * **Graph Style**: Dark Mode 가시성(Color Contrast) 개선 및 저장된 쿼리(Preset) 버그 수정
+    * **Feedback**: UI 버튼과 Backend API 연동
+
+* [ ] **Spec 071: RAG Observability Dashboard** (Medium)
+  * **Goal**: 블랙박스 같은 RAG 내부 동작을 투명하게 시각화 (Trace Viewer)
+  * **Tasks**:
+    * **RAG Inspector**: 최근 요청의 단계별(Retrieval -> Rerank -> Generation) 로그 타임라인 뷰 구현
+    * Server-side API Call Logging (Streamlit 한계 극복)
+
+* [ ] **Spec 072: Frontend Tech Stack Migration Study** (Low)
+  * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿
+  * **Tasks**:
+    * Next.js + ShadcnUI로 핵심 페이지(Chat, Graph) POC 작성
+    * 개발 생산성 vs 사용자 경험 Trade-off 분석 보고서 작성
+
+---
+
+## 🔮 Phase 8: Future Vision
 
 > **목표**: 장기적인 비전 및 확장 계획
 
