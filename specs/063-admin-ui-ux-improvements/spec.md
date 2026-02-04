@@ -1,4 +1,4 @@
-# Spec 063: Admin UI/UX & Feature Review
+# Spec 063: Admin UI/UX Improvements & Feature Review
 
 ## 1. Background
 Admin Dashboard는 현재 기능 중심의 MVP 상태로, 사용자 경험(UX) 측면에서 몇 가지 불편함이 존재합니다. 특히 Graph Explorer의 다크 모드 가시성 문제와 프리셋 기능 동작 오류는 빈번한 사용 불편을 초래하고 있습니다. 또한, 터미널에서 실행하던 검증 스크립트(`manual_rag_verification.py`)를 UI로 통합하여 접근성을 높일 필요가 있습니다.

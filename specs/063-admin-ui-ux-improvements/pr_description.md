@@ -1,4 +1,4 @@
-## 💡 Title: feat(spec-066): admin ui/ux improvements
+## 💡 Title: feat(spec-063): admin ui/ux improvements
 
 ## 🚀 Summary
 Spec 063에 따라 Admin Dashboard의 사용성을 개선했습니다.

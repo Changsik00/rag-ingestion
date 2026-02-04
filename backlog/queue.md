@@ -21,30 +21,30 @@
     * SQL 기반 세션 삭제 로직을 Repository/Service로 이동
     * DTO Mapper 클래스 분리
 
-* [ ] **Spec 063: RAG Observability Dashboard**
-  * **Goal**: LangFuse/Arize Phoenix 연동, Token Usage/Latency 시각화.
-  * **Current State**: Proposed.
-  * **Tasks**:
-    * **RAG Inspector**: 최근 요청의 단계별(Retrieval -> Rerank -> Generation) 로그 타임라인 뷰 구현
-    * Server-side API Call Logging (Streamlit 한계 극복)
-
-* [ ] **Spec 064: RAG Evaluation System**
-  * **Goal**: 정량적 평가 시스템 구축 (Golden Dataset, Automated Metrics).
-    * **Current State**: Proposed (Replaced Verification Lab).
-
-* [ ] **Spec 065: Frontend Tech Stack Migration Study** (Low)
-  * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿
-  * **Tasks**:
-    * Next.js + ShadcnUI로 핵심 페이지(Chat, Graph) POC 작성
-    * Streamlit vs Next.js 기능/공수 비교 보고서
-
-* [/] **Spec 066: Admin UI/UX Improvements** (High)
+* [/] **Spec 063: Admin UI/UX Improvements** (High)
   * **Goal**: Graph Explorer/Playground UX 개선 및 Verification Lab 재설계.
   * **Current State**: Partial Implementation (Graph/Feedback Done, Lab Deferred).
   * **Tasks**:
     * **Graph Style**: Dark Mode 가시성 개선 (Done).
     * **Feedback**: UI 버튼 연동 (Done).
     * **Verification Lab**: 재설계 및 구현 (Deferred).
+
+* [ ] **Spec 064: RAG Observability Dashboard**
+  * **Goal**: LangFuse/Arize Phoenix 연동, Token Usage/Latency 시각화.
+  * **Current State**: Proposed.
+  * **Tasks**:
+    * **RAG Inspector**: 최근 요청의 단계별(Retrieval -> Rerank -> Generation) 로그 타임라인 뷰 구현
+    * Server-side API Call Logging (Streamlit 한계 극복)
+
+* [ ] **Spec 065: RAG Evaluation System**
+  * **Goal**: 정량적 평가 시스템 구축 (Golden Dataset, Automated Metrics).
+    * **Current State**: Proposed (Replaced Verification Lab).
+
+* [ ] **Spec 066: Frontend Tech Stack Migration Study** (Low)
+  * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿
+  * **Tasks**:
+    * Next.js + ShadcnUI로 핵심 페이지(Chat, Graph) POC 작성
+    * Streamlit vs Next.js 기능/공수 비교 보고서
 
 ---
 
