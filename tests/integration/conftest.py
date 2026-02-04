@@ -53,8 +53,9 @@ def check_infrastructure():
 
 @pytest.fixture(scope="session")
 def api_client():
-    """Session-scoped API Client"""
-    return TestClient(app)
+    """Session-scoped API Client with Lifespan Management"""
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture(scope="session")
