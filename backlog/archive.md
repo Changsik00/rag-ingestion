@@ -262,10 +262,7 @@
 
 * [x] **Spec 049: Local File Ingestion (PDF, TXT, MD)**
   * [x] **Goal**: 로컬 파일 파싱 및 인제스션.
-- [x] **Spec 063: Admin UI/UX Improvements**
-  - **Goal**: Graph Explorer/Playground UX 개선 (Verification Lab은 Spec 065로 이관).
-  - **Outcome**: Graph Edge Visibility Fix, Feedback UI Robustness Fix 완료. Verification Lab은 De-scoped.
-  - **Artifacts**: [Spec](specs/spec-063-frontend-ux-improvements/spec.md), [De-scoping Plan](specs/spec-063-frontend-ux-improvements/descoping_plan.md)
+
 * [x] **Spec 054: Integration Test Infrastructure Improvement** ✅
   * **Goal**: 테스트 신뢰도 향상을 위한 인프라 체크 및 데이터 격리 구조 도입
   * **Summary**: 인프라 상태 자동 감지 fixture 도입 및 테스트 스위트 재위계화 수행.
