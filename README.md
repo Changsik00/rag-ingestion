@@ -9,7 +9,19 @@
 
 ---
 
-## 🧠 Philosophy
+## ⚡ Deployment & Build
+
+### Docker Build Optimization (Spec 059)
+본 프로젝트는 빌드 속도 최적화를 위해 **Base Image**를 사용합니다.
+
+```bash
+# 1. Base Image 빌드 및 전체 서비스 실행 (권장)
+make up
+
+# 2. 개별 실행 시
+make build-base
+docker compose up -d --build
+```
 
 사용자가 "나 이런 책을 쓰고 싶어" 혹은 "이런 서비스를 벤치마킹하고 싶어"라고 한마디만 던져도, 시스템은 다음과 같이 움직입니다.
 
