@@ -18,16 +18,37 @@
 
 ## 🧪 Verification
 
-### Automated Tests
+### 1. Automated Tests (CLI)
+새로 추가된 통합 테스트를 수행하여 Postgres 연결 및 데이터 저장을 검증할 수 있습니다.
 ```bash
+# 통합 테스트 실행
 uv run pytest tests/integration/functional/test_postgres_persistence.py -v
 ```
-**테스트 결과 요약:**
-- ✅ `test_postgres_persistence_flow`: 통과 (Connection, Table Creation, Graph Persistence, Retrieval 검증 완료)
+**예상 결과:**
+- ✅ `test_postgres_persistence_flow`: PASSED
+- DB Table (`checkpoints`, `checkpoint_writes`)에 데이터가 정상적으로 INSERT 조회됨을 확인.
 
-### Manual Verification (Scenarios)
-1. **Docker Health Check**: `docker-compose up -d postgres` 후 5432 포트 정상 Listen 확인.
-2. **Setup**: 앱 실행 시 `lifespan`에서 `await saver.setup()`이 호출되어 테이블(`checkpoints` 등)이 자동 생성됨.
+### 2. Manual Verification (Admin Dashboard)
+실제 백엔드 서버를 띄우고 Admin 페이지에서 검증하는 방법입니다.
+
+1.  **Server Start**:
+    ```bash
+    # Postgres 컨테이너 실행
+    docker-compose up -d postgres
+    
+    # 서버 실행
+    uv run uvicorn app.interfaces.api.main:app --reload
+    ```
+2.  **Admin Dashboard 접속**:
+    - 브라우저에서 Admin URL 접속 (예: `http://localhost:8000/docs` 또는 프론트엔드 대시보드)
+    - **"Trigger Ingestion Job"** (POST `/api/v1/ingest`) API 호출 또는 버튼 클릭.
+3.  **결과 확인**:
+    - Job이 **Successful** 상태로 완료되는지 확인.
+    - 서버 로그에 `LangGraph Adapter: Checkpoints have been reset` 또는 Postgres 관련 에러가 없는지 확인.
+    - (옵션) DB 직접 접속하여 데이터 확인:
+        ```bash
+        docker exec -it rag-postgres psql -U user -d ragdb -c "SELECT count(*) FROM checkpoints;"
+        ```
 
 ## 📦 Files Changed
 
