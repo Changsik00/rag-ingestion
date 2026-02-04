@@ -3,7 +3,6 @@ import asyncio
 import streamlit as st
 
 from admin.utils.di_helper import get_manual_rag_service
-from app.domain.entities.rag import RAGQuery
 
 st.set_page_config(page_title="Verification Lab", page_icon="🧪", layout="wide")
 st.title("🧪 Verification Lab")
@@ -26,8 +25,12 @@ with st.form("verification_form"):
 if submitted:
     async def run_test():
         rag_service = await get_manual_rag_service()
-        query = RAGQuery(question=question, conversation_id=conv_id)
-        return await rag_service.retrieve_and_generate(query)
+        # Spec 063: Call service with correct signature (str, list, etc.)
+        return await rag_service.retrieve_and_generate(
+            query=question, 
+            history=[], 
+            thread_id=conv_id
+        )
 
     with st.spinner("🚀 RAG Pipeline 실행 중... (Retrieval -> Rerank -> Generation)"):
         try:
@@ -52,10 +55,19 @@ if submitted:
 
             # 3. Sources
             with st.expander("📚 참조 문서 (Sources)", expanded=True):
-                if result.sources:
-                    for idx, doc in enumerate(result.sources):
-                        st.markdown(f"**{idx+1}. {doc.title}** (ID: `{doc.id}`)")
-                        st.text(doc.content[:200] + "...")
+            # 3. Sources
+            with st.expander("📚 참조 문서 (Sources)", expanded=True):
+                # Prefer vector_chunks for content
+                if result.vector_chunks:
+                    for idx, chunk in enumerate(result.vector_chunks):
+                        st.markdown(f"**{idx+1}. Chunk {chunk.index}** (Parent ID: `{chunk.parent_id}`)")
+                        st.text(chunk.content[:200] + "..." if len(chunk.content) > 200 else chunk.content)
+                        st.divider()
+                elif result.citations:
+                    for idx, doc in enumerate(result.citations):
+                        title = doc.get("title", "No Title")
+                        doc_id = doc.get("source", "Unknown ID") 
+                        st.markdown(f"**{idx+1}. {title}** (Source: `{doc_id}`)")
                         st.divider()
                 else:
                     st.warning("참조된 문서가 없습니다.")
