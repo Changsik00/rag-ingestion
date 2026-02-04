@@ -49,7 +49,7 @@ async def execute_query(query: dict[str, str], driver: Annotated[Driver, Depends
 
         nodes = []
         for node in graph.nodes:
-            nodes.append({"id": node.element_id, "labels": list(node.labels), "properties": dict(node._properties)})
+            nodes.append({"id": node.element_id, "labels": list(node.labels), "properties": _sanitize_props(dict(node._properties))})
 
         edges = []
         for rel in graph.relationships:
@@ -59,8 +59,21 @@ async def execute_query(query: dict[str, str], driver: Annotated[Driver, Depends
                     "source": rel.start_node.element_id,
                     "target": rel.end_node.element_id,
                     "type": rel.type,
-                    "properties": dict(rel._properties),
+                    "properties": _sanitize_props(dict(rel._properties)),
                 }
             )
 
         return GraphQueryResponse(nodes=nodes, edges=edges)
+
+
+def _sanitize_props(props: dict) -> dict:
+    """Neo4j 전용 타입(DateTime 등)을 JSON 직렬화 가능하도록 변환"""
+    new_props = {}
+    for k, v in props.items():
+        if hasattr(v, "iso_format"):  # DateTime, Date, Time
+            new_props[k] = v.iso_format()
+        elif hasattr(v, "to_iso8601"):  # Duration in some versions?
+            new_props[k] = v.to_iso8601()
+        else:
+            new_props[k] = str(v) if not isinstance(v, (str, int, float, bool, list, dict, type(None))) else v
+    return new_props
