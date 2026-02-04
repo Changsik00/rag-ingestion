@@ -6,45 +6,7 @@
 
 ---
 
-## 🧠 Phase 5: Knowledge Reasoning & Agentic Ecosystem (Completed)
-
-> **목표**: 구축된 그래프 위에서 추론(Reasoning)하고, 외부 도구와 연동하여 자동화된 지식 생산 생태계를 완성한다.
-
-* [x] **Spec 051: Architecture Refinement (Consistency & Cleanliness)** ✅
-* [x] **Spec 052: Clean Architecture Layer Refinement** ✅
-* [x] **Spec 053: API Standardization & Robustness** ✅
-* [x] **Spec 054: Integration Test Infrastructure Improvement** ✅
-  * **Goal**: 통합 테스트 신뢰성 확보를 위한 인프라 감지 및 시드 데이터 픽스처 구축
-  * **Status**: ✅ Completed & Merged
-
----
-
-## ⚡ Phase 6: Performance Optimization & Scalability (Current)
-
-> **목표**: 시스템의 응답 속도, 처리량, 비용 효율성을 극대화하고 대규모 트래픽/데이터를 견딜 수 있는 구조로 최적화한다.
-
-* [x] **Spec 057: Unit Test Restructuring & Stability Upgrade** (Medium)
-  * **Goal**: Clean Architecture 레이어에 맞춘 테스트 구조 재정비 및 실패 테스트(7건) 정상화
-
-* [x] **Spec 058: API Input Validation & Error Handling** (Medium)
-  * **Goal**: 클라이언트/프론트엔드 연동성을 위한 API 견고성 강화
-
-* [x] **Spec 059: Docker Build Optimization** (High)
-  * **Goal**: Docker 빌드 속도 개선을 위한 Base Image 도입 및 의존성 캐싱 최적화
-
-* [ ] **Spec 060: Migrate from SQLite to Postgres Checkpointer** (High) 🔄
-  * **Goal**: 분산 환경 지원 및 동시성 처리를 위해 LangGraph Checkpointer를 SQLite에서 PostgreSQL로 마이그레이션
-
-* [ ] **Spec 061: RAG Session TTL & Cleanup Strategy** (Medium)
-  * **Goal**: 무한히 증가하는 RAG 히스토리(`checkpoints`) 관리를 위한 자동 삭제 정책(TTL) 및 백그라운드 스케줄러 도입
-  * **Tasks**:
-    * Cron/Celery 기반의 주기적 Cleanup Job 구현
-    * `adelete_thread`를 활용한 만료된 세션(예: 30일 경과) 일괄 삭제
-    * Admin UI에 '오래된 데이터 정리' 기능 추가
-
----
-
-## 🖥️ Phase 7: Advanced Admin & Observability
+## 🎨 Phase 7: User Experience & Observability 
 
 > **목표**: Admin 대시보드를 단순 제어 패널에서 "지식 관리 및 분석 플랫폼"으로 격상시킨다.
 
@@ -59,34 +21,33 @@
     * SQL 기반 세션 삭제 로직을 Repository/Service로 이동
     * DTO Mapper 클래스 분리
 
-* [ ] **Spec 063: Admin UI/UX & Feature Review** (High)
-  * **Goal**: 그래프 시각화 스타일 개선, 스크립트 기반 검증 도구(Lab) UI 통합, 사용자 피드백(좋아요/싫어요) 기능 활성화
+* [/] **Spec 063: Admin UI/UX Improvements** (High)
+  * **Goal**: Graph Explorer/Playground UX 개선 및 Verification Lab 재설계.
+  * **Current State**: Partial Implementation (Graph/Feedback Done, Lab Deferred).
   * **Tasks**:
-    * **Verification Lab**: `verify_llm.py` 등을 Streamlit 페이지로 이식
-    * **Graph Style**: Dark Mode 가시성(Color Contrast) 개선 및 저장된 쿼리(Preset) 버그 수정
-    * **Feedback**: UI 버튼과 Backend API 연동
+    * **Graph Style**: Dark Mode 가시성 개선 (Done).
+    * **Feedback**: UI 버튼 연동 (Done).
+    * **Verification Lab**: 재설계 및 구현 (Deferred).
 
-* [ ] **Spec 064: RAG Observability Dashboard** (Medium)
-  * **Goal**: 블랙박스 같은 RAG 내부 동작을 투명하게 시각화 (Trace Viewer)
+* [ ] **Spec 064: RAG Observability Dashboard**
+  * **Goal**: LangFuse/Arize Phoenix 연동, Token Usage/Latency 시각화.
+  * **Current State**: Proposed.
   * **Tasks**:
     * **RAG Inspector**: 최근 요청의 단계별(Retrieval -> Rerank -> Generation) 로그 타임라인 뷰 구현
     * Server-side API Call Logging (Streamlit 한계 극복)
 
-* [ ] **Spec 065: Frontend Tech Stack Migration Study** (Low)
+* [ ] **Spec 065: RAG Evaluation System**
+  * **Goal**: 정량적 평가 시스템 구축 (Golden Dataset, Automated Metrics).
+  * **Current State**: Proposed (Replaced Verification Lab).
+  * **Tasks**:
+    * **Feedback Processor**: `feedback.jsonl`을 분석하여 Golden Dataset으로 변환하는 도구 개발.
+    * **Evaluation Pipeline**: Ragas/DeepEval 연동.
+
+* [ ] **Spec 066: Frontend Tech Stack Migration Study** (Low)
   * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿
   * **Tasks**:
     * Next.js + ShadcnUI로 핵심 페이지(Chat, Graph) POC 작성
-    * 개발 생산성 vs 사용자 경험 Trade-off 분석 보고서 작성
-
----
-
-## 🔮 Phase 8: Future Vision
-
-> **목표**: 장기적인 비전 및 확장 계획
-
-* [ ] **Multi-Model Tiers**: 작업 난이도별 모델 자동 배분 로직
-* [ ] **User Feedback Loop**: 지식 추출 결과에 대한 사용자 피드백 반영 시스템
-* [ ] **HITL Persistence & Notification**: PostgresSaver 도입 및 알림 시스템
+    * Streamlit vs Next.js 기능/공수 비교 보고서
 
 ---
 
@@ -111,3 +72,9 @@
   * 외부 소스 감지 및 자동 수집 트리거
 
 * **[Tech] Metadata Robustness: Custom JSON Encoder**
+
+* **[Tech] Multi-Model Tiers: 작업 난이도별 모델 자동 배분 로직**
+
+* **[Tech] User Feedback Loop: 지식 추출 결과에 대한 사용자 피드백 반영 시스템**
+
+* **[Tech] HITL Persistence & Notification: PostgresSaver 도입 및 알림 시스템**

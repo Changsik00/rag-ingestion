@@ -13,6 +13,7 @@ with st.sidebar:
     st.header("Graph Settings")
     physics = st.checkbox("Enable Physics", value=True)
     directed = st.checkbox("Directed Edges", value=True)
+    dark_mode_graph = st.checkbox("Dark Mode", value=True, help="Toggle for Dark/Light background verification")
 
     config = Config(
         width=1000,
@@ -29,10 +30,14 @@ with col1:
     st.subheader("Query Builder")
 
     # 1. Presets
-    presets = api_client.get("/graph/presets") or {}
+    presets_resp = api_client.get("/graph/presets") or {}
+    presets = presets_resp.get("presets", {})
+    # Default selection key if exists
+    default_key = list(presets.keys())[0] if presets else None
     selected_preset = st.selectbox("📌 Presets", list(presets.keys()))
     if st.button("Load Preset"):
-        st.session_state["cypher_query"] = presets[selected_preset]
+        st.session_state["cypher_input"] = presets[selected_preset]
+        st.rerun()
 
     st.divider()
 
@@ -58,13 +63,19 @@ with col1:
                     query = f"MATCH (n:{entity_type}) RETURN n LIMIT {limit}"
                 else:
                     query = f"MATCH (n:{entity_type})-[r:{relation_type}]->(m) RETURN n, r, m LIMIT {limit}"
-            st.session_state["cypher_query"] = query
+            st.session_state["cypher_input"] = query
+            st.rerun()
 
     st.divider()
 
     # 3. Raw Cypher
+    if "cypher_input" not in st.session_state:
+        st.session_state["cypher_input"] = "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50"
+
     cypher_input = st.text_area(
-        "SQL (Cypher)", value=st.session_state.get("cypher_query", "MATCH (n) RETURN n LIMIT 25"), height=150
+        "SQL (Cypher)",
+        height=150,
+        key="cypher_input"
     )
     run_btn = st.button("🚀 Run Query", type="primary")
 
@@ -95,19 +106,26 @@ with col2:
                         elif "Chunk" in n["labels"]:
                             color = "#DFE6E9"
 
+                        # Color Config
+                        text_color = "white" if dark_mode_graph else "black"
+                        edge_color = "#AAAAAA" if dark_mode_graph else "#333333"
+
                         nodes.append(
                             Node(
                                 id=n["id"],
                                 label=n["properties"].get("name") or n["properties"].get("title") or label,
-                                size=20,
+                                size=25,
                                 color=color,
                                 title=str(n["properties"]),
+                                font={"color": text_color, "size": 14}, 
+                                shadow=True
                             )
                         )
 
                     edges = []
+                    edges = []
                     for e in edge_data:
-                        edges.append(Edge(source=e["source"], target=e["target"], label=e["type"], color="#B2BEC3"))
+                        edges.append(Edge(source=e["source"], target=e["target"], label=e["type"], color=edge_color, font={"color": edge_color, "size": 10}))
 
                     if not nodes:
                         st.warning("No nodes found.")

@@ -275,3 +275,31 @@
 
 * [x] **Spec 056: Semantic Chunking Upgrade** ✅
   * **Goal**: Embedding Similarity 기반 의미 단위 청킹(Semantic Chunking) 구현 및 검색 밀도 향상
+
+---
+
+## 🧠 Phase 6: Performance Optimization & Scalability
+
+* [x] **Spec 057: Unit Test Restructuring & Stability Upgrade**
+  * **Goal**: Clean Architecture 레이어에 맞춘 테스트 구조 재정비 및 실패 테스트(7건) 정상화.
+  * **Status**: ✅ Completed
+
+* [x] **Spec 058: API Input Validation & Error Handling**
+  * **Goal**: 클라이언트/프론트엔드 연동성을 위한 API 견고성 강화.
+  * **Status**: ✅ Completed
+
+* [x] **Spec 059: Docker Build Optimization**
+  * **Goal**: Docker 빌드 속도 개선을 위한 Base Image 도입 및 의존성 캐싱 최적화.
+  * **Status**: ✅ Completed
+
+* [x] **Spec 060: Migrate from SQLite to Postgres Checkpointer**
+  * **Goal**: 분산 환경 지원 및 동시성 처리를 위해 LangGraph Checkpointer를 SQLite에서 PostgreSQL로 마이그레이션.
+  * **Status**: ✅ Completed
+
+* [x] **Spec 061: RAG Session Cleanup & Expiration**
+  * **Goal**: 오래된 RAG 세션을 주기적으로 정리하는 작업.
+  * **Status**: ✅ Completed
+
+* [x] **Spec 062: Refactor RAG API**
+  * **Goal**: Clean Architecture 적용 및 API 리팩토링.
+  * **Status**: ✅ Completed
