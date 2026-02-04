@@ -23,6 +23,15 @@
 
 > **목표**: 시스템의 응답 속도, 처리량, 비용 효율성을 극대화하고 대규모 트래픽/데이터를 견딜 수 있는 구조로 최적화한다.
 
+* [x] **Spec 057: Unit Test Restructuring & Stability Upgrade** (Medium)
+  * **Goal**: Clean Architecture 레이어에 맞춘 테스트 구조 재정비 및 실패 테스트(7건) 정상화
+
+* [x] **Spec 058: API Input Validation & Error Handling** (Medium)
+  * **Goal**: 클라이언트/프론트엔드 연동성을 위한 API 견고성 강화
+
+* [x] **Spec 059: Docker Build Optimization** (High)
+  * **Goal**: Docker 빌드 속도 개선을 위한 Base Image 도입 및 의존성 캐싱 최적화
+
 * [ ] **Spec 060: Migrate from SQLite to Postgres Checkpointer** (High) 🔄
   * **Goal**: 분산 환경 지원 및 동시성 처리를 위해 LangGraph Checkpointer를 SQLite에서 PostgreSQL로 마이그레이션
 
@@ -32,16 +41,6 @@
     * Cron/Celery 기반의 주기적 Cleanup Job 구현
     * `adelete_thread`를 활용한 만료된 세션(예: 30일 경과) 일괄 삭제
     * Admin UI에 '오래된 데이터 정리' 기능 추가
-
-
-* [x] **Spec 057: Unit Test Restructuring & Stability Upgrade** (Medium)
-  * **Goal**: Clean Architecture 레이어에 맞춘 테스트 구조 재정비 및 실패 테스트(7건) 정상화
-
-* [x] **Spec 058: API Input Validation & Error Handling** (Medium)
-  * **Goal**: 클라이언트/프론트엔드 연동성을 위한 API 견고성 강화
-
-* [x] **Spec 059: Docker Build Optimization** (High)
-  * **Goal**: Docker 빌드 속도 개선을 위한 Base Image 도입 및 의존성 캐싱 최적화
 
 ---
 
