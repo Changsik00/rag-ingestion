@@ -18,9 +18,25 @@ class ChunkingConfigDTO(BaseModel):
 
     # Semantic specific
     breakpoint_threshold_type: Literal["percentile", "standard_deviation", "interquartile", "gradient"] = Field(
-        default="percentile", description="Threshold type for semantic splitting"
+        default="percentile",
+        description=(
+            "Method to determine the semantic split point:\n"
+            "- **percentile** (default): Splits at the top X% of differences (relative).\n"
+            "- **standard_deviation**: Splits at outliers > Mean + (Amount * StdDev).\n"
+            "- **interquartile**: Splits at outliers > Q3 + (Amount * IQR).\n"
+            "- **gradient**: Splits where the gradient/slope of difference is high."
+        ),
     )
-    breakpoint_threshold_amount: float = Field(default=90.0, description="Threshold amount for semantic splitting")
+    breakpoint_threshold_amount: float = Field(
+        default=90.0,
+        description=(
+            "Sensitivity threshold based on the selected type:\n"
+            "- **percentile**: The percentile value (e.g., 90.0 means split at top 10% differences).\n"
+            "- **standard_deviation**: The sigma multiplier (e.g., 3.0).\n"
+            "- **interquartile**: The IQR multiplier (e.g., 1.5).\n"
+            "- **gradient**: The slope threshold."
+        ),
+    )
     number_of_chunks: int | None = Field(
         default=None, gt=0, description="Target number of chunks (optional constraint)"
     )
