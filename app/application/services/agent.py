@@ -314,10 +314,10 @@ class ConversationalRAGAgent:
         """
         # Config 설정
         config = {"configurable": {"thread_id": thread_id, "retrieval_config": retrieval_config or {}}}
-        
+
         # Workflow 빌드 및 실행
         workflow = self.build_workflow(checkpointer=checkpointer)
-        
+
         input_state = {
             "messages": [{"role": "user", "content": message}],
             "filters": filters,
@@ -330,7 +330,7 @@ class ConversationalRAGAgent:
         # 상태 및 Next Steps 확인
         next_steps = []
         status = "completed"
-        
+
         if checkpointer:
             snapshot = await workflow.aget_state(config)
             next_steps = snapshot.next
@@ -357,7 +357,7 @@ class ConversationalRAGAgent:
 
         if user_input and user_input != "Approved":
             from langchain_core.messages import HumanMessage
-            
+
             feedback_msg = HumanMessage(content=user_input)
             await workflow.aupdate_state(config, {"messages": [feedback_msg]})
             result = await workflow.ainvoke(None, config=config)
@@ -367,7 +367,7 @@ class ConversationalRAGAgent:
         # 상태 및 Next Steps 확인
         next_steps = []
         status = "completed"
-        
+
         if checkpointer:
             snapshot = await workflow.aget_state(config)
             next_steps = snapshot.next
