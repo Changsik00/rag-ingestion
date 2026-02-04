@@ -77,7 +77,6 @@ services:
       - "8501:8501"
     volumes:
       - ./admin:/app/admin
-      - ./app:/app/app
     depends_on:
       - backend
     environment:
