@@ -38,7 +38,10 @@
 
 * [ ] **Spec 065: RAG Evaluation System**
   * **Goal**: 정량적 평가 시스템 구축 (Golden Dataset, Automated Metrics).
-    * **Current State**: Proposed (Replaced Verification Lab).
+  * **Current State**: Proposed (Replaced Verification Lab).
+  * **Tasks**:
+    * **Feedback Processor**: `feedback.jsonl`을 분석하여 Golden Dataset으로 변환하는 도구 개발.
+    * **Evaluation Pipeline**: Ragas/DeepEval 연동.
 
 * [ ] **Spec 066: Frontend Tech Stack Migration Study** (Low)
   * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿

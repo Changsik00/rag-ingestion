@@ -20,6 +20,7 @@ The "Verification Lab" feature (originally part of Spec 063) is being **de-scope
 **Title**: RAG Evaluation System (Automated & Dataset-driven)
 **Goal**: Build a rigorous evaluation pipeline.
 **Key Features**:
+*   **Feedback Integration**: Parse `feedback.jsonl` to bootstrap the Golden Dataset.
 *   **Golden Dataset Management**: UI to Upload/Manage Q&A pairs (Ground Truth).
 *   **Automated Testing**: Batch run RAG pipeline against the dataset.
 *   **Metrics**: Calculate Relevance, Faithfulness, Retrieval Recall.
