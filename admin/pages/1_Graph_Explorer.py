@@ -32,7 +32,8 @@ with col1:
     presets = api_client.get("/graph/presets") or {}
     selected_preset = st.selectbox("📌 Presets", list(presets.keys()))
     if st.button("Load Preset"):
-        st.session_state["cypher_query"] = presets[selected_preset]
+        st.session_state["cypher_input"] = presets[selected_preset]
+        st.rerun()
 
     st.divider()
 
@@ -58,13 +59,17 @@ with col1:
                     query = f"MATCH (n:{entity_type}) RETURN n LIMIT {limit}"
                 else:
                     query = f"MATCH (n:{entity_type})-[r:{relation_type}]->(m) RETURN n, r, m LIMIT {limit}"
-            st.session_state["cypher_query"] = query
+            st.session_state["cypher_input"] = query
+            st.rerun()
 
     st.divider()
 
     # 3. Raw Cypher
     cypher_input = st.text_area(
-        "SQL (Cypher)", value=st.session_state.get("cypher_query", "MATCH (n) RETURN n LIMIT 25"), height=150
+        "SQL (Cypher)",
+        value=st.session_state.get("cypher_input", "MATCH (n) RETURN n LIMIT 25"),
+        height=150,
+        key="cypher_input"
     )
     run_btn = st.button("🚀 Run Query", type="primary")
 
@@ -99,15 +104,17 @@ with col2:
                             Node(
                                 id=n["id"],
                                 label=n["properties"].get("name") or n["properties"].get("title") or label,
-                                size=20,
+                                size=25,
                                 color=color,
                                 title=str(n["properties"]),
+                                font={"color": "white", "size": 14}, # Dark Mode Visibility
+                                shadow=True
                             )
                         )
 
                     edges = []
                     for e in edge_data:
-                        edges.append(Edge(source=e["source"], target=e["target"], label=e["type"], color="#B2BEC3"))
+                        edges.append(Edge(source=e["source"], target=e["target"], label=e["type"], color="#dcdcdc", font={"color": "#dcdcdc", "size": 10}))
 
                     if not nodes:
                         st.warning("No nodes found.")

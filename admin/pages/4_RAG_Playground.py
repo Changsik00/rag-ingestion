@@ -542,13 +542,13 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "assis
     col1, col2, col3 = st.columns([1, 1, 5])
     with col1:
         if st.button("👍 Good"):
-            api_client.post(
+            if api_client.post(
                 "/rag/feedback", json={"query": last_user_msg, "response": last_bot_msg, "feedback": "positive"}
-            )
-            st.toast("Thanks for your feedback!")
+            ):
+                st.toast("Thanks for your feedback!")
     with col2:
         if st.button("👎 Bad"):
-            api_client.post(
+            if api_client.post(
                 "/rag/feedback", json={"query": last_user_msg, "response": last_bot_msg, "feedback": "negative"}
-            )
-            st.toast("Feedback recorded.")
+            ):
+                st.toast("Feedback recorded.")
