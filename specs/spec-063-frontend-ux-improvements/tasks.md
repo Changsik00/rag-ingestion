@@ -43,8 +43,13 @@
 - [x] Commit: `fix(spec-063): enhance feedback ui robustness`
 
 ### 3-2. Documentation & PR
-- [ ] Walkthrough 작성: `specs/spec-063-frontend-ux-improvements/walkthrough.md`
-- [ ] PR Description 작성: `specs/spec-063-frontend-ux-improvements/pr_description.md`
+- [x] Walkthrough 작성: `specs/spec-063-frontend-ux-improvements/walkthrough.md`
+- [x] Version Bump & Archive: PR Description 작성.
+- [x] Bug Fixes (Post-PR):
+  - [x] `st.text_area` value warning fix.
+  - [x] Graph Preset unwrapping fix.
+  - [x] Graph Edge visibility fix (Dark Mode toggle).
+- [ ] PR URL: [feat(spec-063): admin ui/ux improvements #70](https://github.com/Changsik00/rag-ingestion/pull/70) `specs/spec-063-frontend-ux-improvements/pr_description.md`
 - [ ] Archive Commit: `docs(spec-063): archive walkthrough`
 - [ ] PR Creation: `gh pr create`
 
