@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Annotated, Any, AsyncIterator
 
 from fastapi import Depends
