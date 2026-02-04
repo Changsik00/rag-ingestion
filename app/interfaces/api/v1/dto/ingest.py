@@ -20,21 +20,32 @@ class ChunkingConfigDTO(BaseModel):
     breakpoint_threshold_type: Literal["percentile", "standard_deviation", "interquartile", "gradient"] = Field(
         default="percentile",
         description=(
-            "Method to determine the semantic split point:\n"
-            "- **percentile** (default): Splits at the top X% of differences (relative).\n"
-            "- **standard_deviation**: Splits at outliers > Mean + (Amount * StdDev).\n"
-            "- **interquartile**: Splits at outliers > Q3 + (Amount * IQR).\n"
-            "- **gradient**: Splits where the gradient/slope of difference is high."
+            "문장과 문장 사이의 의미가 얼마나 달라졌을 때 자를지를 결정하는 수학적 기준입니다:\n\n"
+            "1. **percentile** (기본값): '상위 X%만 자르자'\n"
+            "   - 전체 텍스트에서 상대적으로 의미 변화가 가장 큰 상위 구간을 골라냅니다.\n"
+            "   - 텍스트 길이나 내용에 상관없이 일정한 비율로 나누고 싶을 때 유리합니다.\n"
+            "2. **standard_deviation**: '유난히 튀는 구간만 자르자'\n"
+            "   - 평균보다 훨씬 더 큰 차이가 나는 '아웃라이어' 지점을 찾습니다.\n"
+            "   - 의미가 아주 급격하게 변하는 확실한 주제 전환점만 잡고 싶을 때 사용합니다.\n"
+            "3. **interquartile**: '통계적 이상치에서 자르자'\n"
+            "   - Box Plot 방식(IQR)을 사용하여 극단적인 값의 영향을 덜 받으면서 적당히 튀는 지점을 찾습니다.\n"
+            "4. **gradient**: '변화의 속도가 빠를 때 자르자'\n"
+            "   - 차이가 갑자기 커지는(기울기가 가파른) 구간을 예민하게 잡아냅니다."
         ),
     )
     breakpoint_threshold_amount: float = Field(
         default=90.0,
         description=(
-            "Sensitivity threshold based on the selected type:\n"
-            "- **percentile**: The percentile value (e.g., 90.0 means split at top 10% differences).\n"
-            "- **standard_deviation**: The sigma multiplier (e.g., 3.0).\n"
-            "- **interquartile**: The IQR multiplier (e.g., 1.5).\n"
-            "- **gradient**: The slope threshold."
+            "선택한 Type에 대한 임계값(Threshold)입니다:\n\n"
+            "- **percentile**: 백분위수 (기본 90.0). 예: 90 = 상위 10% 지점.\n"
+            "- **standard_deviation**: 표준편차 배수(Sigma). 예: 3.0 = 3시그마.\n"
+            "- **interquartile**: IQR 배수. 예: 1.5 (통계적 이상치 기준).\n"
+            "- **gradient**: 기울기 임계값.\n\n"
+            "💡 **추천 가이드**\n"
+            "- 잘 모르겠다면?: 기본값 **percentile (90.0)**이 가장 무난합니다.\n"
+            "- 청크가 너무 잘게 쪼개지면 -> 값을 올리세요 (예: 95)\n"
+            "- 청크가 너무 크면 -> 값을 내리세요 (예: 80)\n"
+            "- 주제 전환이 확실한 글: **standard_deviation**을 추천합니다."
         ),
     )
     number_of_chunks: int | None = Field(
