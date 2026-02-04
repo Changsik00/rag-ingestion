@@ -40,6 +40,13 @@ class ConversationalRAGAgent:
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
 
+    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
+        self.rag_service = rag_service
+        self.ingestion_service = ingestion_service
+        self.llm = ChatGoogleGenerativeAI(
+            model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=get_settings().GEMINI_API_KEY
+        )
+        
     def _extract_text_content(self, content: Any) -> str:
         """
         Gemini 3.0 Multimodal Response Parsing Helper.
@@ -63,13 +70,6 @@ class ConversationalRAGAgent:
             return "".join(text_parts)
 
         return str(content)
-
-    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
-        self.rag_service = rag_service
-        self.ingestion_service = ingestion_service
-        self.llm = ChatGoogleGenerativeAI(
-            model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=get_settings().GEMINI_API_KEY
-        )
 
     def build_workflow(self, checkpointer: Any = None, interrupt_before: list[str] | None = None):
         """LangGraph 워크플로우를 빌드하고 컴파일합니다."""
