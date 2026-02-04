@@ -29,7 +29,8 @@ with col1:
     st.subheader("Query Builder")
 
     # 1. Presets
-    presets = api_client.get("/graph/presets") or {}
+    presets_resp = api_client.get("/graph/presets") or {}
+    presets = presets_resp.get("presets", {})
     selected_preset = st.selectbox("📌 Presets", list(presets.keys()))
     if st.button("Load Preset"):
         st.session_state["cypher_input"] = presets[selected_preset]
