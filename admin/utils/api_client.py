@@ -17,7 +17,23 @@ class APIClient:
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as e:
-            st.error(f"API Error ({e.response.status_code}): {e.response.text}")
+            # Try to parse standardized ErrorResponse
+            try:
+                error_data = e.response.json()
+                error_code = error_data.get("error_code", "UNKNOWN_ERROR")
+                message = error_data.get("message", e.response.text)
+                details = error_data.get("details")
+
+                error_msg = f"**{error_code}**: {message}"
+                if details:
+                    error_msg += "\n\n**Details:**"
+                    for key, val in details.items():
+                        error_msg += f"\n- `{key}`: {val}"
+
+                st.error(error_msg)
+            except Exception:
+                # Fallback for non-JSON errors
+                st.error(f"API Error ({e.response.status_code}): {e.response.text}")
             return None
         except Exception as e:
             st.error(f"Connection Error: {str(e)}")
