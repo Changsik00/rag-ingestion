@@ -24,6 +24,6 @@
 - [x] 빌드 시간 단축 효과 확인
 
 ## Task 4: Documentation & Cleanup
-- [ ] `README.md` 내 Docker 빌드 가이드 업데이트 (Base Image 관련 내용)
-- [ ] `walkthrough.md` 작성
-- [ ] PR 생성
+- [x] `README.md` 내 Docker 빌드 가이드 업데이트 (Base Image 관련 내용)
+- [x] `walkthrough.md` 작성
+- [x] PR 생성

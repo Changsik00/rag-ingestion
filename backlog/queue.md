@@ -26,8 +26,11 @@
 * [x] **Spec 057: Unit Test Restructuring & Stability Upgrade** (Medium)
   * **Goal**: Clean Architecture 레이어에 맞춘 테스트 구조 재정비 및 실패 테스트(7건) 정상화
 
-* [ ] **Spec 058: API Input Validation & Error Handling** (Medium)
+* [x] **Spec 058: API Input Validation & Error Handling** (Medium)
   * **Goal**: 클라이언트/프론트엔드 연동성을 위한 API 견고성 강화
+
+* [ ] **Spec 059: Docker Build Optimization** (High)
+  * **Goal**: Docker 빌드 속도 개선을 위한 Base Image 도입 및 의존성 캐싱 최적화
 
 ---
 
