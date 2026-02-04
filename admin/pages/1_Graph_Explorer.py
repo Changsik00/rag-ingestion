@@ -32,6 +32,8 @@ with col1:
     # 1. Presets
     presets_resp = api_client.get("/graph/presets") or {}
     presets = presets_resp.get("presets", {})
+    # Default selection key if exists
+    default_key = list(presets.keys())[0] if presets else None
     selected_preset = st.selectbox("📌 Presets", list(presets.keys()))
     if st.button("Load Preset"):
         st.session_state["cypher_input"] = presets[selected_preset]
@@ -68,7 +70,7 @@ with col1:
 
     # 3. Raw Cypher
     if "cypher_input" not in st.session_state:
-        st.session_state["cypher_input"] = "MATCH (n) RETURN n LIMIT 25"
+        st.session_state["cypher_input"] = "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50"
 
     cypher_input = st.text_area(
         "SQL (Cypher)",

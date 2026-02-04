@@ -27,8 +27,8 @@ async def get_presets():
     """자주 사용하는 Cypher 쿼리 프리셋 조회"""
     return GraphPresetResponse(
         presets={
-            "전체 노드 조회 (Limit 50)": "MATCH (n) RETURN n LIMIT 50",
-            "문서-청크 포함 조회": "MATCH (d:Document)-[:HAS_CHUNK]->(c:Chunk) RETURN d, c LIMIT 20",
+            "전체 노드/관계 조회 (Limit 50)": "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50",
+            "문서-청크 포함 조회": "MATCH (d:Document)-[r:HAS_CHUNK]->(c:Chunk) RETURN d, r, c LIMIT 20",
             "사람(Person) 간 관계 조회": "MATCH (p1:Person)-[r]->(p2:Person) RETURN p1, r, p2 LIMIT 50",
             "기술(Technology) 관련 문서": "MATCH (t:Technology)<-[:MENTIONS]-(d:Document) RETURN t, d LIMIT 50",
             "최근 수집된 문서 10건": "MATCH (d:Document) RETURN d ORDER BY d.created_at DESC LIMIT 10",
