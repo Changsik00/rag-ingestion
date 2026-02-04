@@ -1,5 +1,7 @@
 from typing import Any
 
+from langchain_core.messages import AIMessage
+
 from app.application.interfaces.llm import LLMInterface
 from app.domain.value_objects.ingestion_state import (
     IngestionGraphState,
@@ -109,11 +111,8 @@ class IngestionNodes:
         else:
             extracted = self.llm.aextract_metadata(enriched_content)
 
-        # History 업데이트
-        current_history = state.get("steps_history", [])
-        new_history = current_history + ["extract_metadata"]
-
-        return {"metadata": extracted, "steps_history": new_history}
+        # History 업데이트 (MessagesState)
+        return {"metadata": extracted, "messages": [AIMessage(content="Step: extract_metadata")]}
 
     def validate_content(self, state: IngestionGraphState) -> dict[str, Any]:
         """
@@ -127,10 +126,7 @@ class IngestionNodes:
         # If we want to simulate failure, we need a mechanism.
         # But for this task, we focus on the WIRING.
 
-        current_history = state.get("steps_history", [])
-        new_history = current_history + ["validate_content"]
-
-        return {"steps_history": new_history}
+        return {"messages": [AIMessage(content="Step: validate_content")]}
 
     def resolve_logic(self, state: IngestionGraphState) -> dict[str, Any]:
         """
@@ -156,12 +152,11 @@ class IngestionNodes:
         )
         current_attempts = state.get("attempt_history", []) + [new_attempt]
 
-        # 3. Update State
         return {
             "current_strategy": next_strategy,
             "retry_count": current_retry + 1,
             "attempt_history": current_attempts,
-            "steps_history": state.get("steps_history", []) + ["resolve_logic"],
+            "messages": [AIMessage(content="Step: resolve_logic")],
         }
 
     def human_review(self, state: IngestionGraphState) -> dict[str, Any]:
@@ -175,7 +170,7 @@ class IngestionNodes:
         사용자가 update_state를 통해 상태를 수정한 후 resume하면
         이 노드가 실행되고(pass), 그 다음 노드(resolve_logic)로 넘어갑니다.
         """
-        return {"steps_history": state.get("steps_history", []) + ["human_review"]}
+        return {"messages": [AIMessage(content="Step: human_review")]}
 
     def analyze_failure(self, state: IngestionGraphState) -> dict[str, Any]:
         """
@@ -232,7 +227,7 @@ class IngestionNodes:
 
         return {
             "backtracking_context": new_context,
-            "steps_history": state.get("steps_history", []) + ["analyze_failure"],
+            "messages": [AIMessage(content="Step: analyze_failure")],
         }
 
 

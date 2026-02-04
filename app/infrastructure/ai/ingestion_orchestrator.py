@@ -50,7 +50,7 @@ class IngestionOrchestrator:
             "original_url": "",  # Optional, not used in extraction logic yet
             "raw_content": text,
             "metadata": None,
-            "steps_history": [],
+            "messages": [],
             "error": None,
             "retry_count": 0,
         }
@@ -108,22 +108,34 @@ class IngestionOrchestrator:
         return threads
 
     async def reset_checkpoints(self):
-        """Reset the checkpointer (SQLite) by clearing all state data."""
-        from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+        """Reset the checkpointer (Postgres) by clearing all state data."""
+        from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
-        if self.graph.checkpointer and isinstance(self.graph.checkpointer, AsyncSqliteSaver):
+        if self.graph.checkpointer and isinstance(self.graph.checkpointer, AsyncPostgresSaver):
             try:
-                # AsyncSqliteSaver has .conn attribute which is aiosqlite connection
-                async with self.graph.checkpointer.conn.execute("DELETE FROM checkpoints") as _:
-                    pass
-                async with self.graph.checkpointer.conn.execute("DELETE FROM checkpoint_blobs") as _:
-                    pass
-                async with self.graph.checkpointer.conn.execute("DELETE FROM checkpoint_writes") as _:
-                    pass
+                # AsyncPostgresSaver has .conn (AsyncConnection)
+                # Use TRUNCATE for faster full cleanup
+                await self.graph.checkpointer.conn.execute(
+                    "TRUNCATE checkpoints, checkpoint_blobs, checkpoint_writes RESTART IDENTITY CASCADE;"
+                )
                 await self.graph.checkpointer.conn.commit()
-                logger.warning("LangGraph Adapter: Checkpoints have been reset (SQLite tables cleared).")
+                logger.warning("LangGraph Adapter: Checkpoints have been reset (Postgres tables truncated).")
             except Exception as e:
                 logger.error(f"Failed to reset LangGraph checkpoints: {e}")
-                # Don't raise, just log. It might be empty or locked.
+                # Don't raise, just log.
         else:
-            logger.info("LangGraph Adapter: No AsyncSqliteSaver checkpointer found to reset.")
+            logger.info("LangGraph Adapter: No AsyncPostgresSaver checkpointer found to reset.")
+
+    async def cleanup_thread(self, thread_id: str) -> None:
+        """
+        Delete session history for a specific thread.
+        Crucial for preventing infinite DB growth.
+        """
+        if self.graph.checkpointer and hasattr(self.graph.checkpointer, "adelete_thread"):
+            try:
+                await self.graph.checkpointer.adelete_thread(thread_id)
+                logger.info(f"Cleanup: History for thread {thread_id} deleted.")
+            except Exception as e:
+                logger.error(f"Cleanup failed for thread {thread_id}: {e}")
+        else:
+            logger.debug(f"Cleanup skipped for thread {thread_id} (No checkpointer support).")

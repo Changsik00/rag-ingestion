@@ -432,9 +432,7 @@ class TestRAGNodesFallback:
 
         # Given
         entities = ["Elon Musk", "Twitter"]
-        user_intent = UserIntent(
-            intent=IntentType.GENERAL_QUERY, targets=[], entities=entities, reasoning="Test"
-        )
+        user_intent = UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], entities=entities, reasoning="Test")
 
         state = {
             "query": "Elon and Twitter?",
@@ -447,9 +445,7 @@ class TestRAGNodesFallback:
         }
 
         # Mock repositories
-        mock_repositories["neo4j_graph"].find_shortest_path.return_value = [
-            {"source": "A", "rel": "B", "target": "C"}
-        ]
+        mock_repositories["neo4j_graph"].find_shortest_path.return_value = [{"source": "A", "rel": "B", "target": "C"}]
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -497,9 +493,7 @@ class TestRAGNodesFallback:
         }
 
         # Mock repositories
-        mock_repositories["neo4j_graph"].get_subgraph.return_value = [
-            {"source": "X", "rel": "Y", "target": "Z"}
-        ]
+        mock_repositories["neo4j_graph"].get_subgraph.return_value = [{"source": "X", "rel": "Y", "target": "Z"}]
 
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
@@ -514,9 +508,7 @@ class TestRAGNodesFallback:
         new_state = await nodes.retrieve_hybrid(state, config=mock_config)
 
         # Then
-        mock_repositories["neo4j_graph"].get_subgraph.assert_called_once_with(
-            ["Rewritten General question?"]
-        )
+        mock_repositories["neo4j_graph"].get_subgraph.assert_called_once_with(["Rewritten General question?"])
         assert len(new_state["graph_data"]) == 1
 
     @pytest.mark.asyncio
@@ -536,9 +528,7 @@ class TestRAGNodesFallback:
         from app.infrastructure.ai.rag_nodes import RAGNodes
 
         # 1. Vector Strategy
-        vector_config = {
-            "configurable": {"retrieval_config": {"search_strategy": "vector", "top_k": 5}}
-        }
+        vector_config = {"configurable": {"retrieval_config": {"search_strategy": "vector", "top_k": 5}}}
         nodes = RAGNodes(
             neo4j_doc_repo=mock_repositories["neo4j_doc"],
             neo4j_graph_repo=mock_repositories["neo4j_graph"],
@@ -570,9 +560,7 @@ class TestRAGNodesFallback:
         mock_repositories["neo4j_graph"].get_subgraph.reset_mock()
 
         # 2. Graph Strategy
-        graph_config = {
-            "configurable": {"retrieval_config": {"search_strategy": "graph", "top_k": 5}}
-        }
+        graph_config = {"configurable": {"retrieval_config": {"search_strategy": "graph", "top_k": 5}}}
         await nodes.retrieve_hybrid(state, config=graph_config)
 
         # Graph만 호출되어야 함

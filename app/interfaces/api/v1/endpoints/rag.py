@@ -164,9 +164,13 @@ async def resume_session(
 @router.post("/sessions/{id}/reset", response_model=BaseResponse)
 async def reset_session(id: str, checkpointer=Depends(get_checkpointer)):
     """세션 상태 초기화"""
-    # SQLiteSaver 에서 해당 thread_id 데이터 삭제 로직 (Best effort)
-    # Placeholder implementation
-    return BaseResponse(message=f"Session {id} reset requested")
+    # [Spec 060] AsyncPostgresSaver의 adelete_thread 사용
+    if hasattr(checkpointer, "adelete_thread"):
+        await checkpointer.adelete_thread(id)
+        await checkpointer.adelete_thread(id)
+        return BaseResponse(message=f"Session {id} reset successfully (History Deleted).")
+
+    return BaseResponse(message=f"Session {id} reset requested (Not Supported by Checkpointer).")
 
 
 @router.get("/threads", response_model=list[ThreadResponse])

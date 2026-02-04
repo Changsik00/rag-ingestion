@@ -1,8 +1,9 @@
+from collections.abc import AsyncIterator
 from functools import lru_cache
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import Depends
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from neo4j import Driver, GraphDatabase
 
 from app.application.interfaces.scraper import ScraperInterface
@@ -12,6 +13,7 @@ from app.application.services.ingestion import Ingestion
 from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
 from app.application.services.semantic_extractor import SemanticExtractor
+from app.core import database
 from app.core.config import get_settings
 from app.domain.interfaces.chunker import Chunker
 from app.domain.interfaces.document_repository import DocumentRepository
@@ -73,47 +75,22 @@ def get_job_repository(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> 
 # Deleted get_storage_integrity_service
 
 
-# Checkpointer 의존성 (HITL Persistence)
-_checkpointer_instance: AsyncSqliteSaver | None = None
-_checkpointer_conn: Any = None
-_creation_loop: Any = None
+# Checkpointer 의존성 (LangGraph State Persistence) - Spec 060: Postgres
+async def get_checkpointer() -> AsyncIterator[AsyncPostgresSaver]:
+    if not database.pool:
+        # DB Pool이 초기화되지 않은 경우 (예: 테스트 등) 실패
+        raise RuntimeError("Database pool has not been initialized. Check lifespan handler.")
 
-
-async def get_checkpointer() -> AsyncSqliteSaver:
-    global _checkpointer_instance, _checkpointer_conn, _creation_loop
-    import asyncio
-
-    try:
-        current_loop = asyncio.get_running_loop()
-    except RuntimeError:
-        current_loop = None
-
-    if _checkpointer_instance is None or (current_loop and _creation_loop != current_loop):
-        import aiosqlite
-
-        # 이전 연결이 있고 루프가 바뀌었다면 닫기 시도 (Best effort)
-        if _checkpointer_conn and _creation_loop != current_loop:
-            try:
-                # 주의: 다른 루프의 연결을 현재 루프에서 닫는 것이 실패할 수 있음
-                pass
-            except Exception:
-                pass
-
-        # 싱글톤 연결 생성 (루프별)
-        _checkpointer_conn = await aiosqlite.connect("checkpoints.sqlite")
-        # WAL 모드 활성화로 멀티 프로세스 동시성 향상
-        await _checkpointer_conn.execute("PRAGMA journal_mode=WAL;")
-        _checkpointer_instance = AsyncSqliteSaver(_checkpointer_conn)
-        # 테이블 생성 등 초기화 작업 수행
-        await _checkpointer_instance.setup()
-        _creation_loop = current_loop
-
-    return _checkpointer_instance
+    async with database.pool.connection() as conn:
+        checkpointer = AsyncPostgresSaver(conn)
+        # setup()은 lifespan에서 수행하므로 생략 가능, 혹은 안전을 위해 다시 호출 (idempotent)
+        # 여기서는 바로 반환
+        yield checkpointer
 
 
 # Semantic Extractor 의존성 (LLM 기반 메타데이터 추출)
 async def get_semantic_extractor(
-    checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
+    checkpointer: Annotated[AsyncPostgresSaver, Depends(get_checkpointer)],
 ) -> SemanticExtractor:
     llm_adapter = LLMFactory.get_llm_adapter()  # LangChainExtractor를 반환
     # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
@@ -211,7 +188,7 @@ def get_rag_graph_builder(nodes=Depends(get_rag_nodes)):
 # RAG Service 의존성 (Spec 033: LangGraph 기반)
 async def get_rag_service(
     graph_builder=Depends(get_rag_graph_builder),
-    checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)] = None,
+    checkpointer: Annotated[AsyncPostgresSaver, Depends(get_checkpointer)] = None,
 ) -> RAG:
     # Build Graph with Checkpointer
     compiled_graph = graph_builder.build(checkpointer=checkpointer)
@@ -236,7 +213,7 @@ def get_feedback_service() -> Feedback:
 # Integrity Service 의존성 (Spec 042)
 async def get_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
-    checkpointer: Annotated[AsyncSqliteSaver, Depends(get_checkpointer)],
+    checkpointer: Annotated[AsyncPostgresSaver, Depends(get_checkpointer)],
     chroma_storage: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ) -> Integrity:
     from app.application.services.integrity import Integrity

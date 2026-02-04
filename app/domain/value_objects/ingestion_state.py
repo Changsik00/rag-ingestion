@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Literal, TypedDict
 
+from langgraph.graph import MessagesState
 from pydantic import BaseModel, Field
 
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
@@ -75,16 +76,16 @@ class BacktrackingContext(TypedDict):
     decision_trace: list[DecisionTrace]
 
 
-class IngestionGraphState(TypedDict):
+class IngestionGraphState(MessagesState):
     """
     Ingestion Pipeline의 전체 상태를 관리하는 TypedDict.
-    모든 Graph Node는 이 상태를 공유하고 필요한 필드를 업데이트합니다.
+    MessagesState를 상속받아 'messages' 필드를 포함하며, add_messages reducer가 적용됨.
     """
 
     original_url: str
     raw_content: str
     metadata: ExtractedMetadata | None
-    steps_history: list[str]
+    # steps_history removed in favor of messages
 
     # Reflexion & Logic Resolver State
     error: str | None

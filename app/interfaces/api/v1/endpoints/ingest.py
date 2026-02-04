@@ -15,13 +15,14 @@ from app.interfaces.api.v1.dto.ingest import (
 router = APIRouter(prefix="/ingest", tags=["Ingest"])
 
 
-@router.post("/web", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
+@router.post("", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
 async def ingest_web_page(
     request: IngestRequest,
     background_tasks: BackgroundTasks,
     service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ):
-    job = service.create_job(str(request.url), chunking_config=request.chunking_config)
+    chunk_config_dict = request.chunking_config.model_dump() if request.chunking_config else None
+    job = service.create_job(str(request.url), chunking_config=chunk_config_dict)
     background_tasks.add_task(service.process_job, job.job_id)
     return AsyncIngestResponse(job_id=job.job_id, current_status=job.status)
 
