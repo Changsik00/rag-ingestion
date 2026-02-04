@@ -21,13 +21,18 @@
     * SQL 기반 세션 삭제 로직을 Repository/Service로 이동
     * DTO Mapper 클래스 분리
 
-* [ ] **Spec 064: RAG Observability Dashboard** (Medium)
-  * **Goal**: 블랙박스 같은 RAG 내부 동작을 투명하게 시각화 (Trace Viewer)
+* [ ] **Spec 064: RAG Observability Dashboard**
+  * **Goal**: LangFuse/Arize Phoenix 연동, Token Usage/Latency 시각화.
+  * **Current State**: Proposed.
   * **Tasks**:
     * **RAG Inspector**: 최근 요청의 단계별(Retrieval -> Rerank -> Generation) 로그 타임라인 뷰 구현
     * Server-side API Call Logging (Streamlit 한계 극복)
 
-* [ ] **Spec 065: Frontend Tech Stack Migration Study** (Low)
+* [ ] **Spec 065: RAG Evaluation System**
+  * **Goal**: 정량적 평가 시스템 구축 (Golden Dataset, Automated Metrics).
+  * **Current State**: Proposed (Replaced Verification Lab).
+
+* [ ] **Spec 066: Frontend Tech Stack Migration Study** (Low)
   * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿
   * **Tasks**:
     * Next.js + ShadcnUI로 핵심 페이지(Chat, Graph) POC 작성

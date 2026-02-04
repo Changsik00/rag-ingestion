@@ -10,25 +10,6 @@ Admin Dashboard는 현재 기능 중심의 MVP 상태로, 사용자 경험(UX) �
 4.  **User Feedback 연동**: Chat Interface의 좋아요/싫어요 버튼을 백엔드 API와 연동한다.
 
 ## 3. Implementation Details
-
-### 3.1 Verification Lab (New Page)
-- **위치**: `admin/pages/5_Verification_Lab.py` (신규 생성)
-- **기능**:
-    - 질문 입력 폼
-    - RAG Pipeline 실행 버튼
-    - 결과 표시 (Answer, Retrieval Sources, Verification Status)
-    - 기존 `manual_rag_verification.py` 로직 재사용 (Service Layer 호출)
-
-### 3.2 Graph Explorer Improvements
-- **Preset Fix**:
-    - `st.text_area`에 `key` 속성 부여.
-    - Preset 로드 시 `st.session_state`를 직접 업데이트하여 UI 반응성 확보.
-- **Dark Mode Support**:
-    - `agraph` Node 설정에 `font: { color: "white" }` (또는 테마에 따른 동적 색상) 적용.
-    - Node/Edge Color Palette를 Dark/Light 모드 모두에서 잘 보이도록 조정 (e.g., 파스텔 톤 유지하되 명도 조절).
-
-### 3.3 User Feedback Integration
-- **위치**: `admin/pages/4_RAG_Playground.py` (추정, Chat UI 위치)
 - **API**: `POST /feedback` (User Feedback API가 없다면 신설 필요, 현재 스코프 확인 필요)
     - *Note*: 현재 백엔드에 Feedback API가 있는지 확인 필요. 없다면 Mocking하거나 간단한 로깅으로 구현.
 

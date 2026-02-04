@@ -9,11 +9,9 @@
 
 ---
 
-## Task 1: Verification Lab Implementation
-### 1-1. Create Verification Lab Page
-- [x] 코드 구현: `admin/pages/5_Verification_Lab.py` 생성.
-  - `manual_rag_verification.py` 로직 이식.
-  - Question Input Form, Run Button, Result Display (Answer, Sources).
+## Task 1: Verification Lab Implementation [DE-SCOPED]
+- [x] **Deleted**: `admin/pages/5_Verification_Lab.py` removed.
+- [x] **Rationale**: 단순 UI 래퍼로 가치가 낮아 정량적 평가 시스템(Spec 065)으로 대체하기로 결정.
 - [x] Manual Verification: Admin 실행 후 페이지 동작 확인.
 - [x] Commit: `feat(spec-063): add verification lab page`
 
