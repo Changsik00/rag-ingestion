@@ -436,8 +436,11 @@ class RAGNodes:
         # Format Context
         context_str, mapped_chunks = self._merge_and_format_context(target_chunks, [], graph_data)
 
-        # Spec 055: Conditional Strictness
+        # [Spec 055] Conditional Strictness & Relaxed Mode
         strict_rag_instruction = ""
+        primary_source_instruction = "Answer the question using ONLY the provided Context (DB) as your primary source."
+        internal_knowledge_rule = "4. INTERNAL KNOWLEDGE LIMITATION: Use your internal knowledge ONLY to bridge small gaps or provide basic context (e.g. definitions). Do NOT introduce major facts that are not in the DB if the temperature is 0."
+
         if temperature < 0.1:
             strict_rag_instruction = (
                 "CRITICAL: STRICT RAG MODE ENABLED (Temperature 0).\n"
@@ -446,15 +449,19 @@ class RAGNodes:
                 "3. If context is COMPLETELY blank or totally irrelevant, say 'I cannot find relevant information in the uploaded documents.'\n"
                 "4. DO NOT use your internal knowledge for facts NOT in the context.\n"
             )
+        elif temperature >= 0.5:
+            # Relaxed Mode
+            primary_source_instruction = "Answer the question using the provided Context (DB) as your primary source. If the context is insufficient, you MAY use your internal knowledge to provide a helpful answer."
+            internal_knowledge_rule = "4. INTERNAL KNOWLEDGE ALLOWED: You are encouraged to use your internal knowledge to answer the question if the Provided Context is missing or insufficient. However, still prioritize the Context if it is relevant."
 
         prompt = (
-            "You are a professional AI assistant. Answer the question using ONLY the provided Context (DB) as your primary source.\n\n"
+            f"You are a professional AI assistant. {primary_source_instruction}\n\n"
             f"{strict_rag_instruction}"
             "KNOWLEDGE MIXING RULES:\n"
             "1. PRIORITIZE KNOWLEDGE GRAPH: The 'Graph Facts' section contains high-precision structured relationships. Treat these as the most reliable source of truth.\n"
             "2. PRIORITIZE DOCUMENT CONTEXT: If information is not in the Graph, use 'Document Context'. It MUST be prioritized over your internal knowledge.\n"
             "3. CITATION REQUIREMENT: For every sentence or fact derived from the Document Context, you MUST append the corresponding source ID in brackets, e.g., [1] or [2][3].\n"
-            "4. INTERNAL KNOWLEDGE LIMITATION: Use your internal knowledge ONLY to bridge small gaps or provide basic context (e.g. definitions). Do NOT introduce major facts that are not in the DB if the temperature is 0.\n"
+            f"{internal_knowledge_rule}\n"
             "5. NO CITATION FOR INTERNAL KNOWLEDGE: Do NOT append any brackets or source IDs for information derived from your internal knowledge.\n\n"
             f"Question: {query}\n"
             f"(Rewritten Query for Search): {rewritten_query}\n\n"
