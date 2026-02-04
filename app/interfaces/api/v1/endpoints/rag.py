@@ -167,8 +167,9 @@ async def reset_session(id: str, checkpointer=Depends(get_checkpointer)):
     # [Spec 060] AsyncPostgresSaver의 adelete_thread 사용
     if hasattr(checkpointer, "adelete_thread"):
         await checkpointer.adelete_thread(id)
+        await checkpointer.adelete_thread(id)
         return BaseResponse(message=f"Session {id} reset successfully (History Deleted).")
-    
+
     return BaseResponse(message=f"Session {id} reset requested (Not Supported by Checkpointer).")
 
 
