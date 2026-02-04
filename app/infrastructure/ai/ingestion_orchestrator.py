@@ -125,3 +125,17 @@ class IngestionOrchestrator:
                 # Don't raise, just log.
         else:
             logger.info("LangGraph Adapter: No AsyncPostgresSaver checkpointer found to reset.")
+
+    async def cleanup_thread(self, thread_id: str) -> None:
+        """
+        Delete session history for a specific thread.
+        Crucial for preventing infinite DB growth.
+        """
+        if self.graph.checkpointer and hasattr(self.graph.checkpointer, "adelete_thread"):
+            try:
+                await self.graph.checkpointer.adelete_thread(thread_id)
+                logger.info(f"Cleanup: History for thread {thread_id} deleted.")
+            except Exception as e:
+                logger.error(f"Cleanup failed for thread {thread_id}: {e}")
+        else:
+            logger.debug(f"Cleanup skipped for thread {thread_id} (No checkpointer support).")

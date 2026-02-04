@@ -37,3 +37,8 @@ class SemanticExtractor:
         except Exception as e:
             logger.error(f"Semantic extraction failed: {e}")
             return None
+
+    async def cleanup(self, thread_id: str) -> None:
+        """Delegate cleanup to LLM implementation"""
+        if hasattr(self.llm, "cleanup_thread"):
+            await self.llm.cleanup_thread(thread_id)

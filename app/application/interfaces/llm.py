@@ -26,6 +26,10 @@ class LLMInterface(Protocol):
         """단순 텍스트 생성 (비동기)"""
         ...
 
+    async def cleanup_thread(self, thread_id: str) -> None:
+        """스레드 히스토리 정리 (Cleanup)"""
+        ...
+
 
 class LLMInvoker(Protocol):
     """
