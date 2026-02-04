@@ -40,6 +40,13 @@ class ConversationalRAGAgent:
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
 
+    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
+        self.rag_service = rag_service
+        self.ingestion_service = ingestion_service
+        self.llm = ChatGoogleGenerativeAI(
+            model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=get_settings().GEMINI_API_KEY
+        )
+        
     def _extract_text_content(self, content: Any) -> str:
         """
         Gemini 3.0 Multimodal Response Parsing Helper.
@@ -63,13 +70,6 @@ class ConversationalRAGAgent:
             return "".join(text_parts)
 
         return str(content)
-
-    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
-        self.rag_service = rag_service
-        self.ingestion_service = ingestion_service
-        self.llm = ChatGoogleGenerativeAI(
-            model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=get_settings().GEMINI_API_KEY
-        )
 
     def build_workflow(self, checkpointer: Any = None, interrupt_before: list[str] | None = None):
         """LangGraph 워크플로우를 빌드하고 컴파일합니다."""
@@ -298,4 +298,84 @@ class ConversationalRAGAgent:
             "messages": [AIMessage(content=result.answer)],
             "tool_output": "Search Completed",
             "context_data": context_data,
+        }
+
+    async def ask(
+        self,
+        thread_id: str,
+        message: str,
+        filters: dict | None = None,
+        hitl_enabled: bool = False,
+        retrieval_config: dict | None = None,
+        checkpointer: Any = None,
+    ) -> dict[str, Any]:
+        """
+        사용자 질문을 처리하고 답변을 생성합니다. (LangGraph 실행 캡슐화)
+        """
+        # Config 설정
+        config = {"configurable": {"thread_id": thread_id, "retrieval_config": retrieval_config or {}}}
+
+        # Workflow 빌드 및 실행
+        workflow = self.build_workflow(checkpointer=checkpointer)
+
+        input_state = {
+            "messages": [{"role": "user", "content": message}],
+            "filters": filters,
+            "thread_id": thread_id,
+            "hitl_enabled": hitl_enabled,
+        }
+
+        result = await workflow.ainvoke(input_state, config=config)
+
+        # 상태 및 Next Steps 확인
+        next_steps = []
+        status = "completed"
+
+        if checkpointer:
+            snapshot = await workflow.aget_state(config)
+            next_steps = snapshot.next
+            if next_steps:
+                status = "paused"
+
+        return {
+            "result": result,
+            "status": status,
+            "next_steps": next_steps,
+        }
+
+    async def resume(
+        self,
+        thread_id: str,
+        user_input: str | None,
+        checkpointer: Any = None,
+    ) -> dict[str, Any]:
+        """
+        중단된 세션(HITL)을 재개합니다.
+        """
+        config = {"configurable": {"thread_id": thread_id}}
+        workflow = self.build_workflow(checkpointer=checkpointer)
+
+        if user_input and user_input != "Approved":
+            from langchain_core.messages import HumanMessage
+
+            feedback_msg = HumanMessage(content=user_input)
+            await workflow.aupdate_state(config, {"messages": [feedback_msg]})
+            result = await workflow.ainvoke(None, config=config)
+        else:
+            result = await workflow.ainvoke(None, config=config)
+
+        # 상태 및 Next Steps 확인
+        next_steps = []
+        status = "completed"
+
+        if checkpointer:
+            snapshot = await workflow.aget_state(config)
+            next_steps = snapshot.next
+            if next_steps:
+                status = "paused"
+
+        return {
+            "result": result,
+            "status": status,
+            "next_steps": next_steps,
         }

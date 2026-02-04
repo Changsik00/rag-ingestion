@@ -5,14 +5,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.application.services.agent import ConversationalRAGAgent
 from app.application.services.feedback import Feedback
 from app.domain.interfaces.document_repository import DocumentRepository
+from app.domain.interfaces.session_repository import SessionRepository
 from app.interfaces.api.dependencies import (
     get_checkpointer,
     get_conversational_rag_agent,
     get_feedback_service,
     get_repository,
+    get_session_repository,
 )
 from app.interfaces.api.v1.dto.common import BaseResponse
 from app.interfaces.api.v1.dto.jobs import ThreadResponse
+from app.interfaces.api.v1.dto.mappers import ChatResponseMapper
 from app.interfaces.api.v1.dto.rag import (
     AutocompleteResponse,
     ChatRequest,
@@ -33,33 +36,6 @@ async def autocomplete_documents(
     return [AutocompleteResponse(id=str(d.id), title=d.metadata.title or "Untitled") for d in docs]
 
 
-def map_to_chat_response(result: dict, status: str, next_steps: Any) -> ChatResponse:
-    output_messages = []
-    # result['messages'] might be AIMessage objects or dicts (ainvoke returns dict? output checks msg.type)
-    # The original code: result.get("messages", []) -> msg.type, msg.content
-    # LangGraph returns objects in "messages" usually.
-    # We should handle objects.
-    for msg in result.get("messages", []):
-        role = getattr(msg, "type", "assistant")
-        if role == "human":
-            role = "user"
-        if role in ["ai", "assistant"]:
-            role = "assistant"
-        content = getattr(msg, "content", str(msg))
-        output_messages.append(MessageDTO(role=role, content=content))
-
-    return ChatResponse(
-        current_status=status,
-        messages=output_messages,
-        context_data=result.get("context_data"),
-        intent=result.get("intent"),
-        next=list(next_steps) if next_steps else None,
-        draft_content=result.get("draft_content"),
-        is_clarification=result.get("is_clarification", False),
-        missing_slots=result.get("missing_slots"),
-    )
-
-
 @router.post("/sessions/{id}/ask", response_model=ChatResponse, status_code=status.HTTP_202_ACCEPTED)
 async def ask_agent(
     id: str,
@@ -68,36 +44,22 @@ async def ask_agent(
     checkpointer=Depends(get_checkpointer),
 ):
     """Conversational RAG Agent에게 질문을 던지고 결과를 반환 (HITL 지원 가능)"""
-    message = payload.message
-    filters = payload.filters
-    hitl_enabled = payload.hitl_enabled
-
     # Spec 055: Advanced Settings Extraction
     retrieval_config = payload.advanced_settings.model_dump()
 
-    # LangGraph Workflow 실행
-    # Spec 055: Inject retrieval_config into configurable
-    config = {"configurable": {"thread_id": id, "retrieval_config": retrieval_config}}
-    workflow = agent.build_workflow(checkpointer=checkpointer)
+    # Spec 062: Service Facade Call
+    result_dict = await agent.ask(
+        thread_id=id,
+        message=payload.message,
+        filters=payload.filters,
+        hitl_enabled=payload.hitl_enabled,
+        retrieval_config=retrieval_config,
+        checkpointer=checkpointer,
+    )
 
-    input_state = {
-        "messages": [{"role": "user", "content": message}],
-        "filters": filters,
-        "thread_id": id,
-        "hitl_enabled": hitl_enabled,
-    }
-
-    result = await workflow.ainvoke(input_state, config=config)
-
-    # 상태 확인
-    snapshot = await workflow.aget_state(config)
-    next_steps = snapshot.next
-
-    status = "completed"
-    if next_steps:
-        status = "paused"
-
-    return map_to_chat_response(result, status, next_steps)
+    return ChatResponseMapper.map_graph_output_to_response(
+        result_dict["result"], result_dict["status"], result_dict["next_steps"]
+    )
 
 
 @router.get("/sessions/{id}/trace", response_model=SessionTraceResponse)
@@ -139,53 +101,20 @@ async def resume_session(
     if user_input is None:
         raise HTTPException(status_code=400, detail="Input is required")
 
-    workflow = agent.build_workflow(checkpointer=checkpointer)
-    config = {"configurable": {"thread_id": id}}
+    # Spec 062: Service Facade Call
+    result_dict = await agent.resume(thread_id=id, user_input=user_input, checkpointer=checkpointer)
 
-    if user_input and user_input != "Approved":
-        from langchain_core.messages import HumanMessage
-
-        feedback_msg = HumanMessage(content=user_input)
-        await workflow.aupdate_state(config, {"messages": [feedback_msg]})
-        result = await workflow.ainvoke(None, config=config)
-    else:
-        result = await workflow.ainvoke(None, config=config)
-
-    snapshot = await workflow.aget_state(config)
-    next_steps = snapshot.next
-
-    status = "completed"
-    if next_steps:
-        status = "paused"
-
-    return map_to_chat_response(result, status, next_steps)
+    return ChatResponseMapper.map_graph_output_to_response(
+        result_dict["result"], result_dict["status"], result_dict["next_steps"]
+    )
 
 
 @router.post("/sessions/{id}/reset", response_model=BaseResponse)
-async def reset_session(id: str, checkpointer=Depends(get_checkpointer)):
+async def reset_session(id: str, repository: Annotated[SessionRepository, Depends(get_session_repository)]):
     """세션 상태 초기화"""
-    # [Spec 060] AsyncPostgresSaver의 adelete_thread 사용
-    # [Spec 060] AsyncPostgresSaver의 adelete_thread 사용
-    if hasattr(checkpointer, "adelete_thread"):
-        await checkpointer.adelete_thread(id)
-        return BaseResponse(message=f"Session {id} reset successfully (History Deleted via adelete).")
-
-    # [Spec 061] adelete_thread 미지원 시 SQL 직접 실행 (Fallback)
-    from app.core import database
-
-    if database.pool:
-        async with database.pool.connection() as conn:
-            # LangGraph Postgres Checkpointer Tables
-            # Checkpoints, Writes, Blobs (if any associated with thread)
-            # 순서: Child -> Parent (Writes -> Checkpoints)
-            await conn.execute("DELETE FROM checkpoint_writes WHERE thread_id = %s", (id,))
-            await conn.execute("DELETE FROM checkpoint_blobs WHERE thread_id = %s", (id,))
-            await conn.execute("DELETE FROM checkpoints WHERE thread_id = %s", (id,))
-            await conn.set_autocommit(True) # Ensure commit if not auto
-
-        return BaseResponse(message=f"Session {id} reset successfully (History Deleted via SQL).")
-
-    return BaseResponse(message=f"Session {id} reset requested (Not Supported by Checkpointer and no DB connection).")
+    # Spec 062: Use Repository
+    await repository.delete_session(id)
+    return BaseResponse(message=f"Session {id} reset successfully (History Deleted via Repository).")
 
 
 @router.get("/threads", response_model=list[ThreadResponse])

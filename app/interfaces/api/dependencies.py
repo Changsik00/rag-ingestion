@@ -229,3 +229,13 @@ async def get_integrity_service(
         target_repo=chroma_storage,
         langgraph_adapter=orchestrator,
     )
+
+
+# Session Repository 의존성 (Spec 062)
+def get_session_repository():
+    from app.infrastructure.repositories.postgres_session_repository import PostgresSessionRepository
+
+    if not database.pool:
+        raise RuntimeError("Database pool has not been initialized.")
+
+    return PostgresSessionRepository(database.pool)
