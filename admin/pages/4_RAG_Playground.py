@@ -309,6 +309,28 @@ with st.sidebar:
     st.subheader("📚 Knowledge Source")
     st.caption("Restrict search scope to specific documents")
 
+    # [Spec 061] Session Controls in Sidebar
+    col_new, col_del = st.columns([1, 1])
+    with col_new:
+        if st.button("🔄 New Chat", use_container_width=True):
+            st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
+            st.query_params["thread_id"] = f"playground-{st.session_state.thread_id_seed}"
+            st.session_state.messages = []
+            st.rerun()
+
+    with col_del:
+        if st.button("🗑️ Reset", use_container_width=True, help="Delete history for current thread"):
+            try:
+                api_client.post(f"/rag/sessions/{current_thread_id}/reset")
+                st.session_state.messages = []
+                st.toast("Conversation history deleted.")
+                time.sleep(1)
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to reset: {e}")
+
+    st.divider()
+
     search_term = st.text_input("🔍 Search Documents", placeholder="Enter title or URL...")
 
     with st.spinner("Loading Documents..."):
@@ -389,21 +411,8 @@ with st.sidebar:
 
         st.divider()
 
-        if st.button("🗑️ Delete Thread History", use_container_width=True):
-            try:
-                api_client.post(f"/rag/sessions/{current_thread_id}/reset")
-                st.session_state.messages = []
-                st.toast("Conversation history deleted from server.")
-                time.sleep(1)  # Give toast time to show
-                st.rerun()
-            except Exception as e:
-                st.error(f"Failed to clear history: {e}")
+        st.divider()
 
-        if st.button("🔄 New Conversation (Reset Thread)", use_container_width=True):
-            st.session_state.thread_id_seed = str(uuid.uuid4())[:8]
-            st.query_params["thread_id"] = f"playground-{st.session_state.thread_id_seed}"
-            st.session_state.messages = []
-            st.rerun()
 
         st.divider()
         st.subheader("🚦 HITL Control")

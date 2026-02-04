@@ -165,12 +165,27 @@ async def resume_session(
 async def reset_session(id: str, checkpointer=Depends(get_checkpointer)):
     """세션 상태 초기화"""
     # [Spec 060] AsyncPostgresSaver의 adelete_thread 사용
+    # [Spec 060] AsyncPostgresSaver의 adelete_thread 사용
     if hasattr(checkpointer, "adelete_thread"):
         await checkpointer.adelete_thread(id)
-        await checkpointer.adelete_thread(id)
-        return BaseResponse(message=f"Session {id} reset successfully (History Deleted).")
+        return BaseResponse(message=f"Session {id} reset successfully (History Deleted via adelete).")
 
-    return BaseResponse(message=f"Session {id} reset requested (Not Supported by Checkpointer).")
+    # [Spec 061] adelete_thread 미지원 시 SQL 직접 실행 (Fallback)
+    from app.core import database
+
+    if database.pool:
+        async with database.pool.connection() as conn:
+            # LangGraph Postgres Checkpointer Tables
+            # Checkpoints, Writes, Blobs (if any associated with thread)
+            # 순서: Child -> Parent (Writes -> Checkpoints)
+            await conn.execute("DELETE FROM checkpoint_writes WHERE thread_id = %s", (id,))
+            await conn.execute("DELETE FROM checkpoint_blobs WHERE thread_id = %s", (id,))
+            await conn.execute("DELETE FROM checkpoints WHERE thread_id = %s", (id,))
+            await conn.set_autocommit(True) # Ensure commit if not auto
+
+        return BaseResponse(message=f"Session {id} reset successfully (History Deleted via SQL).")
+
+    return BaseResponse(message=f"Session {id} reset requested (Not Supported by Checkpointer and no DB connection).")
 
 
 @router.get("/threads", response_model=list[ThreadResponse])
