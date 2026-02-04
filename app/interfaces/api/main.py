@@ -14,12 +14,13 @@ from app.interfaces.api.v1.endpoints import router as v1_router
 async def lifespan(app: FastAPI):
     settings = get_settings()
     # initialize pool
-    pool = AsyncConnectionPool(conninfo=settings.POSTGRES_DB_URL, max_size=20)
+    pool = AsyncConnectionPool(conninfo=settings.POSTGRES_DB_URL, max_size=20, open=False)
     database.pool = pool
     await pool.open()
 
     # ensure tables exist
     async with pool.connection() as conn:
+        await conn.set_autocommit(True)
         saver = AsyncPostgresSaver(conn)
         await saver.setup()
 
