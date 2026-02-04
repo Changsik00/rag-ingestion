@@ -232,7 +232,7 @@ async def get_integrity_service(
 
 
 # Session Repository 의존성 (Spec 062)
-def get_session_repository() -> "SessionRepository":
+def get_session_repository():
     from app.infrastructure.repositories.postgres_session_repository import PostgresSessionRepository
 
     if not database.pool:
