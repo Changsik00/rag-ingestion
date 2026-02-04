@@ -15,7 +15,7 @@ from app.interfaces.api.v1.dto.ingest import (
 router = APIRouter(prefix="/ingest", tags=["Ingest"])
 
 
-@router.post("/web", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
+@router.post("", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
 async def ingest_web_page(
     request: IngestRequest,
     background_tasks: BackgroundTasks,
