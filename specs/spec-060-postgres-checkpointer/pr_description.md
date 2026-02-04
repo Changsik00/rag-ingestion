@@ -47,7 +47,7 @@ uv run pytest tests/integration/functional/test_postgres_persistence.py -v
     - 서버 로그에 `LangGraph Adapter: Checkpoints have been reset` 또는 Postgres 관련 에러가 없는지 확인.
     - (옵션) DB 직접 접속하여 데이터 확인:
         ```bash
-        docker exec -it rag-postgres psql -U user -d ragdb -c "SELECT count(*) FROM checkpoints;"
+        docker exec -it rag-postgres psql -U postgres -d checkpoints -c "SELECT count(*) FROM checkpoints;"
         ```
 
 ## 📦 Files Changed
