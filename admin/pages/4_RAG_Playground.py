@@ -465,7 +465,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 
                 context_data = res.get("context_data") or {}
                 intent = res.get("intent", "search")
-                status = res.get("status", "completed")
+                # Fix: Use 'current_status' from ChatResponse to detect paused state correctly
+                status = res.get("current_status", "completed")
 
                 status_container.write(f"🎯 Intent: **{intent.upper()}**")
 
