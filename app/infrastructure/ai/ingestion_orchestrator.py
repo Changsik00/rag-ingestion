@@ -115,7 +115,9 @@ class IngestionOrchestrator:
             try:
                 # AsyncPostgresSaver has .conn (AsyncConnection)
                 # Use TRUNCATE for faster full cleanup
-                await self.graph.checkpointer.conn.execute("TRUNCATE checkpoints, checkpoint_blobs, checkpoint_writes RESTART IDENTITY CASCADE;")
+                await self.graph.checkpointer.conn.execute(
+                    "TRUNCATE checkpoints, checkpoint_blobs, checkpoint_writes RESTART IDENTITY CASCADE;"
+                )
                 await self.graph.checkpointer.conn.commit()
                 logger.warning("LangGraph Adapter: Checkpoints have been reset (Postgres tables truncated).")
             except Exception as e:

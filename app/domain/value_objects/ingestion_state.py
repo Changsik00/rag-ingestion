@@ -87,7 +87,6 @@ class IngestionGraphState(MessagesState):
     metadata: ExtractedMetadata | None
     # steps_history removed in favor of messages
 
-
     # Reflexion & Logic Resolver State
     error: str | None
     retry_count: int

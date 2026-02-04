@@ -1,11 +1,10 @@
+from collections.abc import AsyncIterator
 from functools import lru_cache
-from typing import Annotated, Any, AsyncIterator
+from typing import Annotated
 
 from fastapi import Depends
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from neo4j import Driver, GraphDatabase
-
-from app.core import database
 
 from app.application.interfaces.scraper import ScraperInterface
 from app.application.services.agent import ConversationalRAGAgent
@@ -14,6 +13,7 @@ from app.application.services.ingestion import Ingestion
 from app.application.services.integrity import Integrity
 from app.application.services.rag import RAG
 from app.application.services.semantic_extractor import SemanticExtractor
+from app.core import database
 from app.core.config import get_settings
 from app.domain.interfaces.chunker import Chunker
 from app.domain.interfaces.document_repository import DocumentRepository

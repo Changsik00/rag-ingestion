@@ -35,9 +35,8 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
 
     @property
-    def POSTGRES_DB_URL(self) -> str:
+    def postgres_db_url(self) -> str:
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

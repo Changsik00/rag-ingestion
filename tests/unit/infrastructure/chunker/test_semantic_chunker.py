@@ -1,5 +1,6 @@
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, Mock
 
 from app.domain.entities.document import Document
 from app.domain.value_objects.chunk_config import ChunkingConfig, ChunkingStrategy
@@ -12,7 +13,7 @@ def mock_embeddings():
     with patch("app.infrastructure.chunker.semantic_chunker.GoogleGenerativeAIEmbeddings") as mock:
         # Mock embedding logic: return different vectors for different topics
         mock_instance = mock.return_value
-        
+
         def embed_documents(texts):
             # Simple heuristic: if '사과' (apple) is in text, return one vector, else another
             vectors = []

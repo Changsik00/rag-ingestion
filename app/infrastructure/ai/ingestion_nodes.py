@@ -152,11 +152,8 @@ class IngestionNodes:
         )
         current_attempts = state.get("attempt_history", []) + [new_attempt]
 
-        # 3. Update State
         return {
             "current_strategy": next_strategy,
-            "retry_count": current_retry + 1,
-            "attempt_history": current_attempts,
             "retry_count": current_retry + 1,
             "attempt_history": current_attempts,
             "messages": [AIMessage(content="Step: resolve_logic")],
@@ -229,7 +226,6 @@ class IngestionNodes:
         }
 
         return {
-            "backtracking_context": new_context,
             "backtracking_context": new_context,
             "messages": [AIMessage(content="Step: analyze_failure")],
         }
