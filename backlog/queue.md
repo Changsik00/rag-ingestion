@@ -21,13 +21,6 @@
     * SQL 기반 세션 삭제 로직을 Repository/Service로 이동
     * DTO Mapper 클래스 분리
 
-* [ ] **Spec 063: Admin UI/UX & Feature Review** (High)
-  * **Goal**: 그래프 시각화 스타일 개선, 스크립트 기반 검증 도구(Lab) UI 통합, 사용자 피드백(좋아요/싫어요) 기능 활성화
-  * **Tasks**:
-    * **Verification Lab**: `verify_llm.py` 등을 Streamlit 페이지로 이식
-    * **Graph Style**: Dark Mode 가시성(Color Contrast) 개선 및 저장된 쿼리(Preset) 버그 수정
-    * **Feedback**: UI 버튼과 Backend API 연동
-
 * [ ] **Spec 064: RAG Observability Dashboard** (Medium)
   * **Goal**: 블랙박스 같은 RAG 내부 동작을 투명하게 시각화 (Trace Viewer)
   * **Tasks**:
