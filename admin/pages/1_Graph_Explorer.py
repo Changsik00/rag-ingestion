@@ -115,7 +115,7 @@ with col2:
 
                     edges = []
                     for e in edge_data:
-                        edges.append(Edge(source=e["source"], target=e["target"], label=e["type"], color="#dcdcdc", font={"color": "#dcdcdc", "size": 10}))
+                        edges.append(Edge(source=e["source"], target=e["target"], label=e["type"], color="#555555", font={"color": "#555555", "size": 10}))
 
                     if not nodes:
                         st.warning("No nodes found.")
