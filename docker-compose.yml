@@ -55,9 +55,18 @@ services:
       - CHROMA_HOST=rag-chroma
       - CHROMA_PORT=8000
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-checkpoints}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
     depends_on:
-      - neo4j
-      - chromadb
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_started
+      chromadb:
+        condition: service_started
 
   streamlit:
     build:
