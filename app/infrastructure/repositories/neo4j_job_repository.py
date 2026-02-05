@@ -94,17 +94,41 @@ class Neo4jJobRepository(JobRepository):
         """
         return self._fetch_single_job(query, job_id=job_id)
 
-    def find_last_job_by_source(self, source_url: str, exclude_job_id: str | None = None) -> IngestionJob | None:
+    def find_last_job_by_source(
+        self, 
+        source_url: str, 
+        exclude_job_id: str | None = None,
+        statuses: list[str] | None = None
+    ) -> IngestionJob | None:
         query = """
         MATCH (j:IngestionJob {source_url: $source_url})
-        WHERE j.job_id <> $exclude_job_id
+        WHERE (j.job_id <> $exclude_job_id OR $exclude_job_id IS NULL)
+          AND ($statuses IS NULL OR j.status IN $statuses)
         RETURN j
         ORDER BY j.created_at DESC
         LIMIT 1
         """
-        # Note: If exclude_job_id is None, skip it or handle in Cypher.
-        # But we always have a job_id when calling from IngestionService.
-        return self._fetch_single_job(query, source_url=source_url, exclude_job_id=exclude_job_id)
+    def find_last_job_by_metadata(
+        self, 
+        key: str, 
+        value: str, 
+        statuses: list[str] | None = None
+    ) -> IngestionJob | None:
+        # Since we store custom_metadata as JSON string, we use CONTAINS or a regex 
+        # for a simple key:value check. Ideally, we'd use Neo4j 5.x dynamic properties,
+        # but for now, this'll do.
+        import json
+        pattern = f'"{key}": {json.dumps(value)}'
+        
+        query = f"""
+        MATCH (j:IngestionJob)
+        WHERE j.custom_metadata CONTAINS $pattern
+          AND ($statuses IS NULL OR j.status IN $statuses)
+        RETURN j
+        ORDER BY j.created_at DESC
+        LIMIT 1
+        """
+        return self._fetch_single_job(query, pattern=pattern, statuses=statuses)
 
     def list_jobs(self, limit: int = 50) -> list[IngestionJob]:
         query = """

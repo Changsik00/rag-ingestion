@@ -29,12 +29,13 @@ class IDCheckingStrategy(DeduplicationStrategy):
 
     async def is_duplicate(self, job: IngestionJob) -> bool:
         # 1. Get the last job for this source, excluding the current job
-        if not hasattr(self.job_repository, "find_last_job_by_source"):
-            return False
-
-        last_job = self.job_repository.find_last_job_by_source(
-            job.source_url, exclude_job_id=job.job_id
-        )
+        last_job = None
+        if hasattr(self.job_repository, "find_last_job_by_source"):
+            last_job = self.job_repository.find_last_job_by_source(
+                job.source_url,
+                exclude_job_id=job.job_id,
+                statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
+            )
 
         if last_job and last_job.status in [JobStatus.COMPLETED, JobStatus.RUNNING]:
             logger.info(f"Duplicate detected via ID Checking Strategy (Status: {last_job.status})")
@@ -59,7 +60,9 @@ class MetadataCheckStrategy(DeduplicationStrategy):
             return False
 
         last_job = self.job_repository.find_last_job_by_source(
-            job.source_url, exclude_job_id=job.job_id
+            job.source_url, 
+            exclude_job_id=job.job_id,
+            statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
         )
 
         if not last_job:
@@ -106,7 +109,9 @@ class TTLStrategy(DeduplicationStrategy):
             return False
 
         last_job = self.job_repository.find_last_job_by_source(
-            job.source_url, exclude_job_id=job.job_id
+            job.source_url, 
+            exclude_job_id=job.job_id,
+            statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
         )
 
         if not last_job:
@@ -143,7 +148,9 @@ class ContentsStrategy(DeduplicationStrategy):
             return False
 
         last_job = self.job_repository.find_last_job_by_source(
-            job.source_url, exclude_job_id=job.job_id
+            job.source_url, 
+            exclude_job_id=job.job_id,
+            statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
         )
 
         if not last_job:

@@ -23,29 +23,22 @@ async def ingest_web_page(
 ):
     chunk_config_dict = request.chunking_config.model_dump() if request.chunking_config else None
 
-    # [Spec 065] Pass force_refresh via custom_metadata
+    # [Spec 065] Extract Metadata for early deduplication check
     custom_metadata = {"force_refresh": request.force_refresh}
-    
-    # Extract Video ID for YouTube if possible
     import re
     if "youtube.com" in str(request.url) or "youtu.be" in str(request.url):
-        # Simple regex for video id
-        # youtube.com/watch?v=VIDEO_ID
-        # youtu.be/VIDEO_ID
-        video_id = None
         match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", str(request.url))
         if match:
-            video_id = match.group(1)
-            custom_metadata["video_id"] = video_id
+            custom_metadata["video_id"] = match.group(1)
 
-    # [Spec 065] Concurrency Check: Don't even create a job if one is already PENDING/RUNNING
+    # [Spec 065] Concurrency & Deduplication Check: Don't even create a job if one is already active/completed
     if not request.force_refresh:
-        existing_job = service.is_already_queued(str(request.url))
+        existing_job = service.is_already_queued(str(request.url), custom_metadata=custom_metadata)
         if existing_job:
             return AsyncIngestResponse(
                 job_id=existing_job.job_id, 
                 current_status=existing_job.status,
-                message=f"Duplicate request. Job {existing_job.job_id} is already in state {existing_job.status}."
+                message=f"Deduplication: Job {existing_job.job_id} is already in state {existing_job.status}."
             )
 
     job = service.create_job(

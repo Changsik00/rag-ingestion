@@ -78,15 +78,29 @@ class Ingestion:
             logger.error(f"Failed to run ingestion: {e}")
             raise BaseAppError(f"Ingestion failed: {e}")
 
-    def is_already_queued(self, url: str) -> IngestionJob | None:
+    def is_already_queued(self, url: str, custom_metadata: dict | None = None) -> IngestionJob | None:
         """
-        Lightweight check to see if a job for this URL is already PENDING or RUNNING.
-        Used by the API to provide immediate feedback.
+        Lightweight check to see if a job for this resource is already active/completed.
+        Checks by URL first, then by unique metadata (like video_id).
         """
-        if hasattr(self.job_repository, "find_last_job_by_source"):
-            last_job = self.job_repository.find_last_job_by_source(url)
-            if last_job and last_job.status in [JobStatus.PENDING, JobStatus.RUNNING]:
-                return last_job
+        if not hasattr(self.job_repository, "find_last_job_by_source"):
+            return None
+
+        relevant_statuses = [JobStatus.PENDING, JobStatus.RUNNING, JobStatus.COMPLETED]
+        
+        # 1. Check by exact URL
+        last_job = self.job_repository.find_last_job_by_source(url, statuses=relevant_statuses)
+        if last_job:
+            return last_job
+
+        # 2. Check by Video ID (YouTube)
+        if custom_metadata and "video_id" in custom_metadata:
+            vid = custom_metadata["video_id"]
+            if hasattr(self.job_repository, "find_last_job_by_metadata"):
+                last_job = self.job_repository.find_last_job_by_metadata("video_id", vid, statuses=relevant_statuses)
+                if last_job:
+                    return last_job
+
         return None
 
     def create_job(
@@ -135,6 +149,8 @@ class Ingestion:
 
             custom_meta = job.custom_metadata or {}
             logger.info(f"Job {job_id} custom_metadata: {custom_meta}")
+            
+            # [Spec 065] Force Refresh check
             is_forced = custom_meta.get("force_refresh") is True
             logger.info(f"Deduplication bypass check: is_forced={is_forced}")
 
