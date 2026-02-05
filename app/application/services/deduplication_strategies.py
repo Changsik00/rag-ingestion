@@ -164,10 +164,12 @@ class DeduplicationFactory:
         if "youtube.com" in source_url or "youtu.be" in source_url:
             return MetadataCheckStrategy(self.job_repository, keys=["video_id"])
 
-        # 2. Files -> Metadata (size, mtime)
+        # 2. Files -> Metadata (size)
+        # Note: 'last_modified' is often missing in web uploads, so we rely on size check.
+        # For stricter check, one might enable ContentsStrategy for files too.
         if source_url.startswith("file://"):
             return MetadataCheckStrategy(
-                self.job_repository, keys=["file_size", "last_modified"]
+                self.job_repository, keys=["file_size"]
             )
 
         # 3. News / Portal -> TTL Strategy (Example implementation)

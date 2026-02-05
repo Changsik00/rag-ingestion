@@ -25,6 +25,18 @@ async def ingest_web_page(
 
     # [Spec 065] Pass force_refresh via custom_metadata
     custom_metadata = {"force_refresh": request.force_refresh}
+    
+    # Extract Video ID for YouTube if possible
+    import re
+    if "youtube.com" in str(request.url) or "youtu.be" in str(request.url):
+        # Simple regex for video id
+        # youtube.com/watch?v=VIDEO_ID
+        # youtu.be/VIDEO_ID
+        video_id = None
+        match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", str(request.url))
+        if match:
+            video_id = match.group(1)
+            custom_metadata["video_id"] = video_id
 
     job = service.create_job(
         str(request.url),
@@ -44,11 +56,40 @@ async def ingest_files(
     """
     Upload multiple local files (PDF, TXT, MD) for ingestion.
     """
+    import hashlib
     job_responses = []
     for file in files:
         content = await file.read()
+        
+        # Calculate Metadata and Hash for Deduplication
+        file_size = len(content)
+        content_hash = hashlib.sha256(content).hexdigest()
+        
+        custom_metadata = {
+            "file_size": file_size,
+            "filename": file.filename
+        }
+        
         # source_url for file ingestion will be the filename for tracking
-        job = service.create_job(url=f"file://{file.filename}", raw_content=content, filename=file.filename)
+        # Ideally, should be careful about name collisions, but for now using filename
+        job = service.create_job(
+            url=f"file://{file.filename}", 
+            raw_content=content, 
+            filename=file.filename,
+            custom_metadata=custom_metadata,
+            # We can also pass content_hash directly if IngestionJob supports it, wait, create_job doesn't take content_hash arg in explicit signature?
+            # Let's check ingestion.py signature. It has custom_metadata.
+            # IngestionJob has content_hash field. We should update create_job to accept it or pass via metadata first?
+            # Ideally create_job should accept content_hash.
+        )
+        # Manually set content_hash on job object before processing? 
+        # Better: create_job signature update is preferred, but for now let's update job object or pass in metadata.
+        # Check ingestion.py: create_job() takes (url, ..., custom_metadata). 
+        # If I want to persist content_hash, I need to update create_job.
+        # For now, let's put it in job object if service returns it.
+        job.content_hash = content_hash
+        service.job_repository.update_job(job) # Persist hash immediately
+        
         background_tasks.add_task(service.process_job, job.job_id)
         job_responses.append(AsyncIngestResponse(job_id=job.job_id, current_status=job.status))
 
