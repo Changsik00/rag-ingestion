@@ -7,9 +7,11 @@ Spec 065는 불필요한 중복 수집을 방지하기 위해 **Logic-Based Dedu
 
 ### 1. Domain & Strategy Pattern
 - **IngestionJob Schema**: `content_hash`, `custom_metadata` 필드 추가.
-- **DeduplicationStrategy**: 추상 클래스 및 구현체 추가.
-    - `MetadataComparisonStrategy`: 특정 Metadata Key(예: `video_id`) 비교.
-    - `ContentHashStrategy`: 본문 Hash 비교.
+- **DeduplicationStrategy**: 추상 클래스 및 4가지 구현체 추가.
+    - `IDCheckingStrategy`: Source URL 기준 중복 체크.
+    - `MetadataCheckStrategy`: 특정 Metadata Key 비교.
+    - `TTLStrategy`: 수집 주기(TTL) 체크.
+    - `ContentsStrategy`: 본문 Hash 비교.
 - **DeduplicationFactory**: Source URL에 따라 적절한 전략을 매핑.
 
 ### 2. Application Integration

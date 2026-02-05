@@ -7,7 +7,11 @@
 이를 해결하기 위해 **Logic-Based Deduplication Strategy**를 도입하여, 데이터 소스의 특성에 따라 메타데이터 비교 또는 콘텐츠 해시 비교를 통해 중복 수집을 방지합니다.
 
 ### 주요 변경 사항
-- [x] **Deduplication Strategy Pattern 구현**: Metadata 비교 및 Content Hash 비교 전략 도입
+- [x] **Deduplication Strategy Pattern 구현**:
+    - `IDCheckingStrategy`: Source URL 존재 여부 확인 (Immutable Resource)
+    - `MetadataCheckStrategy`: 특정 메타데이터 Key 비교 (File, YouTube)
+    - `TTLStrategy`: 수집 주기(TTL) 기반 중복 체크 (News, Portal)
+    - `ContentsStrategy`: 콘텐츠 해시 비교 (General Web)
 - [x] **IngestionJob Schema 개선**: 중복 검사를 위한 `content_hash`, `custom_metadata` 필드 추가
 - [x] **Ingestion Pipeline 통합**: 수집 전 중복 체크 및 Skip 로직 구현
 - [x] **Admin UI 개선**: "Force Refresh" 옵션 추가
