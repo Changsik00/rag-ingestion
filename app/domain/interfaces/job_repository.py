@@ -23,3 +23,8 @@ class JobRepository(ABC):
     def list_jobs(self, limit: int = 50) -> list[IngestionJob]:
         """List recent ingestion jobs."""
         pass
+
+    @abstractmethod
+    def find_last_job_by_source(self, source_url: str) -> IngestionJob | None:
+        """Find the last completed job for a given source URL."""
+        pass

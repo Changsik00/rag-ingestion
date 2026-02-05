@@ -22,11 +22,14 @@ def create_job(
     content_hash: str = None,
     **kwargs
 ):
+    # Handle status from kwargs or default to PENDING
+    status = kwargs.pop("status", JobStatus.PENDING)
+    
     # Simulating the updated IngestionJob entity structure
     job = IngestionJob(
         job_id=job_id,
         source_url=source_url,
-        status=JobStatus.PENDING,
+        status=status,
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
         **kwargs
