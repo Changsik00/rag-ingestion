@@ -10,6 +10,7 @@ class JobStatus(str, Enum):
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
 
 
 class IngestionJob(BaseModel):

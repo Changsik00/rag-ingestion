@@ -77,6 +77,10 @@ class TestIngestionDeduplication:
         
         # Scraper returns dummy result
         mock_components["scraper"].scrape.return_value = Mock(markdown="content", metadata={})
+        # Configure chunker to return a list
+        mock_components["chunker"].chunk_document.return_value = ["chunk1"]
+        # Configure extractor to return None (no semantic data) to avoid generic AsyncMock returning coroutines on attr access
+        mock_components["extractor"].extract.return_value = None
 
         mock_strategy = AsyncMock(spec=DeduplicationStrategy)
         mock_strategy.is_duplicate.return_value = False

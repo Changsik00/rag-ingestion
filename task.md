@@ -27,12 +27,12 @@
 
 ## Task 2: Application Logic Integration
 ### 2-1. TDD Warming up
-- [/] Test Case 작성: `tests/integration/test_ingestion_deduplication.py` (Skip Scenario)
-- [ ] Test 실행 (Fail): `uv run pytest tests/integration/test_ingestion_deduplication.py`
-- [ ] Commit: `test(spec-065): add integration test for duplicate skipping`
+- [x] Test Case 작성: `tests/integration/test_ingestion_deduplication.py` (Skip Scenario)
+- [x] Test 실행 (Fail): `uv run pytest tests/integration/test_ingestion_deduplication.py`
+- [x] Commit: `test(spec-065): add integration test for duplicate skipping`
 
 ### 2-2. Implementation
-- [ ] 코드 구현: `app/application/services/ingestion.py` (Integrate Checker)
+- [/] 코드 구현: `app/application/services/ingestion.py` (Integrate Checker)
 - [ ] Test 실행 (Pass): `uv run pytest tests/integration/test_ingestion_deduplication.py`
 - [ ] Commit: `feat(spec-065): integrate duplicate check into ingestion pipeline`
 
