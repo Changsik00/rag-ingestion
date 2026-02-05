@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from app.application.interfaces.scraper import ScraperInterface
+from app.application.services.deduplication_strategies import DeduplicationFactory
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.exceptions import BaseAppError
 from app.core.logger import setup_logger
@@ -11,7 +12,6 @@ from app.domain.interfaces.chunker import Chunker
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
-from app.application.services.deduplication_strategies import DeduplicationFactory
 
 logger = setup_logger(__name__)
 
@@ -115,19 +115,19 @@ class Ingestion:
             self.job_repository.update_job(job)
 
             # [Spec 065] Deduplication Check
-            # Force Refresh check (assuming force is passed via job metadata or separate flag? 
+            # Force Refresh check (assuming force is passed via job metadata or separate flag?
             # Plan said "Force Refresh" checkbox in Admin. We need to know if it's forced.
             # Let's assume custom_metadata has 'force_refresh': True/False or similar.
             # Or we simply run check and if user wanted force, they wouldn't use this flow?
-            # No, user clicks "Ingest" with "Force" checked. Job created. 
+            # No, user clicks "Ingest" with "Force" checked. Job created.
             # We check if job.custom_metadata.get('force') is True.
-            
+
             is_forced = job.custom_metadata.get("force_refresh") is True if job.custom_metadata else False
-            
+
             if not is_forced:
                 dedup_factory = DeduplicationFactory(self.job_repository)
                 strategy = dedup_factory.get_strategy(job.source_url)
-                
+
                 if await strategy.is_duplicate(job):
                     logger.info(f"Job {job_id} skipped due to duplication detection.")
                     job.status = JobStatus.SKIPPED

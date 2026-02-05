@@ -46,7 +46,7 @@ class ConversationalRAGAgent:
         self.llm = ChatGoogleGenerativeAI(
             model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=get_settings().GEMINI_API_KEY
         )
-        
+
     def _extract_text_content(self, content: Any) -> str:
         """
         Gemini 3.0 Multimodal Response Parsing Helper.

@@ -15,19 +15,19 @@ from app.interfaces.api.v1.dto.ingest import (
 router = APIRouter(prefix="/ingest", tags=["Ingest"])
 
 
-@router.post("", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
+@router.post("/web", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
 async def ingest_web_page(
     request: IngestRequest,
     background_tasks: BackgroundTasks,
     service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ):
     chunk_config_dict = request.chunking_config.model_dump() if request.chunking_config else None
-    
+
     # [Spec 065] Pass force_refresh via custom_metadata
     custom_metadata = {"force_refresh": request.force_refresh}
-    
+
     job = service.create_job(
-        str(request.url), 
+        str(request.url),
         chunking_config=chunk_config_dict,
         custom_metadata=custom_metadata
     )
