@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import List
+from datetime import datetime, timezone, timedelta
 
+from app.core.logger import setup_logger
 from app.domain.entities.job import IngestionJob, JobStatus
 from app.domain.interfaces.job_repository import JobRepository
-from app.core.logger import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -20,84 +20,125 @@ class DeduplicationStrategy(ABC):
         pass
 
 
-class MetadataComparisonStrategy(DeduplicationStrategy):
+class IDCheckingStrategy(DeduplicationStrategy):
     """
-    Checks for duplication by comparing specific metadata keys.
-    Useful for Source Types where metadata is reliable (e.g., YouTube video_id, Local File size/mtime).
+    Checks for duplication by Source ID (URL).
+    If a completed job exists for this Source URL, it is considered a duplicate.
+    Useful for immutable resources or 'ingest once' policies.
     """
 
-    def __init__(self, job_repository: JobRepository, keys: List[str]):
+    async def is_duplicate(self, job: IngestionJob) -> bool:
+        # 1. Get the last successful job for this source
+        last_job = None
+        if hasattr(self.job_repository, "find_last_job_by_source"):
+            last_job = self.job_repository.find_last_job_by_source(job.source_url)
+
+        if last_job and last_job.status == JobStatus.COMPLETED:
+            logger.info("Duplicate detected via ID Checking Strategy (Source URL exists)")
+            return True
+
+        return False
+
+
+class MetadataCheckStrategy(DeduplicationStrategy):
+    """
+    Checks for duplication by comparing specific metadata keys.
+    Useful for Files (size, mtime) or YouTube (video_id).
+    """
+
+    def __init__(self, job_repository: JobRepository, keys: list[str]):
         super().__init__(job_repository)
         self.keys = keys
 
     async def is_duplicate(self, job: IngestionJob) -> bool:
         if not self.keys:
-            logger.warning("MetadataComparisonStrategy initialized with no keys. Returning False.")
+            logger.warning(
+                "MetadataCheckStrategy initialized with no keys. Returning False."
+            )
             return False
 
-        # 1. Get the last successful job for this source
-        last_job = self.job_repository.get_job_by_source(job.source_url)
-        # Note: Ideally repository should support finding 'last successful job'.
-        # Assuming get_job_by_source returns the most recent one or we need a new method.
-        # For now, let's assume we fetch the job and check its status and metadata.
-        # If get_job_by_source is not enough, we might need to extend the repository interface.
-        # Let's use `find_last_job_by_source` as used in the test.
-        
-        # Check if the method exists on the repository (it might need to be added to interface)
+        last_job = None
         if hasattr(self.job_repository, "find_last_job_by_source"):
-             last_job = self.job_repository.find_last_job_by_source(job.source_url)
-        else:
-            # Fallback for now if repo update is pending or mocked differently in real app
-            # But the plan says we should update Infrastructure.
-            pass
+            last_job = self.job_repository.find_last_job_by_source(job.source_url)
 
         if not last_job or last_job.status != JobStatus.COMPLETED:
             return False
 
-        # 2. Compare Metadata
+        # Compare Metadata
         current_meta = job.custom_metadata or {}
         last_meta = last_job.custom_metadata or {}
 
         for key in self.keys:
             current_val = current_meta.get(key)
             last_val = last_meta.get(key)
-            
+
             if current_val is None:
-                logger.debug(f"Metadata key '{key}' missing in current job. Cannot determine duplicate.")
+                # Key missing in current job, cannot verify duplication safely
                 return False
-                
+
             if current_val != last_val:
-                logger.debug(f"Metadata mismatch for key '{key}': {current_val} != {last_val}")
+                # Mismatch found
                 return False
 
         logger.info(f"Duplicate detected via Metadata Strategy (Keys: {self.keys})")
         return True
 
 
-class ContentHashStrategy(DeduplicationStrategy):
+class TTLStrategy(DeduplicationStrategy):
     """
-    Checks for duplication by comparing content hashes.
-    Useful for Web Pages or Unstructured Text where metadata is unreliable.
+    Checks for duplication based on Time-To-Live (TTL).
+    If the last ingestion was recent (within TTL), it is considered a duplicate (skip).
+    Useful for News, periodically updated pages.
     """
+
+    def __init__(self, job_repository: JobRepository, ttl_hours: int = 24):
+        super().__init__(job_repository)
+        self.ttl_hours = ttl_hours
 
     async def is_duplicate(self, job: IngestionJob) -> bool:
-        if not job.content_hash:
-            logger.warning("ContentHashStrategy: Job has no content_hash. Cannot determine duplicate.")
-            return False
-
-        # 1. Get the last successful job
         last_job = None
         if hasattr(self.job_repository, "find_last_job_by_source"):
-             last_job = self.job_repository.find_last_job_by_source(job.source_url)
+            last_job = self.job_repository.find_last_job_by_source(job.source_url)
 
         if not last_job or last_job.status != JobStatus.COMPLETED:
             return False
 
-        # 2. Compare Hash
+        # Calculate time diff
+        now = datetime.now(timezone.utc)
+        last_time = last_job.created_at
+
+        if (now - last_time) < timedelta(hours=self.ttl_hours):
+            logger.info(f"Duplicate detected via TTL Strategy (Within {self.ttl_hours}h)")
+            return True
+
+        return False
+
+
+class ContentsStrategy(DeduplicationStrategy):
+    """
+    Checks for duplication by comparing content hashes.
+    Useful for Web Pages where content changes matter but URL is same.
+    """
+
+    async def is_duplicate(self, job: IngestionJob) -> bool:
+        if not job.content_hash:
+            logger.warning(
+                "ContentsStrategy: Job has no content_hash. Cannot determine duplicate."
+            )
+            return False
+
+        last_job = None
+        if hasattr(self.job_repository, "find_last_job_by_source"):
+            last_job = self.job_repository.find_last_job_by_source(job.source_url)
+
+        if not last_job or last_job.status != JobStatus.COMPLETED:
+            return False
+
+        # Compare Hash
         if last_job.content_hash == job.content_hash:
-             logger.info(f"Duplicate detected via Content Hash Strategy")
-             return True
-        
+            logger.info("Duplicate detected via Contents Hash Strategy")
+            return True
+
         return False
 
 
@@ -105,20 +146,20 @@ class DeduplicationFactory:
     """
     Factory to select the appropriate strategy based on configuration or source type.
     """
+
     def __init__(self, job_repository: JobRepository):
         self.job_repository = job_repository
 
     def get_strategy(self, source_url: str) -> DeduplicationStrategy:
-        # Simple heuristic mapping for now. 
-        # In a real system, this could be driven by a more complex Config mapping.
-        
+        # 1. YouTube -> Metadata (video_id)
         if "youtube.com" in source_url or "youtu.be" in source_url:
-            # For YouTube, we check 'video_id' (and maybe others like 'channel_id' if needed)
-            return MetadataComparisonStrategy(self.job_repository, keys=["video_id"])
-        
+            return MetadataCheckStrategy(self.job_repository, keys=["video_id"])
+
+        # 2. Files -> Metadata (size, mtime)
         if source_url.startswith("file://"):
-            # For Files, we check size and mtime
-            return MetadataComparisonStrategy(self.job_repository, keys=["file_size", "last_modified"])
-            
-        # Default Web or others -> Content Hash
-        return ContentHashStrategy(self.job_repository)
+            return MetadataCheckStrategy(
+                self.job_repository, keys=["file_size", "last_modified"]
+            )
+
+        # 3. Default -> Contents Hash
+        return ContentsStrategy(self.job_repository)
