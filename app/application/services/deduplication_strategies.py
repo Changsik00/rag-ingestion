@@ -161,5 +161,15 @@ class DeduplicationFactory:
                 self.job_repository, keys=["file_size", "last_modified"]
             )
 
-        # 3. Default -> Contents Hash
+        # 3. News / Portal -> TTL Strategy (Example implementation)
+        # TODO: Implement domain-based routing or config-based strategy selection
+        # For News sites (e.g., cnn.com, bbc.com), where main pages update periodically,
+        # we should use TTLStrategy to avoid continuous re-ingestion within a short window.
+        # if "news.com" in source_url:
+        #     return TTLStrategy(self.job_repository, ttl_hours=1)
+
+        # 4. Blogs / Wikis -> Contents Strategy
+        # For content-heavy sites (Blogs, Wikis) where the URL is stable but content might receive
+        # minor updates or corrections, we use ContentsStrategy to compare the actual hash.
+        # This is the default safely fallback for general web pages.
         return ContentsStrategy(self.job_repository)
