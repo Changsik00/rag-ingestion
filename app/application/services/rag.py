@@ -14,6 +14,7 @@ from pydantic import Field
 
 from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import UserIntent
+from app.infrastructure.monitoring.langfuse_helper import get_langfuse_handler
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,8 @@ class RAGResult:
     full_context: str
     citations: list[dict] = Field(default_factory=list)
     user_intent: UserIntent | None = None
+    trace_id: str | None = None
+    trace_url: str | None = None
 
 
 class RAG:
@@ -89,6 +92,14 @@ class RAG:
         # Config 설정 (Thread ID가 있으면 Checkpointer 사용)
         config = {"configurable": {"thread_id": thread_id}} if thread_id else {"configurable": {}}
 
+        # [Spec 064] Observability (LangFuse)
+        langfuse_handler = get_langfuse_handler(
+            trace_name="RAG Pipeline Interaction",
+            # user_id can be added if auth is implemented
+        )
+        if langfuse_handler:
+            config["callbacks"] = [langfuse_handler]
+
         # Spec 055: Inject retrieval_config
         if retrieval_config:
             config["configurable"]["retrieval_config"] = retrieval_config
@@ -97,9 +108,9 @@ class RAG:
         result_state = await self.graph.ainvoke(initial_state, config=config)
 
         # State → RAGResult 변환
-        return self._state_to_result(result_state)
+        return self._state_to_result(result_state, langfuse_handler)
 
-    def _state_to_result(self, state: dict) -> RAGResult:
+    def _state_to_result(self, state: dict, langfuse_handler: object | None = None) -> RAGResult:
         """
         RAGGraphState를 RAGResult로 변환.
 
@@ -118,4 +129,6 @@ class RAG:
             full_context=state.get("full_context", ""),
             citations=state.get("citations", []),
             user_intent=state.get("user_intent"),
+            trace_id=langfuse_handler.get_trace_id() if langfuse_handler else None,
+            trace_url=langfuse_handler.get_trace_url() if langfuse_handler else None,
         )
