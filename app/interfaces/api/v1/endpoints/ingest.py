@@ -22,7 +22,15 @@ async def ingest_web_page(
     service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ):
     chunk_config_dict = request.chunking_config.model_dump() if request.chunking_config else None
-    job = service.create_job(str(request.url), chunking_config=chunk_config_dict)
+    
+    # [Spec 065] Pass force_refresh via custom_metadata
+    custom_metadata = {"force_refresh": request.force_refresh}
+    
+    job = service.create_job(
+        str(request.url), 
+        chunking_config=chunk_config_dict,
+        custom_metadata=custom_metadata
+    )
     background_tasks.add_task(service.process_job, job.job_id)
     return AsyncIngestResponse(job_id=job.job_id, current_status=job.status)
 

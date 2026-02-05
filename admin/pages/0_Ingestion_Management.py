@@ -47,11 +47,20 @@ tabs = st.tabs(["🌐 Web URL Ingestion", "📁 Local File Ingestion"])
 with tabs[0]:
     st.subheader("Web URL 수집")
     url = st.text_input("Enter URL to ingest", placeholder="https://example.com")
+
+    # [Spec 065] Force Refresh Option
+    force_refresh = st.checkbox("Force Refresh (Ignore Duplicates)", value=False)
+
     if st.button("🚀 Ingest URL", type="primary"):
         if url:
             with st.spinner("Starting ingestion job..."):
                 # URL is handled via standard POST /v1/ingest/web
-                res = api_client.post("ingest/web", json={"url": url, "chunking_config": chunk_config})
+                payload = {
+                    "url": url,
+                    "chunking_config": chunk_config,
+                    "force_refresh": force_refresh
+                }
+                res = api_client.post("ingest/web", json=payload)
                 if res:
                     st.success(f"Job created: {res.get('job_id')}")
                     st.info("Check 'Job Queue' for status.")

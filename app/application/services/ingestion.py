@@ -85,6 +85,7 @@ class Ingestion:
         raw_content: bytes | None = None,
         filename: str | None = None,
         chunking_config: dict | None = None,
+        custom_metadata: dict | None = None,
     ) -> IngestionJob:
         """Create and persist a new job in PENDING state."""
         job = IngestionJob(
@@ -94,6 +95,7 @@ class Ingestion:
             raw_content=raw_content,
             filename=filename,
             chunking_config=chunking_config,
+            custom_metadata=custom_metadata,
         )
         self.job_repository.create_job(job)
         return job
