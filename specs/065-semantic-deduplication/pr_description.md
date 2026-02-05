@@ -1,4 +1,4 @@
-# feat(spec-065): Semantic De-Duplication
+# feat(spec-065): semantic de-duplication
 
 ## 📋 Summary
 
