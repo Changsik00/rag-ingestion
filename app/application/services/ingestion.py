@@ -127,8 +127,12 @@ class Ingestion:
             if not is_forced:
                 dedup_factory = DeduplicationFactory(self.job_repository)
                 strategy = dedup_factory.get_strategy(job.source_url)
+                logger.info(f"Using strategy {type(strategy).__name__} for {job.source_url}")
 
-                if await strategy.is_duplicate(job):
+                is_dup = await strategy.is_duplicate(job)
+                logger.info(f"Deduplication check for job {job_id}: is_duplicate={is_dup}")
+                
+                if is_dup:
                     logger.info(f"Job {job_id} skipped due to duplication detection.")
                     job.status = JobStatus.SKIPPED
                     job.updated_at = datetime.now(timezone.utc)

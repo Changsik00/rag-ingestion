@@ -94,13 +94,17 @@ class Neo4jJobRepository(JobRepository):
         """
         return self._fetch_single_job(query, job_id=job_id)
 
-    def find_last_job_by_source(self, source_url: str) -> IngestionJob | None:
+    def find_last_job_by_source(self, source_url: str, exclude_job_id: str | None = None) -> IngestionJob | None:
+        query = """
         MATCH (j:IngestionJob {source_url: $source_url})
+        WHERE j.job_id <> $exclude_job_id
         RETURN j
         ORDER BY j.created_at DESC
         LIMIT 1
         """
-        return self._fetch_single_job(query, source_url=source_url)
+        # Note: If exclude_job_id is None, skip it or handle in Cypher.
+        # But we always have a job_id when calling from IngestionService.
+        return self._fetch_single_job(query, source_url=source_url, exclude_job_id=exclude_job_id)
 
     def list_jobs(self, limit: int = 50) -> list[IngestionJob]:
         query = """
@@ -139,10 +143,17 @@ class Neo4jJobRepository(JobRepository):
             except:
                 custom_metadata = {}
 
+        # Handle status mapping robustly
+        status_val = node["status"]
+        try:
+            status = JobStatus(status_val.upper())
+        except (ValueError, AttributeError):
+            status = JobStatus.PENDING
+
         return IngestionJob(
             job_id=node["job_id"],
             source_url=node["source_url"],
-            status=JobStatus(node["status"]),
+            status=status,
             created_at=datetime.fromisoformat(node["created_at"]),
             updated_at=datetime.fromisoformat(node["updated_at"]),
             error_message=node.get("error_message"),

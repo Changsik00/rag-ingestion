@@ -28,10 +28,12 @@ class IDCheckingStrategy(DeduplicationStrategy):
     """
 
     async def is_duplicate(self, job: IngestionJob) -> bool:
-        # 1. Get the last successful job for this source
+        # 1. Get the last successful job for this source, excluding the current job
         last_job = None
         if hasattr(self.job_repository, "find_last_job_by_source"):
-            last_job = self.job_repository.find_last_job_by_source(job.source_url)
+            last_job = self.job_repository.find_last_job_by_source(
+                job.source_url, exclude_job_id=job.job_id
+            )
 
         if last_job and last_job.status in [JobStatus.COMPLETED, JobStatus.RUNNING]:
             logger.info("Duplicate detected via ID Checking Strategy (Source URL exists)")
@@ -59,7 +61,9 @@ class MetadataCheckStrategy(DeduplicationStrategy):
 
         last_job = None
         if hasattr(self.job_repository, "find_last_job_by_source"):
-            last_job = self.job_repository.find_last_job_by_source(job.source_url)
+            last_job = self.job_repository.find_last_job_by_source(
+                job.source_url, exclude_job_id=job.job_id
+            )
 
         if not last_job or last_job.status not in [
             JobStatus.COMPLETED,
@@ -101,7 +105,9 @@ class TTLStrategy(DeduplicationStrategy):
     async def is_duplicate(self, job: IngestionJob) -> bool:
         last_job = None
         if hasattr(self.job_repository, "find_last_job_by_source"):
-            last_job = self.job_repository.find_last_job_by_source(job.source_url)
+            last_job = self.job_repository.find_last_job_by_source(
+                job.source_url, exclude_job_id=job.job_id
+            )
 
         if not last_job or last_job.status not in [
             JobStatus.COMPLETED,
@@ -135,15 +141,20 @@ class ContentsStrategy(DeduplicationStrategy):
 
         last_job = None
         if hasattr(self.job_repository, "find_last_job_by_source"):
-            last_job = self.job_repository.find_last_job_by_source(job.source_url)
+            last_job = self.job_repository.find_last_job_by_source(
+                job.source_url, exclude_job_id=job.job_id
+            )
 
-        if not last_job or last_job.status not in [
-            JobStatus.COMPLETED,
-            JobStatus.RUNNING,
-        ]:
+        if not last_job:
+            logger.info("ContentsStrategy: No previous job found.")
+            return False
+            
+        logger.info(f"ContentsStrategy: Last job status: {last_job.status}")
+        if last_job.status not in [JobStatus.COMPLETED, JobStatus.RUNNING]:
             return False
 
         # Compare Hash
+        logger.info(f"ContentsStrategy: Comparing hash. Current: {job.content_hash}, Last: {last_job.content_hash}")
         if last_job.content_hash == job.content_hash:
             logger.info("Duplicate detected via Contents Hash Strategy")
             return True

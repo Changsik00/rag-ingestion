@@ -25,6 +25,6 @@ class JobRepository(ABC):
         pass
 
     @abstractmethod
-    def find_last_job_by_source(self, source_url: str) -> IngestionJob | None:
-        """Find the last job (any status) for a given source URL."""
+    def find_last_job_by_source(self, source_url: str, exclude_job_id: str | None = None) -> IngestionJob | None:
+        """Find the last job (any status) for a given source URL, optionally excluding a specific job ID."""
         pass
