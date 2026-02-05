@@ -29,7 +29,24 @@ uv run pytest tests/integration/test_ingestion_deduplication.py
 - ✅ `test_ingestion_deduplication.py`: 2개 테스트 통과 (Duplicate Skip, New Job Process)
 
 ### Manual Verification (Scenarios)
-1. **Admin UI**: Ingestion 관리 페이지에서 "Force Refresh" 체크박스 상태에 따라 요청 Payload에 `force_refresh`가 올바르게 전달되는지 확인.
+
+#### ✅ Scenario 1: 기본 중복 제거 (Normal Deduplication)
+**목표**: 동일한 URL을 두 번 요청했을 때, 두 번째 요청이 `SKIPPED` 되는지 확인.
+1.  **Job 1 생성**: Admin > Ingestion Management > URL 입력 > **`Force Refresh` 해제** >Injest.
+2.  Job 1 완료 대기 (`COMPLETED`).
+3.  **Job 2 생성**: 동일 URL 입력 > **`Force Refresh` 해제** > Injest.
+4.  **결과 확인**: Job Queue에서 Job 2의 `Status`가 **`SKIPPED`**인지 확인.
+
+#### ✅ Scenario 2: 강제 수집 (Force Refresh)
+**목표**: 중복된 URL이라도 `Force Refresh` 옵션을 켜면 수집되는지 확인.
+1.  **Job 3 생성**: 동일 URL 입력 > **`Force Refresh` 체크 ✅** > Injest.
+2.  **결과 확인**: Job Queue에서 Job 3의 `Status`가 **`RUNNING` -> `COMPLETED`**인지 확인 (SKIPPED가 아니어야 함).
+
+#### ✅ Scenario 3: Local File Deduplication
+**목표**: 동일한 파일을 두 번 업로드했을 때 중복 제거 확인.
+1.  파일 업로드 (1회차) -> `COMPLETED`.
+2.  동일 파일 업로드 (2회차) -> `SKIPPED`.
+3.  내용 수정 후 업로드 (3회차) -> `COMPLETED` (Metadata 변경 감지).
 
 ## 📦 Files Changed
 
