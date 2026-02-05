@@ -95,9 +95,7 @@ class Neo4jJobRepository(JobRepository):
         return self._fetch_single_job(query, job_id=job_id)
 
     def find_last_job_by_source(self, source_url: str) -> IngestionJob | None:
-        query = """
         MATCH (j:IngestionJob {source_url: $source_url})
-        WHERE j.status = 'COMPLETED'
         RETURN j
         ORDER BY j.created_at DESC
         LIMIT 1
