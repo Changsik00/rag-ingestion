@@ -68,13 +68,20 @@ async def get_job_status(job_id: str, adapter: IngestionOrchestrator = Depends(g
 @router.get("/{job_id}/trace", response_model=TraceResponse)
 async def get_job_trace(job_id: str, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
     """Get LangGraph state snapshot."""
-    snapshot = await adapter.get_state(job_id)
-    return TraceResponse(
-        values=snapshot.values,
-        next=snapshot.next,
-        tasks=str(snapshot.tasks),
-        metadata=snapshot.metadata,
-    )
+    try:
+        snapshot = await adapter.get_state(job_id)
+        return TraceResponse(
+            values=snapshot.values,
+            next=snapshot.next,
+            tasks=str(snapshot.tasks),
+            metadata=snapshot.metadata,
+        )
+    except Exception:
+        # Spec 060: Ingestion History is auto-cleaned upon completion.
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Trace not found. History is auto-cleaned after job completion.",
+        )
 
 
 @router.post("/{job_id}/resume", response_model=ResumeResponse, status_code=status.HTTP_202_ACCEPTED)

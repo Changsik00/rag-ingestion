@@ -351,29 +351,7 @@ with st.sidebar:
         except Exception as e:
             st.error(f"Failed to load documents: {e}")
             selected_doc_ids = []
-    st.divider()
 
-    st.subheader("📁 Quick File Upload")
-    quick_files = st.file_uploader(
-        "Upload PDF/TXT/MD to Chat", type=["pdf", "txt", "md"], key="quick_upload", accept_multiple_files=True
-    )
-    if st.button("🚀 Upload & Chat", use_container_width=True, disabled=not quick_files):
-        with st.spinner(f"Ingesting {len(quick_files)} files..."):
-            file_list = [("files", (f.name, f.getvalue(), f.type)) for f in quick_files]
-            res = api_client.upload_file("ingest/files", files=file_list)
-            if res and "jobs" in res:
-                file_names = ", ".join([f.name for f in quick_files])
-                st.success(f"Ingested {len(quick_files)} files")
-                st.session_state.messages.append(
-                    {
-                        "role": "assistant",
-                        "content": f"✅ 파일 수집 완료: **{file_names}**\n\n이제 이 파일들의 내용에 대해 질문하실 수 있습니다.",
-                        "status": "completed",
-                    }
-                )
-                st.rerun()
-
-    st.divider()
 
     with st.expander("🛠️ Advanced Settings", expanded=False):
         # Spec 055: Advanced Tuning Controls
@@ -412,7 +390,6 @@ with st.sidebar:
         st.divider()
 
         st.divider()
-
 
         st.divider()
         st.subheader("🚦 HITL Control")
@@ -486,6 +463,11 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     status_container.update(label="RAG Search Completed", state="complete", expanded=False)
 
                 st.markdown(answer)
+
+                # [Spec 064] Observability Link
+                trace_url = context_data.get("trace_url")
+                if trace_url:
+                    st.link_button("🔍 View Trace in LangFuse", trace_url)
 
                 # References
                 citations = context_data.get("citations", []) if context_data else []
