@@ -413,7 +413,6 @@ with st.sidebar:
 
         st.divider()
 
-
         st.divider()
         st.subheader("🚦 HITL Control")
         st.info(f"**Thread ID**: `{current_thread_id}`")
@@ -486,6 +485,11 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     status_container.update(label="RAG Search Completed", state="complete", expanded=False)
 
                 st.markdown(answer)
+
+                # [Spec 064] Observability Link
+                trace_url = context_data.get("trace_url")
+                if trace_url:
+                    st.link_button("🔍 View Trace in LangFuse", trace_url)
 
                 # References
                 citations = context_data.get("citations", []) if context_data else []
