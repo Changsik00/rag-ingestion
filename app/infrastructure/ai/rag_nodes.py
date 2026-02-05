@@ -321,7 +321,7 @@ class RAGNodes:
 
         for chunk in rerank_targets:
             prompt = RERANKER_PROMPT.format(query=rewritten_query, chunk_text=chunk.content)
-            rerank_tasks.append(self._get_rerank_score(chunk, prompt, temperature))
+            rerank_tasks.append(self._get_rerank_score(chunk, prompt, temperature, config))
 
         # Run 리랭킹 in parallel
         rerank_results = await asyncio.gather(*rerank_tasks)
@@ -356,14 +356,16 @@ class RAGNodes:
 
         return state
 
-    async def _get_rerank_score(self, chunk: Chunk, prompt: str, temperature: float = 0.0) -> dict:
+    async def _get_rerank_score(
+        self, chunk: Chunk, prompt: str, temperature: float = 0.0, config: RunnableConfig | None = None
+    ) -> dict:
         """LLM을 호출하여 청크의 관련성 점수를 가져옵니다."""
         import json
 
         try:
             # Propagate temperature to reranker
             llm = self.llm.bind(temperature=temperature)
-            content = await llm.agenerate(prompt)
+            content = await llm.agenerate(prompt, config=config)
             # content is already a string here if using our adapter's agenerate
 
             # JSON block 추출 (LLM이 마크다운 형식을 포함할 수 있음)
@@ -473,7 +475,7 @@ class RAGNodes:
         # [Spec 048] Async LLM Refactoring
         # Apply temperature dynamically
         llm = self.llm.bind(temperature=temperature)
-        response = await llm.ainvoke(prompt)
+        response = await llm.ainvoke(prompt, config=config)
 
         if hasattr(response, "content"):
             answer_text = self._extract_text_content(response.content)
