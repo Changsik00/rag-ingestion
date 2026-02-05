@@ -9,6 +9,7 @@ RAG 파이프라인의 실행 과정이 블랙박스로 남아있어 디버깅�
 - [x] **Infra**: `langfuse` 패키지 추가 및 `LangfuseCallbackHandler` Helper 구현.
 - [x] **Service**: `rag.py` 및 `rag_nodes.py`에 Callback Handler 주입 및 전파 로직 추가.
 - [x] **UI**: Admin RAG Playground에 LangFuse Trace 페이지로 이동하는 Deep Link 버튼 추가.
+- [x] **Cleanup**: Playground 내 중복 기능(Quick File Upload) 제거 (Ingestion Management로 역할 이관).
 - [x] **Docs**: `docs/features/observability.md` 아키텍처 문서 추가 (Async Batch 매커니즘 설명 포함).
 
 ## 🎯 Key Review Points
