@@ -88,9 +88,15 @@ with tabs[1]:
                 # /v1/ingest/files is now standard
                 res = api_client.upload_file("ingest/files", files=file_list)
                 if res and "jobs" in res:
-                    st.success(f"{len(res['jobs'])} files uploaded and jobs created.")
+                    st.success(f"{len(res['jobs'])} files processed.")
                     for job in res["jobs"]:
-                        st.write(f"- Job ID: `{job['job_id']}`")
+                        msg = job.get('message', '')
+                        job_id = job.get('job_id')
+                        
+                        if "already processed" in msg:
+                            st.warning(f"⚠️ {msg}")
+                        else:
+                            st.write(f"- ✅ **{msg}** (ID: `{job_id}`)")
                     st.info("Check 'Job Queue' for status.")
         else:
             st.warning("Please select at least one file.")

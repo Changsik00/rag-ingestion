@@ -128,7 +128,19 @@ class Neo4jJobRepository(JobRepository):
         ORDER BY j.created_at DESC
         LIMIT 1
         """
-        return self._fetch_single_job(query, pattern=pattern, statuses=statuses)
+    def find_last_job_by_hash(
+        self, 
+        content_hash: str, 
+        statuses: list[str] | None = None
+    ) -> IngestionJob | None:
+        query = """
+        MATCH (j:IngestionJob {content_hash: $content_hash})
+        WHERE ($statuses IS NULL OR j.status IN $statuses)
+        RETURN j
+        ORDER BY j.created_at DESC
+        LIMIT 1
+        """
+        return self._fetch_single_job(query, content_hash=content_hash, statuses=statuses)
 
     def list_jobs(self, limit: int = 50) -> list[IngestionJob]:
         query = """

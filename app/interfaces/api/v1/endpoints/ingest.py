@@ -67,38 +67,41 @@ async def ingest_files(
     job_responses = []
     for file in files:
         content = await file.read()
-        
-        # Calculate Metadata and Hash for Deduplication
         file_size = len(content)
         content_hash = hashlib.sha256(content).hexdigest()
         
+        # [Spec 065] Early Deduplication Check for Files
+        existing_job = service.is_already_queued(
+            url=f"file://{file.filename}", 
+            content_hash=content_hash
+        )
+        if existing_job:
+            job_responses.append(AsyncIngestResponse(
+                job_id=existing_job.job_id, 
+                current_status=existing_job.status,
+                message=f"File '{file.filename}' already processed (Job {existing_job.job_id})."
+            ))
+            continue
+
         custom_metadata = {
             "file_size": file_size,
             "filename": file.filename
         }
         
-        # source_url for file ingestion will be the filename for tracking
-        # Ideally, should be careful about name collisions, but for now using filename
         job = service.create_job(
             url=f"file://{file.filename}", 
             raw_content=content, 
             filename=file.filename,
             custom_metadata=custom_metadata,
-            # We can also pass content_hash directly if IngestionJob supports it, wait, create_job doesn't take content_hash arg in explicit signature?
-            # Let's check ingestion.py signature. It has custom_metadata.
-            # IngestionJob has content_hash field. We should update create_job to accept it or pass via metadata first?
-            # Ideally create_job should accept content_hash.
+            content_hash=content_hash
         )
-        # Manually set content_hash on job object before processing? 
-        # Better: create_job signature update is preferred, but for now let's update job object or pass in metadata.
-        # Check ingestion.py: create_job() takes (url, ..., custom_metadata). 
-        # If I want to persist content_hash, I need to update create_job.
-        # For now, let's put it in job object if service returns it.
-        job.content_hash = content_hash
-        service.job_repository.update_job(job) # Persist hash immediately
         
         background_tasks.add_task(service.process_job, job.job_id)
-        job_responses.append(AsyncIngestResponse(job_id=job.job_id, current_status=job.status))
+        job_responses.append(AsyncIngestResponse(
+            job_id=job.job_id, 
+            current_status=job.status,
+            message=f"File '{file.filename}' ingestion started."
+        ))
 
     return MultiAsyncIngestResponse(jobs=job_responses)
 

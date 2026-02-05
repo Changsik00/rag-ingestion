@@ -78,10 +78,15 @@ class Ingestion:
             logger.error(f"Failed to run ingestion: {e}")
             raise BaseAppError(f"Ingestion failed: {e}")
 
-    def is_already_queued(self, url: str, custom_metadata: dict | None = None) -> IngestionJob | None:
+    def is_already_queued(
+        self, 
+        url: str, 
+        custom_metadata: dict | None = None,
+        content_hash: str | None = None
+    ) -> IngestionJob | None:
         """
         Lightweight check to see if a job for this resource is already active/completed.
-        Checks by URL first, then by unique metadata (like video_id).
+        Checks by URL first, then by hash, then by unique metadata (like video_id).
         """
         if not hasattr(self.job_repository, "find_last_job_by_source"):
             return None
@@ -93,7 +98,13 @@ class Ingestion:
         if last_job:
             return last_job
 
-        # 2. Check by Video ID (YouTube)
+        # 2. Check by Content Hash
+        if content_hash and hasattr(self.job_repository, "find_last_job_by_hash"):
+            last_job = self.job_repository.find_last_job_by_hash(content_hash, statuses=relevant_statuses)
+            if last_job:
+                return last_job
+
+        # 3. Check by Video ID (YouTube)
         if custom_metadata and "video_id" in custom_metadata:
             vid = custom_metadata["video_id"]
             if hasattr(self.job_repository, "find_last_job_by_metadata"):
@@ -111,6 +122,7 @@ class Ingestion:
         filename: str | None = None,
         chunking_config: dict | None = None,
         custom_metadata: dict | None = None,
+        content_hash: str | None = None,
     ) -> IngestionJob:
         """Create and persist a new job in PENDING state."""
         job = IngestionJob(
@@ -121,6 +133,7 @@ class Ingestion:
             filename=filename,
             chunking_config=chunking_config,
             custom_metadata=custom_metadata,
+            content_hash=content_hash,
         )
         self.job_repository.create_job(job)
         return job
