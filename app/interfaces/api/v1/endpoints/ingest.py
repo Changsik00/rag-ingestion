@@ -38,13 +38,27 @@ async def ingest_web_page(
             video_id = match.group(1)
             custom_metadata["video_id"] = video_id
 
+    # [Spec 065] Concurrency Check: Don't even create a job if one is already PENDING/RUNNING
+    if not request.force_refresh:
+        existing_job = service.is_already_queued(str(request.url))
+        if existing_job:
+            return AsyncIngestResponse(
+                job_id=existing_job.job_id, 
+                current_status=existing_job.status,
+                message=f"Duplicate request. Job {existing_job.job_id} is already in state {existing_job.status}."
+            )
+
     job = service.create_job(
         str(request.url),
         chunking_config=chunk_config_dict,
         custom_metadata=custom_metadata
     )
     background_tasks.add_task(service.process_job, job.job_id)
-    return AsyncIngestResponse(job_id=job.job_id, current_status=job.status)
+    return AsyncIngestResponse(
+        job_id=job.job_id, 
+        current_status=job.status,
+        message="Ingestion job created successfully."
+    )
 
 
 @router.post("/files", status_code=status.HTTP_202_ACCEPTED, response_model=MultiAsyncIngestResponse)

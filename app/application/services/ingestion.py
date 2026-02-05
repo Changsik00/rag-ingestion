@@ -78,6 +78,17 @@ class Ingestion:
             logger.error(f"Failed to run ingestion: {e}")
             raise BaseAppError(f"Ingestion failed: {e}")
 
+    def is_already_queued(self, url: str) -> IngestionJob | None:
+        """
+        Lightweight check to see if a job for this URL is already PENDING or RUNNING.
+        Used by the API to provide immediate feedback.
+        """
+        if hasattr(self.job_repository, "find_last_job_by_source"):
+            last_job = self.job_repository.find_last_job_by_source(url)
+            if last_job and last_job.status in [JobStatus.PENDING, JobStatus.RUNNING]:
+                return last_job
+        return None
+
     def create_job(
         self,
         url: str,
@@ -122,7 +133,10 @@ class Ingestion:
             # No, user clicks "Ingest" with "Force" checked. Job created.
             # We check if job.custom_metadata.get('force') is True.
 
-            is_forced = job.custom_metadata.get("force_refresh") is True if job.custom_metadata else False
+            custom_meta = job.custom_metadata or {}
+            logger.info(f"Job {job_id} custom_metadata: {custom_meta}")
+            is_forced = custom_meta.get("force_refresh") is True
+            logger.info(f"Deduplication bypass check: is_forced={is_forced}")
 
             if not is_forced:
                 dedup_factory = DeduplicationFactory(self.job_repository)

@@ -62,8 +62,16 @@ with tabs[0]:
                 }
                 res = api_client.post("ingest/web", json=payload)
                 if res:
-                    st.success(f"Job created: {res.get('job_id')}")
-                    st.info("Check 'Job Queue' for status.")
+                    job_id = res.get('job_id')
+                    status = res.get('current_status')
+                    msg = res.get('message', '')
+                    
+                    if "Duplicate" in msg:
+                        st.warning(f"⚠️ {msg}")
+                    else:
+                        st.success(f"✅ Job created: `{job_id}`")
+                    
+                    st.info(f"Current Status: `{status}`. Check 'Job Queue' for details.")
         else:
             st.warning("Please enter a URL.")
 
