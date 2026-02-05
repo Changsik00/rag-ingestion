@@ -23,7 +23,7 @@ class DeduplicationStrategy(ABC):
 class IDCheckingStrategy(DeduplicationStrategy):
     """
     Checks for duplication by Source ID (URL).
-    If a completed job exists for this Source URL, it is considered a duplicate.
+    If a completed or running job exists for this Source URL, it is considered a duplicate.
     Useful for immutable resources or 'ingest once' policies.
     """
 
@@ -33,7 +33,7 @@ class IDCheckingStrategy(DeduplicationStrategy):
         if hasattr(self.job_repository, "find_last_job_by_source"):
             last_job = self.job_repository.find_last_job_by_source(job.source_url)
 
-        if last_job and last_job.status == JobStatus.COMPLETED:
+        if last_job and last_job.status in [JobStatus.COMPLETED, JobStatus.RUNNING]:
             logger.info("Duplicate detected via ID Checking Strategy (Source URL exists)")
             return True
 
@@ -61,7 +61,10 @@ class MetadataCheckStrategy(DeduplicationStrategy):
         if hasattr(self.job_repository, "find_last_job_by_source"):
             last_job = self.job_repository.find_last_job_by_source(job.source_url)
 
-        if not last_job or last_job.status != JobStatus.COMPLETED:
+        if not last_job or last_job.status not in [
+            JobStatus.COMPLETED,
+            JobStatus.RUNNING,
+        ]:
             return False
 
         # Compare Metadata
@@ -100,7 +103,10 @@ class TTLStrategy(DeduplicationStrategy):
         if hasattr(self.job_repository, "find_last_job_by_source"):
             last_job = self.job_repository.find_last_job_by_source(job.source_url)
 
-        if not last_job or last_job.status != JobStatus.COMPLETED:
+        if not last_job or last_job.status not in [
+            JobStatus.COMPLETED,
+            JobStatus.RUNNING,
+        ]:
             return False
 
         # Calculate time diff
@@ -131,7 +137,10 @@ class ContentsStrategy(DeduplicationStrategy):
         if hasattr(self.job_repository, "find_last_job_by_source"):
             last_job = self.job_repository.find_last_job_by_source(job.source_url)
 
-        if not last_job or last_job.status != JobStatus.COMPLETED:
+        if not last_job or last_job.status not in [
+            JobStatus.COMPLETED,
+            JobStatus.RUNNING,
+        ]:
             return False
 
         # Compare Hash
