@@ -1,5 +1,7 @@
 import os
+
 import streamlit as st
+
 from admin.utils.api_client import get_api_client
 
 st.set_page_config(page_title="Observability & Trace", page_icon="📊", layout="wide")
@@ -43,13 +45,13 @@ if thread_id:
                     st.error(f"Trace not found for ID: {thread_id}")
                 else:
                     st.success(f"Loaded state for {thread_id}")
-                    
+
                     # Layout
                     tab1, tab2 = st.tabs(["State Snapshot", "Raw Data"])
-                    
+
                     with tab1:
                         st.json(data.get("values", {}))
-                    
+
                     with tab2:
                         st.json(data)
 
