@@ -25,7 +25,7 @@ class IngestionJob(BaseModel):
     filename: str | None = None  # For local file ingestion
     docs_ids: list[str] = Field(default_factory=list)  # Associated document IDs
     chunking_config: dict | None = None  # Chunking configuration (strategy, size, etc.)
-    
+
     # [Spec 065] Deduplication Fields
     content_hash: str | None = None
     custom_metadata: dict | None = None  # Flexible metadata for strategy-based deduplication

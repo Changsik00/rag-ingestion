@@ -29,9 +29,9 @@ class Neo4jJobRepository(JobRepository):
         raw_content_b64 = None
         if job.raw_content:
             raw_content_b64 = base64.b64encode(job.raw_content).decode("utf-8")
-        
+
         # Serialize custom_metadata to JSON string if needed, or rely on Neo4j driver if it supports dict (it does for properties map, but limited types)
-        # To be safe, let's keep it simple. If simple dict, Neo4j handles it? 
+        # To be safe, let's keep it simple. If simple dict, Neo4j handles it?
         # Actually Neo4j properties cannot be nested maps. They must be primitives or lists of primitives.
         # So we should JSON serialize custom_metadata.
         import json
@@ -69,7 +69,7 @@ class Neo4jJobRepository(JobRepository):
         raw_content_b64 = None
         if job.raw_content:
             raw_content_b64 = base64.b64encode(job.raw_content).decode("utf-8")
-        
+
         import json
         custom_metadata_json = json.dumps(job.custom_metadata) if job.custom_metadata else None
 
@@ -128,12 +128,12 @@ class Neo4jJobRepository(JobRepository):
 
     def _map_node_to_job(self, node) -> IngestionJob:
         import json
-        
+
         # Decode base64 back to bytes
         raw_content = None
         if node.get("raw_content"):
             raw_content = base64.b64decode(node["raw_content"])
-            
+
         custom_metadata = None
         if node.get("custom_metadata"):
             try:
