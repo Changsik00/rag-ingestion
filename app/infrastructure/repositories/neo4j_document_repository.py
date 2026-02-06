@@ -389,6 +389,38 @@ class Neo4jDocumentRepository(DocumentRepository):
             logger.error(f"Failed to get chunks by IDs from Neo4j: {e}")
             return []
 
+    def get_adjacent_chunks(self, parent_id: str, index: int, window_size: int = 1) -> list[Chunk]:
+        """주어진 인덱스 전후의 인접 청크들을 가져옵니다."""
+        try:
+            # Pivot chunk를 포함하여 [index-window, index+window] 범위 조회
+            query = """
+            MATCH (c:Chunk {parent_id: $parent_id})
+            WHERE c.index >= $start AND c.index <= $end
+            RETURN c
+            ORDER BY c.index ASC
+            """
+            start = max(0, index - window_size)
+            end = index + window_size
+
+            chunks = []
+            with self.driver.session() as session:
+                results = session.run(query, parent_id=str(parent_id), start=start, end=end)
+                for record in results:
+                    node = record["c"]
+                    chunks.append(
+                        Chunk(
+                            id=node["id"],
+                            content=node.get("content", ""),
+                            parent_id=node.get("parent_id"),
+                            index=node.get("index", 0),
+                            metadata=self._unflatten_metadata(node),
+                        )
+                    )
+            return chunks
+        except Exception as e:
+            logger.error(f"Failed to get adjacent chunks for {parent_id} index {index}: {e}")
+            return []
+
     def get_document_stats(self) -> list[dict]:
         """문서별 기본 통계를 가장 가볍고 빠르게 가져옵니다. (안정성 보장 버전)"""
         try:
