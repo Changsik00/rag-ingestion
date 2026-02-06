@@ -59,6 +59,9 @@ class RAGGraphState(TypedDict):
     graph_data: Annotated[list[dict], lambda x, y: y]
     """Neo4j Graph Traversal 결과 (Entity 관계)"""
 
+    rerank_strategy: Annotated[str, lambda x, y: y]
+    """사용될 리랭킹 전략 (pointwise, listwise)"""
+
     reranked_chunks: list[Chunk]
     """LLM Reranker에 의해 정렬 및 필터링된 최종 청크들"""
 

@@ -150,6 +150,7 @@ class RAGNodes:
         state["auto_filters"] = auto_filters
         state["final_filters"] = final_filters
         state["fallback_triggered"] = False
+        state["rerank_strategy"] = "pointwise"  # Default strategy
 
         # [Spec 034] Reasoning Log
         reasoning_log = state.get("reasoning_log", [])
