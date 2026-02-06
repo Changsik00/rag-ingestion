@@ -47,14 +47,31 @@ tabs = st.tabs(["🌐 Web URL Ingestion", "📁 Local File Ingestion"])
 with tabs[0]:
     st.subheader("Web URL 수집")
     url = st.text_input("Enter URL to ingest", placeholder="https://example.com")
+
+    # [Spec 065] Force Refresh Option
+    force_refresh = st.checkbox("Force Refresh (Ignore Duplicates)", value=False)
+
     if st.button("🚀 Ingest URL", type="primary"):
         if url:
             with st.spinner("Starting ingestion job..."):
                 # URL is handled via standard POST /v1/ingest/web
-                res = api_client.post("ingest/web", json={"url": url, "chunking_config": chunk_config})
+                payload = {
+                    "url": url,
+                    "chunking_config": chunk_config,
+                    "force_refresh": force_refresh
+                }
+                res = api_client.post("ingest/web", json=payload)
                 if res:
-                    st.success(f"Job created: {res.get('job_id')}")
-                    st.info("Check 'Job Queue' for status.")
+                    job_id = res.get('job_id')
+                    status = res.get('current_status')
+                    msg = res.get('message', '')
+                    
+                    if "Duplicate" in msg:
+                        st.warning(f"⚠️ {msg}")
+                    else:
+                        st.success(f"✅ Job created: `{job_id}`")
+                    
+                    st.info(f"Current Status: `{status}`. Check 'Job Queue' for details.")
         else:
             st.warning("Please enter a URL.")
 
@@ -71,9 +88,15 @@ with tabs[1]:
                 # /v1/ingest/files is now standard
                 res = api_client.upload_file("ingest/files", files=file_list)
                 if res and "jobs" in res:
-                    st.success(f"{len(res['jobs'])} files uploaded and jobs created.")
+                    st.success(f"{len(res['jobs'])} files processed.")
                     for job in res["jobs"]:
-                        st.write(f"- Job ID: `{job['job_id']}`")
+                        msg = job.get('message', '')
+                        job_id = job.get('job_id')
+                        
+                        if "already processed" in msg:
+                            st.warning(f"⚠️ {msg}")
+                        else:
+                            st.write(f"- ✅ **{msg}** (ID: `{job_id}`)")
                     st.info("Check 'Job Queue' for status.")
         else:
             st.warning("Please select at least one file.")

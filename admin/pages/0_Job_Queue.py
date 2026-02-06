@@ -16,16 +16,18 @@ try:
     else:
         # Summary Metrics
         total = len(jobs)
-        # API returns job objects. Mapping status to string if needed.
-        completed = sum(1 for j in jobs if j.get("status") == "completed")
-        failed = sum(1 for j in jobs if j.get("status") == "failed")
-        pending = sum(1 for j in jobs if j.get("status") == "pending")
+        # API returns job objects with 'current_status' for the actual job state
+        completed = sum(1 for j in jobs if j.get("current_status") in ["completed", "COMPLETED"])
+        failed = sum(1 for j in jobs if j.get("current_status") in ["failed", "FAILED"])
+        pending = sum(1 for j in jobs if j.get("current_status") in ["pending", "PENDING", "running", "RUNNING"])
+        skipped = sum(1 for j in jobs if j.get("current_status") in ["skipped", "SKIPPED"])
 
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
         col1.metric("Total Jobs", total)
         col2.metric("Completed", completed)
         col3.metric("Failed", failed, delta_color="inverse")
-        col4.metric("Pending", pending)
+        col4.metric("Pending/Running", pending)
+        col5.metric("Skipped (Dedup)", skipped)
 
         st.divider()
 
@@ -35,7 +37,7 @@ try:
             data.append(
                 {
                     "Job ID": j.get("job_id"),
-                    "Status": j.get("status"),
+                    "Status": j.get("current_status"),
                     "URL": j.get("source_url"),
                     "Created At": j.get("created_at"),
                     "Updated At": j.get("updated_at"),

@@ -15,16 +15,43 @@ from app.interfaces.api.v1.dto.ingest import (
 router = APIRouter(prefix="/ingest", tags=["Ingest"])
 
 
-@router.post("", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
+@router.post("/web", status_code=status.HTTP_202_ACCEPTED, response_model=AsyncIngestResponse)
 async def ingest_web_page(
     request: IngestRequest,
     background_tasks: BackgroundTasks,
     service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ):
     chunk_config_dict = request.chunking_config.model_dump() if request.chunking_config else None
-    job = service.create_job(str(request.url), chunking_config=chunk_config_dict)
+
+    # [Spec 065] Extract Metadata for early deduplication check
+    custom_metadata = {"force_refresh": request.force_refresh}
+    import re
+    if "youtube.com" in str(request.url) or "youtu.be" in str(request.url):
+        match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", str(request.url))
+        if match:
+            custom_metadata["video_id"] = match.group(1)
+
+    # [Spec 065] Concurrency & Deduplication Check: Don't even create a job if one is already active/completed
+    if not request.force_refresh and not request.bypass_early_dedup:
+        existing_job = service.is_already_queued(str(request.url), custom_metadata=custom_metadata)
+        if existing_job:
+            return AsyncIngestResponse(
+                job_id=existing_job.job_id, 
+                current_status=existing_job.status,
+                message=f"Deduplication: Job {existing_job.job_id} is already in state {existing_job.status}."
+            )
+
+    job = service.create_job(
+        str(request.url),
+        chunking_config=chunk_config_dict,
+        custom_metadata=custom_metadata
+    )
     background_tasks.add_task(service.process_job, job.job_id)
-    return AsyncIngestResponse(job_id=job.job_id, current_status=job.status)
+    return AsyncIngestResponse(
+        job_id=job.job_id, 
+        current_status=job.status,
+        message="Ingestion job created successfully."
+    )
 
 
 @router.post("/files", status_code=status.HTTP_202_ACCEPTED, response_model=MultiAsyncIngestResponse)
@@ -36,13 +63,45 @@ async def ingest_files(
     """
     Upload multiple local files (PDF, TXT, MD) for ingestion.
     """
+    import hashlib
     job_responses = []
     for file in files:
         content = await file.read()
-        # source_url for file ingestion will be the filename for tracking
-        job = service.create_job(url=f"file://{file.filename}", raw_content=content, filename=file.filename)
+        file_size = len(content)
+        content_hash = hashlib.sha256(content).hexdigest()
+        
+        # [Spec 065] Early Deduplication Check for Files
+        existing_job = service.is_already_queued(
+            url=f"file://{file.filename}", 
+            content_hash=content_hash
+        )
+        if existing_job:
+            job_responses.append(AsyncIngestResponse(
+                job_id=existing_job.job_id, 
+                current_status=existing_job.status,
+                message=f"File '{file.filename}' already processed (Job {existing_job.job_id})."
+            ))
+            continue
+
+        custom_metadata = {
+            "file_size": file_size,
+            "filename": file.filename
+        }
+        
+        job = service.create_job(
+            url=f"file://{file.filename}", 
+            raw_content=content, 
+            filename=file.filename,
+            custom_metadata=custom_metadata,
+            content_hash=content_hash
+        )
+        
         background_tasks.add_task(service.process_job, job.job_id)
-        job_responses.append(AsyncIngestResponse(job_id=job.job_id, current_status=job.status))
+        job_responses.append(AsyncIngestResponse(
+            job_id=job.job_id, 
+            current_status=job.status,
+            message=f"File '{file.filename}' ingestion started."
+        ))
 
     return MultiAsyncIngestResponse(jobs=job_responses)
 

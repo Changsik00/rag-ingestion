@@ -21,7 +21,7 @@
     * SQL 기반 세션 삭제 로직을 Repository/Service로 이동
     * DTO Mapper 클래스 분리
 
-* [/] **Spec 063: Admin UI/UX Improvements** (High)
+* [x] **Spec 063: Admin UI/UX Improvements** (High)
   * **Goal**: Graph Explorer/Playground UX 개선 및 Verification Lab 재설계.
   * **Current State**: Partial Implementation (Graph/Feedback Done, Lab Deferred).
   * **Tasks**:
@@ -29,25 +29,41 @@
     * **Feedback**: UI 버튼 연동 (Done).
     * **Verification Lab**: 재설계 및 구현 (Deferred).
 
-* [ ] **Spec 064: RAG Observability Dashboard**
+* [x] **Spec 064: RAG Observability Dashboard**
   * **Goal**: LangFuse/Arize Phoenix 연동, Token Usage/Latency 시각화.
   * **Current State**: Proposed.
   * **Tasks**:
     * **RAG Inspector**: 최근 요청의 단계별(Retrieval -> Rerank -> Generation) 로그 타임라인 뷰 구현
     * Server-side API Call Logging (Streamlit 한계 극복)
 
-* [ ] **Spec 065: RAG Evaluation System**
-  * **Goal**: 정량적 평가 시스템 구축 (Golden Dataset, Automated Metrics).
-  * **Current State**: Proposed (Replaced Verification Lab).
+* [ ] **Spec 065: Semantic De-Duplication (SDD)**
+  * **Goal**: 중복 문서 수집 방지 및 의미 기반 중복 제거 (Content Hash & Semantic Check).
+  * **Current State**: Proposed.
   * **Tasks**:
-    * **Feedback Processor**: `feedback.jsonl`을 분석하여 Golden Dataset으로 변환하는 도구 개발.
-    * **Evaluation Pipeline**: Ragas/DeepEval 연동.
+    * **Content Hash**: 문서 내용 기반 해시 생성 및 중복 체크.
+    * **Semantic Check**: VectorDB 조회 통해 유사/중복 문서 식별.
+    * **Force Refresh**: 강제 재수집 옵션 추가.
 
 * [ ] **Spec 066: Frontend Tech Stack Migration Study** (Low)
   * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿
   * **Tasks**:
     * Next.js + ShadcnUI로 핵심 페이지(Chat, Graph) POC 작성
     * Streamlit vs Next.js 기능/공수 비교 보고서
+
+* [ ] **Spec 067: Enhanced Trace Viewer** (Medium)
+  * **Goal**: Inspector에서 Rerank 단계의 상세 정보(점수, 필터링 사유, Drop된 청크)를 시각화하여 "왜 검색 안 됨?" 오해 해소.
+  * **Context**: Current Inspector only shows vector search results, hiding the fact that chunks were filtered out by the Reranker.
+  * **Tasks**:
+    * Add `rerank_log` to RAGResult.
+    * Visualize "Dropped Chunks" in Admin UI with their scores and reasoning.
+
+* [ ] **Spec 068: Advanced Reranking Logic Research** (High)
+  * **Problem**: 현재 Pointwise 방식은 정보가 파편화된 경우(context 부족) 개별 점수가 낮아 탈락함.
+  * **Goal**: 여러 청크를 "함께" 고려하여 점수를 매기거나(Listwise), 상호 보완적인 정보를 살리는 로직 연구.
+  * **Details (Listwise vs Pointwise)**:
+    * **Pointwise (Current)**: Scores each chunk independently. Fast, but misses context split across chunks.
+    * **Listwise (Proposed)**: Sends multiple chunks to LLM at once to evaluate the "set". better quality but higher latency/cost.
+    * **Action Item**: Research Contextual Reranking or Sliding Window approaches to balance cost/performance.
 
 ---
 
@@ -59,7 +75,10 @@
   * 성공 시나리오: 다양한 콘텐츠 타입
   * 실패 시나리오: 타임아웃, 네트워크 오류, 빈 콘텐츠
 
+
+
 * **[Feature] Admin Dashboard UX Improvement**
+
   * Job 상태 자동 갱신, 필터링/정렬
 
 * **[Tech] Multi-Model Comparison**

@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from app.application.interfaces.scraper import ScraperInterface
+from app.application.services.deduplication_strategies import DeduplicationFactory
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.core.exceptions import BaseAppError
 from app.core.logger import setup_logger
@@ -31,6 +32,7 @@ class Ingestion:
         self.job_repository = job_repository
         self._chunker = chunker
         self.extractor = extractor
+        self.deduplication_factory = DeduplicationFactory(job_repository)
 
         # [Spec 046] Inject LLM into Quality Checker if using CompositeScraper
         from app.infrastructure.scrapers.composite_scraper import CompositeScraper
@@ -77,6 +79,42 @@ class Ingestion:
             logger.error(f"Failed to run ingestion: {e}")
             raise BaseAppError(f"Ingestion failed: {e}")
 
+    def is_already_queued(
+        self, 
+        url: str, 
+        custom_metadata: dict | None = None,
+        content_hash: str | None = None
+    ) -> IngestionJob | None:
+        """
+        Lightweight check to see if a job for this resource is already active/completed.
+        Checks by URL first, then by hash, then by unique metadata (like video_id).
+        """
+        if not hasattr(self.job_repository, "find_last_job_by_source"):
+            return None
+
+        relevant_statuses = [JobStatus.PENDING, JobStatus.RUNNING, JobStatus.COMPLETED]
+        
+        # 1. Check by exact URL
+        last_job = self.job_repository.find_last_job_by_source(url, statuses=relevant_statuses)
+        if last_job:
+            return last_job
+
+        # 2. Check by Content Hash
+        if content_hash and hasattr(self.job_repository, "find_last_job_by_hash"):
+            last_job = self.job_repository.find_last_job_by_hash(content_hash, statuses=relevant_statuses)
+            if last_job:
+                return last_job
+
+        # 3. Check by Video ID (YouTube)
+        if custom_metadata and "video_id" in custom_metadata:
+            vid = custom_metadata["video_id"]
+            if hasattr(self.job_repository, "find_last_job_by_metadata"):
+                last_job = self.job_repository.find_last_job_by_metadata("video_id", vid, statuses=relevant_statuses)
+                if last_job:
+                    return last_job
+
+        return None
+
     def create_job(
         self,
         url: str,
@@ -84,6 +122,8 @@ class Ingestion:
         raw_content: bytes | None = None,
         filename: str | None = None,
         chunking_config: dict | None = None,
+        custom_metadata: dict | None = None,
+        content_hash: str | None = None,
     ) -> IngestionJob:
         """Create and persist a new job in PENDING state."""
         job = IngestionJob(
@@ -93,6 +133,8 @@ class Ingestion:
             raw_content=raw_content,
             filename=filename,
             chunking_config=chunking_config,
+            custom_metadata=custom_metadata,
+            content_hash=content_hash,
         )
         self.job_repository.create_job(job)
         return job
@@ -101,17 +143,44 @@ class Ingestion:
         """Execute the ingestion logic asynchronously."""
         job = self.job_repository.get_job(job_id)
         if not job:
-            logger.error(f"Job {job_id} not found during processing start")
+            logger.error(f"Job {job_id} NOT FOUND in repository!")
             return
 
         try:
-            # 1. Update Status to RUNNING
+            # [Spec 065] 1. Immediate ID/URL-based Deduplication Check
+            custom_meta = job.custom_metadata or {}
+            is_forced = custom_meta.get("force_refresh") is True
+            
+            if not is_forced:
+                # Direct check for latest meaningful job for this URL
+                last_job = self.job_repository.find_last_job_by_source(
+                    job.source_url, 
+                    exclude_job_id=job_id,
+                    statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
+                )
+
+                if last_job and last_job.status in [JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]:
+                    logger.info(f"Job {job_id} skipping because of duplicate {last_job.job_id} ({last_job.status})")
+                    job.status = JobStatus.SKIPPED
+                    job.updated_at = datetime.now(timezone.utc)
+                    self.job_repository.update_job(job)
+                    return
+
+                # 2. Strategy-based check (Contents, TTL, Metadata-specific)
+                strategy = self.deduplication_factory.get_strategy(job.source_url)
+                if await strategy.is_duplicate(job):
+                    logger.info(f"Job {job_id} detected as duplicate via {type(strategy).__name__}. Skipping.")
+                    job.status = JobStatus.SKIPPED
+                    job.updated_at = datetime.now(timezone.utc)
+                    self.job_repository.update_job(job)
+                    return
+
+            # 3. If not duplicate, Update Status to RUNNING and proceed
             logger.info(f"Starting ingestion job {job_id} for {job.source_url}")
             job.status = JobStatus.RUNNING
             job.updated_at = datetime.now(timezone.utc)
             self.job_repository.update_job(job)
-
-            # 2. Extract Content (Iterative or Single)
+            
             if job.raw_content and job.filename:
                 logger.info(f"Processing local file: {job.filename}")
                 from app.core.file_processor import FileProcessor

@@ -117,7 +117,7 @@ with col2:
                                 size=25,
                                 color=color,
                                 title=str(n["properties"]),
-                                font={"color": text_color, "size": 14}, 
+                                font={"color": text_color, "size": 14},
                                 shadow=True
                             )
                         )

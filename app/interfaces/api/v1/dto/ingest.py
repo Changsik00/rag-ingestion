@@ -63,6 +63,8 @@ class ChunkingConfigDTO(BaseModel):
 class IngestRequest(BaseModel):
     url: HttpUrl = Field(..., description="Target URL to ingest")
     chunking_config: ChunkingConfigDTO | None = Field(default=None, description="Optional chunking configuration")
+    force_refresh: bool = Field(default=False, description="Whether to force ingestion even if duplicate exists")
+    bypass_early_dedup: bool = Field(default=False, description="[DEBUG/TEST] Skip API-level check but still allow worker dedup.")
 
 
 class IngestResponse(BaseResponse):
