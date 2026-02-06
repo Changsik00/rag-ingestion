@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob

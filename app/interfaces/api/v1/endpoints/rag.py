@@ -70,15 +70,39 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
     if not state:
         return SessionTraceResponse(messages=[], values={})
 
-    values = state["channel_values"]
+    # [Bug Fix] LangGraph state extraction logic
+    # checkpointer.aget returns a dict or CheckpointTuple with 'checkpoint' attribute
+    checkpoint = getattr(state, "checkpoint", state.get("checkpoint") if isinstance(state, dict) else {})
+    values = checkpoint.get("channel_values", checkpoint.get("values", {}))
+    
+    if not values and isinstance(state, dict):
+        # Fallback for alternative structures
+        values = state.get("channel_values", state.get("values", {}))
+
     messages = []
-    # State messages are objects
+    # State messages are objects (BaseMessage)
     for m in values.get("messages", []):
-        role = getattr(m, "type", "assistant")
-        content = getattr(m, "content", str(m))
+        # Try to extract role and content safely
+        role = "assistant"
+        if hasattr(m, "type"):
+            role = m.type
+        elif isinstance(m, dict):
+            role = m.get("role", m.get("type", "assistant"))
+            
+        content = ""
+        if hasattr(m, "content"):
+            content = m.content
+        elif isinstance(m, dict):
+            content = m.get("content", str(m))
+        else:
+            content = str(m)
+            
         messages.append(MessageDTO(role=role, content=content))
 
-    return SessionTraceResponse(messages=messages, values={k: v for k, v in values.items() if k != "messages"})
+    return SessionTraceResponse(
+        messages=messages, 
+        values={k: v for k, v in values.items() if k != "messages"}
+    )
 
 
 @router.post("/feedback", response_model=BaseResponse)
