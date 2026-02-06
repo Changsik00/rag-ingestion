@@ -31,6 +31,7 @@ class RAGResult:
     full_context: str
     citations: list[dict] = Field(default_factory=list)
     user_intent: UserIntent | None = None
+    rerank_log: list[dict] = Field(default_factory=list)
     trace_id: str | None = None
     trace_url: str | None = None
 
@@ -129,6 +130,7 @@ class RAG:
             full_context=state.get("full_context", ""),
             citations=state.get("citations", []),
             user_intent=state.get("user_intent"),
+            rerank_log=state.get("rerank_log", []),
             trace_id=langfuse_handler.get_trace_id() if langfuse_handler else None,
             trace_url=langfuse_handler.get_trace_url() if langfuse_handler else None,
         )
