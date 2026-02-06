@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     # LLM & Embedding
     GEMINI_API_KEY: str
     GEMINI_MODEL_NAME: str = "gemini-3-flash-preview"
-    GEMINI_EMBEDDING_MODEL_NAME: str = "text-embedding-004"
+    GEMINI_EMBEDDING_MODEL_NAME: str = "models/embedding-001"
     FIRECRAWL_API_KEY: str | None = None
 
     # Chunking Strategy

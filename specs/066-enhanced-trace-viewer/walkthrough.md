@@ -5,20 +5,22 @@ Spec 066에서는 RAG 파이프라인의 Rerank 투명성을 확보하기 위해
 ## 📋 Changes Implemented
 - [x] **RAGResult & Graph State 확장**: `rerank_log` 필드 추가 및 데이터 매핑 로직 구현.
 - [x] **Rerank Node 로직 업데이트**: Pointwise Reranking 과정에서 개별 청크의 점수, 사유, 상태(Passed/Dropped) 수집.
+- [x] **상태 격리 및 오염 방지 (CRITICAL)**: 
+    - `AgentState`와 `RAGGraphState`에 `lambda x, y: y` 전략을 적용하여 세션/턴 간 데이터 전이 차단.
+    - Intent Classifier 프롬프트 고도화로 "어쩌다 어른" 등 고유 대상을 정확히 추출하여 불필요한 전역 검색(Fallback) 방지.
+    - Reranker 노드의 `config` 인자 오류(`agenerate`) 수정으로 필터링 기능 정상화.
 - [x] **Admin UI 시각화**: 'Rerank Analysis' 전용 탭 추가 및 데이터프레임 기반 테이블 렌더링.
 - [x] **UI 탐색성 개선**: RAG Playground에서 Trace Viewer로 즉시 이동할 수 있는 바로가기 링크 구현.
 
 ## 🧪 Verification Results
 
 ### 1. Automated Tests
-- **Command:** `uv run pytest tests/unit/application/services/test_rag_dto.py`
+- **Command 1 (DTO):** `uv run pytest tests/unit/application/services/test_rag_dto.py`
 - **Result:** ✅ Passed
-- **Log Summary:**
-```text
-collected 1 item
-tests/unit/application/services/test_rag_dto.py . [100%]
-1 passed in 0.88s
-```
+- **Command 2 (Isolation):** `uv run pytest tests/integration/test_state_isolation.py`
+- **Result:** ✅ Passed (스티브 잡스 질문 후 "어쩌다 어른" 질문 시 데이터가 완벽히 초기화됨을 확인)
+- **Command 3 (Agent Propagation):** `uv run pytest tests/unit/application/services/test_agent_rerank_propagation.py`
+- **Result:** ✅ Passed
 
 ### 2. Manual Verification (Scenarios)
 

@@ -192,7 +192,7 @@ class ConversationalRAGAgent:
 
             Options:
             - 'ingest': The user wants to read, learn, scrape, or ingest a URL. (e.g. "Read this link", "Ingest https://...")
-            - 'search': The user is asking a specific question, discussing a topic, or asking for a summary of the context. (e.g. "What is RAG?", "Who is Elon Musk?", "일론 머스크가 누구야?", "이거 요약해줘")
+            - 'search': The user is asking a specific question, discussing a topic, or asking for a summary of the context. (e.g. "What is RAG?", "이거 요약해줘")
             - 'clarify': The input is ambiguous or missing required arguments. (e.g. "Do it", "help me", "알려줘")
 
             Input: {input}
