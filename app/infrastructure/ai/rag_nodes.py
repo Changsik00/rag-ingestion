@@ -334,8 +334,20 @@ class RAGNodes:
         for chunk, score_data in zip(rerank_targets, rerank_results):
             score = score_data.get("score", 0)
             reasoning = score_data.get("reasoning", "No reasoning")
-
-            rerank_log.append({"chunk_id": chunk.id, "score": score, "reasoning": reasoning})
+            
+            # [Spec 066] Collect detailed trace log
+            # Truncate content for dropped chunks to save space
+            status = "passed" if score >= min_relevance_score else "dropped"
+            content_snippet = chunk.content[:100] + "..." if len(chunk.content) > 100 else chunk.content
+            
+            rerank_log.append({
+                "chunk_id": chunk.id,
+                "score": score,
+                "reasoning": reasoning,
+                "status": status,
+                "content": content_snippet,
+                "source": chunk.metadata.get("source", "Unknown")
+            })
 
             if score >= min_relevance_score:
                 chunk.metadata["rerank_score"] = score  # Store for citation prioritization
@@ -350,7 +362,7 @@ class RAGNodes:
         # Update Reasoning Log
         reasoning_log = state.get("reasoning_log", [])
         reasoning_log.append(
-            f"🎯 [Rerank] Filtered {len(all_chunks)} chunks down to {len(final_reranked)} based on LLM relevance scores."
+            f"🎯 [Rerank] Analyzed {len(rerank_targets)} chunks. {len(final_reranked)} passed, {len(rerank_targets) - len(final_reranked)} dropped."
         )
         state["reasoning_log"] = reasoning_log
 
