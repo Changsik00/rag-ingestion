@@ -87,6 +87,8 @@ class RAG:
             "keyword_chunks": [],
             "graph_data": [],
             "full_context": "",
+            "rerank_log": [],
+            "reasoning_log": [],
             "final_answer": "",
         }
 
