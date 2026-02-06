@@ -239,16 +239,21 @@ class Ingestion:
         finally:
             # [Spec 060] Safety: Auto-cleanup history on Terminal States
             # We must NOT delete if the job is PENDING/RUNNING (e.g. HITL Pause)
-            # Only clean up if it's truly done (Success or Failed)
-            try:
-                # Reload job status to be sure
-                final_job = self.job_repository.get_job(job_id)
-                if final_job and final_job.status in [JobStatus.COMPLETED, JobStatus.FAILED]:
-                    if self.extractor:
-                        logger.info(f"Auto-Cleaning history for job {job_id} (Status: {final_job.status})")
-                        await self.extractor.cleanup(job_id)
-            except Exception as cleanup_error:
-                logger.error(f"Failed to auto-clean history for job {job_id}: {cleanup_error}")
+            # Only clean up if it's truly done (Success or Failed) AND cleanup is enabled.
+            from app.core.config import get_settings
+            
+            if get_settings().AUTO_CLEANUP_ENABLED:
+                try:
+                    # Reload job status to be sure
+                    final_job = self.job_repository.get_job(job_id)
+                    if final_job and final_job.status in [JobStatus.COMPLETED, JobStatus.FAILED]:
+                        if self.extractor:
+                            logger.info(f"Auto-Cleaning history for job {job_id} (Status: {final_job.status})")
+                            await self.extractor.cleanup(job_id)
+                except Exception as cleanup_error:
+                    logger.error(f"Failed to auto-clean history for job {job_id}: {cleanup_error}")
+            else:
+                logger.info(f"Auto-Cleanup skipped (AUTO_CLEANUP_ENABLED=False) for job {job_id}")
 
     def _fail_job(self, job: IngestionJob, error_message: str) -> None:
         """Helper to mark job as failed."""
