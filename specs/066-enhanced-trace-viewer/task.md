@@ -44,12 +44,12 @@
 ---
 
 ## Task N: PR Creation & Archiving (Mandatory)
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Run Full Tests: `uv run pytest`
 - [x] **Walkthrough 작성**: `specs/066-enhanced-trace-viewer/walkthrough.md`
 - [x] **PR Description 작성**: `specs/066-enhanced-trace-viewer/pr_description.md`
 - [x] **Archive Commit**: `docs(spec-066): archive walkthrough and pr description`
-- [ ] Create PR: `gh pr create --title "feat(spec-066): Enhanced Trace Viewer" --body-file specs/066-enhanced-trace-viewer/pr_description.md`
+- [x] Create PR: `gh pr create --title "feat(spec-066): Enhanced Trace Viewer" --body-file specs/066-enhanced-trace-viewer/pr_description.md`
 
 ## Summary
 **총 Task**: 3개 + Common Task  
