@@ -74,17 +74,23 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
         # [Bug Fix] LangGraph state extraction logic for different versions/structures
         # CheckpointTuple has .checkpoint attribute; Checkpoint has .channel_values
         values = {}
+        
+        # 1. Try to get values from standard CheckpointTuple
         checkpoint = getattr(state, "checkpoint", None)
-
         if checkpoint:
-            # Try to get values from standard LangGraph object
-            values = getattr(checkpoint, "channel_values", getattr(checkpoint, "values", {}))
-        elif isinstance(state, dict):
-            # Fallback for dict-based states
-            values = state.get("values", state.get("channel_values", {}))
-            if "checkpoint" in state and isinstance(state["checkpoint"], dict):
+            if isinstance(checkpoint, dict):
+                values = checkpoint.get("channel_values", checkpoint.get("values", {}))
+            else:
+                values = getattr(checkpoint, "channel_values", getattr(checkpoint, "values", {}))
+        
+        # 2. Fallback for raw dict-based state or direct checkpoint dict
+        if not values and isinstance(state, dict):
+            values = state.get("channel_values", state.get("values", {}))
+            # Also handle nested structure if 'state' was actually the tuple-as-dict
+            if not values and "checkpoint" in state:
                 cp_dict = state["checkpoint"]
-                values = cp_dict.get("channel_values", cp_dict.get("values", values))
+                if isinstance(cp_dict, dict):
+                    values = cp_dict.get("channel_values", cp_dict.get("values", {}))
 
         if not values:
             return SessionTraceResponse(messages=[], values={})
