@@ -458,10 +458,11 @@ class RAGNodes:
         if temperature < 0.1:
             strict_rag_instruction = (
                 "CRITICAL: STRICT RAG MODE ENABLED (Temperature 0).\n"
-                "1. If 'Provided Context (DB)' contains pieces of information (e.g., parents, birth, external links), you MUST synthesize them to answer as best as possible.\n"
-                "2. Even if information is brief, describe what is found. DO NOT say 'No information' if relevant names like 'Steve Jobs' are in the context.\n"
-                "3. If context is COMPLETELY blank or totally irrelevant, say 'I cannot find relevant information in the uploaded documents.'\n"
-                "4. DO NOT use your internal knowledge for facts NOT in the context.\n"
+                "1. Answer using ONLY the provided 'Provided Context (DB)'.\n"
+                "2. If the context contains relevant information, synthesize it carefully.\n"
+                "3. If the context is COMPLETELY irrelevant or does not contain the answer, you MUST say: 'I cannot find relevant information in the uploaded documents to answer this question.'\n"
+                "4. DO NOT use your internal knowledge for facts NOT present in the provided context.\n"
+                "5. DO NOT hallucinate or try to find flimsy associations with famous names if they are not relevant to the query.\n"
             )
         elif temperature >= 0.5:
             # Relaxed Mode

@@ -16,7 +16,7 @@ async def test_session_state_isolation_and_override():
     mock_rag.retrieve_and_generate = AsyncMock(return_value=RAGResult(
         answer="Jobs answer",
         rewritten_query="Jobs query",
-        vector_chunks=[{"id": "jobs_chunk"}],
+        vector_chunks=[{"id": "jobs_chunk", "metadata": {"distance": 0.1}}],
         keyword_chunks=[],
         graph_data=[],
         full_context="Jobs context",
@@ -38,7 +38,7 @@ async def test_session_state_isolation_and_override():
     mock_rag.retrieve_and_generate = AsyncMock(return_value=RAGResult(
         answer="Adult answer",
         rewritten_query="Adult query",
-        vector_chunks=[{"id": "adult_chunk"}],
+        vector_chunks=[{"id": "adult_chunk", "metadata": {"distance": 0.2}}],
         keyword_chunks=[],
         graph_data=[],
         full_context="Adult context",
