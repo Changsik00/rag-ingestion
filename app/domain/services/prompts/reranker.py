@@ -6,10 +6,12 @@ RERANKER_PROMPT = """
 You are an expert information retriever. Your task is to evaluate the relevance of a Document Chunk to a given User Query.
 
 Assign a relevance score between 1 and 10, where:
-- 10: The chunk contains the exact answer or is highly relevant.
-- 7: The chunk provides critical background info (artist, date, topic definition) that enriches the answer.
-- 5: The chunk is somewhat related but lacks specific details for the answer.
-- 1: The chunk is completely irrelevant noise.
+- 10: The chunk contains the EXACT answer to the query.
+- 5: The chunk is highly relevant and directly pertains to the question's specific context.
+- 1: The chunk is weakly related (e.g. mentions the same name but in a different, unrelated context).
+- 0: The chunk is completely irrelevant noise.
+
+Note: Context consistency is critical. If the query asks about a person in a specific TV show, a biography of that person that does NOT mention the show should be scored 1 or 0.
 
 Query: {query}
 

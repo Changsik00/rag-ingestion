@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app.core.logger import setup_logger
 from app.domain.entities.job import IngestionJob, JobStatus
@@ -34,7 +34,7 @@ class IDCheckingStrategy(DeduplicationStrategy):
             last_job = self.job_repository.find_last_job_by_source(
                 job.source_url,
                 exclude_job_id=job.job_id,
-                statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
+                statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING],
             )
 
         if last_job and last_job.status in [JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]:
@@ -60,9 +60,9 @@ class MetadataCheckStrategy(DeduplicationStrategy):
             return False
 
         last_job = self.job_repository.find_last_job_by_source(
-            job.source_url, 
+            job.source_url,
             exclude_job_id=job.job_id,
-            statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
+            statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING],
         )
 
         if not last_job:
@@ -109,14 +109,14 @@ class TTLStrategy(DeduplicationStrategy):
             return False
 
         last_job = self.job_repository.find_last_job_by_source(
-            job.source_url, 
+            job.source_url,
             exclude_job_id=job.job_id,
-            statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
+            statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING],
         )
 
         if not last_job:
             return False
-            
+
         # Concurrency Guard
         if last_job.status == JobStatus.RUNNING:
             logger.info("Duplicate detected via TTL Strategy (Concurrent job running)")
@@ -148,9 +148,9 @@ class ContentsStrategy(DeduplicationStrategy):
             return False
 
         last_job = self.job_repository.find_last_job_by_source(
-            job.source_url, 
+            job.source_url,
             exclude_job_id=job.job_id,
-            statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
+            statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING],
         )
 
         if not last_job:

@@ -49,7 +49,13 @@ async def execute_query(query: dict[str, str], driver: Annotated[Driver, Depends
 
         nodes = []
         for node in graph.nodes:
-            nodes.append({"id": node.element_id, "labels": list(node.labels), "properties": _sanitize_props(dict(node._properties))})
+            nodes.append(
+                {
+                    "id": node.element_id,
+                    "labels": list(node.labels),
+                    "properties": _sanitize_props(dict(node._properties)),
+                }
+            )
 
         edges = []
         for rel in graph.relationships:

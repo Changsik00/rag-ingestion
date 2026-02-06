@@ -35,6 +35,7 @@ class Neo4jJobRepository(JobRepository):
         # Actually Neo4j properties cannot be nested maps. They must be primitives or lists of primitives.
         # So we should JSON serialize custom_metadata.
         import json
+
         custom_metadata_json = json.dumps(job.custom_metadata) if job.custom_metadata else None
 
         params = {
@@ -71,6 +72,7 @@ class Neo4jJobRepository(JobRepository):
             raw_content_b64 = base64.b64encode(job.raw_content).decode("utf-8")
 
         import json
+
         custom_metadata_json = json.dumps(job.custom_metadata) if job.custom_metadata else None
 
         params = {
@@ -95,14 +97,11 @@ class Neo4jJobRepository(JobRepository):
         return self._fetch_single_job(query, job_id=job_id)
 
     def find_last_job_by_source(
-        self, 
-        source_url: str, 
-        exclude_job_id: str | None = None,
-        statuses: list[JobStatus] | None = None
+        self, source_url: str, exclude_job_id: str | None = None, statuses: list[JobStatus] | None = None
     ) -> IngestionJob | None:
         if statuses:
             statuses = [s.value if hasattr(s, "value") else s for s in statuses]
-            
+
         query = """
         MATCH (j:IngestionJob {source_url: $source_url})
         WHERE (j.job_id <> $exclude_job_id OR $exclude_job_id IS NULL)
@@ -114,17 +113,15 @@ class Neo4jJobRepository(JobRepository):
         return self._fetch_single_job(query, source_url=source_url, exclude_job_id=exclude_job_id, statuses=statuses)
 
     def find_last_job_by_metadata(
-        self, 
-        key: str, 
-        value: str, 
-        statuses: list[JobStatus] | None = None
+        self, key: str, value: str, statuses: list[JobStatus] | None = None
     ) -> IngestionJob | None:
         if statuses:
             statuses = [s.value if hasattr(s, "value") else s for s in statuses]
-            
+
         import json
+
         pattern = f'"{key}": {json.dumps(value)}'
-        
+
         query = """
         MATCH (j:IngestionJob)
         WHERE j.custom_metadata CONTAINS $pattern
@@ -135,14 +132,10 @@ class Neo4jJobRepository(JobRepository):
         """
         return self._fetch_single_job(query, pattern=pattern, statuses=statuses)
 
-    def find_last_job_by_hash(
-        self, 
-        content_hash: str, 
-        statuses: list[JobStatus] | None = None
-    ) -> IngestionJob | None:
+    def find_last_job_by_hash(self, content_hash: str, statuses: list[JobStatus] | None = None) -> IngestionJob | None:
         if statuses:
             statuses = [s.value if hasattr(s, "value") else s for s in statuses]
-            
+
         query = """
         MATCH (j:IngestionJob {content_hash: $content_hash})
         WHERE ($statuses IS NULL OR j.status IN $statuses)
@@ -167,7 +160,7 @@ class Neo4jJobRepository(JobRepository):
         return jobs
 
     def _fetch_single_job(self, query: str, **params) -> IngestionJob | None:
-         with self.driver.session() as session:
+        with self.driver.session() as session:
             result = session.run(query, **params)
             record = result.single()
             if not record:
@@ -186,7 +179,7 @@ class Neo4jJobRepository(JobRepository):
         if node.get("custom_metadata"):
             try:
                 custom_metadata = json.loads(node["custom_metadata"])
-            except:
+            except Exception:
                 custom_metadata = {}
 
         # Handle status mapping robustly

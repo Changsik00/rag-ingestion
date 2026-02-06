@@ -65,20 +65,77 @@ async def ask_agent(
 @router.get("/sessions/{id}/trace", response_model=SessionTraceResponse)
 async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
     """특정 세션의 대화 이력 및 상태 추적 (HITL 용)"""
-    config = {"configurable": {"thread_id": id}}
-    state = await checkpointer.aget(config)
-    if not state:
-        return SessionTraceResponse(messages=[], values={})
+    try:
+        config = {"configurable": {"thread_id": id}}
+        state = await checkpointer.aget(config)
+        if not state:
+            return SessionTraceResponse(messages=[], values={})
 
-    values = state["channel_values"]
-    messages = []
-    # State messages are objects
-    for m in values.get("messages", []):
-        role = getattr(m, "type", "assistant")
-        content = getattr(m, "content", str(m))
-        messages.append(MessageDTO(role=role, content=content))
+        # [Bug Fix] LangGraph state extraction logic for different versions/structures
+        # CheckpointTuple has .checkpoint attribute; Checkpoint has .channel_values
+        values = {}
+        
+        # 1. Try to get values from standard CheckpointTuple
+        checkpoint = getattr(state, "checkpoint", None)
+        if checkpoint:
+            if isinstance(checkpoint, dict):
+                values = checkpoint.get("channel_values", checkpoint.get("values", {}))
+            else:
+                values = getattr(checkpoint, "channel_values", getattr(checkpoint, "values", {}))
+        
+        # 2. Fallback for raw dict-based state or direct checkpoint dict
+        if not values and isinstance(state, dict):
+            values = state.get("channel_values", state.get("values", {}))
+            # Also handle nested structure if 'state' was actually the tuple-as-dict
+            if not values and "checkpoint" in state:
+                cp_dict = state["checkpoint"]
+                if isinstance(cp_dict, dict):
+                    values = cp_dict.get("channel_values", cp_dict.get("values", {}))
 
-    return SessionTraceResponse(messages=messages, values={k: v for k, v in values.items() if k != "messages"})
+        if not values:
+            return SessionTraceResponse(messages=[], values={})
+
+        messages = []
+        # State messages are objects (BaseMessage)
+        for m in values.get("messages", []):
+            role = "assistant"
+            if hasattr(m, "type"):
+                role = m.type
+            elif isinstance(m, dict):
+                role = m.get("role", m.get("type", "assistant"))
+
+            content = ""
+            if hasattr(m, "content"):
+                content = m.content
+            elif isinstance(m, dict):
+                content = m.get("content", str(m))
+            else:
+                content = str(m)
+
+            messages.append(MessageDTO(role=role, content=content))
+
+        # Filter out complex objects for clean JSON response
+        def serialize_recursive(obj: Any) -> Any:
+            if hasattr(obj, "model_dump"):
+                return obj.model_dump()
+            if isinstance(obj, list):
+                return [serialize_recursive(item) for item in obj]
+            if isinstance(obj, dict):
+                return {k: serialize_recursive(v) for k, v in obj.items()}
+            return obj
+
+        serializable_values = {}
+        for k, v in values.items():
+            if k == "messages":
+                continue
+            serializable_values[k] = serialize_recursive(v)
+
+        return SessionTraceResponse(messages=messages, values=serializable_values)
+    except Exception as e:
+        import traceback
+
+        print(f"Error in get_session_trace: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Failed to extract trace state: {str(e)}")
 
 
 @router.post("/feedback", response_model=BaseResponse)

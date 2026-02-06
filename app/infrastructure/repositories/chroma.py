@@ -338,13 +338,29 @@ class ChromaVectorRepository(DocumentRepository):
                 logger.warning(f"Chroma MMR: No candidates found for query: {query}")
                 return []
 
+            # [Spec 066 Fix] Similarity Thresholding
+            # ChromaDB distances: lower is better (0.0 is exact match, typically > 1.0 is noise)
+            # We set a conservative threshold of 0.5 to filter out extreme noise like 'Steve Jobs' in 'Adult' query.
+            # Set to 0.45 for a better balance between recall and precision.
+            THRESHOLD = 0.45
+
+            valid_indices = [j for j, dist in enumerate(results["distances"][0]) if dist < THRESHOLD]
+
+            if not valid_indices:
+                logger.warning(
+                    f"Chroma MMR: Total {len(results['ids'][0])} candidates found, but ALL exceeded distance threshold {THRESHOLD}."
+                )
+                return []
+
             logger.info(
-                f"Chroma MMR candidates: found {len(results['ids'][0])} candidates. Top IDs: {results['ids'][0][:3]}"
+                f"Chroma MMR candidates: {len(valid_indices)}/{len(results['ids'][0])} passed threshold {THRESHOLD}. Top IDs: {[results['ids'][0][j] for j in valid_indices[:3]]}"
             )
-            candidate_ids = results["ids"][0]
-            candidate_docs = results["documents"][0]
-            candidate_metas = results["metadatas"][0]
-            candidate_embeddings = np.array(results["embeddings"][0])
+
+            candidate_ids = [results["ids"][0][j] for j in valid_indices]
+            candidate_docs = [results["documents"][0][j] for j in valid_indices]
+            candidate_metas = [results["metadatas"][0][j] for j in valid_indices]
+            candidate_embeddings = np.array([results["embeddings"][0][j] for j in valid_indices])
+            candidate_distances = [results["distances"][0][j] for j in valid_indices]
 
             # 2. Embed Query
             query_embedding = np.array(self.collection._embedding_function([query]))
@@ -406,6 +422,8 @@ class ChromaVectorRepository(DocumentRepository):
             mmr_chunks = []
             for idx in selected_indices:
                 meta = candidate_metas[idx]
+                # Include distance for tracing
+                meta["distance"] = candidate_distances[idx]
                 chunk_id = candidate_ids[idx]
                 content = candidate_docs[idx]
 

@@ -61,9 +61,9 @@ async def test_extract_metadata_node():
     assert isinstance(result["metadata"], ExtractedMetadata)
     assert result["metadata"].title == "Test Title"
 
-    # Determine if steps_history is updated
-    assert "steps_history" in result
-    assert "extract_metadata" in result["steps_history"]
+    # Determine if messages is updated
+    assert "messages" in result
+    assert "Step: extract_metadata" in [m.content for m in result["messages"]]
 
 
 def test_validate_content_node():

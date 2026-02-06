@@ -22,16 +22,17 @@ class AgentState(TypedDict):
     """Admin Agent의 상태를 정의하는 TypedDict"""
 
     messages: Annotated[list[AnyMessage], add_messages]
-    intent: str
-    tool_output: str
-    context_data: dict  # RAG 상세 정보 (chunks, graph) 전달용
-    filters: dict | None  # RAG 필터링용
+    intent: Annotated[str, lambda x, y: y]
+    tool_output: Annotated[str, lambda x, y: y]
+    context_data: Annotated[dict, lambda x, y: y]  # RAG 상세 정보 (chunks, graph) 전달용 - 매번 초기화
+    rerank_log: Annotated[list[dict], lambda x, y: y]  # Spec 066: Rerank Trace 저장용 - 매번 초기화
+    filters: Annotated[dict | None, lambda x, y: y]  # RAG 필터링용
     thread_id: str | None  # Thread ID (Spec 034)
     hitl_enabled: bool  # HITL Toggle Status
     # Spec 045: Interactive Refinement
-    draft_content: str | None
-    is_clarification: bool
-    missing_slots: list[str]
+    draft_content: Annotated[str | None, lambda x, y: y]
+    is_clarification: Annotated[bool, lambda x, y: y]
+    missing_slots: Annotated[list[str], lambda x, y: y]
 
 
 class ConversationalRAGAgent:
@@ -191,7 +192,7 @@ class ConversationalRAGAgent:
 
             Options:
             - 'ingest': The user wants to read, learn, scrape, or ingest a URL. (e.g. "Read this link", "Ingest https://...")
-            - 'search': The user is asking a specific question, discussing a topic, or asking for a summary of the context. (e.g. "What is RAG?", "Who is Elon Musk?", "일론 머스크가 누구야?", "이거 요약해줘")
+            - 'search': The user is asking a specific question, discussing a topic, or asking for a summary of the context. (e.g. "What is RAG?", "이거 요약해줘")
             - 'clarify': The input is ambiguous or missing required arguments. (e.g. "Do it", "help me", "알려줘")
 
             Input: {input}
@@ -298,6 +299,7 @@ class ConversationalRAGAgent:
             "messages": [AIMessage(content=result.answer)],
             "tool_output": "Search Completed",
             "context_data": context_data,
+            "rerank_log": result.rerank_log,  # Spec 066: Propagate rerank_log to AgentState
         }
 
     async def ask(

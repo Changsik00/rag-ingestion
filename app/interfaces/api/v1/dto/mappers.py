@@ -18,10 +18,23 @@ class ChatResponseMapper:
             content = getattr(msg, "content", str(msg))
             output_messages.append(MessageDTO(role=role, content=content))
 
+        # [Bug Fix] Explicitly serialize pydantic models in context_data
+        # Otherwise, they might be empty in the JSON response
+        raw_context = result.get("context_data") or {}
+        serializable_context = {}
+        if isinstance(raw_context, dict):
+            for k, v in raw_context.items():
+                if hasattr(v, "model_dump"):
+                    serializable_context[k] = v.model_dump()
+                elif isinstance(v, list):
+                    serializable_context[k] = [item.model_dump() if hasattr(item, "model_dump") else item for item in v]
+                else:
+                    serializable_context[k] = v
+
         return ChatResponse(
             current_status=status,
             messages=output_messages,
-            context_data=result.get("context_data"),
+            context_data=serializable_context,
             intent=result.get("intent"),
             next=list(next_steps) if next_steps else None,
             draft_content=result.get("draft_content"),

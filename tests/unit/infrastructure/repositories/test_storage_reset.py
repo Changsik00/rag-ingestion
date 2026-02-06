@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
@@ -68,22 +68,16 @@ def test_chroma_reset_collection(mock_http_client, mock_embeddings, mock_setting
 async def test_langgraph_adapter_reset_checkpoints():
     # Given
     mock_llm = MagicMock()
-    mock_checkpointer = AsyncMock(spec=AsyncSqliteSaver)
+    mock_checkpointer = AsyncMock(spec=AsyncPostgresSaver)
+    
     # Mock the connection attribute
-    # aiosqlite conn.execute returns an IDLE cursor which is an async context manager.
-    # It is NOT awaited directly. So execute should be a MagicMock, not AsyncMock.
-    mock_conn = MagicMock()
+    mock_conn = AsyncMock()
     mock_checkpointer.conn = mock_conn
 
-    # Setup execute to return an async context manager
-    mock_cursor_ctx = AsyncMock()
-    mock_cursor_ctx.__aenter__.return_value = MagicMock()
-    mock_cursor_ctx.__aexit__.return_value = None
-
-    mock_conn.execute.return_value = mock_cursor_ctx
-
-    # Commit is an async method in aiosqlite
+    # commit is an async method in psycopg
     mock_conn.commit = AsyncMock()
+    # execute is also async in AsyncPostgresSaver's conn
+    mock_conn.execute = AsyncMock()
 
     adapter = IngestionOrchestrator(llm=mock_llm, checkpointer=mock_checkpointer)
 
@@ -92,16 +86,13 @@ async def test_langgraph_adapter_reset_checkpoints():
 
     # Then
     # We expect raw SQL execution on the connection
-    # Note: AsyncSqliteSaver uses `async with self.conn.executemany(...)` or similar.
-    # We verify that standard DELETE queries were executed.
     assert mock_conn.execute.call_count >= 1
     call_args_list = mock_conn.execute.call_args_list
 
-    # Check if critical tables are cleared
+    # Check if TRUNCATE query was executed
     executed_sqls = [args[0] for args, _ in call_args_list]
-    assert any("DELETE FROM checkpoints" in sql for sql in executed_sqls)
-    assert any("DELETE FROM checkpoint_blobs" in sql for sql in executed_sqls)
-    assert any("DELETE FROM checkpoint_writes" in sql for sql in executed_sqls)
+    assert any("TRUNCATE checkpoints" in sql for sql in executed_sqls)
+    assert any("RESTART IDENTITY CASCADE" in sql for sql in executed_sqls)
 
     # Ensure commit was called
     mock_conn.commit.assert_called()

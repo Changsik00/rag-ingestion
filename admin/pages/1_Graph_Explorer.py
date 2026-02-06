@@ -72,11 +72,7 @@ with col1:
     if "cypher_input" not in st.session_state:
         st.session_state["cypher_input"] = "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50"
 
-    cypher_input = st.text_area(
-        "SQL (Cypher)",
-        height=150,
-        key="cypher_input"
-    )
+    cypher_input = st.text_area("SQL (Cypher)", height=150, key="cypher_input")
     run_btn = st.button("🚀 Run Query", type="primary")
 
 with col2:
@@ -118,14 +114,22 @@ with col2:
                                 color=color,
                                 title=str(n["properties"]),
                                 font={"color": text_color, "size": 14},
-                                shadow=True
+                                shadow=True,
                             )
                         )
 
                     edges = []
                     edges = []
                     for e in edge_data:
-                        edges.append(Edge(source=e["source"], target=e["target"], label=e["type"], color=edge_color, font={"color": edge_color, "size": 10}))
+                        edges.append(
+                            Edge(
+                                source=e["source"],
+                                target=e["target"],
+                                label=e["type"],
+                                color=edge_color,
+                                font={"color": edge_color, "size": 10},
+                            )
+                        )
 
                     if not nodes:
                         st.warning("No nodes found.")
