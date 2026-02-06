@@ -161,6 +161,7 @@ for message in st.session_state.messages:
         if not is_draft and not is_clarification:
             st.markdown(message["content"])
         if message["role"] == "assistant":
+            # [Spec 066] Ensure we only render debug UI for valid data
             render_debug_ui(message)
 
             # HITL Resume UI (Only for the latest paused message)
@@ -461,6 +462,9 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     st.info("The agent has generated a **Draft Response**. Please review and confirm to finalize.")
                 else:
                     status_container.update(label="RAG Search Completed", state="complete", expanded=False)
+                    # Display summary from current context
+                    passed = sum(1 for item in (res.get("rerank_log") or []) if item.get("status") == "passed")
+                    status_container.write(f"📊 **Rerank Summary**: {passed} chunks passed.")
 
                 st.markdown(answer)
 

@@ -22,17 +22,17 @@ class AgentState(TypedDict):
     """Admin Agent의 상태를 정의하는 TypedDict"""
 
     messages: Annotated[list[AnyMessage], add_messages]
-    intent: str
-    tool_output: str
-    context_data: dict  # RAG 상세 정보 (chunks, graph) 전달용
-    rerank_log: Annotated[list[dict], lambda x, y: y]  # Spec 066: Rerank Trace 저장용
-    filters: dict | None  # RAG 필터링용
+    intent: Annotated[str, lambda x, y: y]
+    tool_output: Annotated[str, lambda x, y: y]
+    context_data: Annotated[dict, lambda x, y: y]  # RAG 상세 정보 (chunks, graph) 전달용 - 매번 초기화
+    rerank_log: Annotated[list[dict], lambda x, y: y]  # Spec 066: Rerank Trace 저장용 - 매번 초기화
+    filters: Annotated[dict | None, lambda x, y: y]  # RAG 필터링용
     thread_id: str | None  # Thread ID (Spec 034)
     hitl_enabled: bool  # HITL Toggle Status
     # Spec 045: Interactive Refinement
-    draft_content: str | None
-    is_clarification: bool
-    missing_slots: list[str]
+    draft_content: Annotated[str | None, lambda x, y: y]
+    is_clarification: Annotated[bool, lambda x, y: y]
+    missing_slots: Annotated[list[str], lambda x, y: y]
 
 
 class ConversationalRAGAgent:
