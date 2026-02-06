@@ -36,7 +36,7 @@
     * **RAG Inspector**: 최근 요청의 단계별(Retrieval -> Rerank -> Generation) 로그 타임라인 뷰 구현
     * Server-side API Call Logging (Streamlit 한계 극복)
 
-* [ ] **Spec 065: Semantic De-Duplication (SDD)**
+* [x] **Spec 065: Semantic De-Duplication (SDD)**
   * **Goal**: 중복 문서 수집 방지 및 의미 기반 중복 제거 (Content Hash & Semantic Check).
   * **Current State**: Proposed.
   * **Tasks**:
@@ -44,20 +44,14 @@
     * **Semantic Check**: VectorDB 조회 통해 유사/중복 문서 식별.
     * **Force Refresh**: 강제 재수집 옵션 추가.
 
-* [ ] **Spec 066: Frontend Tech Stack Migration Study** (Low)
-  * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿
-  * **Tasks**:
-    * Next.js + ShadcnUI로 핵심 페이지(Chat, Graph) POC 작성
-    * Streamlit vs Next.js 기능/공수 비교 보고서
-
-* [ ] **Spec 067: Enhanced Trace Viewer** (Medium)
+* [ ] **Spec 066: Enhanced Trace Viewer** (Medium)
   * **Goal**: Inspector에서 Rerank 단계의 상세 정보(점수, 필터링 사유, Drop된 청크)를 시각화하여 "왜 검색 안 됨?" 오해 해소.
   * **Context**: Current Inspector only shows vector search results, hiding the fact that chunks were filtered out by the Reranker.
   * **Tasks**:
     * Add `rerank_log` to RAGResult.
     * Visualize "Dropped Chunks" in Admin UI with their scores and reasoning.
 
-* [ ] **Spec 068: Advanced Reranking Logic Research** (High)
+* [ ] **Spec 067: Advanced Reranking Logic Research** (High)
   * **Problem**: 현재 Pointwise 방식은 정보가 파편화된 경우(context 부족) 개별 점수가 낮아 탈락함.
   * **Goal**: 여러 청크를 "함께" 고려하여 점수를 매기거나(Listwise), 상호 보완적인 정보를 살리는 로직 연구.
   * **Details (Listwise vs Pointwise)**:
@@ -97,3 +91,9 @@
 * **[Tech] User Feedback Loop: 지식 추출 결과에 대한 사용자 피드백 반영 시스템**
 
 * **[Tech] HITL Persistence & Notification: PostgresSaver 도입 및 알림 시스템**
+
+* **Frontend Tech Stack Migration Study** *
+  * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿
+  * **Tasks**:
+    * Next.js + ShadcnUI로 핵심 페이지(Chat, Graph) POC 작성
+    * Streamlit vs Next.js 기능/공수 비교 보고서
