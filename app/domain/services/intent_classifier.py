@@ -108,11 +108,13 @@ Your task is to analyze the user's query and determine:
 ```json
 {{
   "intent": "one of [general_query, compare, summarize, filter_by_topic]",
-  "targets": ["list", "of", "specific", "targets"],
+  "targets": ["list", "of", "specific", "targets (e.g., document titles, URLs, program names)"],
   "entities": ["list", "of", "extracted", "entities", "and", "aliases"],
   "reasoning": "brief explanation of your decision"
 }}
 ```
+
+**CRITICAL**: If the user mentions a specific program (e.g., "어쩌다 어른", "세바시"), entity, or document title, YOU MUST include it in the `targets` list.
 
 **Examples:**
 
@@ -127,6 +129,9 @@ User: "이 문서 요약해줘" (after discussing LangChain)
 
 User: "Python 관련된 것만 보여줘"
 → {{"intent": "filter_by_topic", "targets": ["python"], "reasoning": "User wants to filter by topic"}}
+
+User: "어쩌다 어른에 대해서 알려줘"
+→ {{"intent": "general_query", "targets": ["어쩌다 어른"], "reasoning": "User is asking about a specific program"}}
 
 ---
 

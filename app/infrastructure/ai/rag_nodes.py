@@ -377,7 +377,7 @@ class RAGNodes:
         try:
             # Propagate temperature to reranker
             llm = self.llm.bind(temperature=temperature)
-            content = await llm.agenerate(prompt, config=config)
+            content = await llm.agenerate(prompt) # Removed config=config as agenerate doesn't support it
             # content is already a string here if using our adapter's agenerate
 
             # JSON block 추출 (LLM이 마크다운 형식을 포함할 수 있음)
