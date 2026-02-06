@@ -327,9 +327,8 @@ class RAGNodes:
         rerank_results = await asyncio.gather(*rerank_tasks)
 
         # [Spec 048] Filter by threshold
-        # Increased to 5 to ensure only highly relevant chunks are kept.
-        # Background info (score < 5) is dropped to prevent context contamination.
-        min_relevance_score = 5
+        # Set to 3 to allow useful context while still blocking noise (score 1 or 0).
+        min_relevance_score = 3
         final_reranked = []
 
         for chunk, score_data in zip(rerank_targets, rerank_results):

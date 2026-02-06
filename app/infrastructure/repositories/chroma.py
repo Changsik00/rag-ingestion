@@ -341,7 +341,8 @@ class ChromaVectorRepository(DocumentRepository):
             # [Spec 066 Fix] Similarity Thresholding
             # ChromaDB distances: lower is better (0.0 is exact match, typically > 1.0 is noise)
             # We set a conservative threshold of 0.5 to filter out extreme noise like 'Steve Jobs' in 'Adult' query.
-            THRESHOLD = 0.35
+            # Set to 0.45 for a better balance between recall and precision.
+            THRESHOLD = 0.45
             
             valid_indices = [j for j, dist in enumerate(results["distances"][0]) if dist < THRESHOLD]
             
