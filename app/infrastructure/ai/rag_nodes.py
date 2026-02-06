@@ -340,14 +340,16 @@ class RAGNodes:
             status = "passed" if score >= min_relevance_score else "dropped"
             content_snippet = chunk.content[:100] + "..." if len(chunk.content) > 100 else chunk.content
 
-            rerank_log.append({
-                "chunk_id": chunk.id,
-                "score": score,
-                "reasoning": reasoning,
-                "status": status,
-                "content": content_snippet,
-                "source": chunk.metadata.get("source", "Unknown")
-            })
+            rerank_log.append(
+                {
+                    "chunk_id": chunk.id,
+                    "score": score,
+                    "reasoning": reasoning,
+                    "status": status,
+                    "content": content_snippet,
+                    "source": chunk.metadata.get("source", "Unknown"),
+                }
+            )
 
             if score >= min_relevance_score:
                 chunk.metadata["rerank_score"] = score  # Store for citation prioritization
@@ -377,7 +379,7 @@ class RAGNodes:
         try:
             # Propagate temperature to reranker
             llm = self.llm.bind(temperature=temperature)
-            content = await llm.agenerate(prompt) # Removed config=config as agenerate doesn't support it
+            content = await llm.agenerate(prompt)  # Removed config=config as agenerate doesn't support it
             # content is already a string here if using our adapter's agenerate
 
             # JSON block 추출 (LLM이 마크다운 형식을 포함할 수 있음)

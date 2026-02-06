@@ -80,10 +80,7 @@ class Ingestion:
             raise BaseAppError(f"Ingestion failed: {e}")
 
     def is_already_queued(
-        self, 
-        url: str, 
-        custom_metadata: dict | None = None,
-        content_hash: str | None = None
+        self, url: str, custom_metadata: dict | None = None, content_hash: str | None = None
     ) -> IngestionJob | None:
         """
         Lightweight check to see if a job for this resource is already active/completed.
@@ -93,7 +90,7 @@ class Ingestion:
             return None
 
         relevant_statuses = [JobStatus.PENDING, JobStatus.RUNNING, JobStatus.COMPLETED]
-        
+
         # 1. Check by exact URL
         last_job = self.job_repository.find_last_job_by_source(url, statuses=relevant_statuses)
         if last_job:
@@ -150,13 +147,13 @@ class Ingestion:
             # [Spec 065] 1. Immediate ID/URL-based Deduplication Check
             custom_meta = job.custom_metadata or {}
             is_forced = custom_meta.get("force_refresh") is True
-            
+
             if not is_forced:
                 # Direct check for latest meaningful job for this URL
                 last_job = self.job_repository.find_last_job_by_source(
-                    job.source_url, 
+                    job.source_url,
                     exclude_job_id=job_id,
-                    statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]
+                    statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING],
                 )
 
                 if last_job and last_job.status in [JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]:
@@ -180,7 +177,7 @@ class Ingestion:
             job.status = JobStatus.RUNNING
             job.updated_at = datetime.now(timezone.utc)
             self.job_repository.update_job(job)
-            
+
             if job.raw_content and job.filename:
                 logger.info(f"Processing local file: {job.filename}")
                 from app.core.file_processor import FileProcessor
@@ -241,7 +238,7 @@ class Ingestion:
             # We must NOT delete if the job is PENDING/RUNNING (e.g. HITL Pause)
             # Only clean up if it's truly done (Success or Failed) AND cleanup is enabled.
             from app.core.config import get_settings
-            
+
             if get_settings().AUTO_CLEANUP_ENABLED:
                 try:
                     # Reload job status to be sure

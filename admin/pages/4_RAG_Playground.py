@@ -43,27 +43,28 @@ def render_debug_ui(message):
                     title = meta.get("title", "No Title")
                     score = meta.get("rerank_score", "N/A")
                     content = c.get("content", "No Content Available")
-                    
-                    st.markdown(f"**[{i+1}] {title}** (Score: {score})")
+
+                    st.markdown(f"**[{i + 1}] {title}** (Score: {score})")
                     st.caption(content[:500] + ("..." if len(content) > 500 else ""))
                     st.divider() if i < len(v_chunks) - 1 else None
 
             if k_chunks:
-                if v_chunks: st.markdown("---")
+                if v_chunks:
+                    st.markdown("---")
                 st.subheader("Keyword Search (Neo4j)")
                 for i, c in enumerate(k_chunks):
                     meta = c.get("metadata", {})
                     title = meta.get("title", "No Title")
                     score = meta.get("rerank_score", "N/A")
                     content = c.get("content", "No Content Available")
-                    
-                    st.markdown(f"**[{i+1}] {title}** (Score: {score})")
+
+                    st.markdown(f"**[{i + 1}] {title}** (Score: {score})")
                     st.caption(content[:500] + ("..." if len(content) > 500 else ""))
                     st.divider() if i < len(k_chunks) - 1 else None
     else:
         # User said it's empty even when count > 0, so let's check a possible edge case
         if "vector_chunks" in debug or "keyword_chunks" in debug:
-             st.caption("No chunks found in debug data (Recall filtered by Threshold).")
+            st.caption("No chunks found in debug data (Recall filtered by Threshold).")
 
     # 3. Intent & Prompt
     with st.expander("🛠️ Debug: Intent & Prompt"):
@@ -359,7 +360,6 @@ with st.sidebar:
             st.error(f"Failed to load documents: {e}")
             selected_doc_ids = []
 
-
     with st.expander("🛠️ Advanced Settings", expanded=False):
         # Spec 055: Advanced Tuning Controls
         st.caption("🔍 Retrieval & Generation Tuning")
@@ -489,7 +489,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     st.link_button(
                         "🔍 View Rerank Analysis",
                         f"/Observability_&_Trace?thread_id={current_thread_id}",
-                        use_container_width=True
+                        use_container_width=True,
                     )
 
                 # References

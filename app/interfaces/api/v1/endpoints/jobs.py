@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.application.services.ingestion import Ingestion
@@ -68,6 +70,7 @@ async def get_job_status(job_id: str, adapter: IngestionOrchestrator = Depends(g
 @router.get("/{job_id}/trace", response_model=TraceResponse)
 async def get_job_trace(job_id: str, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
     """Get LangGraph state snapshot."""
+
     # [Spec 060] Explicitly serialize pydantic models in state values
     def serialize_recursive(obj: Any) -> Any:
         if hasattr(obj, "model_dump"):

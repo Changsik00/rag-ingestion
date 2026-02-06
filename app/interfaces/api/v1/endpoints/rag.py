@@ -75,7 +75,7 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
         # CheckpointTuple has .checkpoint attribute; Checkpoint has .channel_values
         values = {}
         checkpoint = getattr(state, "checkpoint", None)
-        
+
         if checkpoint:
             # Try to get values from standard LangGraph object
             values = getattr(checkpoint, "channel_values", getattr(checkpoint, "values", {}))
@@ -87,7 +87,7 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
                 values = cp_dict.get("channel_values", cp_dict.get("values", values))
 
         if not values:
-             return SessionTraceResponse(messages=[], values={})
+            return SessionTraceResponse(messages=[], values={})
 
         messages = []
         # State messages are objects (BaseMessage)
@@ -97,7 +97,7 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
                 role = m.type
             elif isinstance(m, dict):
                 role = m.get("role", m.get("type", "assistant"))
-                
+
             content = ""
             if hasattr(m, "content"):
                 content = m.content
@@ -105,7 +105,7 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
                 content = m.get("content", str(m))
             else:
                 content = str(m)
-                
+
             messages.append(MessageDTO(role=role, content=content))
 
         # Filter out complex objects for clean JSON response
@@ -124,12 +124,10 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
                 continue
             serializable_values[k] = serialize_recursive(v)
 
-        return SessionTraceResponse(
-            messages=messages, 
-            values=serializable_values
-        )
+        return SessionTraceResponse(messages=messages, values=serializable_values)
     except Exception as e:
         import traceback
+
         print(f"Error in get_session_trace: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to extract trace state: {str(e)}")
 

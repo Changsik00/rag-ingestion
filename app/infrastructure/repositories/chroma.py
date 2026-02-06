@@ -343,17 +343,19 @@ class ChromaVectorRepository(DocumentRepository):
             # We set a conservative threshold of 0.5 to filter out extreme noise like 'Steve Jobs' in 'Adult' query.
             # Set to 0.45 for a better balance between recall and precision.
             THRESHOLD = 0.45
-            
+
             valid_indices = [j for j, dist in enumerate(results["distances"][0]) if dist < THRESHOLD]
-            
+
             if not valid_indices:
-                logger.warning(f"Chroma MMR: Total {len(results['ids'][0])} candidates found, but ALL exceeded distance threshold {THRESHOLD}.")
+                logger.warning(
+                    f"Chroma MMR: Total {len(results['ids'][0])} candidates found, but ALL exceeded distance threshold {THRESHOLD}."
+                )
                 return []
 
             logger.info(
                 f"Chroma MMR candidates: {len(valid_indices)}/{len(results['ids'][0])} passed threshold {THRESHOLD}. Top IDs: {[results['ids'][0][j] for j in valid_indices[:3]]}"
             )
-            
+
             candidate_ids = [results["ids"][0][j] for j in valid_indices]
             candidate_docs = [results["documents"][0][j] for j in valid_indices]
             candidate_metas = [results["metadatas"][0][j] for j in valid_indices]

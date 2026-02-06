@@ -17,7 +17,7 @@ async def test_rerank_results_success():
     mock_llm.agenerate = AsyncMock(
         side_effect=[
             json.dumps({"score": 9, "reasoning": "High relevance"}),
-            json.dumps({"score": 2, "reasoning": "Low relevance"}),
+            json.dumps({"score": 4, "reasoning": "Moderate relevance"}),
         ]
     )
 

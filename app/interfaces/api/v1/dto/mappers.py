@@ -27,10 +27,7 @@ class ChatResponseMapper:
                 if hasattr(v, "model_dump"):
                     serializable_context[k] = v.model_dump()
                 elif isinstance(v, list):
-                    serializable_context[k] = [
-                        item.model_dump() if hasattr(item, "model_dump") else item 
-                        for item in v
-                    ]
+                    serializable_context[k] = [item.model_dump() if hasattr(item, "model_dump") else item for item in v]
                 else:
                     serializable_context[k] = v
 

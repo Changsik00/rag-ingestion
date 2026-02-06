@@ -55,22 +55,18 @@ with tabs[0]:
         if url:
             with st.spinner("Starting ingestion job..."):
                 # URL is handled via standard POST /v1/ingest/web
-                payload = {
-                    "url": url,
-                    "chunking_config": chunk_config,
-                    "force_refresh": force_refresh
-                }
+                payload = {"url": url, "chunking_config": chunk_config, "force_refresh": force_refresh}
                 res = api_client.post("ingest/web", json=payload)
                 if res:
-                    job_id = res.get('job_id')
-                    status = res.get('current_status')
-                    msg = res.get('message', '')
-                    
+                    job_id = res.get("job_id")
+                    status = res.get("current_status")
+                    msg = res.get("message", "")
+
                     if "Duplicate" in msg:
                         st.warning(f"⚠️ {msg}")
                     else:
                         st.success(f"✅ Job created: `{job_id}`")
-                    
+
                     st.info(f"Current Status: `{status}`. Check 'Job Queue' for details.")
         else:
             st.warning("Please enter a URL.")
@@ -90,9 +86,9 @@ with tabs[1]:
                 if res and "jobs" in res:
                     st.success(f"{len(res['jobs'])} files processed.")
                     for job in res["jobs"]:
-                        msg = job.get('message', '')
-                        job_id = job.get('job_id')
-                        
+                        msg = job.get("message", "")
+                        job_id = job.get("job_id")
+
                         if "already processed" in msg:
                             st.warning(f"⚠️ {msg}")
                         else:

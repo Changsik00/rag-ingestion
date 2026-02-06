@@ -60,6 +60,7 @@ if thread_id:
                             st.info("No Rerank Log found in this state.")
                         else:
                             import pandas as pd
+
                             df = pd.DataFrame(rerank_log)
 
                             # Reorder and rename columns for display
@@ -76,7 +77,7 @@ if thread_id:
                                     "reasoning": st.column_config.TextColumn("Reasoning", width="medium"),
                                 },
                                 hide_index=True,
-                                use_container_width=True
+                                use_container_width=True,
                             )
 
                             # Summary metrics
