@@ -35,29 +35,35 @@ def render_debug_ui(message):
     k_chunks = debug.get("keyword_chunks", [])
     total_chunks = len(v_chunks) + len(k_chunks)
     if total_chunks > 0:
-        with st.expander(f"📚 Retrieved Documents ({total_chunks})"):
+        with st.expander(f"📚 Retrieved Documents ({total_chunks})", expanded=False):
             if v_chunks:
-                st.caption("Vector Search (MMR)")
-                for c in v_chunks:
-                    # In API response, chunks might be serialized as dicts
-                    content = c.get("content", "") if isinstance(c, dict) else getattr(c, "content", "")
-                    title = (
-                        c.get("metadata", {}).get("title", "No Title")
-                        if isinstance(c, dict)
-                        else c.metadata.get("title", "No Title")
-                    )
-                    st.text(f"[Score/Vector] {title}\n{content[:100]}...")
+                st.subheader("Vector Search (MMR)")
+                for i, c in enumerate(v_chunks):
+                    meta = c.get("metadata", {})
+                    title = meta.get("title", "No Title")
+                    score = meta.get("rerank_score", "N/A")
+                    content = c.get("content", "No Content Available")
+                    
+                    st.markdown(f"**[{i+1}] {title}** (Score: {score})")
+                    st.caption(content[:500] + ("..." if len(content) > 500 else ""))
+                    st.divider() if i < len(v_chunks) - 1 else None
+
             if k_chunks:
-                st.divider()
-                st.caption("Keyword Search (Neo4j)")
-                for c in k_chunks:
-                    content = c.get("content", "") if isinstance(c, dict) else getattr(c, "content", "")
-                    title = (
-                        c.get("metadata", {}).get("title", "No Title")
-                        if isinstance(c, dict)
-                        else c.metadata.get("title", "No Title")
-                    )
-                    st.text(f"[Keyword] {title}\n{content[:100]}...")
+                if v_chunks: st.markdown("---")
+                st.subheader("Keyword Search (Neo4j)")
+                for i, c in enumerate(k_chunks):
+                    meta = c.get("metadata", {})
+                    title = meta.get("title", "No Title")
+                    score = meta.get("rerank_score", "N/A")
+                    content = c.get("content", "No Content Available")
+                    
+                    st.markdown(f"**[{i+1}] {title}** (Score: {score})")
+                    st.caption(content[:500] + ("..." if len(content) > 500 else ""))
+                    st.divider() if i < len(k_chunks) - 1 else None
+    else:
+        # User said it's empty even when count > 0, so let's check a possible edge case
+        if "vector_chunks" in debug or "keyword_chunks" in debug:
+             st.caption("No chunks found in debug data (Recall filtered by Threshold).")
 
     # 3. Intent & Prompt
     with st.expander("🛠️ Debug: Intent & Prompt"):
@@ -374,8 +380,12 @@ with st.sidebar:
             max_value=1.0,
             value=st.session_state.get("settings_temp", 0.0),
             step=0.1,
-            help="생성 다양성을 결정합니다. 높을수록 창의적입니다.",
+            help="생성 다양성을 결정합니다. 0.5 이상이면 'Relaxed Mode'가 활성화되어 부족한 컨텍스트를 외부 지식으로 보완합니다.",
         )
+        if st.session_state.settings_temp >= 0.5:
+            st.info("💡 **Relaxed Mode Enabled**: Agent will use internal knowledge if DB context is insufficient.")
+        else:
+            st.caption("🔒 **Strict RAG Mode**: Agent will only answer using uploaded documents.")
 
         # Search Strategy
         st.session_state.settings_strategy = st.radio(
