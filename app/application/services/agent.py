@@ -25,6 +25,7 @@ class AgentState(TypedDict):
     intent: str
     tool_output: str
     context_data: dict  # RAG 상세 정보 (chunks, graph) 전달용
+    rerank_log: Annotated[list[dict], lambda x, y: y]  # Spec 066: Rerank Trace 저장용
     filters: dict | None  # RAG 필터링용
     thread_id: str | None  # Thread ID (Spec 034)
     hitl_enabled: bool  # HITL Toggle Status
@@ -298,6 +299,7 @@ class ConversationalRAGAgent:
             "messages": [AIMessage(content=result.answer)],
             "tool_output": "Search Completed",
             "context_data": context_data,
+            "rerank_log": result.rerank_log,  # Spec 066: Propagate rerank_log to AgentState
         }
 
     async def ask(

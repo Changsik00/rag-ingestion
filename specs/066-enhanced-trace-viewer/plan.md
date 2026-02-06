@@ -32,6 +32,10 @@ Rerank 과정의 상세 데이터를 수집하여 `RAGGraphState`를 통해 최�
 - `rerank_results` 메서드에서 `rerank_log` 수집 로직 구현.
 - 탈락한 청크의 `content`를 100자로 Truncate.
 
+#### [MODIFY] `app/application/services/agent.py`
+- `AgentState`에 `rerank_log` 필드 추가.
+- `search_node`에서 `rag_service.retrieve_and_generate` 결과를 `context_data`에 담을 때 `rerank_log` 포함.
+
 ### [Admin Layer]
 
 #### [MODIFY] `admin/pages/3_Observability_&_Trace.py`
