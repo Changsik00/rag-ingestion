@@ -265,9 +265,13 @@ class Neo4jDocumentRepository(DocumentRepository):
                     else:
                         where_clauses.append(f"node.{target_prop} = ${param_key}")
 
-            where_snippet = " AND ".join(where_clauses)
+            # [Spec 066 Fix] Score Thresholding for Keyword Search
+            # Lucene scores below 1.0 are typically very weak/random noise.
+            # Adding score filter to where_snippet
             if where_snippet:
-                where_snippet = f"WHERE {where_snippet}"
+                where_snippet += " AND score > 1.0"
+            else:
+                where_snippet = "WHERE score > 1.0"
 
             cypher_query = f"""
             CALL db.index.fulltext.queryNodes("chunk_fulltext", $keyword) YIELD node, score
@@ -281,6 +285,7 @@ class Neo4jDocumentRepository(DocumentRepository):
                 results = session.run(cypher_query, **params)
                 for record in results:
                     node = record["node"]
+                    score = record["score"]
                     # Map Neo4j Node to Chunk Entity
 
                     # Unflatten metadata
@@ -296,6 +301,9 @@ class Neo4jDocumentRepository(DocumentRepository):
                                 metadata[k] = v
                         else:
                             metadata[k] = v
+
+                    # Add search score for tracing
+                    metadata["score"] = score
 
                     chunks.append(
                         Chunk(
