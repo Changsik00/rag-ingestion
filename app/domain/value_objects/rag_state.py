@@ -8,7 +8,7 @@ Design Guide 005의 3-Layer 아키텍처를 구현합니다:
 - Memory/Body (Repository): 물리적 검색 및 필터 강제
 """
 
-from typing import TypedDict
+from typing import Annotated, TypedDict
 
 from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import UserIntent
@@ -62,8 +62,8 @@ class RAGGraphState(TypedDict):
     reranked_chunks: list[Chunk]
     """LLM Reranker에 의해 정렬 및 필터링된 최종 청크들"""
 
-    rerank_log: list[dict]
-    """리랭킹 과정의 상세ログ (score, reasoning 등)"""
+    rerank_log: Annotated[list[dict], lambda x, y: y]
+    """리랭킹 과정의 상세ログ (score, reasoning 등) - 매 실행 시 덮어쓰기 위해 Annotated[list, lambda x, y: y] 사용"""
 
     # === Output (최종 결과) ===
     fallback_triggered: bool

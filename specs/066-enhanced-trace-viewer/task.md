@@ -18,6 +18,7 @@
 
 ### 1-2. Implementation
 - [x] 코드 구현: `app/application/services/rag.py`
+- [x] 상태 머지 방식 수정 (중복 방지): `app/domain/value_objects/rag_state.py`
 - [x] Test 실행 (Pass)
 - [x] Commit: `feat(spec-066): extend domain and state with rerank_log`
 
