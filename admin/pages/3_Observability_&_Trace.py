@@ -47,12 +47,44 @@ if thread_id:
                     st.success(f"Loaded state for {thread_id}")
 
                     # Layout
-                    tab1, tab2 = st.tabs(["State Snapshot", "Raw Data"])
+                    tab1, tab2, tab3 = st.tabs(["State Snapshot", "Rerank Analysis", "Raw Data"])
 
                     with tab1:
                         st.json(data.get("values", {}))
 
                     with tab2:
+                        state_values = data.get("values", {})
+                        rerank_log = state_values.get("rerank_log", [])
+
+                        if not rerank_log:
+                            st.info("No Rerank Log found in this state.")
+                        else:
+                            import pandas as pd
+                            df = pd.DataFrame(rerank_log)
+
+                            # Reorder and rename columns for display
+                            cols = ["status", "score", "source", "reasoning", "content"]
+                            df = df[[c for c in cols if c in df.columns]]
+
+                            st.dataframe(
+                                df,
+                                column_config={
+                                    "status": st.column_config.TextColumn("Status", width="small"),
+                                    "score": st.column_config.NumberColumn("Score", format="%d"),
+                                    "source": st.column_config.TextColumn("Source"),
+                                    "content": st.column_config.TextColumn("Content (Snippet)", width="large"),
+                                    "reasoning": st.column_config.TextColumn("Reasoning", width="medium"),
+                                },
+                                hide_index=True,
+                                use_container_width=True
+                            )
+
+                            # Summary metrics
+                            passed = sum(1 for item in rerank_log if item.get("status") == "passed")
+                            dropped = sum(1 for item in rerank_log if item.get("status") == "dropped")
+                            st.write(f"**Summary**: {passed} chunks passed, {dropped} chunks dropped.")
+
+                    with tab3:
                         st.json(data)
 
             except Exception as e:

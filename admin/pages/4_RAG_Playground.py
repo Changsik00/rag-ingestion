@@ -466,14 +466,14 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 
                 # [Spec 066] Observability Links
                 trace_url = context_data.get("trace_url")
-                
+
                 col_tr1, col_tr2 = st.columns([1, 1])
                 with col_tr1:
                     if trace_url:
                         st.link_button("🚀 View LangFuse Trace", trace_url, use_container_width=True)
                 with col_tr2:
                     st.link_button(
-                        "🔍 View Rerank Analysis", 
+                        "🔍 View Rerank Analysis",
                         f"/Observability_&_Trace?thread_id={current_thread_id}",
                         use_container_width=True
                     )

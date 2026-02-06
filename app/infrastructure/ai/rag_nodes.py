@@ -334,12 +334,12 @@ class RAGNodes:
         for chunk, score_data in zip(rerank_targets, rerank_results):
             score = score_data.get("score", 0)
             reasoning = score_data.get("reasoning", "No reasoning")
-            
+
             # [Spec 066] Collect detailed trace log
             # Truncate content for dropped chunks to save space
             status = "passed" if score >= min_relevance_score else "dropped"
             content_snippet = chunk.content[:100] + "..." if len(chunk.content) > 100 else chunk.content
-            
+
             rerank_log.append({
                 "chunk_id": chunk.id,
                 "score": score,
