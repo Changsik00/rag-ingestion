@@ -241,8 +241,18 @@ class Neo4jDocumentRepository(DocumentRepository):
             # Actually, we can filter AFTER yielding nodes.
             # "CALL ... YIELD node WHERE ..." is the standard pattern.
 
+            # [Spec 066 Fix] Escape Lucene special characters in query
+            # ( ) [ ] { } ^ " ~ * ? : \ / 
+            escaped_query = query
+            for char in r'()[]{}^"~*?:\/':
+                escaped_query = escaped_query.replace(char, f"\\{char}")
+            
+            # Remove Lucene keywords AND/OR if they appear as standalone words to prevent syntax error
+            import re
+            escaped_query = re.sub(r"\b(AND|OR|NOT)\b", lambda m: m.group(1).lower(), escaped_query)
+
             where_clauses = []
-            params = {"keyword": query, "limit": limit}
+            params = {"keyword": escaped_query, "limit": limit}
 
             if filters:
                 for key, value in filters.items():
@@ -265,6 +275,10 @@ class Neo4jDocumentRepository(DocumentRepository):
                     else:
                         where_clauses.append(f"node.{target_prop} = ${param_key}")
 
+            where_snippet = " AND ".join(where_clauses) if where_clauses else ""
+            if where_snippet:
+                where_snippet = "WHERE " + where_snippet
+
             # [Spec 066 Fix] Score Thresholding for Keyword Search
             # Lucene scores below 1.0 are typically very weak/random noise.
             # Adding score filter to where_snippet
@@ -272,6 +286,7 @@ class Neo4jDocumentRepository(DocumentRepository):
                 where_snippet += " AND score > 1.0"
             else:
                 where_snippet = "WHERE score > 1.0"
+
 
             cypher_query = f"""
             CALL db.index.fulltext.queryNodes("chunk_fulltext", $keyword) YIELD node, score
