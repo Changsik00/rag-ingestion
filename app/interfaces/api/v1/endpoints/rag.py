@@ -109,21 +109,20 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
             messages.append(MessageDTO(role=role, content=content))
 
         # Filter out complex objects for clean JSON response
+        def serialize_recursive(obj: Any) -> Any:
+            if hasattr(obj, "model_dump"):
+                return obj.model_dump()
+            if isinstance(obj, list):
+                return [serialize_recursive(item) for item in obj]
+            if isinstance(obj, dict):
+                return {k: serialize_recursive(v) for k, v in obj.items()}
+            return obj
+
         serializable_values = {}
         for k, v in values.items():
             if k == "messages":
                 continue
-            
-            # Handle Pydantic models (including lists of them)
-            if hasattr(v, "model_dump"):
-                serializable_values[k] = v.model_dump()
-            elif isinstance(v, list):
-                serializable_values[k] = [
-                    item.model_dump() if hasattr(item, "model_dump") else item 
-                    for item in v
-                ]
-            else:
-                serializable_values[k] = v
+            serializable_values[k] = serialize_recursive(v)
 
         return SessionTraceResponse(
             messages=messages, 
