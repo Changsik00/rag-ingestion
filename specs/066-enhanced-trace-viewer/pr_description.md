@@ -27,8 +27,15 @@ uv run pytest tests/unit/application/services/test_rag_dto.py
 - ✅ `test_rag_result_contains_rerank_log`: 통과
 
 ### Manual Verification (Scenarios)
-1. **RAG Playground 시나리오**: 질문 입력 -> 답변 하단 "🔍 View Rerank Analysis" 클릭 -> 상세 트레이스 테이블 확인.
-2. **Trace Viewer 시나리오**: `thread_id` 직접 입력 -> 'Rerank Analysis' 탭에서 분석 데이터 확인.
+1. **시나리오 1: Playground 통합 확인 (추천)**
+    - **동작**: RAG Playground에서 질문 입력 -> 결과 하단 "🔍 View Rerank Analysis" 버튼 클릭.
+    - **결과**: Trace Viewer로 자동 이동 및 'Rerank Analysis' 탭 활성화 확인.
+2. **시나리오 2: Trace Viewer 직접 확인**
+    - **동작**: Observability 페이지에서 `RAG Session` 선택 -> `thread_id` 입력 -> Fetch State.
+    - **결과**: 'Rerank Analysis' 탭에서 청크별 스코어 및 사유 테이블 표시 확인.
+3. **시나리오 3: Raw State 데이터 확인 (개발자용)**
+    - **동작**: Fetch State 후 'Raw Data' 탭 확인.
+    - **결과**: `values.rerank_log`에 상세 객체 배열이 스키마대로 포함됨을 확인.
 
 ## 📦 Files Changed
 
