@@ -27,9 +27,21 @@ AI가 수집 단계에서 데이터의 출처(Source)를 잊어버리지 않도�
 
 ### 🔗 Entity Normalization & Alias Management (엔티티 정규화 및 별칭 관리)
 한국어의 특징인 띄어쓰기 변동성과 다양한 줄임말을 처리하여 지식 그래프의 파편화를 방지합니다.
-- **Structural Merging (구조적 통합)**: 공백 제거 및 표준화 정규화(`normalize_entity_name`)를 통해 `어쩌다 어른`과 `어쩌다어른`을 동일한 물리적 노드로 병합합니다.
-- **Semantic Alias (`ALIAS_OF`)**: "세바시"와 "세상을 바꾸는 시간"처럼 형태가 완전히 다른 별칭들을 그래프 상에서 연결하여, 어떤 키워드로 검색해도 전체 지식에 접근할 수 있게 합니다.
-- **Side-Effect Mitigation (부작용 방지)**: 과도한 병합(Over-merging)으로 인한 정보 왜곡을 막기 위해, 고유 ID는 정규화된 값을 쓰되 **표시 이름(Display Name)**은 원본의 핵심 의미를 유지하도록 설계합니다.
+
+#### 🧠 무엇이 달라졌나요? (Optimization Logic)
+- **소스 메타데이터 주입 (Source Context)**: 이전에는 AI가 영상의 '텍스트(자막)'만 봤다면, 이제는 영상의 제목과 채널명(예: 세바시 강연) 정보를 분석 단계에서 함께 전달받습니다.
+- **추론 엔진 강화 (Reasoning Engine)**: LLM에게 "자막에 '세바시'라고 적혀있더라도, 채널명이나 제목에 브랜드 정보가 있다면 이를 **세상을 바꾸는 시간 15분** 같은 정식 명칭(Canonical Name)으로 스스로 추론하여 연결하라"는 명시적인 추론 지침을 추가했습니다.
+- **동적 별칭 도출**: 이제 AI는 고정된 리스트가 아니라, 메타데이터 사이의 관계를 분석하여 "세바시 강연" 채널의 영상이니 "세바시"는 이 프로그램의 별칭이라는 것을 스스로 이해하고 지식 그래프에 `ALIAS_OF` 관계로 기록합니다.
+
+#### ⚙️ 코드 변경 증거 (Technical Implementation)
+1. **AI에게 '눈'을 달아줌 ([langchain_extractor.py](file:///Users/ck/Project/doit/rag-ingestion/app/infrastructure/ai/langchain_extractor.py))**
+   - `PromptTemplate`에 `{metadata}` 변수를 추가하여 AI가 영상 제목과 채널명을 볼 수 있게 했습니다.
+   - `aextract_metadata(..., metadata=metadata)` 처럼 딕셔너리를 받아 JSON 문자열로 변환해 AI에게 넘기는 로직을 구현했습니다. (확인: [L110: SOURCE METADATA: {metadata}](file:///Users/ck/Project/doit/rag-ingestion/app/infrastructure/ai/langchain_extractor.py#L110))
+2. **지능형 추론 지침 주입 (Prompt Logic)**
+   - 프롬프트 내부에 "약어(세바시)를 보면 정식 명칭(세상을 바꾸는 시간 15분)으로 복원하라"는 **Deep Semantic Alignment** 규칙을 코드로 심었습니다. (확인: [L84: Canonical Naming & Abbreviation Resolution](file:///Users/ck/Project/doit/rag-ingestion/app/infrastructure/ai/langchain_extractor.py#L84))
+3. **지능형 그래프 연결 ([ingestion.py](file:///Users/ck/Project/doit/rag-ingestion/app/application/services/ingestion.py))**
+   - `_build_knowledge_graph` 함수에서 `normalize_entity_name` 유틸리티를 호출하여 띄어쓰기를 제거한 ID로 노드를 병합합니다.
+   - AI가 찾아낸 별칭들을 `ALIAS_OF`라는 실제 그래프 관계로 생성하는 루프를 추가했습니다. (확인: [L281: normalized_name = normalize_entity_name(name)](file:///Users/ck/Project/doit/rag-ingestion/app/application/services/ingestion.py#L281))
 
 ---
 
