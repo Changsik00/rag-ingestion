@@ -22,11 +22,14 @@ from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobReposit
 from app.infrastructure.repositories.postgres_session_repository import PostgresSessionRepository
 
 
+from app.infrastructure.repositories.composite import CompositeDocumentRepository
+
 # Parametrize all DocumentRepository implementations
 @pytest.fixture(
     params=[
         (Neo4jDocumentRepository, DocumentRepository),
         (ChromaVectorRepository, DocumentRepository),
+        (CompositeDocumentRepository, DocumentRepository),
         (Neo4jJobRepository, JobRepository),
         (PostgresSessionRepository, SessionRepository),
         (Neo4jGraphRepository, GraphRepository),
@@ -58,6 +61,10 @@ class TestDocumentRepositoryContract:
                 "os.environ", {"GEMINI_API_KEY": "fake-key"}
             ):
                 storage_class()
+        elif storage_class == CompositeDocumentRepository:
+            mock_neo4j = unittest.mock.Mock(spec=DocumentRepository)
+            mock_chroma = unittest.mock.Mock(spec=DocumentRepository)
+            storage_class(neo4j=mock_neo4j, chroma=mock_chroma)
         elif storage_class == Neo4jJobRepository:
             mock_driver = unittest.mock.MagicMock()
             storage_class(mock_driver)

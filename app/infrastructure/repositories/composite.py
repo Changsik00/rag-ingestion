@@ -59,3 +59,10 @@ class CompositeDocumentRepository(DocumentRepository):
 
     def get_all_chunk_metadata(self) -> list[dict]:
         return self.neo4j.get_all_chunk_metadata()
+
+    def get_adjacent_chunks(self, parent_id: str, index: int, window_size: int = 1) -> list[Chunk]:
+        """
+        인접 청크 조회를 위해 Neo4j 저장소를 사용합니다.
+        Neo4j가 문서의 구조적 관계를 관리하는 Primary Source입니다.
+        """
+        return self.neo4j.get_adjacent_chunks(parent_id, index, window_size)
