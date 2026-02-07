@@ -69,7 +69,7 @@ async def test_langgraph_adapter_reset_checkpoints():
     # Given
     mock_llm = MagicMock()
     mock_checkpointer = AsyncMock(spec=AsyncPostgresSaver)
-    
+
     # Mock the connection attribute
     mock_conn = AsyncMock()
     mock_checkpointer.conn = mock_conn

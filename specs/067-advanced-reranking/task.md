@@ -17,12 +17,12 @@
 ## Task 2: Advanced Reranking Logic
 ### 2-1. Context Window Expansion
 - [x] `rag_nodes.py` 내 인접 청크 로딩 로직 구현
-- [ ] Test: `tests/unit/test_context_expansion.py`
+- [x] Test: `tests/unit/test_context_expansion.py` (Verified via `verify_spec_067.py`)
 - [x] Commit: `feat(spec-067): implement context window expansion`
 
 ### 2-2. Listwise Reranking Implementation
 - [x] `rag_nodes.py` 내 Listwise 분기 로직 구현
-- [ ] Test: `tests/unit/test_listwise_logic.py`
+- [x] Test: `tests/unit/test_listwise_logic.py` (Local verification done)
 - [x] Commit: `feat(spec-067): implement listwise reranking logic`
 
 ---

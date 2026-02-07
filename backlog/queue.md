@@ -44,20 +44,20 @@
     * **Semantic Check**: VectorDB 조회 통해 유사/중복 문서 식별.
     * **Force Refresh**: 강제 재수집 옵션 추가.
 
-* [ ] **Spec 066: Enhanced Trace Viewer** (Medium)
+* [x] **Spec 066: Enhanced Trace Viewer** (Completed)
   * **Goal**: Inspector에서 Rerank 단계의 상세 정보(점수, 필터링 사유, Drop된 청크)를 시각화하여 "왜 검색 안 됨?" 오해 해소.
-  * **Context**: Current Inspector only shows vector search results, hiding the fact that chunks were filtered out by the Reranker.
+  * **Status**: ✅ Completed & Closed
   * **Tasks**:
     * Add `rerank_log` to RAGResult.
     * Visualize "Dropped Chunks" in Admin UI with their scores and reasoning.
 
-* [ ] **Spec 067: Advanced Reranking Logic Research** (High)
-  * **Problem**: 현재 Pointwise 방식은 정보가 파편화된 경우(context 부족) 개별 점수가 낮아 탈락함.
+* [x] **Spec 067: Advanced Reranking Logic Research** (Completed)
   * **Goal**: 여러 청크를 "함께" 고려하여 점수를 매기거나(Listwise), 상호 보완적인 정보를 살리는 로직 연구.
-  * **Details (Listwise vs Pointwise)**:
-    * **Pointwise (Current)**: Scores each chunk independently. Fast, but misses context split across chunks.
-    * **Listwise (Proposed)**: Sends multiple chunks to LLM at once to evaluate the "set". better quality but higher latency/cost.
-    * **Action Item**: Research Contextual Reranking or Sliding Window approaches to balance cost/performance.
+  * **Status**: ✅ Completed & Merged (PR created)
+  * **Tasks**:
+    * Listwise Reranking 전략 구현
+    * Contextual (Sliding Window) 확장 기능 도입
+    * Pointwise vs Listwise 전략 분기 구현
 
 ---
 
