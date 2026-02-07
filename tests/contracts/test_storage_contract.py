@@ -32,6 +32,19 @@ class TestDocumentRepositoryContract:
         """All storage classes must implement DocumentRepository"""
         assert issubclass(storage_class, DocumentRepository)
 
+    def test_instantiation(self, storage_class):
+        """All storage classes must be instantiatable (not abstract)"""
+        import unittest.mock
+        # Attempt to instantiate with mocks for dependencies
+        if storage_class == Neo4jDocumentRepository:
+            mock_driver = unittest.mock.Mock()
+            storage_class(mock_driver)
+        elif storage_class == ChromaVectorRepository:
+            # ChromaVectorRepository doesn't take args, but we might need to mock env/client to avoid network calls
+            with unittest.mock.patch("chromadb.HttpClient"), \
+                 unittest.mock.patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"}):
+                storage_class()
+
     def test_has_save_method(self, storage_class):
         """All storage classes must have a save method"""
         assert hasattr(storage_class, "save")
