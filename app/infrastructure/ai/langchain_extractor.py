@@ -1,3 +1,4 @@
+import json
 import logging
 
 from langchain_core.output_parsers import PydanticOutputParser
@@ -81,13 +82,12 @@ class LangChainExtractor:
               Examples: "Clean Code", "Attention Is All You Need", "The Lean Startup", "research paper"
 
             **Important Guidelines**:
-            - **CRITICAL**: Use the provided 'SOURCE METADATA' (like Program Name, Channel, or Title) to determine the `primary_entity`.
-            - Ensure the final Title, Summary, and `primary_entity` explicitly reflect the correct context.
-            - If an entity could fit multiple types, prioritize based on context.
-            - **If uncertain, use CONCEPT as the default fallback type.**
-            - For Korean activity names like "벤치마킹" or "책 쓰기", use ACTIVITY type.
-            - GPT-4 is a PRODUCT (commercial AI product), not TECHNOLOGY.
-            - Book titles should use DOCUMENT type.
+            - **Canonical Naming & Abbreviation Resolution**: 
+              * Use the most formal and widely known name as the `primary_entity` (Canonical ID).
+              * If the `SOURCE METADATA` contains abbreviations like "세바시", "심동", or "ebs", you MUST resolve them to their formal program names (e.g., "세상을 바꾸는 시간 15분", "심야 토론", "EBS 다큐프라임") based on your world knowledge and the context.
+              * Leverage the `channel_name` and `title` from metadata to confirm the identity.
+            - **Alias Extraction**: Explicitly look for abbreviations or synonymous terms in the text and map them in the `aliases` field. (e.g., Map {{"세상을 바꾸는 시간 15분": ["세바시", "Sebasi"]}})
+            - **Structure Merging**: Output the most readable "Display Name" for title/summary, but the system will use the `primary_entity` for graph anchoring.
 
             6. **Relationships between entities:**
             Extract meaningful relationships between the identified entities.
@@ -108,28 +108,33 @@ class LangChainExtractor:
             Text to analyze:
             {text}
 
+            SOURCE METADATA:
+            {metadata}
+
             {format_instructions}
             """,
-            input_variables=["text"],
+            input_variables=["text", "metadata"],
             partial_variables={"format_instructions": self.parser.get_format_instructions()},
         )
         self.chain = self.prompt | self.llm | self.parser
 
-    def extract_metadata(self, text: str) -> ExtractedMetadata | None:
+    def extract_metadata(self, text: str, metadata: dict | None = None) -> ExtractedMetadata | None:
         """동기식 메타데이터 추출 (하위 호환용)"""
         try:
             logger.info("Starting semantic extraction via LLM (Sync)...")
-            result = self.chain.invoke({"text": text})
+            meta_str = json.dumps(metadata, ensure_ascii=False) if metadata else "N/A"
+            result = self.chain.invoke({"text": text, "metadata": meta_str})
             return result
         except Exception as e:
             logger.error(f"Failed to extract semantic metadata (Sync): {e}")
             return None
 
-    async def aextract_metadata(self, text: str) -> ExtractedMetadata | None:
+    async def aextract_metadata(self, text: str, metadata: dict | None = None, thread_id: str | None = None) -> ExtractedMetadata | None:
         """비동기식 메타데이터 추출"""
         try:
-            logger.info("Starting semantic extraction via LLM (Async)...")
-            result = await self.chain.ainvoke({"text": text})
+            logger.info(f"Starting semantic extraction via LLM (Async) [Thread: {thread_id}]...")
+            meta_str = json.dumps(metadata, ensure_ascii=False) if metadata else "N/A"
+            result = await self.chain.ainvoke({"text": text, "metadata": meta_str})
             logger.info("Semantic extraction completed successfully.")
             return result
         except Exception as e:
