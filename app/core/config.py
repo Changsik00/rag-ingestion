@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str
     GEMINI_MODEL_NAME: str = "gemini-3-flash-preview"
     GEMINI_EMBEDDING_MODEL_NAME: str = "gemini-embedding-001"
+    GEMINI_EMBEDDING_DIMENSIONALITY: int = 3072
     FIRECRAWL_API_KEY: str | None = None
 
     # Chunking Strategy
