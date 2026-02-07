@@ -263,18 +263,9 @@ class Ingestion:
         """
         Entity 노드, MENTIONS 관계 및 Entity-Entity 관계 생성
         """
-        if not semantic_data.entities:
-            return
-
-        # [Spec 068] Program-Centric Star Schema Heuristic
-        # If the document summary or title indicates a known Show/Program, 
-        # connect all extracted entities to that Program Node.
-        program_node = None
-        known_programs = ["어쩌다 어른", "세바시", "유 퀴즈", "삼프로TV"]
-        for p in known_programs:
-            if p in (semantic_data.title or ""):
-                program_node = p
-                break
+        # [Spec 068] Program-Centric Star Schema Heuristic (Generalized)
+        # Connect all extracted entities to the dynamically identified primary_entity node.
+        program_node = semantic_data.primary_entity
         
         # 1. Entity 저장 및 MENTIONS 관계
         all_entity_names = set()
@@ -285,11 +276,14 @@ class Ingestion:
                     self.graph.create_mention_relationship(str(doc_id), name)
                     all_entity_names.add(name)
                     
-                    # Create implicit relationship to Program node if found
+                    # Create implicit relationship to Primary Entity node if found
                     if program_node and name != program_node:
+                        # Ensure program_node itself exists as an Entity (Show or Concept)
+                        self.graph.save_entity(program_node, "SHOW") 
+                        
                         self.graph.create_entity_relationship(
                             source_name=name,
-                            relationship_type="PART_OF_PROGRAM", 
+                            relationship_type="PART_OF_CONTEXT", 
                             target_name=program_node
                         )
                 except Exception as e:

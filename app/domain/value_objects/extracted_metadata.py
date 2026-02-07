@@ -31,6 +31,7 @@ class ExtractedMetadata(BaseModel):
     title: str | None = Field(description="A concise and accurate title for the content.")
     summary: str = Field(description="A comprehensive summary of the content (approx. 3 sentences).")
     keywords: list[str] = Field(description="List of 5-10 key topics or tags related to the content.")
+    primary_entity: str | None = Field(description="The main program, show, or subject this content belongs to (e.g., '어쩌다 어른', 'Elon Musk').")
     entities: dict[EntityType, list[str]] = Field(default_factory=dict, description="분류된 Entity 목록 (타입별)")
     relationships: list[EntityRelationship] = Field(default_factory=list, description="Entity 간 관계 목록")
 

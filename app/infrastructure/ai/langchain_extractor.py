@@ -32,7 +32,11 @@ class LangChainExtractor:
             1. A suitable title (if the original is missing or unclear).
             2. A concise summary (approx. 3 sentences).
             3. A list of 5-10 relevant keywords.
-            4. Key entities classified by EXACTLY one of the following standardized types:
+            4. **Primary Entity**: Identify the MAIN SUBJECT or PROGRAM NAME this content belongs to.
+               - Look for it in the 'SOURCE METADATA' (e.g., Program Name, Channel, Video Title).
+               - If the content is a talk show fragment, this should be the Show Name (e.g., '어쩌다 어른'). 
+               - If it's a biography, it should be the Person's Name.
+            5. Key entities classified by EXACTLY one of the following standardized types:
 
             **CRITICAL: Entity Classification Rules**
             You MUST classify entities into EXACTLY one of these 9 types:
@@ -66,15 +70,15 @@ class LangChainExtractor:
               Examples: "Clean Code", "Attention Is All You Need", "The Lean Startup", "research paper"
 
             **Important Guidelines**:
-            - **CRITICAL**: Use the provided 'SOURCE METADATA' (like Program Name, Channel, or Title) to contextualize the extraction.
-            - Ensure the final Title and Summary explicitly mention the Program Name (e.g., '어쩌다 어른') if it exists in Source Metadata.
+            - **CRITICAL**: Use the provided 'SOURCE METADATA' (like Program Name, Channel, or Title) to determine the `primary_entity`.
+            - Ensure the final Title, Summary, and `primary_entity` explicitly reflect the correct context.
             - If an entity could fit multiple types, prioritize based on context.
             - **If uncertain, use CONCEPT as the default fallback type.**
             - For Korean activity names like "벤치마킹" or "책 쓰기", use ACTIVITY type.
             - GPT-4 is a PRODUCT (commercial AI product), not TECHNOLOGY.
             - Book titles should use DOCUMENT type.
 
-            5. **Relationships between entities:**
+            6. **Relationships between entities:**
             Extract meaningful relationships between the identified entities.
 
             **Relationship Types:**
