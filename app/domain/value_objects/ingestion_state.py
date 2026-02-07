@@ -84,6 +84,7 @@ class IngestionGraphState(MessagesState):
 
     original_url: str
     raw_content: str
+    content_metadata: dict  # Source metadata (title, URL, etc.)
     metadata: ExtractedMetadata | None
     # steps_history removed in favor of messages
 

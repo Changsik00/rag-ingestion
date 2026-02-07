@@ -21,7 +21,7 @@ class SemanticExtractor:
         """
         self.llm = llm
 
-    async def extract(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:
+    async def extract(self, text: str, metadata: dict | None = None, thread_id: str | None = None) -> ExtractedMetadata | None:
         """
         텍스트에서 메타데이터 추출
 
@@ -33,7 +33,7 @@ class SemanticExtractor:
             ExtractedMetadata: 추출된 메타데이터 (실패 시 None)
         """
         try:
-            return await self.llm.aextract_metadata(text, thread_id=thread_id)
+            return await self.llm.aextract_metadata(text, metadata=metadata, thread_id=thread_id)
         except Exception as e:
             logger.error(f"Semantic extraction failed: {e}")
             return None

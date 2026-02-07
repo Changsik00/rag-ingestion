@@ -190,6 +190,13 @@ class RAGNodes:
         # [Spec 034] Initial Search reasoning
         reasoning_log = state.get("reasoning_log", [])
 
+        # Heuristic: If show name is in query but not extracted as entity
+        show_names = ["어쩌다 어른", "세바시", "유 퀴즈"]
+        for show in show_names:
+            if show in rewritten_query and show not in entities:
+                entities.append(show)
+                logger.info(f"Show name '{show}' detected in query, added to entities list.")
+
         tasks = []
         # Strategy Logic
         if strategy in ["hybrid", "vector"]:

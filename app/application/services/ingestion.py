@@ -196,7 +196,7 @@ class Ingestion:
                 semantic_data = None
                 if self.extractor:
                     try:
-                        semantic_data = await self.extractor.extract(text, thread_id=job_id)
+                        semantic_data = await self.extractor.extract(text, metadata=metadata, thread_id=job_id)
                         if semantic_data:
                             metadata["semantic_data"] = semantic_data.model_dump()
                     except Exception as e:
@@ -266,6 +266,16 @@ class Ingestion:
         if not semantic_data.entities:
             return
 
+        # [Spec 068] Program-Centric Star Schema Heuristic
+        # If the document summary or title indicates a known Show/Program, 
+        # connect all extracted entities to that Program Node.
+        program_node = None
+        known_programs = ["어쩌다 어른", "세바시", "유 퀴즈", "삼프로TV"]
+        for p in known_programs:
+            if p in (semantic_data.title or ""):
+                program_node = p
+                break
+        
         # 1. Entity 저장 및 MENTIONS 관계
         all_entity_names = set()
         for entity_type, names in semantic_data.entities.items():
@@ -274,6 +284,14 @@ class Ingestion:
                     self.graph.save_entity(name, entity_type)
                     self.graph.create_mention_relationship(str(doc_id), name)
                     all_entity_names.add(name)
+                    
+                    # Create implicit relationship to Program node if found
+                    if program_node and name != program_node:
+                        self.graph.create_entity_relationship(
+                            source_name=name,
+                            relationship_type="PART_OF_PROGRAM", 
+                            target_name=program_node
+                        )
                 except Exception as e:
                     logger.error(f"Failed to build graph for entity {name}: {e}")
 

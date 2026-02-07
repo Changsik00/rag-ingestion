@@ -29,7 +29,9 @@ class IngestionOrchestrator:
         """Delegate agenerate to internal LLM for LangChain compat."""
         return await self.llm.agenerate(*args, **kwargs)
 
-    async def aextract_metadata(self, text: str, thread_id: str | None = None) -> ExtractedMetadata | None:
+    async def aextract_metadata(
+        self, text: str, metadata: dict | None = None, thread_id: str | None = None
+    ) -> ExtractedMetadata | None:
         """
         Executes the ingestion graph to extract metadata from the text.
 
@@ -57,6 +59,7 @@ class IngestionOrchestrator:
         initial_state = {
             "original_url": "",  # Optional, not used in extraction logic yet
             "raw_content": text,
+            "content_metadata": metadata or {},
             "metadata": None,
             "messages": [],
             "error": None,

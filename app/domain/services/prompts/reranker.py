@@ -10,8 +10,9 @@ Assign a relevance score between 1 and 10, where:
 - 5: The chunk is highly relevant and directly pertains to the question's specific context.
 - 1: The chunk is weakly related (e.g. mentions the same name but in a different, unrelated context).
 - 0: The chunk is completely irrelevant noise.
+- PENALTY: Heavily penalize (score 1 or 0) documents that mention a FAMOUS NAME from the query but in a COMPLETELY DIFFERENT life or career context (e.g. Wikipedia bio vs TV Show guesting).
 
-Note: Context consistency is critical. If the query asks about a person in a specific TV show, a biography of that person that does NOT mention the show should be scored 1 or 0.
+Note: Context consistency is critical. If the query asks about a person in a specific TV show, a biography of that person that does NOT mention the show should be scored 1 or 0. Hallucinating a connection just because of a name match is a FAILURE.
 
 Query: {query}
 

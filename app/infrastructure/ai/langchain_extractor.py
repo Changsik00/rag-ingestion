@@ -66,6 +66,8 @@ class LangChainExtractor:
               Examples: "Clean Code", "Attention Is All You Need", "The Lean Startup", "research paper"
 
             **Important Guidelines**:
+            - **CRITICAL**: Use the provided 'SOURCE METADATA' (like Program Name, Channel, or Title) to contextualize the extraction.
+            - Ensure the final Title and Summary explicitly mention the Program Name (e.g., '어쩌다 어른') if it exists in Source Metadata.
             - If an entity could fit multiple types, prioritize based on context.
             - **If uncertain, use CONCEPT as the default fallback type.**
             - For Korean activity names like "벤치마킹" or "책 쓰기", use ACTIVITY type.
