@@ -11,6 +11,7 @@
 - [x] **Context Window Expansion 도입**: 청크 평가 시 전후 인접 청크를 결합하여 정보 손실 방지.
 - [x] **Neo4j Repository 확장**: 인접 청크 조회를 위한 `get_adjacent_chunks` 메서드 구현.
 - [x] **State Management 고도화**: `RAGGraphState` 내 `rerank_strategy` 필드 추가를 통한 유연한 전략 전환 지원.
+- [x] **Technical Guide 작성**: 사용자 가이드를 바탕으로 `docs/guides/advanced-reranking-guide.md` 추가.
 
 ## 🎯 Key Review Points
 1. **Listwise Logic**: `rag_nodes.py`의 `_rerank_listwise`에서 JSON Array 형태의 LLM 응답을 파싱하고 필터링하는 예외 처리 로직.
@@ -40,6 +41,7 @@ PYTHONPATH=. uv run python scripts/verify_spec_067.py
 ### 🆕 New Files
 - `app/domain/services/prompts/listwise_reranker.py`: Listwise 전용 프롬프트 정의
 - `scripts/verify_spec_067.py`: 핵심 로직 검증 스크립트
+- `docs/guides/advanced-reranking-guide.md`: 리랭킹 개념 및 실무 가이드
 
 ### 🛠 Modified Files
 - `app/domain/interfaces/document_repository.py` (+6, -1): `get_adjacent_chunks` 명세 추가
@@ -47,10 +49,16 @@ PYTHONPATH=. uv run python scripts/verify_spec_067.py
 - `app/infrastructure/ai/rag_nodes.py` (+149, -10): Listwise 및 Context Expansion 로직 통합
 - `app/domain/value_objects/rag_state.py` (+3, -0): `rerank_strategy` 필드 추가
 
-**Total:** 6 files changed (including specs/task)
+**Total:** 7 files changed (including specs/task)
 
 ## ✅ Definition of Done
 - [x] 모든 단위/통합 테스트 통과
 - [x] `walkthrough.md` 작성 및 아카이브 완료
 - [x] `pr_description.md` 작성 및 아카이브 완료
 - [x] Ruff lint 및 format 확인 완료
+
+## 🔗 관련 문서
+- [spec.md](file:///Users/ck/Project/doit/rag-ingestion/specs/067-advanced-reranking/spec.md)
+- [plan.md](file:///Users/ck/Project/doit/rag-ingestion/specs/067-advanced-reranking/plan.md)
+- [walkthrough.md](file:///Users/ck/Project/doit/rag-ingestion/specs/067-advanced-reranking/walkthrough.md)
+- [advanced-reranking-guide.md](file:///Users/ck/Project/doit/rag-ingestion/docs/guides/advanced-reranking-guide.md)
