@@ -275,6 +275,7 @@ class Ingestion:
         # 1. Entity 저장 및 MENTIONS 관계
         all_entity_names = set()
         for entity_type, names in semantic_data.entities.items():
+            # semantic_data.entities is dict[EntityType, list[str]]
             for name in names:
                 try:
                     self.graph.save_entity(name, entity_type)

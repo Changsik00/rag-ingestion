@@ -20,10 +20,11 @@ class Neo4jGraphRepository:
         with self.driver.session() as session:
             session.run(cq.CREATE_ENTITY_INDEX)
 
-    def save_entity(self, name: str, entity_type: EntityType) -> str:
+    def save_entity(self, name: str, entity_type: EntityType | str) -> str:
         """Entity 노드 MERGE (중복 시 기존 반환)"""
+        type_val = entity_type.value if hasattr(entity_type, "value") else entity_type
         with self.driver.session() as session:
-            result = session.run(cq.MERGE_ENTITY, name=name, type=entity_type.value).single()
+            result = session.run(cq.MERGE_ENTITY, name=name, type=type_val).single()
             return result["name"]
 
     def create_mention_relationship(self, doc_id: str, entity_name: str) -> None:
@@ -60,12 +61,13 @@ class Neo4jGraphRepository:
     def create_entity_relationship(
         self,
         source_name: str,
-        relationship_type,  # RelationshipType from ontology
+        relationship_type,  # RelationshipType from ontology or str
         target_name: str,
     ) -> None:
         """Entity-Entity 관계 생성"""
+        rel_type_val = relationship_type.value if hasattr(relationship_type, "value") else relationship_type
         # Cypher에서 relationship type은 동적으로 삽입해야 함
-        query = cq.CREATE_ENTITY_RELATIONSHIP.replace("{relationship_type}", relationship_type.value)
+        query = cq.CREATE_ENTITY_RELATIONSHIP.replace("{relationship_type}", rel_type_val)
 
         with self.driver.session() as session:
             session.run(query, source_name=source_name, target_name=target_name)
