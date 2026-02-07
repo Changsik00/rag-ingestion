@@ -33,7 +33,7 @@
 - [x] **Walkthrough 작성**: `specs/067-advanced-reranking/walkthrough.md`
 - [x] **PR Description 작성**: `specs/067-advanced-reranking/pr_description.md`
 - [x] **Archive Commit**: `docs(spec-067): archive walkthrough and pr description`
-- [ ] Create PR: `gh pr create --title "feat(spec-067): advanced reranking" --body-file specs/067-advanced-reranking/pr_description.md`
+- [x] Create PR: `gh pr create --title "feat(spec-067): advanced reranking" --body-file specs/067-advanced-reranking/pr_description.md`
 
 ## Summary
 **총 Task**: 3개  
