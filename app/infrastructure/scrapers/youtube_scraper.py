@@ -30,10 +30,13 @@ class YouTubeScraper(ScraperInterface):
         logger.info(f"YouTube 스크래핑 시작: {url}")
         video_id = self._extract_video_id(url)
 
-        # 1. 자막 수집 시도
+        # 1. Fetch External Metadata (Title, Channel)
+        video_info = await self._get_video_info(url)
+
+        # 2. 자막 수집 시도
         transcript_text = await self._get_transcript(video_id)
 
-        # 2. 자막 부재 시 Whisper Fallback
+        # 3. 자막 부재 시 Whisper Fallback
         if not transcript_text:
             logger.info("자막 데이터를 찾을 수 없어 Whisper STT Fallback을 실행합니다.")
             audio_path = await self._extract_audio(url)
@@ -47,15 +50,17 @@ class YouTubeScraper(ScraperInterface):
         if not transcript_text:
             raise ValueError("YouTube 영상에서 텍스트 콘텐츠를 추출하는 데 실패했습니다.")
 
-        # 3. LLM 기반 지식 구조화 및 정제
-        knowledge = await self._extract_knowledge_with_llm(transcript_text)
+        # 4. LLM 기반 지식 구조화 및 정제 (Pass external info for context)
+        context_info = f"Video Title: {video_info.get('title')}, Channel/Uploader: {video_info.get('uploader')}"
+        knowledge = await self._extract_knowledge_with_llm(transcript_text, context_info=context_info)
 
-        # 4. IngestResponse 생성
+        # 5. IngestResponse 생성
         markdown_content = self._format_as_markdown(knowledge)
         metadata = {
-            "title": knowledge.get("title", f"YouTube Video: {video_id}"),
+            "title": knowledge.get("title", video_info.get("title", f"YouTube Video: {video_id}")),
             "source": url,
             "video_id": video_id,
+            "channel_name": video_info.get("uploader"),
             "knowledge": knowledge,
         }
 
@@ -134,13 +139,33 @@ class YouTubeScraper(ScraperInterface):
             results.append({"start": segment.start, "end": segment.end, "text": segment.text.strip()})
         return results
 
-    async def _extract_knowledge_with_llm(self, transcript: str) -> dict[str, Any]:
+    async def _get_video_info(self, url: str) -> dict[str, Any]:
+        """yt-dlp를 사용하여 영상의 기본 메타데이터(제목, 업로더 등)를 가져옵니다."""
+        ydl_opts = {
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+        }
+        try:
+            def fetch_info():
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    return ydl.extract_info(url, download=False)
+
+            return await asyncio.to_thread(fetch_info)
+        except Exception as e:
+            logger.warning(f"Video info extraction failed for {url}: {e}")
+            return {}
+
+    async def _extract_knowledge_with_llm(self, transcript: str, context_info: str = "") -> dict[str, Any]:
         if not self.llm:
             return {"summary": transcript, "sections": [], "claims": [], "tone": "N/A", "intent": "N/A"}
 
         prompt = f"""
 다음은 유튜브 영상의 자막 스크립트입니다. 이를 바탕으로 고품질 지식 문서를 생성해주세요.
 반드시 아래 JSON 형식을 지켜주세요.
+
+[영상 부가 정보]
+{context_info}
 
 [스크립트 시작]
 {transcript[:8000]}  # 텍스트가 너무 길면 잘라서 전달

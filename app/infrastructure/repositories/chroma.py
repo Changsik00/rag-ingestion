@@ -342,8 +342,8 @@ class ChromaVectorRepository(DocumentRepository):
 
             # [Spec 066 Fix] Similarity Thresholding
             # ChromaDB distances: lower is better (0.0 is exact match, typically > 1.0 is noise)
-            # 0.5 is a strict threshold for high compatibility settings.
-            THRESHOLD = 0.5
+            # 0.7 is a standard threshold for balanced recall/precision.
+            THRESHOLD = 0.7
 
             valid_indices = [j for j, dist in enumerate(results["distances"][0]) if dist < THRESHOLD]
 
