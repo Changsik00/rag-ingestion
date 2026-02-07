@@ -25,6 +25,12 @@ AI가 수집 단계에서 데이터의 출처(Source)를 잊어버리지 않도�
 - **Multi-Vector Retrieval**: Vector(의미), Keyword(형태), Graph(관계) 결과를 모두 가져옵니다.
 - **Pointwise/Listwise Reranking**: 검색된 수십 개의 조각 중, 실제 질문과 가장 일맥상통하는 상위 3-5개만 골라냅니다. 이때 AI에게 "맥락이 맞지 않으면 과감히 0점을 주라"고 지시하여 정확도를 높입니다.
 
+### 🔗 Entity Normalization & Alias Management (엔티티 정규화 및 별칭 관리)
+한국어의 특징인 띄어쓰기 변동성과 다양한 줄임말을 처리하여 지식 그래프의 파편화를 방지합니다.
+- **Structural Merging (구조적 통합)**: 공백 제거 및 표준화 정규화(`normalize_entity_name`)를 통해 `어쩌다 어른`과 `어쩌다어른`을 동일한 물리적 노드로 병합합니다.
+- **Semantic Alias (`ALIAS_OF`)**: "세바시"와 "세상을 바꾸는 시간"처럼 형태가 완전히 다른 별칭들을 그래프 상에서 연결하여, 어떤 키워드로 검색해도 전체 지식에 접근할 수 있게 합니다.
+- **Side-Effect Mitigation (부작용 방지)**: 과도한 병합(Over-merging)으로 인한 정보 왜곡을 막기 위해, 고유 ID는 정규화된 값을 쓰되 **표시 이름(Display Name)**은 원본의 핵심 의미를 유지하도록 설계합니다.
+
 ---
 
 ## 2. AI(LLM) 의존의 한계와 최적화 기법

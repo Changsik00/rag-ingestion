@@ -34,9 +34,20 @@ class LangChainExtractor:
             3. A list of 5-10 relevant keywords.
             4. **Primary Entity**: Identify the MAIN SUBJECT or PROGRAM NAME this content belongs to.
                - Look for it in the 'SOURCE METADATA' (e.g., Program Name, Channel, Video Title).
-               - If the content is a talk show fragment, this should be the Show Name (e.g., '어쩌다 어른'). 
-               - If it's a biography, it should be the Person's Name.
-            5. Key entities classified by EXACTLY one of the following standardized types:
+               - **Normalization Rule**: Use the most formal and widely known name as the canonical ID (e.g., '어쩌다 어른', '세상을 바꾸는 시간 15분').
+               - If the content is a fragment, this MUST be the parent show name.
+            5. **Aliases**: Identify alternative names or abbreviations for the identified entities (especially the Primary Entity).
+               - Example: {"세상을 바꾸는 시간 15분": ["세바시", "Sebasi", "세상을 바꾸는 시간"]}
+            6. Key entities classified by standardized types:
+               [... types list ...]
+            
+            **CRITICAL: Entity Classification Rules**
+            [...]
+
+            **Important Guidelines**:
+            - **Canonical Naming**: For names with Korean spacing variations, the prompt should prefer names with standard spacing but the system will handle structural merging. You should output the most readable "Display Name".
+            - **Alias Extraction**: Explicitly look for abbreviations or synonymous terms in the text and map them in the `aliases` field.
+            [...]
 
             **CRITICAL: Entity Classification Rules**
             You MUST classify entities into EXACTLY one of these 9 types:
