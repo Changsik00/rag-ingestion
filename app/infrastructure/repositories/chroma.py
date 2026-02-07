@@ -441,6 +441,47 @@ class ChromaVectorRepository(DocumentRepository):
             logger.error(f"MMR search logic failed: {e}")
             return self.search(query, limit, filters=filters)
 
+    def get_adjacent_chunks(self, parent_id: str, index: int, window_size: int = 1) -> list[Chunk]:
+        """
+        ChromaDB에서 특정 청크의 인접 청크들을 가져옵니다.
+        $gte, $lte 필터를 사용하여 index 범위를 조회합니다.
+        """
+        try:
+            start_idx = max(0, index - window_size)
+            end_idx = index + window_size
+
+            # ChromaDB composite filters use $and
+            where_clause = {
+                "$and": [
+                    {"parent_id": str(parent_id)},
+                    {"index": {"$gte": start_idx}},
+                    {"index": {"$lte": end_idx}},
+                ]
+            }
+
+            result = self.collection.get(where=where_clause)
+            chunks = []
+            if result and result["ids"]:
+                for i in range(len(result["ids"])):
+                    chunk_id = result["ids"][i]
+                    content = result["documents"][i]
+                    metadata = result["metadatas"][i]
+                    chunks.append(
+                        Chunk(
+                            id=chunk_id,
+                            content=content,
+                            metadata=metadata,
+                            parent_id=metadata.get("parent_id"),
+                            index=int(metadata.get("index", 0)),
+                        )
+                    )
+            # Sort by index
+            chunks.sort(key=lambda x: x.index)
+            return chunks
+        except Exception as e:
+            logger.error(f"Failed to get adjacent chunks from ChromaDB: {e}")
+            return []
+
     def get_all_chunk_ids(self) -> set[str]:
         """ChromaDB의 모든 청크 ID를 가져옵니다."""
         try:
