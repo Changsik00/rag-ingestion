@@ -74,6 +74,7 @@ class Neo4jDocumentRepository(DocumentRepository):
             MERGE (d:Document {id: $id})
             SET d.content = $content,
                 d.created_at = $created_at,
+                d.primary_entity = $primary_entity,
                 d += $metadata
             """
             # source_url is now part of metadata or handled if it exists.
@@ -100,6 +101,7 @@ class Neo4jDocumentRepository(DocumentRepository):
                     id=str(document.id),
                     content=document.content,
                     created_at=created_at_str,
+                    primary_entity=flattened_metadata.get("primary_entity"),
                     metadata=flattened_metadata,
                 )
         except Exception as e:

@@ -207,6 +207,11 @@ class Ingestion:
                 doc_metadata["source_url"] = str(job.source_url)
                 if "source_id" not in doc_metadata:
                     doc_metadata["source_id"] = str(job.source_url)
+                
+                # [Spec 068 Fix] Ensure primary_entity is passed to the document node
+                if semantic_data and semantic_data.primary_entity:
+                    doc_metadata["primary_entity"] = semantic_data.primary_entity
+
                 doc = Document(content=text, metadata=doc_metadata)
 
                 # Chunking & Save
