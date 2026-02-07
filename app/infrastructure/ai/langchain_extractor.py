@@ -37,7 +37,7 @@ class LangChainExtractor:
                - **Normalization Rule**: Use the most formal and widely known name as the canonical ID (e.g., '어쩌다 어른', '세상을 바꾸는 시간 15분').
                - If the content is a fragment, this MUST be the parent show name.
             5. **Aliases**: Identify alternative names or abbreviations for the identified entities (especially the Primary Entity).
-               - Example: {"세상을 바꾸는 시간 15분": ["세바시", "Sebasi", "세상을 바꾸는 시간"]}
+               - Example: {{"세상을 바꾸는 시간 15분": ["세바시", "Sebasi", "세상을 바꾸는 시간"]}}
             6. Key entities classified by standardized types:
                [... types list ...]
             
