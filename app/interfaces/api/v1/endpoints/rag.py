@@ -74,7 +74,7 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
         # [Bug Fix] LangGraph state extraction logic for different versions/structures
         # CheckpointTuple has .checkpoint attribute; Checkpoint has .channel_values
         values = {}
-        
+
         # 1. Try to get values from standard CheckpointTuple
         checkpoint = getattr(state, "checkpoint", None)
         if checkpoint:
@@ -82,7 +82,7 @@ async def get_session_trace(id: str, checkpointer=Depends(get_checkpointer)):
                 values = checkpoint.get("channel_values", checkpoint.get("values", {}))
             else:
                 values = getattr(checkpoint, "channel_values", getattr(checkpoint, "values", {}))
-        
+
         # 2. Fallback for raw dict-based state or direct checkpoint dict
         if not values and isinstance(state, dict):
             values = state.get("channel_values", state.get("values", {}))

@@ -5,11 +5,12 @@ Domain Layer에서 Knowledge Graph 저장소의 계약을 정의합니다.
 Infrastructure Layer의 구현체(Neo4jGraphRepository)는 이 Protocol을 준수해야 합니다.
 """
 
-from typing import Any, Protocol
+from typing import Any, Protocol, runtime_checkable
 
 from app.domain.value_objects.ontology import EntityType, RelationshipType, TypedEntity
 
 
+@runtime_checkable
 class GraphRepository(Protocol):
     """
     Graph DB 저장소 인터페이스 (Protocol)

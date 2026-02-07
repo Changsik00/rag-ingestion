@@ -101,15 +101,11 @@ class IngestionNodes:
         )
 
         # 2. LLM 호출 (Prompt Injection)
-        enriched_content = f"{system_prompt}\n\n--- CONTENT ---\n{raw_content}"
+        content_meta = state.get("content_metadata", {})
+        enriched_content = f"{system_prompt}\n\n--- SOURCE METADATA ---\n{content_meta}\n\n--- CONTENT ---\n{raw_content}"
 
-        # Handle both sync and async LLM adapter implementations
-        import asyncio
-
-        if asyncio.iscoroutinefunction(self.llm.aextract_metadata):
-            extracted = await self.llm.aextract_metadata(enriched_content)
-        else:
-            extracted = self.llm.aextract_metadata(enriched_content)
+        # The orchestrator/llm implementation must provide aextract_metadata
+        extracted = await self.llm.aextract_metadata(enriched_content)
 
         # History 업데이트 (MessagesState)
         return {"metadata": extracted, "messages": [AIMessage(content="Step: extract_metadata")]}

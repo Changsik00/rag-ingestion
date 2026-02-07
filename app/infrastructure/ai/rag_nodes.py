@@ -16,6 +16,7 @@ from langchain_core.runnables import RunnableConfig
 
 from app.core.logger import setup_logger
 from app.domain.services.intent_classifier import IntentClassifier
+from app.domain.services.prompts.listwise_reranker import LISTWISE_RERANKER_PROMPT
 from app.domain.services.prompts.reranker import RERANKER_PROMPT
 from app.domain.services.query_rewriter import QueryRewriter
 from app.domain.value_objects.chunk import Chunk
@@ -150,6 +151,7 @@ class RAGNodes:
         state["auto_filters"] = auto_filters
         state["final_filters"] = final_filters
         state["fallback_triggered"] = False
+        state["rerank_strategy"] = "pointwise"  # Default strategy
 
         # [Spec 034] Reasoning Log
         reasoning_log = state.get("reasoning_log", [])
@@ -187,6 +189,13 @@ class RAGNodes:
 
         # [Spec 034] Initial Search reasoning
         reasoning_log = state.get("reasoning_log", [])
+
+        # Heuristic: If show name is in query but not extracted as entity
+        show_names = ["어쩌다 어른", "세바시", "유 퀴즈"]
+        for show in show_names:
+            if show in rewritten_query and show not in entities:
+                entities.append(show)
+                logger.info(f"Show name '{show}' detected in query, added to entities list.")
 
         tasks = []
         # Strategy Logic
@@ -308,7 +317,19 @@ class RAGNodes:
             state["reranked_chunks"] = []
             return state
 
-        # [Spec 048] Pointwise Reranking
+        # [Spec 067] Reranking Strategy Selection
+        strategy = state.get("rerank_strategy", "pointwise")
+
+        if strategy == "listwise":
+            return await self._rerank_listwise(state, all_chunks, config)
+        else:
+            return await self._rerank_pointwise(state, all_chunks, config)
+
+    async def _rerank_pointwise(self, state: RAGGraphState, all_chunks: list[Chunk], config: RunnableConfig) -> RAGGraphState:
+        """기존 Pointwise 리랭킹 로직"""
+        query = state["query"]
+        rewritten_query = state.get("rewritten_query") or query
+
         # 상위 15개로 확장하여 키워드 매칭 결과가 충분히 포함되도록 함
         rerank_targets = all_chunks[:15]
 
@@ -364,11 +385,139 @@ class RAGNodes:
         # Update Reasoning Log
         reasoning_log = state.get("reasoning_log", [])
         reasoning_log.append(
-            f"🎯 [Rerank] Analyzed {len(rerank_targets)} chunks. {len(final_reranked)} passed, {len(rerank_targets) - len(final_reranked)} dropped."
+            f"🎯 [Rerank/Pointwise] Analyzed {len(rerank_targets)} chunks. {len(final_reranked)} passed, {len(rerank_targets) - len(final_reranked)} dropped."
         )
         state["reasoning_log"] = reasoning_log
 
         return state
+
+    async def _rerank_listwise(self, state: RAGGraphState, all_chunks: list[Chunk], config: RunnableConfig) -> RAGGraphState:
+        """[Spec 067] Listwise 리랭킹 로직"""
+        query = state["query"]
+        rewritten_query = state.get("rewritten_query") or query
+
+        # Listwise는 상위 5~10개 정도로 제한하여 컨텍스트 윈도우 부하 감소
+        rerank_targets = all_chunks[:10]
+
+        # [Spec 067] Context Window Expansion
+        expanded_targets = []
+        for chunk in rerank_targets:
+            expanded_content = await self._expand_context_window(chunk)
+            # Create a clone for reranking with expanded content
+            expanded_chunk = chunk.model_copy(update={"content": expanded_content})
+            expanded_targets.append(expanded_chunk)
+
+        # Build chunks list for prompt
+        chunks_text_list = []
+        for i, chunk in enumerate(expanded_targets):
+            chunks_text_list.append(f"ID: {chunk.id}\nContent: {chunk.content}")
+
+        chunks_list_str = "\n\n---\n\n".join(chunks_text_list)
+        prompt = LISTWISE_RERANKER_PROMPT.format(query=rewritten_query, chunks_list=chunks_list_str)
+
+        retrieval_config = config.get("configurable", {}).get("retrieval_config", {})
+        temperature = retrieval_config.get("temperature", 0.0)
+
+        rerank_log = []
+        final_reranked = []
+
+        try:
+            llm = self.llm.bind(temperature=temperature)
+            content = await llm.agenerate(prompt)
+
+            import json
+            json_match = re.search(r"\[.*\]", content, re.DOTALL)
+            if json_match:
+                rankings = json.loads(json_match.group())
+            else:
+                rankings = json.loads(content)
+
+            # Create ID mapping for easy lookup
+            chunk_map = {c.id: c for c in rerank_targets}
+
+            # [Spec 048] Filter by threshold
+            min_relevance_score = 3
+
+            for item in rankings:
+                chunk_id = item.get("chunk_id")
+                score = item.get("score", 0)
+                reasoning = item.get("reasoning", "No reasoning")
+
+                if chunk_id in chunk_map:
+                    chunk = chunk_map[chunk_id]
+                    status = "passed" if score >= min_relevance_score else "dropped"
+                    content_snippet = chunk.content[:100] + "..." if len(chunk.content) > 100 else chunk.content
+
+                    rerank_log.append({
+                        "chunk_id": chunk_id,
+                        "score": score,
+                        "reasoning": reasoning,
+                        "status": status,
+                        "content": content_snippet,
+                        "source": chunk.metadata.get("source", "Unknown"),
+                    })
+
+                    if score >= min_relevance_score:
+                        # Pydantic model_copy to update persistent chunk metadata
+                        chunk.metadata["rerank_score"] = score
+                        final_reranked.append(chunk)
+
+            # Sort by rank if provided, otherwise score
+            final_reranked.sort(key=lambda x: x.metadata.get("rerank_score", 0), reverse=True)
+
+        except Exception as e:
+            logger.error(f"Listwise reranking failed: {e}")
+            # Fallback to pointwise or return original
+            reasoning_log = state.get("reasoning_log", [])
+            reasoning_log.append(f"⚠️ [Rerank/Listwise] Failed: {e}. Falling back to baseline.")
+            state["reasoning_log"] = reasoning_log
+            return await self._rerank_pointwise(state, all_chunks, config)
+
+        state["reranked_chunks"] = final_reranked
+        state["rerank_log"] = rerank_log
+
+        # Update Reasoning Log
+        reasoning_log = state.get("reasoning_log", [])
+        reasoning_log.append(
+            f"🎯 [Rerank/Listwise] Analyzed {len(rerank_targets)} chunks. {len(final_reranked)} passed, {len(rerank_targets) - len(final_reranked)} dropped."
+        )
+        state["reasoning_log"] = reasoning_log
+
+        return state
+
+    async def _expand_context_window(self, chunk: Chunk, window_size: int = 1) -> str:
+        """
+        [Spec 067] 인접 청크를 로드하여 컨텍스트를 확장합니다.
+        """
+        try:
+            parent_id = chunk.parent_id
+            if not parent_id:
+                return chunk.content
+
+            # asyncio.to_thread를 사용하여 동기식 리포지토리 호출
+            adjacent = await asyncio.to_thread(
+                self.neo4j_doc_repo.get_adjacent_chunks,
+                parent_id=parent_id,
+                index=chunk.index,
+                window_size=window_size
+            )
+
+            if not adjacent:
+                return chunk.content
+
+            # 병합 (가져온 인접 청크들은 이미 index 순으로 정렬됨)
+            combined_content = ""
+            for adj in adjacent:
+                if adj.index == chunk.index:
+                    combined_content += f"\n[Pivotal Context Start]\n{adj.content}\n[Pivotal Context End]\n"
+                else:
+                    combined_content += adj.content + "\n"
+
+            return combined_content.strip()
+
+        except Exception as e:
+            logger.warning(f"Failed to expand context for chunk {chunk.id}: {e}")
+            return chunk.content
 
     async def _get_rerank_score(
         self, chunk: Chunk, prompt: str, temperature: float = 0.0, config: RunnableConfig | None = None

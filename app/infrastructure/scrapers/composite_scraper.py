@@ -26,8 +26,10 @@ class CompositeScraper(ScraperInterface):
         self.quality_checker = ScrapingQualityChecker()
 
     async def scrape(self, url: str) -> IngestResponse:
+        logger.info(f"[DEBUG] CompositeScraper.scrape called for: {url}")
         # 0. YouTube URL 감지
         if "youtube.com" in url or "youtu.be" in url:
+            logger.info(f"[DEBUG] Routing to YouTubeScraper for: {url}")
             return await self.youtube_scraper.scrape(url)
 
         # 1. Tier 1: Trafilatura (Fast) 시도

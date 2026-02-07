@@ -196,7 +196,7 @@ class Ingestion:
                 semantic_data = None
                 if self.extractor:
                     try:
-                        semantic_data = await self.extractor.extract(text, thread_id=job_id)
+                        semantic_data = await self.extractor.extract(text, metadata=metadata, thread_id=job_id)
                         if semantic_data:
                             metadata["semantic_data"] = semantic_data.model_dump()
                     except Exception as e:
@@ -207,6 +207,11 @@ class Ingestion:
                 doc_metadata["source_url"] = str(job.source_url)
                 if "source_id" not in doc_metadata:
                     doc_metadata["source_id"] = str(job.source_url)
+                
+                # [Spec 068 Fix] Ensure primary_entity is passed to the document node
+                if semantic_data and semantic_data.primary_entity:
+                    doc_metadata["primary_entity"] = semantic_data.primary_entity
+
                 doc = Document(content=text, metadata=doc_metadata)
 
                 # Chunking & Save
@@ -263,19 +268,58 @@ class Ingestion:
         """
         Entity 노드, MENTIONS 관계 및 Entity-Entity 관계 생성
         """
-        if not semantic_data.entities:
-            return
+        # [Spec 068] Program-Centric Star Schema Heuristic (Generalized)
+        # Connect all extracted entities to the dynamically identified primary_entity node.
+        program_node = semantic_data.primary_entity
+        
+        from app.core.utils import normalize_entity_name
 
         # 1. Entity 저장 및 MENTIONS 관계
         all_entity_names = set()
         for entity_type, names in semantic_data.entities.items():
+            # semantic_data.entities is dict[EntityType, list[str]]
             for name in names:
                 try:
-                    self.graph.save_entity(name, entity_type)
-                    self.graph.create_mention_relationship(str(doc_id), name)
-                    all_entity_names.add(name)
+                    # [Spec 069] Structural Normalization (Whitespace removal)
+                    normalized_name = normalize_entity_name(name)
+                    
+                    self.graph.save_entity(normalized_name, entity_type)
+                    # We keep the mention relationship to the original or normalized?
+                    # Let's use normalized for graph consistency
+                    self.graph.create_mention_relationship(str(doc_id), normalized_name)
+                    all_entity_names.add(normalized_name)
+                    
+                    # Create implicit relationship to Primary Entity node if found
+                    if program_node and normalized_name != normalize_entity_name(program_node):
+                        norm_program = normalize_entity_name(program_node)
+                        self.graph.save_entity(norm_program, "SHOW") 
+                        
+                        self.graph.create_entity_relationship(
+                            source_name=normalized_name,
+                            relationship_type="PART_OF_CONTEXT", 
+                            target_name=norm_program
+                        )
                 except Exception as e:
                     logger.error(f"Failed to build graph for entity {name}: {e}")
+
+        # [Spec 069] Layer 3: Semantic Alias Mapping
+        if semantic_data.aliases:
+            for canonical, aliases in semantic_data.aliases.items():
+                try:
+                    norm_canonical = normalize_entity_name(canonical)
+                    self.graph.save_entity(norm_canonical, "CONCEPT") # Fallback type
+                    
+                    for alias in aliases:
+                        norm_alias = normalize_entity_name(alias)
+                        if norm_alias != norm_canonical:
+                            self.graph.save_entity(norm_alias, "CONCEPT")
+                            self.graph.create_entity_relationship(
+                                source_name=norm_alias,
+                                relationship_type="ALIAS_OF",
+                                target_name=norm_canonical
+                            )
+                except Exception as e:
+                    logger.warning(f"Failed to create ALIAS_OF relationships for {canonical}: {e}")
 
         # 2. Entity-Entity 관계 생성 (Spec 016)
         if hasattr(semantic_data, "relationships") and semantic_data.relationships:

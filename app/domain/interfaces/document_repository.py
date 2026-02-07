@@ -57,6 +57,11 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all_chunk_metadata(self) -> list[dict]:
-        """Retrieve core metadata for all chunks in bulk."""
+    def get_adjacent_chunks(self, parent_id: str, index: int, window_size: int = 1) -> list[Chunk]:
+        """
+        Retrieve adjacent chunks for a given chunk index within the same document.
+        :param parent_id: The ID of the parent document.
+        :param index: The index of the pivot chunk.
+        :param window_size: Number of chunks to fetch before and after.
+        """
         pass

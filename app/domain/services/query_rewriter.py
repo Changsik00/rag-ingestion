@@ -47,8 +47,9 @@ Your task is to REWRITE the "Follow Up Input" into a standalone question that is
 2. Analyze the "Follow Up Input". Identify pronouns (he, she, it, they) or implicit references (e.g., "What about the second one?", "How much is it?").
 3. REPLACE ambiguous references with specific terms from the history.
 4. APPEND missing context if the input is too short (e.g., transform "Why?" into "Why did [Entity] fail?").
-5. DO NOT change the meaning or intent of the user.
-6. Output ONLY the rewritten question. Do not output anything else.
+5. PRESERVE specific Show Names, Program Titles, or Source Labels from the input (e.g., "어쩌다 어른", "세바시") even if they seem redundant.
+6. DO NOT change the meaning or intent of the user.
+7. Output ONLY the rewritten question. Do not output anything else.
 
 **Chat History:**
 {history_text}

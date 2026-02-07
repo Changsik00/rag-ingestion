@@ -31,7 +31,9 @@ class ChromaVectorRepository(DocumentRepository):
 
         # LangChain GoogleGenerativeAIEmbeddings를 ChromaDB embedding function wrapper로 변환
         langchain_embeddings = GoogleGenerativeAIEmbeddings(
-            model=settings.GEMINI_EMBEDDING_MODEL_NAME, google_api_key=gemini_api_key
+            model=settings.GEMINI_EMBEDDING_MODEL_NAME,
+            google_api_key=gemini_api_key,
+            output_dimensionality=settings.GEMINI_EMBEDDING_DIMENSIONALITY,
         )
 
         # ChromaDB가 요구하는 embedding function 형식으로 래핑
@@ -340,9 +342,8 @@ class ChromaVectorRepository(DocumentRepository):
 
             # [Spec 066 Fix] Similarity Thresholding
             # ChromaDB distances: lower is better (0.0 is exact match, typically > 1.0 is noise)
-            # We set a conservative threshold of 0.5 to filter out extreme noise like 'Steve Jobs' in 'Adult' query.
-            # Set to 0.45 for a better balance between recall and precision.
-            THRESHOLD = 0.45
+            # 0.7 is a standard threshold for balanced recall/precision.
+            THRESHOLD = 0.7
 
             valid_indices = [j for j, dist in enumerate(results["distances"][0]) if dist < THRESHOLD]
 
@@ -440,6 +441,47 @@ class ChromaVectorRepository(DocumentRepository):
         except Exception as e:
             logger.error(f"MMR search logic failed: {e}")
             return self.search(query, limit, filters=filters)
+
+    def get_adjacent_chunks(self, parent_id: str, index: int, window_size: int = 1) -> list[Chunk]:
+        """
+        ChromaDB에서 특정 청크의 인접 청크들을 가져옵니다.
+        $gte, $lte 필터를 사용하여 index 범위를 조회합니다.
+        """
+        try:
+            start_idx = max(0, index - window_size)
+            end_idx = index + window_size
+
+            # ChromaDB composite filters use $and
+            where_clause = {
+                "$and": [
+                    {"parent_id": str(parent_id)},
+                    {"index": {"$gte": start_idx}},
+                    {"index": {"$lte": end_idx}},
+                ]
+            }
+
+            result = self.collection.get(where=where_clause)
+            chunks = []
+            if result and result["ids"]:
+                for i in range(len(result["ids"])):
+                    chunk_id = result["ids"][i]
+                    content = result["documents"][i]
+                    metadata = result["metadatas"][i]
+                    chunks.append(
+                        Chunk(
+                            id=chunk_id,
+                            content=content,
+                            metadata=metadata,
+                            parent_id=metadata.get("parent_id"),
+                            index=int(metadata.get("index", 0)),
+                        )
+                    )
+            # Sort by index
+            chunks.sort(key=lambda x: x.index)
+            return chunks
+        except Exception as e:
+            logger.error(f"Failed to get adjacent chunks from ChromaDB: {e}")
+            return []
 
     def get_all_chunk_ids(self) -> set[str]:
         """ChromaDB의 모든 청크 ID를 가져옵니다."""
