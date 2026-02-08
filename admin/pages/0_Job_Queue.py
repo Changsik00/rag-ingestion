@@ -88,9 +88,13 @@ try:
                     with st.spinner(f"Re-ingesting job {job_id_to_refresh}..."):
                         try:
                             response = api_client.post(f"/admin/jobs/{job_id_to_refresh}/force-refresh")
-                            st.success(f"✅ Job {job_id_to_refresh} re-ingested successfully!")
-                            st.json(response)
-                            st.info("Refresh the page to see updated status.")
+                            if response:
+                                st.success(f"✅ Job {job_id_to_refresh} re-ingested successfully!")
+                                st.write("**Response:**")
+                                st.json(response)
+                                st.info("💡 Refresh the page to see updated status.")
+                            else:
+                                st.error("❌ No response from server")
                         except Exception as e:
                             st.error(f"❌ Failed to force refresh: {str(e)}")
 
