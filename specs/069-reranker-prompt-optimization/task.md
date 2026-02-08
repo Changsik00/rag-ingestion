@@ -43,10 +43,11 @@
 - [x] Commit: `feat(spec-069): integrate reranker v2 with feature flag` (20bf4cb)
 
 ### 2-3. Integration Test
-- [ ] `tests/unit/infrastructure/rag/test_rag_reranker.py` 수정
+- [x] `tests/unit/infrastructure/rag/test_rag_reranker.py` 수정
   - v2 Feature Flag 테스트 추가
-- [ ] Test 실행 (Pass): `uv run pytest tests/unit/infrastructure/rag/test_rag_reranker.py`
-- [ ] Commit: `test(spec-069): add reranker v2 integration test`
+- [x] Test 실행 (Pass): `uv run pytest tests/unit/infrastructure/rag/test_rag_reranker.py` ✅ 2 passed
+- [x] Commit: `test(spec-069): add reranker v2 integration test` (17f41d1)
+- [x] `.env.example`에 RERANKER_VERSION 추가 (06fb54c)
 
 ---
 
@@ -111,5 +112,5 @@
 ## Summary
 **총 Task**: 6개  
 **예상 커밋 수**: 9개  
-**현재 진행**: Execution (Task 2 완료, Task 3 진행 예정)  
-**완료 커밋**: 4개 (e90b126, f9d95c7, 47d541f, 20bf4cb)
+**현재 진행**: Execution - Task 3 (A/B Testing 인프라)  
+**완료 커밋**: 6개 (e90b126, f9d95c7, 47d541f, 20bf4cb, 06fb54c, 17f41d1, 7c03595)
