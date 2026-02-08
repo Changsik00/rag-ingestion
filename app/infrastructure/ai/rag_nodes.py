@@ -136,7 +136,7 @@ class RAGNodes:
 
         Intent Classifier의 결정을 Repository Filters로 변환하고,
         Manual Filters와 병합합니다 (Manual Filters가 우선).
-        
+
         [Spec 073] Fuzzy Filter Matching 적용.
 
         Args:
@@ -691,7 +691,7 @@ class RAGNodes:
     async def _intent_to_filters(self, intent: UserIntent | None, state: RAGGraphState) -> dict | None:
         """
         Intent를 Repository Filters로 변환.
-        
+
         [Spec 073] Fuzzy Filter Matching을 적용하여 유사한 Source 이름 매칭.
 
         Args:
@@ -710,7 +710,7 @@ class RAGNodes:
             if intent.targets and self.filter_matcher:
                 # Get available sources from repositories
                 available_sources = await self._get_available_sources()
-                
+
                 # Fuzzy Matching
                 matched_sources = []
                 fuzzy_log = []
@@ -722,13 +722,13 @@ class RAGNodes:
                             fuzzy_log.append(f"'{target}' → '{match}'")
                     else:
                         logger.warning(f"No match found for target: '{target}'")
-                
+
                 # Add Fuzzy Match log to Reasoning Log
                 if fuzzy_log:
                     reasoning_log = state.get("reasoning_log", [])
                     reasoning_log.append(f"🔍 [Fuzzy Match] {', '.join(fuzzy_log)}")
                     state["reasoning_log"] = reasoning_log
-                
+
                 return {"source": matched_sources} if matched_sources else None
             elif intent.targets:
                 # Fallback: No FilterMatcher (Exact Match)
@@ -817,28 +817,28 @@ class RAGNodes:
     async def _get_available_sources(self) -> list[str]:
         """
         ChromaDB와 Neo4j에서 사용 가능한 모든 Source 이름을 조회합니다.
-        
+
         [Spec 073] Fuzzy Filter Matching을 위한 Available Sources 조회.
-        
+
         Returns:
             list[str]: 중복 제거된 Source 이름 목록 (정렬)
         """
         sources = set()
-        
+
         # ChromaDB에서 Source 조회
         try:
             chroma_sources = self.chroma_repo.get_all_source_names()
             sources.update(chroma_sources)
         except Exception as e:
             logger.warning(f"Failed to get sources from ChromaDB: {e}")
-        
+
         # Neo4j에서 Source 조회
         try:
             neo4j_sources = self.neo4j_doc_repo.get_all_source_names()
             sources.update(neo4j_sources)
         except Exception as e:
             logger.warning(f"Failed to get sources from Neo4j: {e}")
-        
+
         sorted_sources = sorted(list(sources))
         logger.debug(f"Available sources for fuzzy matching: {sorted_sources}")
         return sorted_sources

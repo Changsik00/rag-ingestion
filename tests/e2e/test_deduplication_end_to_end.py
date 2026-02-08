@@ -5,15 +5,14 @@ These tests verify the full deduplication flow with real databases.
 Run with: docker-compose up -d neo4j chromadb && uv run pytest tests/e2e/test_deduplication_end_to_end.py -v --e2e
 """
 
-import asyncio
 import pytest
 
 from app.application.services.ingestion import Ingestion
+from app.core.database import get_neo4j_driver
 from app.domain.entities.job import JobStatus
+from app.infrastructure.repositories.chromadb_repository import ChromaDBRepository
 from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
-from app.core.database import get_neo4j_driver
-from app.infrastructure.repositories.chromadb_repository import ChromaDBRepository
 
 
 @pytest.mark.e2e

@@ -555,31 +555,31 @@ class ChromaVectorRepository(DocumentRepository):
     def get_all_source_names(self) -> list[str]:
         """
         ChromaDB에 저장된 모든 고유한 Source 이름 목록을 반환합니다.
-        
+
         Spec 073: Fuzzy Filter Matching을 위한 Available Sources 조회용.
-        
+
         Returns:
             list[str]: Source 이름 목록 (중복 제거, 정렬)
         """
         try:
             # Get all metadata (only metadatas, not documents)
             result = self.collection.get(include=["metadatas"])
-            
+
             if not result or not result["metadatas"]:
                 logger.warning("No metadata found in ChromaDB collection")
                 return []
-            
+
             # Extract unique source names
             sources = set()
             for metadata in result["metadatas"]:
                 if metadata and "source" in metadata and metadata["source"]:
                     sources.add(metadata["source"])
-            
+
             # Return sorted list
             sorted_sources = sorted(list(sources))
             logger.info(f"Found {len(sorted_sources)} unique sources in ChromaDB: {sorted_sources[:5]}...")
             return sorted_sources
-            
+
         except Exception as e:
             logger.error(f"Failed to get source names from ChromaDB: {e}")
             return []

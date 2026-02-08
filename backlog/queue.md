@@ -56,20 +56,20 @@
   * **Expected Impact**: 중복 저장 방지
   * **Note**: 완료 (2026-02-09). PR 머지 완료. ✅
 
-* [/] **Spec 072: Robust Deduplication Framework** (P0, 5일) 🔄 **Planning 진행 중**
+* [x] **Spec 072: Robust Deduplication Framework** (P0, 5일) 🔄 **Planning 진행 중**
   * **Goal**: 4가지 Strategy (ID/Metadata/TTL/Contents) 실제 구현
   * **근거**: [Spec 068 - Ingestion 중복 처리](../specs/068-rag-architecture-review/spec.md#32-중복-처리-deduplication-설계-결함)
   * **상세 계획**: [Task 2.1](../specs/068-rag-architecture-review/recommendations.md#task-21-deduplication-service-완성-)
   * **Tasks**:
-    - [ ] `DeduplicationStrategy` Protocol 정의
-    - [ ] 4가지 Strategy 클래스 구현
-    - [ ] Factory Pattern 적용
-    - [ ] Ingestion Graph에 `check_duplicate` Node 추가
-    - [ ] Admin UI Strategy 선택 기능
+    - [x] `DeduplicationStrategy` Protocol 정의
+    - [x] 4가지 Strategy 클래스 구현
+    - [x] Factory Pattern 적용
+    - [x] Ingestion Graph에 `check_duplicate` Node 추가
+    - [x] Admin UI Strategy 선택 기능
   * **Expected Impact**: 중복 수집 방지, 불필요한 재수집 감소
   * **Note**: Planning 완료 (2026-02-09). [spec.md](../specs/072-robust-deduplication-framework/spec.md), [plan.md](../specs/072-robust-deduplication-framework/plan.md), [task.md](../specs/072-robust-deduplication-framework/task.md) 작성 완료. **User Plan Accept 대기 중**.
 
-* [ ] **Spec 073: Fuzzy Filter Matching** (P1, 3일)
+* [/] **Spec 073: Fuzzy Filter Matching** (P1, 3일) 🔄 **Planning 완료**
   * **Goal**: Source Filter Semantic Similarity 기반 매칭
   * **근거**: [Spec 068 - Filter 강제성의 함정](../specs/068-rag-architecture-review/spec.md#13-retrieval-layer-memorybody)
   * **상세 계획**: [Task 2.2](../specs/068-rag-architecture-review/recommendations.md#task-22-fuzzy-filter-matching-)
@@ -78,6 +78,7 @@
     - [ ] "Claude" ↔ "claude" 매칭 테스트
     - [ ] RAG Graph `route_decision` 통합
   * **Expected Impact**: Exact Match 실패 문제 해결
+  * **Note**: Planning 완료 (2026-02-09). [spec.md](../specs/073-fuzzy-filter-matching/spec.md), [plan.md](../specs/073-fuzzy-filter-matching/plan.md), [task.md](../specs/073-fuzzy-filter-matching/task.md) 작성 완료. **User Plan Accept 대기 중**.
 
 * [ ] **Spec 074: LLMInterface Clean Architecture Compliance** (P1, 2일)
   * **Goal**: `LLMInterface`를 Domain Layer로 이동

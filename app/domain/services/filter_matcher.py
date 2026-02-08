@@ -5,8 +5,8 @@ Spec 073: Fuzzy Filter Matching
 Semantic Similarity 기반 Source Filter 매칭 서비스.
 """
 
+from collections.abc import Callable
 from functools import lru_cache
-from typing import Callable
 
 import numpy as np
 
@@ -20,7 +20,7 @@ class FilterMatcher:
     Source Filter Fuzzy Matching Service.
 
     Exact Match를 우선하고, 실패 시 Semantic Similarity로 매칭합니다.
-    
+
     Example:
         >>> matcher = FilterMatcher(embedding_fn, similarity_threshold=0.85)
         >>> matcher.match_source("claude", ["Claude AI", "GPT-4"])
@@ -97,10 +97,10 @@ class FilterMatcher:
     def _get_embedding(self, text: str) -> np.ndarray:
         """
         Embedding을 캐싱하여 재계산 방지.
-        
+
         Args:
             text: 임베딩할 텍스트
-            
+
         Returns:
             np.ndarray: Embedding 벡터
         """
@@ -110,20 +110,20 @@ class FilterMatcher:
     def _cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
         """
         코사인 유사도 계산.
-        
+
         Args:
             vec1: 첫 번째 벡터
             vec2: 두 번째 벡터
-            
+
         Returns:
             float: 코사인 유사도 (0.0 ~ 1.0)
         """
         dot_product = np.dot(vec1, vec2)
         norm1 = np.linalg.norm(vec1)
         norm2 = np.linalg.norm(vec2)
-        
+
         # Avoid division by zero
         if norm1 == 0 or norm2 == 0:
             return 0.0
-        
+
         return float(dot_product / (norm1 * norm2))
