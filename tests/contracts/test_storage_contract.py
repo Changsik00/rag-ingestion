@@ -8,21 +8,20 @@ the constructor parameter mismatch found in Spec 008.
 
 import inspect
 import unittest.mock
+
 import pytest
 
-from typing import runtime_checkable
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
 from app.domain.interfaces.session_repository import SessionRepository
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
+from app.infrastructure.repositories.composite import CompositeDocumentRepository
 from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
 from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 from app.infrastructure.repositories.postgres_session_repository import PostgresSessionRepository
 
-
-from app.infrastructure.repositories.composite import CompositeDocumentRepository
 
 # Parametrize all DocumentRepository implementations
 @pytest.fixture(
@@ -57,8 +56,9 @@ class TestDocumentRepositoryContract:
             mock_driver = unittest.mock.MagicMock()
             storage_class(mock_driver)
         elif storage_class == ChromaVectorRepository:
-            with unittest.mock.patch("chromadb.HttpClient"), unittest.mock.patch.dict(
-                "os.environ", {"GEMINI_API_KEY": "fake-key"}
+            with (
+                unittest.mock.patch("chromadb.HttpClient"),
+                unittest.mock.patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"}),
             ):
                 storage_class()
         elif storage_class == CompositeDocumentRepository:
@@ -88,8 +88,6 @@ class TestDocumentRepositoryContract:
         if interface != DocumentRepository:
             pytest.skip("Only DocumentRepository has save(document)")
 
-        import inspect
-
         sig = inspect.signature(storage_class.save)
         params = list(sig.parameters.values())
 
@@ -102,8 +100,6 @@ class TestDocumentRepositoryContract:
         storage_class, interface = storage_pair
         if not hasattr(storage_class, "get") and not hasattr(interface, "get"):
             pytest.skip("This repository does not have a 'get' method")
-
-        import inspect
 
         method = getattr(storage_class, "get")
         sig = inspect.signature(method)
@@ -121,15 +117,18 @@ class TestStorageConstructorConsistency:
     def test_neo4j_document_storage_constructor(self):
         """Neo4jDocumentRepository should accept a Driver instance"""
         from unittest.mock import Mock
+
         from neo4j import Driver
+
         mock_driver = Mock(spec=Driver)
         storage = Neo4jDocumentRepository(mock_driver)
         assert storage.driver == mock_driver
 
     def test_chroma_storage_constructor(self):
         """ChromaVectorRepository initializes its own client internally."""
-        with unittest.mock.patch("chromadb.HttpClient"), unittest.mock.patch.dict(
-            "os.environ", {"GEMINI_API_KEY": "fake-key"}
+        with (
+            unittest.mock.patch("chromadb.HttpClient"),
+            unittest.mock.patch.dict("os.environ", {"GEMINI_API_KEY": "fake-key"}),
         ):
             storage = ChromaVectorRepository()
             assert hasattr(storage, "client")

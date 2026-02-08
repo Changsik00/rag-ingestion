@@ -41,7 +41,7 @@ class LangChainExtractor:
                - Example: {{"세상을 바꾸는 시간 15분": ["세바시", "Sebasi", "세상을 바꾸는 시간"]}}
             6. Key entities classified by standardized types:
                [... types list ...]
-            
+
             **CRITICAL: Entity Classification Rules**
             [...]
 
@@ -82,7 +82,7 @@ class LangChainExtractor:
               Examples: "Clean Code", "Attention Is All You Need", "The Lean Startup", "research paper"
 
             **Important Guidelines**:
-            - **Canonical Naming & Abbreviation Resolution**: 
+            - **Canonical Naming & Abbreviation Resolution**:
               * Use the most formal and widely known name as the `primary_entity` (Canonical ID).
               * If the `SOURCE METADATA` contains abbreviations like "세바시", "심동", or "ebs", you MUST resolve them to their formal program names (e.g., "세상을 바꾸는 시간 15분", "심야 토론", "EBS 다큐프라임") based on your world knowledge and the context.
               * Leverage the `channel_name` and `title` from metadata to confirm the identity.
@@ -129,7 +129,9 @@ class LangChainExtractor:
             logger.error(f"Failed to extract semantic metadata (Sync): {e}")
             return None
 
-    async def aextract_metadata(self, text: str, metadata: dict | None = None, thread_id: str | None = None) -> ExtractedMetadata | None:
+    async def aextract_metadata(
+        self, text: str, metadata: dict | None = None, thread_id: str | None = None
+    ) -> ExtractedMetadata | None:
         """비동기식 메타데이터 추출"""
         try:
             logger.info(f"Starting semantic extraction via LLM (Async) [Thread: {thread_id}]...")

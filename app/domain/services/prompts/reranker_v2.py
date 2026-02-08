@@ -8,7 +8,7 @@ Spec 069: Reranker Prompt Optimization
 """
 
 RERANKER_PROMPT_V2 = """
-You are an expert information retriever. Your task is to evaluate the relevance 
+You are an expert information retriever. Your task is to evaluate the relevance
 of a Document Chunk to a given User Query.
 
 Assign a relevance score between 1 and 10, where:

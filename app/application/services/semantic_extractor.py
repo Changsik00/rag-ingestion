@@ -21,7 +21,9 @@ class SemanticExtractor:
         """
         self.llm = llm
 
-    async def extract(self, text: str, metadata: dict | None = None, thread_id: str | None = None) -> ExtractedMetadata | None:
+    async def extract(
+        self, text: str, metadata: dict | None = None, thread_id: str | None = None
+    ) -> ExtractedMetadata | None:
         """
         텍스트에서 메타데이터 추출
 

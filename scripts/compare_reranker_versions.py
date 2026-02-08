@@ -8,10 +8,10 @@ Spec 069: Task 3-1
 Usage:
     # v1 테스트
     python scripts/compare_reranker_versions.py --version v1 --output results_v1.json
-    
+
     # v2 테스트
     python scripts/compare_reranker_versions.py --version v2 --output results_v2.json
-    
+
     # 결과 비교
     python scripts/compare_results.py results_v1.json results_v2.json
 """
@@ -99,7 +99,7 @@ TEST_QUERIES = [
 async def run_rag_query_simulation(query: str, version: str) -> dict[str, Any]:
     """
     RAG 파이프라인 시뮬레이션 (실제 LLM 호출 대신)
-    
+
     실제 사용 시 이 함수를 실제 RAG API 호출로 교체:
     ```python
     async with httpx.AsyncClient() as client:
@@ -113,14 +113,14 @@ async def run_rag_query_simulation(query: str, version: str) -> dict[str, Any]:
     """
     # Simulated results - 실제로는 RAG API 호출
     print(f"  [Simulation] Running RAG for: {query[:50]}... (version={version})")
-    
+
     # Mock: v2가 좀 더 많은 청크를 통과시킨다고 가정
     base_chunks = 5
     if version == "v2":
         retrieved_chunks = base_chunks + 2  # v2는 더 관대함
     else:
         retrieved_chunks = base_chunks
-    
+
     return {
         "query": query,
         "reranked_chunks_count": retrieved_chunks,
@@ -132,7 +132,7 @@ async def run_rag_query_simulation(query: str, version: str) -> dict[str, Any]:
 def calculate_recall(result: dict, expected_keywords: list[str]) -> float:
     """
     Recall 계산 (간단한 키워드 매칭 기반 시뮬레이션)
-    
+
     실제 사용 시:
     - Ground Truth 데이터셋 필요
     - Relevant Documents 정의 필요
@@ -148,7 +148,7 @@ def calculate_recall(result: dict, expected_keywords: list[str]) -> float:
 def calculate_precision(result: dict, expected_keywords: list[str]) -> float:
     """
     Precision 계산 (간단한 응답 품질 기반 시뮬레이션)
-    
+
     실제 사용 시:
     - LLM Judge로 응답 품질 평가
     - Precision = (Retrieved Relevant) / (Total Retrieved)
@@ -160,41 +160,43 @@ def calculate_precision(result: dict, expected_keywords: list[str]) -> float:
 
 async def run_test(version: str, output_file: str):
     """Run A/B test for given version"""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Running Reranker {version.upper()} Test")
-    print(f"{'='*60}\n")
-    
+    print(f"{'=' * 60}\n")
+
     results = []
     total_recall = 0.0
     total_precision = 0.0
-    
+
     for i, test_case in enumerate(TEST_QUERIES, 1):
         print(f"[{i}/10] Testing: {test_case['query']}")
-        
+
         # Run RAG query
         result = await run_rag_query_simulation(test_case["query"], version)
-        
+
         # Calculate metrics
         recall = calculate_recall(result, test_case["expected_relevant_keywords"])
         precision = calculate_precision(result, test_case["expected_relevant_keywords"])
-        
+
         total_recall += recall
         total_precision += precision
-        
-        results.append({
-            "test_id": test_case["id"],
-            "query": test_case["query"],
-            "category": test_case["category"],
-            "recall": round(recall, 3),
-            "precision": round(precision, 3),
-            "chunks_retrieved": result["reranked_chunks_count"],
-        })
-        
+
+        results.append(
+            {
+                "test_id": test_case["id"],
+                "query": test_case["query"],
+                "category": test_case["category"],
+                "recall": round(recall, 3),
+                "precision": round(precision, 3),
+                "chunks_retrieved": result["reranked_chunks_count"],
+            }
+        )
+
         print(f"  → Recall: {recall:.3f}, Precision: {precision:.3f}")
-    
+
     avg_recall = total_recall / len(TEST_QUERIES)
     avg_precision = total_precision / len(TEST_QUERIES)
-    
+
     summary = {
         "version": version,
         "total_tests": len(TEST_QUERIES),
@@ -203,19 +205,19 @@ async def run_test(version: str, output_file: str):
         "f1_score": round(2 * (avg_precision * avg_recall) / (avg_precision + avg_recall), 3),
         "results": results,
     }
-    
+
     # Save results
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=False)
-    
-    print(f"\n{'='*60}")
+
+    print(f"\n{'=' * 60}")
     print(f"Results Summary ({version.upper()})")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Avg Recall:    {avg_recall:.3f}")
     print(f"Avg Precision: {avg_precision:.3f}")
     print(f"F1 Score:      {summary['f1_score']:.3f}")
     print(f"\nResults saved to: {output_file}")
-    
+
     return summary
 
 
@@ -223,9 +225,9 @@ def main():
     parser = argparse.ArgumentParser(description="Reranker A/B Testing")
     parser.add_argument("--version", required=True, choices=["v1", "v2"], help="Reranker version to test")
     parser.add_argument("--output", required=True, help="Output JSON file path")
-    
+
     args = parser.parse_args()
-    
+
     asyncio.run(run_test(args.version, args.output))
 
 

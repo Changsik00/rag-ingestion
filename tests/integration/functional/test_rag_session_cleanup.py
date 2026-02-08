@@ -18,11 +18,7 @@ async def test_session_creation_and_cleanup(api_client):
         "message": "Hello, this is a cleanup test.",
         "filters": {},
         "hitl_enabled": False,
-        "advanced_settings": {
-            "top_k": 3,
-            "temperature": 0.5,
-            "search_strategy": "vector"
-        }
+        "advanced_settings": {"top_k": 3, "temperature": 0.5, "search_strategy": "vector"},
     }
 
     # 1. Create Session (Ask)
@@ -47,4 +43,3 @@ async def test_session_creation_and_cleanup(api_client):
     data_after = res_trace_after.json()
     assert data_after["messages"] == []
     assert data_after["values"] == {}
-
