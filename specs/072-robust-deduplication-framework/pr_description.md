@@ -93,11 +93,19 @@ uv run streamlit run admin/dashboard.py
 uv run uvicorn app.interfaces.api.main:app --reload
 
 # 동일 URL 2번 수집
-curl -X POST "http://localhost:8000/jobs" -d '{"url": "https://example.com/test"}'
-curl -X POST "http://localhost:8000/jobs" -d '{"url": "https://example.com/test"}'
+curl -X POST "http://localhost:8000/v1/ingest/web" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com/test"}'
+
+curl -X POST "http://localhost:8000/v1/ingest/web" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com/test"}'
 ```
-- **결과**: 첫 번째 Job은 COMPLETED, 두 번째는 SKIPPED
+- **결과**: 두 개의 Job 생성 (서로 다른 job_id)
+- **첫 번째 Job**: COMPLETED 상태
+- **두 번째 Job**: SKIPPED 상태, skip_reason에 첫 번째 Job ID 포함
 - **Neo4j 확인**: `MATCH (j:IngestionJob {status: "SKIPPED"}) RETURN j.skip_reason`
+- **Job Queue UI**: SKIPPED 상태 Job 확인 가능
 
 #### 시나리오 4: API - Force Refresh
 ```bash
