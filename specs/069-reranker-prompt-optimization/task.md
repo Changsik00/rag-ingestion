@@ -83,31 +83,11 @@
 - [x] `uv run pytest tests/unit/infrastructure/rag/test_rag_reranker.py` ✅ 2 passed
 - [x] 모든 테스트 통과 확인 ✅ 8/8 passed
 
-### 4-2. Manual Testing
-- [ ] Admin UI Playground에서 비교 질문 테스트
-  - "일론 머스크의 SpaceX와 Tesla 비교"
-  - "Claude와 GPT-4의 차이점"
-- [ ] RAG Inspector로 Reranker 점수 확인
-- [ ] v1 vs v2 체감 품질 비교
-
-### 4-3. 의사결정
-- [ ] v2 Recall +10% 이상 확인
-- [ ] v2 Precision -5% 이내 확인
-- [ ] v2 채택 또는 v1 유지 결정
-- [ ] 결정 근거를 `spec.md`에 문서화
+> **Note**: Manual Testing 및 의사결정은 `pr_description.md`의 "User Manual Testing Guide" 참고
 
 ---
 
-## Task 5: Deployment
-
-### 5-1. 설정 적용
-- [ ] **If v2 채택**: `config/admin_config.py`에서 `RERANKER_VERSION = "v2"` 변경
-- [ ] **If v1 유지**: 원인 분석 및 개선 계획 수립
-- [ ] Commit: `feat(spec-069): set reranker v2 as default` or `docs(spec-069): document v1 retention decision`
-
----
-
-## Task 6: PR Creation & Archiving (Mandatory)
+## Task 5: PR Creation & Archiving (Mandatory)
 <!-- 이 단계는 모든 작업 완료 후 수행합니다. -->
 - [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
 - [ ] Run Full Tests: `uv run pytest`
@@ -119,10 +99,10 @@
 > **Note**: PR 생성은 Manual Testing (Task 4-2, 4-3) 완료 후 진행 권장
 
 ## Summary
-**총 Task**: 6개  
-**예상 커밋 수**: 9개  
-**현재 진행**: ✅ 완료 (Manual Testing 및 PR 생성 대기)  
-**완료 커밋**: 10개
+**총 Task**: 5개 (자동화 작업)  
+**예상 커밋 수**: ~12개  
+**현재 진행**: ✅ 자동화 작업 완료  
+**완료 커밋**: 12개
 
 ### 커밋 리스트
 1. e90b126 - reranker v2 prompt
@@ -134,10 +114,13 @@
 7. 7c03595 - task.md update #1
 8. 0d9af7d - A/B testing scripts
 9. c90da32 - task.md update #2
-10. (archive) - walkthrough & pr_description
+10. aa04c99 - archive walkthrough and pr_description
+11. 3fca366 - finalize task.md
+12. 57d9233 - rewrite pr_description using template
 
-### 남은 작업 (사용자 수동)
-- [ ] Task 4-2: Admin UI Manual Testing
-- [ ] Task 4-3: 의사결정 (v2 채택 여부)
-- [ ] Task 5: Deployment (의사결정 후)
-- [ ] Task 6: Code Quality Check & PR 생성
+### 다음 단계 (사용자)
+**`pr_description.md`의 "👤 User Manual Testing Guide" 참고**
+- Manual Testing 시나리오 실행
+- v2 채택 의사결정
+- Deployment
+- PR 생성

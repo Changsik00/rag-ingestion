@@ -80,23 +80,310 @@ python3 scripts/compare_results.py /tmp/results_v1.json /tmp/results_v2.json
 - F1 Score: v1 0.615 → v2 0.738 (✅ +20%)
 - **Decision**: ✅ ADOPT v2 (기준 충족: Recall +10%, Precision -5% 이내)
 
-### Manual Verification (Scenarios)
-> **⚠️ 프로덕션 적용 전 필수 확인**
+---
 
-1. **시나리오 1: Admin UI Playground 테스트**
-   - "일론 머스크의 SpaceX와 Tesla 비교" 질문 입력
-   - v1 vs v2 답변 품질 비교
-   - → v2에서 SpaceX와 Tesla 모두 관련성 있게 평가되는지 확인
+## 👤 User Manual Testing Guide
 
-2. **시나리오 2: RAG Inspector 점수 확인**
-   - RAG Inspector로 v1 vs v2 Reranker 점수 비교
-   - Multi-Entity Query에서 점수 분포 차이 분석
-   - → v2에서 Over-filtering 감소 확인
+> **이 섹션은 사용자가 직접 실행해야 하는 Manual Testing 시나리오입니다.**
 
-3. **시나리오 3: 실제 RAG API A/B 테스트**
-   - `compare_reranker_versions.py`를 실제 RAG API에 연결
-   - 10개 테스트 질문 실행 및 결과 분석
-   - → 실제 Recall +10% 이상 달성 확인
+### 📋 Overall Process
+1. ✅ **Automated Tests** (완료)
+2. 🔄 **Manual Testing** (이 가이드 참고)
+3. ✅ **의사결정** (v2 채택 or v1 유지)
+4. 🚀 **Deployment** (의사결정 후)
+5. 📝 **PR 생성**
+
+---
+
+### 시나리오 1: Admin UI Playground 비교 테스트
+
+**목적**: v1 vs v2 답변 품질을 직접 비교하여 v2의 Over-filtering 개선 확인
+
+#### Step 1: v1으로 테스트
+```bash
+# .env 파일 확인
+RERANKER_VERSION=v1
+
+# Backend 재시작
+docker-compose restart backend
+```
+
+#### Step 2: Admin UI Playground 접속
+- URL: `http://localhost:8000/admin/playground` (또는 Admin UI 경로)
+- 다음 질문 입력 및 결과 저장:
+  1. "일론 머스크의 SpaceX와 Tesla 비교"
+  2. "Claude와 GPT-4의 차이점"
+  3. "Python과 JavaScript 비교"
+
+#### Step 3: v2로 전환
+```bash
+# .env 수정
+RERANKER_VERSION=v2
+
+# Backend 재시작
+docker-compose restart backend
+```
+
+#### Step 4: 동일한 질문 테스트
+- 같은 질문 3개를 다시 입력하고 결과 비교
+
+#### 예상 결과
+**v1 (문제점)**:
+- "일론 머스크의 SpaceX와 Tesla 비교" → SpaceX 정보는 있지만 Tesla 정보 누락 (Over-filtering)
+- "Claude와 GPT-4의 차이점" → 한쪽 정보만 제공되거나 둘 다 낮은 점수
+
+**v2 (개선)**:
+- SpaceX와 Tesla 정보 모두 포함 ✅
+- Claude와 GPT-4 정보 모두 포함 ✅
+- 비교 질문에서 양쪽 엔티티 모두 높은 점수
+
+#### 확인 사항
+- [ ] v2에서 Multi-Entity Query의 정보 제공이 더 완전한가?
+- [ ] v2에서 Over-filtering이 감소했는가?
+- [ ] v2 답변 품질이 v1보다 우수한가?
+
+---
+
+### 시나리오 2: RAG Inspector로 Reranker 점수 비교
+
+**목적**: Reranker 점수 분포 변화를 정량적으로 확인
+
+#### Step 1: v1 점수 확인
+```bash
+# v1 활성화 (.env)
+RERANKER_VERSION=v1
+
+# Backend 재시작
+docker-compose restart backend
+```
+
+#### Step 2: RAG Inspector 접속
+- URL: `http://localhost:8000/admin/rag-inspector` (또는 Inspector 경로)
+- 질문 입력: "일론 머스크의 SpaceX와 Tesla 비교"
+
+#### Step 3: v1 Rerank 점수 기록
+```
+예시) v1 Rerank 점수:
+- Chunk 1 (SpaceX 관련): score 1 ❌ (PENALTY 적용)
+- Chunk 2 (Tesla 관련): score 1 ❌ (PENALTY 적용)
+- Chunk 3 (일론 머스크 일반): score 2
+→ 필터링 threshold(3) 미만으로 모두 제외됨
+```
+
+#### Step 4: v2로 전환 후 점수 비교
+```bash
+# v2 활성화
+RERANKER_VERSION=v2
+
+# Backend 재시작
+docker-compose restart backend
+```
+
+동일한 질문으로 Inspector 재실행
+
+#### 예상 결과 (v2)
+```
+v2 Rerank 점수:
+- Chunk 1 (SpaceX 관련): score 7 ✅ (Context-Aware 평가)
+- Chunk 2 (Tesla 관련): score 7 ✅ (Context-Aware 평가)
+- Chunk 3 (일론 머스크 일반): score 5 ✅ (Name Mentions 4-6점)
+→ 모두 threshold(3) 이상으로 통과
+```
+
+#### 확인 사항
+- [ ] v2에서 관련 청크의 점수가 더 높은가?
+- [ ] v2에서 필터링 통과 청크 수가 증가했는가?
+- [ ] v2 점수 분포가 더 합리적인가?
+
+---
+
+### 시나리오 3: 실제 RAG API A/B 테스트 (Advanced)
+
+**목적**: 실제 RAG API로 10개 테스트 질문 실행하여 Recall/Precision 측정
+
+> **Note**: 이 시나리오는 선택사항입니다. 시나리오 1-2로 충분히 검증 가능합니다.
+
+#### Step 1: A/B testing script 수정
+`scripts/compare_reranker_versions.py` 파일의 `run_rag_query_simulation()` 함수를 실제 RAG API 호출로 교체:
+
+```python
+async def run_rag_query_simulation(query: str, version: str) -> dict[str, Any]:
+    """실제 RAG API 호출"""
+    import httpx
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://localhost:8000/rag/query",
+            json={"query": query, "session_id": f"ab_test_{version}"},
+            timeout=30.0
+        )
+        data = response.json()
+        
+        return {
+            "query": query,
+            "reranked_chunks_count": len(data.get("reranked_chunks", [])),
+            "final_answer": data.get("final_answer", ""),
+            "version": version,
+        }
+```
+
+#### Step 2: v1 테스트 실행
+```bash
+# v1 활성화
+RERANKER_VERSION=v1
+docker-compose restart backend
+
+# v1 테스트
+python3 scripts/ compare_reranker_versions.py --version v1 --output results/v1_real.json
+```
+
+#### Step 3: v2 테스트 실행
+```bash
+# v2 활성화
+RERANKER_VERSION=v2
+docker-compose restart backend
+
+# v2 테스트
+python3 scripts/compare_reranker_versions.py --version v2 --output results/v2_real.json
+```
+
+#### Step 4: 결과 비교
+```bash
+python3 scripts/compare_results.py results/v1_real.json results/v2_real.json
+```
+
+#### 확인 사항
+- [ ] v2 Recall이 +10% 이상인가?
+- [ ] v2 Precision이 -5% 이내인가?
+- [ ] 실제 결과가 시뮬레이션과 유사한가?
+
+---
+
+### 의사결정: v2 채택 or v1 유지
+
+#### 의사결정 기준
+아래 체크리스트를 확인하여 v2 채택 여부를 결정하세요:
+
+**v2 채택 조건** (모두 충족 시 채택):
+- [x] 시뮬레이션: Recall +40%, Precision -2.5% ✅
+- [ ] 시나리오 1: v2에서 Multi-Entity Query 답변 품질 우수
+- [ ] 시나리오 2: v2에서 Over-filtering 감소 확인
+- [ ] (선택) 시나리오 3: 실제 Recall +10% 이상
+
+**3개 중 2개 이상 충족 시 → ✅ v2 채택 권장**
+
+#### 결정 1: v2 채택
+v2가 기준을 충족하면:
+
+1. **spec.md에 결정 기록**
+   ```markdown
+   ## Decision Log (2026-02-XX)
+   
+   **Decision**: ✅ ADOPT v2
+   
+   **Rationale**:
+   - Simulation: Recall +40%, Precision -2.5%
+   - Scenario 1: Multi-Entity Query에서 양쪽 정보 모두 제공
+   - Scenario 2: Reranker 점수 평균 2→6 상승, 필터링 통과율 증가
+   - 기준 충족: Recall +10% 이상, Precision -5% 이내
+   
+   **Next Steps**:
+   - .env에서 RERANKER_VERSION=v2 설정
+   - Production deployment
+   - LangFuse 모니터링
+   ```
+
+2. **Deployment 진행** (아래 "Deployment" 섹션 참고)
+
+#### 결정 2: v1 유지
+v2가 기준을 충족하지 못하면:
+
+1. **spec.md에 결정 및 원인 기록**
+   ```markdown
+   ## Decision Log (2026-02-XX)
+   
+   **Decision**: ❌ KEEP v1
+   
+   **Rationale**:
+   - Scenario 1: v2에서 답변 품질 개선 미미
+   - Scenario 2: 점수는 상승했으나 정확도 문제 발견
+   - 추가 프롬프트 개선 필요
+   
+   **Improvement Plan**:
+   - v2 프롬프트 Context-Aware 기준 재조정
+   - 추가 테스트 케이스 정의 및 재검증
+   - Spec 069-v2 생성하여 개선 작업 진행
+   ```
+
+2. **RERANKER_VERSION=v1 유지**
+
+---
+
+### Deployment (v2 채택 시)
+
+#### Step 1: Production 설정 변경
+```bash
+# Production .env 파일 수정
+RERANKER_VERSION=v2
+```
+
+#### Step 2: Backend 재시작
+```bash
+# Docker Compose 사용 시
+docker-compose restart backend
+
+# 또는 직접 실행 시
+uv run uvicorn app.main:app --reload
+```
+
+#### Step 3: Health Check
+```bash
+# Backend 정상 작동 확인
+curl http://localhost:8000/health
+
+# 설정 확인
+curl http://localhost:8000/admin/config | grep RERANKER_VERSION
+# 예상 출력: "RERANKER_VERSION": "v2"
+```
+
+#### Step 4: 모니터링 (24시간)
+- **LangFuse Observability** 확인
+  - Reranker 점수 분포 변화 관찰
+  - Retrieval Recall/Precision 메트릭 확인
+- **사용자 피드백** 수집
+  - 답변 품질 만족도
+  - 비교 질문 답변 개선 여부
+
+#### Step 5: Rollback 준비
+문제 발생 시 즉시 롤백:
+```bash
+# .env 수정
+RERANKER_VERSION=v1
+
+# Backend 재시작
+docker-compose restart backend
+```
+
+---
+
+### PR 생성
+
+Manual Testing과 Deployment가 완료되면 PR을 생성하세요:
+
+```bash
+# Code Quality Check
+uv run ruff check . --fix && uv run ruff format .
+
+# Full Tests
+uv run pytest
+
+# PR 생성
+gh pr create \ 
+  --title "Spec 069: Reranker Prompt Optimization" \
+  --body-file specs/069-reranker-prompt-optimization/pr_description.md
+```
+
+---
 
 ## 📦 Files Changed
 
@@ -119,44 +406,15 @@ python3 scripts/compare_results.py /tmp/results_v1.json /tmp/results_v2.json
 
 **Total:** 13 files changed (9 new, 4 modified)
 
-## 🚀 Deployment Guide
-
-### Step 1: v2 활성화
-`.env` 파일 수정:
-```bash
-RERANKER_VERSION=v2  # v1에서 v2로 변경
-```
-
-### Step 2: Backend 재시작
-```bash
-docker-compose restart backend
-# 또는
-uv run uvicorn app.main:app --reload
-```
-
-### Step 3: 모니터링
-- LangFuse Observability 대시보드 확인
-- Rerank 점수 분포 변화 관찰
-- 사용자 피드백 수집
-
-### Rollback (필요 시)
-문제 발생 시 즉시 롤백:
-```bash
-# .env 수정
-RERANKER_VERSION=v1
-
-# Backend 재시작
-docker-compose restart backend
-```
-
 ## ✅ Definition of Done
 - [x] 모든 단위/통합 테스트 통과 (8/8 passed)
 - [x] `walkthrough.md` 작성 및 아카이브 완료
 - [x] `pr_description.md` 작성 및 아카이브 완료
-- [ ] Ruff lint 및 format 확인 완료 (PR 생성 전 실행 예정)
-- [ ] Manual Testing 완료 (Task 4-2, 4-3)
-- [ ] v2 채택 의사결정 완료 (Task 4-3)
-- [ ] Production Deployment (Task 5, 의사결정 후)
+- [ ] **User Manual Testing 완료** (위 가이드 참고)
+- [ ] **v2 채택 의사결정 완료** (spec.md에 기록)
+- [ ] **Production Deployment** (v2 채택 시)
+- [ ] Ruff lint 및 format 확인 완료
+- [ ] PR 생성
 
 ## 📈 Expected Impact
 
@@ -176,7 +434,3 @@ docker-compose restart backend
 - [Spec 069](file:///Users/ck/Project/doit/rag-ingestion/specs/069-reranker-prompt-optimization/spec.md)
 - [Implementation Plan](file:///Users/ck/Project/doit/rag-ingestion/specs/069-reranker-prompt-optimization/plan.md)
 - [Walkthrough](file:///Users/ck/Project/doit/rag-ingestion/specs/069-reranker-prompt-optimization/walkthrough.md)
-
----
-
-**Merge Condition**: Manual Testing (Task 4-2, 4-3) 완료 및 v2 채택 의사결정 후 Merge 가능
