@@ -42,8 +42,9 @@ async def ingest_web_page(
                 message=f"Deduplication: Job {existing_job.job_id} is already in state {existing_job.status}.",
             )
 
+    # [Spec 072] Pass force_refresh to process_job for deduplication bypass
     job = service.create_job(str(request.url), chunking_config=chunk_config_dict, custom_metadata=custom_metadata)
-    background_tasks.add_task(service.process_job, job.job_id)
+    background_tasks.add_task(service.process_job, job.job_id, request.force_refresh)
     return AsyncIngestResponse(
         job_id=job.job_id, current_status=job.status, message="Ingestion job created successfully."
     )
