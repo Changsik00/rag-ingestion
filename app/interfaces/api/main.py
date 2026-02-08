@@ -6,9 +6,9 @@ from psycopg_pool import AsyncConnectionPool
 
 from app.core import database
 from app.core.config import get_settings
+from app.interfaces.api.admin_jobs import router as admin_jobs_router
 from app.interfaces.api.error_handlers import register_exception_handlers
 from app.interfaces.api.v1.endpoints import router as v1_router
-from app.interfaces.api.admin_jobs import router as admin_jobs_router
 
 
 @asynccontextmanager

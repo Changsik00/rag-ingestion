@@ -78,9 +78,9 @@ try:
             # [Spec 072] Force Refresh functionality
             st.divider()
             st.subheader("🔄 Force Re-ingest")
-            
+
             job_id_to_refresh = st.text_input("Enter Job ID to force re-ingest:", placeholder="job-xxx-xxx")
-            
+
             if st.button("Force Refresh", type="primary"):
                 if not job_id_to_refresh:
                     st.warning("⚠️ Please enter a Job ID")

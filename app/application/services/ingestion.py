@@ -138,7 +138,7 @@ class Ingestion:
 
     async def process_job(self, job_id: str, force_refresh: bool = False) -> None:
         """Execute the ingestion logic asynchronously.
-        
+
         Args:
             job_id: Job ID to process
             force_refresh: If True, bypass deduplication check (Admin Force Refresh)
@@ -152,7 +152,7 @@ class Ingestion:
             # [Spec 072] 1. Force Refresh Check (Admin Override)
             if force_refresh:
                 logger.info(f"Job {job_id} force refresh enabled, bypassing deduplication")
-            
+
             # [Spec 065] 2. Immediate ID/URL-based Deduplication Check
             if not force_refresh:
                 # Direct check for latest meaningful job for this URL
@@ -189,8 +189,9 @@ class Ingestion:
 
             # [Spec 072] 5. Calculate Content Hash after scraping
             import hashlib
+
             scraped_content = None
-            
+
             if job.raw_content and job.filename:
                 logger.info(f"Processing local file: {job.filename}")
                 from app.core.file_processor import FileProcessor
@@ -198,12 +199,12 @@ class Ingestion:
                 file_processor = FileProcessor()
                 segments = file_processor.extract_segments(job.raw_content, job.filename)
                 # For local files, use raw content for hash
-                scraped_content = job.raw_content.decode('utf-8', errors='ignore')
+                scraped_content = job.raw_content.decode("utf-8", errors="ignore")
             else:
                 result = await self.scraper.scrape(job.source_url)
                 segments = [(result.markdown, result.metadata)]
                 scraped_content = result.markdown
-            
+
             # Calculate and store content hash
             if scraped_content and isinstance(scraped_content, str):
                 job.content_hash = hashlib.sha256(scraped_content.encode()).hexdigest()
