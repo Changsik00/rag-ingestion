@@ -6,6 +6,7 @@ from psycopg_pool import AsyncConnectionPool
 
 from app.core import database
 from app.core.config import get_settings
+from app.interfaces.api.admin_jobs import router as admin_jobs_router
 from app.interfaces.api.error_handlers import register_exception_handlers
 from app.interfaces.api.v1.endpoints import router as v1_router
 
@@ -38,4 +39,6 @@ app = FastAPI(
 
 register_exception_handlers(app)
 
+# [Spec 072] Include Admin API under /v1 prefix for consistency
 app.include_router(v1_router, prefix="/v1")
+app.include_router(admin_jobs_router, prefix="/v1")  # Admin API: /v1/admin/jobs

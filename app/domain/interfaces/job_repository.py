@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.domain.entities.job import IngestionJob
+from app.domain.entities.job import IngestionJob, JobStatus
 
 
 class JobRepository(ABC):
@@ -29,4 +29,12 @@ class JobRepository(ABC):
         self, source_url: str, exclude_job_id: str | None = None, statuses: list[str] | None = None
     ) -> IngestionJob | None:
         """Find the last job for a given source URL, with optional exclusion and status filtering."""
+        pass
+
+    @abstractmethod
+    def get_jobs(self, status: JobStatus | None = None, limit: int = 100) -> list[IngestionJob]:
+        """
+        [Spec 072] Retrieve jobs with optional status filtering.
+        Used by Admin UI to view skipped jobs or filter by other statuses.
+        """
         pass

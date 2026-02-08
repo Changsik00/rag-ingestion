@@ -23,7 +23,8 @@ class Neo4jJobRepository(JobRepository):
             j.raw_content = $raw_content,
             j.filename = $filename,
             j.content_hash = $content_hash,
-            j.custom_metadata = $custom_metadata
+            j.custom_metadata = $custom_metadata,
+            j.skip_reason = $skip_reason
         """
         # Encode bytes to base64 string for Neo4j storage
         raw_content_b64 = None
@@ -50,6 +51,7 @@ class Neo4jJobRepository(JobRepository):
             "filename": job.filename,
             "content_hash": job.content_hash,
             "custom_metadata": custom_metadata_json,
+            "skip_reason": job.skip_reason,
         }
         with self.driver.session() as session:
             session.run(query, params)
@@ -64,7 +66,8 @@ class Neo4jJobRepository(JobRepository):
             j.raw_content = $raw_content,
             j.filename = $filename,
             j.content_hash = $content_hash,
-            j.custom_metadata = $custom_metadata
+            j.custom_metadata = $custom_metadata,
+            j.skip_reason = $skip_reason
         """
         # Encode bytes to base64 string for Neo4j storage
         raw_content_b64 = None
@@ -85,6 +88,7 @@ class Neo4jJobRepository(JobRepository):
             "filename": job.filename,
             "content_hash": job.content_hash,
             "custom_metadata": custom_metadata_json,
+            "skip_reason": job.skip_reason,
         }
         with self.driver.session() as session:
             session.run(query, params)
@@ -159,6 +163,26 @@ class Neo4jJobRepository(JobRepository):
                 jobs.append(self._map_node_to_job(record["j"]))
         return jobs
 
+    def get_jobs(self, status: JobStatus | None = None, limit: int = 100) -> list[IngestionJob]:
+        """
+        [Spec 072] Retrieve jobs with optional status filtering.
+        Used by Admin UI to view skipped jobs or filter by other statuses.
+        """
+        query = """
+        MATCH (j:IngestionJob)
+        WHERE ($status IS NULL OR j.status = $status)
+        RETURN j
+        ORDER BY j.created_at DESC
+        LIMIT $limit
+        """
+        status_value = status.value if status else None
+        jobs = []
+        with self.driver.session() as session:
+            result = session.run(query, status=status_value, limit=limit)
+            for record in result:
+                jobs.append(self._map_node_to_job(record["j"]))
+        return jobs
+
     def _fetch_single_job(self, query: str, **params) -> IngestionJob | None:
         with self.driver.session() as session:
             result = session.run(query, **params)
@@ -202,4 +226,5 @@ class Neo4jJobRepository(JobRepository):
             docs_ids=node.get("docs_ids", []),
             content_hash=node.get("content_hash"),
             custom_metadata=custom_metadata,
+            skip_reason=node.get("skip_reason"),
         )

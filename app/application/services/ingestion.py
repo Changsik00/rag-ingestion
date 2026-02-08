@@ -136,19 +136,25 @@ class Ingestion:
         self.job_repository.create_job(job)
         return job
 
-    async def process_job(self, job_id: str) -> None:
-        """Execute the ingestion logic asynchronously."""
+    async def process_job(self, job_id: str, force_refresh: bool = False) -> None:
+        """Execute the ingestion logic asynchronously.
+
+        Args:
+            job_id: Job ID to process
+            force_refresh: If True, bypass deduplication check (Admin Force Refresh)
+        """
         job = self.job_repository.get_job(job_id)
         if not job:
             logger.error(f"Job {job_id} NOT FOUND in repository!")
             return
 
         try:
-            # [Spec 065] 1. Immediate ID/URL-based Deduplication Check
-            custom_meta = job.custom_metadata or {}
-            is_forced = custom_meta.get("force_refresh") is True
+            # [Spec 072] 1. Force Refresh Check (Admin Override)
+            if force_refresh:
+                logger.info(f"Job {job_id} force refresh enabled, bypassing deduplication")
 
-            if not is_forced:
+            # [Spec 065] 2. Immediate ID/URL-based Deduplication Check
+            if not force_refresh:
                 # Direct check for latest meaningful job for this URL
                 last_job = self.job_repository.find_last_job_by_source(
                     job.source_url,
@@ -159,24 +165,32 @@ class Ingestion:
                 if last_job and last_job.status in [JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]:
                     logger.info(f"Job {job_id} skipping because of duplicate {last_job.job_id} ({last_job.status})")
                     job.status = JobStatus.SKIPPED
+                    job.skip_reason = f"Duplicate of job {last_job.job_id} (Status: {last_job.status})"
                     job.updated_at = datetime.now(timezone.utc)
                     self.job_repository.update_job(job)
                     return
 
-                # 2. Strategy-based check (Contents, TTL, Metadata-specific)
+                # 3. Strategy-based check (Contents, TTL, Metadata-specific)
                 strategy = self.deduplication_factory.get_strategy(job.source_url)
                 if await strategy.is_duplicate(job):
-                    logger.info(f"Job {job_id} detected as duplicate via {type(strategy).__name__}. Skipping.")
+                    strategy_name = type(strategy).__name__
+                    logger.info(f"Job {job_id} detected as duplicate via {strategy_name}. Skipping.")
                     job.status = JobStatus.SKIPPED
+                    job.skip_reason = f"Duplicate detected by {strategy_name}"
                     job.updated_at = datetime.now(timezone.utc)
                     self.job_repository.update_job(job)
                     return
 
-            # 3. If not duplicate, Update Status to RUNNING and proceed
+            # 4. If not duplicate, Update Status to RUNNING and proceed
             logger.info(f"Starting ingestion job {job_id} for {job.source_url}")
             job.status = JobStatus.RUNNING
             job.updated_at = datetime.now(timezone.utc)
             self.job_repository.update_job(job)
+
+            # [Spec 072] 5. Calculate Content Hash after scraping
+            import hashlib
+
+            scraped_content = None
 
             if job.raw_content and job.filename:
                 logger.info(f"Processing local file: {job.filename}")
@@ -184,9 +198,20 @@ class Ingestion:
 
                 file_processor = FileProcessor()
                 segments = file_processor.extract_segments(job.raw_content, job.filename)
+                # For local files, use raw content for hash
+                scraped_content = job.raw_content.decode("utf-8", errors="ignore")
             else:
                 result = await self.scraper.scrape(job.source_url)
                 segments = [(result.markdown, result.metadata)]
+                scraped_content = result.markdown
+
+            # Calculate and store content hash
+            if scraped_content and isinstance(scraped_content, str):
+                job.content_hash = hashlib.sha256(scraped_content.encode()).hexdigest()
+                logger.info(f"Content hash calculated for job {job_id}: {job.content_hash[:16]}...")
+            elif scraped_content and isinstance(scraped_content, bytes):
+                job.content_hash = hashlib.sha256(scraped_content).hexdigest()
+                logger.info(f"Content hash calculated for job {job_id}: {job.content_hash[:16]}...")
 
             job.docs_ids = []
 
@@ -212,7 +237,10 @@ class Ingestion:
                 if semantic_data and semantic_data.primary_entity:
                     doc_metadata["primary_entity"] = semantic_data.primary_entity
 
-                doc = Document(content=text, metadata=doc_metadata)
+                # [Spec 072] Generate deterministic document ID from source_url
+                # This ensures force_refresh will update the same document (upsert)
+                doc_id = hashlib.sha256(str(job.source_url).encode()).hexdigest()
+                doc = Document(id=doc_id, content=text, metadata=doc_metadata)
 
                 # Chunking & Save
                 chunker = self._get_chunker(job.chunking_config)
