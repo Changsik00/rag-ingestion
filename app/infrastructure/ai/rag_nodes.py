@@ -16,8 +16,10 @@ from langchain_core.runnables import RunnableConfig
 
 from app.core.logger import setup_logger
 from app.domain.services.intent_classifier import IntentClassifier
+from app.core.config import get_settings
 from app.domain.services.prompts.listwise_reranker import LISTWISE_RERANKER_PROMPT
 from app.domain.services.prompts.reranker import RERANKER_PROMPT
+from app.domain.services.prompts.reranker_v2 import RERANKER_PROMPT_V2
 from app.domain.services.query_rewriter import QueryRewriter
 from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
@@ -340,8 +342,12 @@ class RAGNodes:
         rerank_log = []
         rerank_tasks = []
 
+        # [Spec 069] Feature Flag: Reranker Version Selection
+        settings = get_settings()
+        reranker_prompt = RERANKER_PROMPT_V2 if settings.RERANKER_VERSION == "v2" else RERANKER_PROMPT
+
         for chunk in rerank_targets:
-            prompt = RERANKER_PROMPT.format(query=rewritten_query, chunk_text=chunk.content)
+            prompt = reranker_prompt.format(query=rewritten_query, chunk_text=chunk.content)
             rerank_tasks.append(self._get_rerank_score(chunk, prompt, temperature, config))
 
         # Run 리랭킹 in parallel
