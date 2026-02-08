@@ -25,25 +25,26 @@
 
 ### 📋 Spec List
 
-* [ ] **Spec 069: Reranker Prompt Optimization** (P0, 1일) 🚀 **Quick Win**
+* [x] **Spec 069: Reranker Prompt Optimization** (P0, 1일) 🚀 **Quick Win**
   * **Goal**: Reranker 독소조항 제거 및 Context-Aware 프롬프트로 교체
   * **근거**: [Root Cause #3](../specs/068-rag-architecture-review/root_cause_analysis.md#-high-issue-3-reranker의-독소조항-penalty-rule)
   * **Tasks**:
-    - [ ] `PENALTY` 규칙 제거, Context-Aware 평가 기준 추가
-    - [ ] `reranker_v2.py` 작성 및 Feature Flag 추가
-    - [ ] A/B 테스트 10개 질문 실행
-    - [ ] Recall +10% 확인 후 v2 기본값 적용
+    - [x] `PENALTY` 규칙 제거, Context-Aware 평가 기준 추가
+    - [x] `reranker_v2.py` 작성 및 Feature Flag 추가
+    - [x] A/B 테스트 10개 질문 실행
+    - [x] Recall +10% 확인 후 v2 기본값 적용
   * **Expected Impact**: Over-filtering 해결, Recall 향상
 
-* [ ] **Spec 070: Prompt Quality Testing Framework** (P0, 2일) 🚀 **Quick Win**
+* [x] **Spec 070: Prompt Quality Testing Framework** (P0, 2일) 🚀 **Quick Win** → **PR #76**
   * **Goal**: Intent Classifier 테스트 케이스 50개 구축 및 자동 검증
   * **근거**: [Root Cause #2](../specs/068-rag-architecture-review/root_cause_analysis.md#-high-issue-2-intent-classifier-prompt-bias)
   * **Tasks**:
-    - [ ] 다양한 도메인 테스트 케이스 50개 작성 (YAML)
-    - [ ] Pytest 자동 검증 스크립트
-    - [ ] 현재 Accuracy Baseline 측정
-    - [ ] CI/CD에 Prompt Quality Test 추가
-  * **Expected Impact**: "어쩌다 어른" 편향 해결
+    - [x] 다양한 도메인 테스트 케이스 50개 작성 (YAML)
+    - [x] Pytest 자동 검증 스크립트
+    - [x] 현재 Accuracy Baseline 측정 (89.3%)
+    - [ ] CI/CD에 Prompt Quality Test 추가 (Skipped - .github/workflows 없음)
+  * **Expected Impact**: "어쩌다 어른" 편향 해결 ✅
+  * **Note**: Baseline Accuracy 89.3% (목표 80% 초과). 편향 해소 확인 완료.
 
 * [ ] **Spec 071: ChromaDB Upsert Logic** (P1, 1일) 🚀 **Quick Win**
   * **Goal**: 중복 저장 방지 (`add` → `upsert`)
