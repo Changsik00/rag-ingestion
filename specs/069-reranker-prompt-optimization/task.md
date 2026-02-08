@@ -54,27 +54,34 @@
 ## Task 3: A/B Testing 인프라
 
 ### 3-1. A/B 테스트 스크립트 작성
-- [ ] `scripts/compare_reranker_versions.py` 생성
+- [x] `scripts/compare_reranker_versions.py` 생성
   - 10개 테스트 질문 정의
   - Recall/Precision 계산 로직
   - 결과 비교 리포트 생성
-- [ ] Commit: `feat(spec-069): add reranker a/b testing script`
+- [x] `scripts/compare_results.py` 생성
+  - v1 vs v2 비교 및 의사결정 로직
+- [x] 시뮬레이션 모드 테스트 성공 ✅
+  - v2 Recall +40%, Precision -2.5% → 기준 충족
+- [x] Commit: `feat(spec-069): add reranker a/b testing scripts`
 
-### 3-2. A/B 테스트 실행
+### 3-2. A/B 테스트 실행 (실제 LLM 호출 필요)
+- [ ] 실제 RAG API에 연결 (현재 시뮬레이션)
 - [ ] v1 Baseline 측정 및 결과 저장
 - [ ] v2 실행 및 결과 저장
 - [ ] 결과 비교 및 분석
 - [ ] 결과를 `spec.md`에 추가
 - [ ] Commit: `docs(spec-069): add a/b test results`
 
+> **Note**: 실제 테스트는 나중에 수동 진행. 스크립트는 준비 완료.
+
 ---
 
 ## Task 4: Verification & Decision
 
 ### 4-1. Automated Test 전체 실행
-- [ ] `uv run pytest tests/unit/domain/prompts/test_reranker_v2.py`
-- [ ] `uv run pytest tests/unit/infrastructure/rag/test_rag_reranker.py`
-- [ ] 모든 테스트 통과 확인
+- [x] `uv run pytest tests/unit/domain/prompts/test_reranker_v2.py` ✅ 6 passed
+- [x] `uv run pytest tests/unit/infrastructure/rag/test_rag_reranker.py` ✅ 2 passed
+- [x] 모든 테스트 통과 확인 ✅ 8/8 passed
 
 ### 4-2. Manual Testing
 - [ ] Admin UI Playground에서 비교 질문 테스트
@@ -112,5 +119,5 @@
 ## Summary
 **총 Task**: 6개  
 **예상 커밋 수**: 9개  
-**현재 진행**: Execution - Task 3 (A/B Testing 인프라)  
-**완료 커밋**: 6개 (e90b126, f9d95c7, 47d541f, 20bf4cb, 06fb54c, 17f41d1, 7c03595)
+**현재 진행**: Verification - Task 4 (자동 테스트 통과), Task 4-2~4-3 수동 테스트 대기  
+**완료 커밋**: 8개 (e90b126, f9d95c7, 47d541f, 20bf4cb, 06fb54c, 17f41d1, 7c03595, 0d9af7d)
