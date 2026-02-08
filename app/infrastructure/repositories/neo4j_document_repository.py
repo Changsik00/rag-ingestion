@@ -471,3 +471,36 @@ class Neo4jDocumentRepository(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to get all chunk metadata from Neo4j: {e}")
             return []
+
+    def get_all_source_names(self) -> list[str]:
+        """
+        Neo4j에 저장된 모든 고유한 Source 이름 목록을 반환합니다.
+        
+        Spec 073: Fuzzy Filter Matching을 위한 Available Sources 조회용.
+        Document와 Chunk 양쪽에서 source를 조회하여 결합합니다.
+        
+        Returns:
+            list[str]: Source 이름 목록 (중복 제거, 정렬)
+        """
+        try:
+            # Document와 Chunk 양쪽에서 source 조회
+            query = """
+            MATCH (d:Document)
+            WHERE d.source IS NOT NULL
+            RETURN DISTINCT d.source AS source
+            UNION
+            MATCH (c:Chunk)
+            WHERE c.source IS NOT NULL
+            RETURN DISTINCT c.source AS source
+            ORDER BY source
+            """
+            
+            with self.driver.session() as session:
+                result = session.run(query)
+                sources = [record["source"] for record in result if record["source"]]
+                logger.info(f"Found {len(sources)} unique sources in Neo4j: {sources[:5]}...")
+                return sources
+                
+        except Exception as e:
+            logger.error(f"Failed to get source names from Neo4j: {e}")
+            return []
