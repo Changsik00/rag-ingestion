@@ -111,13 +111,33 @@
 <!-- 이 단계는 모든 작업 완료 후 수행합니다. -->
 - [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
 - [ ] Run Full Tests: `uv run pytest`
-- [ ] **Walkthrough 작성**: `specs/069-reranker-prompt-optimization/walkthrough.md`
-- [ ] **PR Description 작성**: `specs/069-reranker-prompt-optimization/pr_description.md` (템플릿 준수)
-- [ ] **Archive Commit**: 위 파일을 `specs/`에 커밋 (`docs(spec-069): archive walkthrough and pr description`)
+- [x] **Walkthrough 작성**: `specs/069-reranker-prompt-optimization/walkthrough.md` ✅
+- [x] **PR Description 작성**: `specs/069-reranker-prompt-optimization/pr_description.md` ✅
+- [x] **Archive Commit**: `docs(spec-069): archive walkthrough and pr description`
 - [ ] Create PR: `gh pr create --title "Spec 069: Reranker Prompt Optimization" --body-file specs/069-reranker-prompt-optimization/pr_description.md`
+
+> **Note**: PR 생성은 Manual Testing (Task 4-2, 4-3) 완료 후 진행 권장
 
 ## Summary
 **총 Task**: 6개  
 **예상 커밋 수**: 9개  
-**현재 진행**: Verification - Task 4 (자동 테스트 통과), Task 4-2~4-3 수동 테스트 대기  
-**완료 커밋**: 8개 (e90b126, f9d95c7, 47d541f, 20bf4cb, 06fb54c, 17f41d1, 7c03595, 0d9af7d)
+**현재 진행**: ✅ 완료 (Manual Testing 및 PR 생성 대기)  
+**완료 커밋**: 10개
+
+### 커밋 리스트
+1. e90b126 - reranker v2 prompt
+2. f9d95c7 - validation test
+3. 47d541f - feature flag
+4. 20bf4cb - RAG nodes integration
+5. 06fb54c - .env.example
+6. 17f41d1 - integration test
+7. 7c03595 - task.md update #1
+8. 0d9af7d - A/B testing scripts
+9. c90da32 - task.md update #2
+10. (archive) - walkthrough & pr_description
+
+### 남은 작업 (사용자 수동)
+- [ ] Task 4-2: Admin UI Manual Testing
+- [ ] Task 4-3: 의사결정 (v2 채택 여부)
+- [ ] Task 5: Deployment (의사결정 후)
+- [ ] Task 6: Code Quality Check & PR 생성
