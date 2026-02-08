@@ -13,90 +13,90 @@
 ## Task 1: JobStatus.SKIPPED Enum 추가
 
 ### 1-1. Entity 수정
-- [ ] `app/domain/entities/job.py` 수정:
-  - `JobStatus` Enum에 `SKIPPED` 추가
-  - `IngestionJob`에 `content_hash: str | None` 필드 추가
+- [x] `app/domain/entities/job.py` 수정:
+  - `JobStatus` Enum에 `SKIPPED` 추가 (이미 Spec 065에서 추가됨)
+  - `IngestionJob`에 `content_hash: str | None` 필드 추가 (이미 Spec 065에서 추가됨)
   - `IngestionJob`에 `skip_reason: str | None` 필드 추가
-- [ ] Commit: `feat(spec-072): add SKIPPED status and content_hash to IngestionJob`
+- [x] Commit: `feat(spec-072): add skip_reason field to IngestionJob`
 
 ### 1-2. Repository Schema 업데이트
-- [ ] Neo4j Job Repository 스키마 확인:
-  - `IngestionJob` Node가 `content_hash`, `skip_reason` 속성 지원하는지 확인
-  - 필요 시 Migration 스크립트 작성
-- [ ] Commit: `feat(spec-072): update neo4j job schema for content_hash`
+- [x] Neo4j Job Repository 스키마 확인 및 업데이트:
+  - `skip_reason` 필드를 create_job, update_job, _map_node_to_job에 추가
+- [x] Commit: `feat(spec-072): add skip_reason to neo4j repository and get_jobs method`
 
 ---
 
 ## Task 2: Ingestion Service 개선
 
 ### 2-1. Force Refresh 파라미터 추가
-- [ ] `app/application/services/ingestion.py` 수정:
+- [x] `app/application/services/ingestion.py` 수정:
   - `process_job(job_id: str, force_refresh: bool = False)` 시그니처 변경
   - `force_refresh=True`일 경우 Deduplication Check 우회
-- [ ] Commit: `feat(spec-072): add force_refresh parameter to ingestion service`
+- [x] Commit: `feat(spec-072): add force_refresh param and skip_reason storage`
 
 ### 2-2. Content Hash 계산 로직 추가
-- [ ] `app/application/services/ingestion.py`의 `process_job()` 수정:
-  - Scrape 결과에서 `hashlib.sha256(result.markdown.encode()).hexdigest()` 계산
+- [x] `app/application/services/ingestion.py`의 `process_job()` 수정:
+  - Scrape 결과에서 `hashlib.sha256()` 계산
   - `job.content_hash` 저장
-- [ ] Commit: `feat(spec-072): calculate and store content hash after scraping`
+- [x] Commit: (위 커밋에 포함)
 
 ### 2-3. Skip Reason 저장
-- [ ] Deduplication 감지 시:
+- [x] Deduplication 감지 시:
   - `job.status = JobStatus.SKIPPED` 설정
-  - `job.skip_reason = f"Duplicate detected by {strategy.__class__.__name__}"` 저장
-  - Repository에 업데이트
-- [ ] Commit: `feat(spec-072): store skip reason when deduplication detected`
+  - `job.skip_reason` 저장
+- [x] Commit: (위 커밋에 포함)
+- [x] Bug fix: `fix(spec-072): fix content hash calculation for mock objects`
 
 ---
 
 ## Task 3: Admin API 추가
 
 ### 3-1. Job 목록 조회 API
-- [ ] `app/interfaces/api/admin/jobs.py` 생성:
-  - `GET /admin/jobs?status={status}&source_type={type}` Endpoint
-  - JobRepository에 `get_jobs(status, source_type, limit)` 메서드 추가 필요
-- [ ] Commit: `feat(spec-072): add admin jobs list api endpoint`
+- [x] `app/interfaces/api/admin_jobs.py` 생성:
+  - `GET /admin/jobs?status={status}&limit={limit}` Endpoint
+- [x] Commit: `feat(spec-072): add skip_reason to neo4j repository and get_jobs method`
 
 ### 3-2. Force Refresh API
-- [ ] `app/interfaces/api/admin/jobs.py`에 추가:
+- [x] `app/interfaces/api/admin_jobs.py`에 추가:
   - `POST /admin/jobs/{job_id}/force-refresh` Endpoint
-  - Ingestion Service 호출 시 `force_refresh=True` 전달
-- [ ] Commit: `feat(spec-072): add force refresh api endpoint`
+- [x] Commit: (위 커밋에 포함)
 
 ### 3-3. Repository 메서드 구현
-- [ ] `app/infrastructure/repositories/neo4j_job_repository.py` 수정:
-  - `get_jobs(status, source_type, limit)` 메서드 구현
-  - Cypher Query: `MATCH (j:IngestionJob) WHERE j.status = $status ...`
-- [ ] Commit: `feat(spec-072): implement get_jobs method in neo4j repository`
+- [x] `app/infrastructure/repositories/neo4j_job_repository.py` 수정:
+  - `get_jobs(status, limit)` 메서드 구현
+- [x] `app/domain/interfaces/job_repository.py` 수정:
+  - `get_jobs()` 메서드 선언 추가
+- [x] `app/interfaces/api/main.py` 수정:
+  - Admin API Router 등록
+- [x] Commit: `feat(spec-072): add get_jobs to interface and register admin api router`
 
 ---
 
 ## Task 4: Admin UI 추가 (Streamlit)
 
 ### 4-1. Skipped Jobs 페이지 생성
-- [ ] `admin_ui/pages/jobs.py` 생성 (또는 기존 파일 수정):
-  - Status 필터 (Selectbox)
-  - Jobs 테이블 표시 (`st.dataframe`)
-  - Force Refresh 버튼 및 확인 Modal
-- [ ] Commit: `feat(spec-072): add skipped jobs page to admin ui`
+- [x] `admin/pages/0_Job_Queue.py` 수정:
+  - Status 필터 (Selectbox): ALL/PENDING/RUNNING/COMPLETED/FAILED/SKIPPED
+  - Jobs 테이블에 Skip Reason 컬럼 추가
+  - Force Refresh 버튼 및 UI
+- [x] Commit: `feat(spec-072): add status filter and force refresh to admin ui`
 
 ### 4-2. Force Refresh 동작 구현
-- [ ] Admin UI에서 Force Refresh 버튼 클릭 시:
+- [x] Admin UI에서 Force Refresh 버튼 클릭 시:
   - `POST /admin/jobs/{job_id}/force-refresh` API 호출
   - 성공 시 `st.success()` 메시지
-- [ ] Commit: `feat(spec-072): implement force refresh button in admin ui`
+- [x] Commit: (위 커밋에 포함)
 
 ---
 
 ## Task 5: E2E 테스트 작성
 
 ### 5-1. E2E 테스트 파일 생성
-- [ ] `tests/e2e/test_deduplication_end_to_end.py` 생성:
+- [x] `tests/e2e/test_deduplication_end_to_end.py` 생성:
   - `test_duplicate_job_is_skipped()`: 동일 URL 2번 수집 시 2번째 SKIPPED 확인
   - `test_force_refresh_bypasses_deduplication()`: Force Refresh 동작 확인
-- [ ] Docker Compose로 Neo4j/ChromaDB 실행 후 테스트
-- [ ] Commit: `test(spec-072): add e2e tests for deduplication`
+  - `test_skip_reason_persisted_in_database()`: skip_reason 저장 확인
+- [x] Commit: `test(spec-072): add e2e tests for deduplication and force refresh`
 
 ### 5-2. E2E 테스트 실행
 - [ ] 명령어: `docker-compose up -d neo4j chromadb && uv run pytest tests/e2e/test_deduplication_end_to_end.py -v --e2e`
