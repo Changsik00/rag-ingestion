@@ -44,6 +44,7 @@ class RAGNodes:
         query_rewriter: QueryRewriter,
         intent_classifier: IntentClassifier,
         llm: Any,
+        filter_matcher: Any | None = None,
     ):
         """
         Args:
@@ -53,6 +54,7 @@ class RAGNodes:
             query_rewriter: Query Rewriting Service
             intent_classifier: Intent Classification Service
             llm: Language Model Interface
+            filter_matcher: FilterMatcher Service (Spec 073: Fuzzy Filter Matching)
         """
         self.neo4j_doc_repo = neo4j_doc_repo
         self.neo4j_graph_repo = neo4j_graph_repo
@@ -60,6 +62,7 @@ class RAGNodes:
         self.query_rewriter = query_rewriter
         self.intent_classifier = intent_classifier
         self.llm = llm
+        self.filter_matcher = filter_matcher
 
     def _extract_text_content(self, content: Any) -> str:
         """
@@ -127,12 +130,14 @@ class RAGNodes:
 
         return state
 
-    def route_decision(self, state: RAGGraphState) -> RAGGraphState:
+    async def route_decision(self, state: RAGGraphState) -> RAGGraphState:
         """
         Node 2: Intent → Filters 변환 (Nervous System Layer)
 
         Intent Classifier의 결정을 Repository Filters로 변환하고,
         Manual Filters와 병합합니다 (Manual Filters가 우선).
+        
+        [Spec 073] Fuzzy Filter Matching 적용.
 
         Args:
             state: RAGGraphState
@@ -143,8 +148,8 @@ class RAGNodes:
         user_intent = state.get("user_intent")
         manual_filters = state.get("manual_filters")
 
-        # Convert Intent to Auto Filters
-        auto_filters = self._intent_to_filters(user_intent) if user_intent else None
+        # Convert Intent to Auto Filters (with Fuzzy Matching)
+        auto_filters = await self._intent_to_filters(user_intent, state) if user_intent else None
 
         # Merge Filters (Manual > Auto)
         final_filters = manual_filters if manual_filters is not None else auto_filters
@@ -683,12 +688,15 @@ class RAGNodes:
 
     # === Helper Methods ===
 
-    def _intent_to_filters(self, intent: UserIntent | None) -> dict | None:
+    async def _intent_to_filters(self, intent: UserIntent | None, state: RAGGraphState) -> dict | None:
         """
         Intent를 Repository Filters로 변환.
+        
+        [Spec 073] Fuzzy Filter Matching을 적용하여 유사한 Source 이름 매칭.
 
         Args:
             intent: User Intent 분류 결과
+            state: RAGGraphState (Reasoning Log 업데이트용)
 
         Returns:
             dict: Repository 필터 (source, topic 등)
@@ -698,8 +706,32 @@ class RAGNodes:
             return None
 
         if intent.intent == IntentType.COMPARE or intent.intent == IntentType.SUMMARIZE:
-            # targets를 source 필터로 변환
-            if intent.targets:
+            # targets를 source 필터로 변환 (Fuzzy Matching 적용)
+            if intent.targets and self.filter_matcher:
+                # Get available sources from repositories
+                available_sources = await self._get_available_sources()
+                
+                # Fuzzy Matching
+                matched_sources = []
+                fuzzy_log = []
+                for target in intent.targets:
+                    match = self.filter_matcher.match_source(target, available_sources)
+                    if match:
+                        matched_sources.append(match)
+                        if target.lower() != match.lower():
+                            fuzzy_log.append(f"'{target}' → '{match}'")
+                    else:
+                        logger.warning(f"No match found for target: '{target}'")
+                
+                # Add Fuzzy Match log to Reasoning Log
+                if fuzzy_log:
+                    reasoning_log = state.get("reasoning_log", [])
+                    reasoning_log.append(f"🔍 [Fuzzy Match] {', '.join(fuzzy_log)}")
+                    state["reasoning_log"] = reasoning_log
+                
+                return {"source": matched_sources} if matched_sources else None
+            elif intent.targets:
+                # Fallback: No FilterMatcher (Exact Match)
                 return {"source": intent.targets}
             return None
 
@@ -781,3 +813,32 @@ class RAGNodes:
                 graph_context = "\n".join(graph_lines)
 
         return f"{graph_context}\n\nDocument Context:\n{text_context}", mapped_chunks
+
+    async def _get_available_sources(self) -> list[str]:
+        """
+        ChromaDB와 Neo4j에서 사용 가능한 모든 Source 이름을 조회합니다.
+        
+        [Spec 073] Fuzzy Filter Matching을 위한 Available Sources 조회.
+        
+        Returns:
+            list[str]: 중복 제거된 Source 이름 목록 (정렬)
+        """
+        sources = set()
+        
+        # ChromaDB에서 Source 조회
+        try:
+            chroma_sources = self.chroma_repo.get_all_source_names()
+            sources.update(chroma_sources)
+        except Exception as e:
+            logger.warning(f"Failed to get sources from ChromaDB: {e}")
+        
+        # Neo4j에서 Source 조회
+        try:
+            neo4j_sources = self.neo4j_doc_repo.get_all_source_names()
+            sources.update(neo4j_sources)
+        except Exception as e:
+            logger.warning(f"Failed to get sources from Neo4j: {e}")
+        
+        sorted_sources = sorted(list(sources))
+        logger.debug(f"Available sources for fuzzy matching: {sorted_sources}")
+        return sorted_sources
