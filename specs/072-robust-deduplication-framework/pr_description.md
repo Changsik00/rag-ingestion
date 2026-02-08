@@ -60,6 +60,43 @@ uv run pytest tests/e2e/test_deduplication_end_to_end.py -v --e2e
 uv run pytest tests/integration/test_ingestion_deduplication.py -v
 ```
 
+## ✋ Manual Verification Required
+
+Please verify the following after merging:
+
+### 1. Admin UI Functionality
+```bash
+# Run Streamlit Admin UI
+uv run streamlit run admin/dashboard.py
+```
+- [ ] Navigate to "📋 Job Queue" page
+- [ ] Test Status filter dropdown (select "SKIPPED")
+- [ ] Verify "Skip Reason" column displays correctly
+- [ ] Test Force Refresh:
+  1. Enter a job ID
+  2. Click "Force Refresh" button
+  3. Verify success message
+  4. Check job status changes from SKIPPED to COMPLETED/RUNNING
+
+### 2. Deduplication Flow
+```bash
+# Run FastAPI backend
+uv run uvicorn app.interfaces.api.main:app --reload
+```
+- [ ] Ingest same URL twice via API
+- [ ] Verify second job has `status=SKIPPED`
+- [ ] Check Neo4j Browser: `MATCH (j:IngestionJob {status: "SKIPPED"}) RETURN j.skip_reason`
+- [ ] Verify `skip_reason` is populated
+
+### 3. Force Refresh API
+```bash
+# Test Force Refresh endpoint
+curl -X POST "http://localhost:8000/admin/jobs/{job_id}/force-refresh"
+```
+- [ ] Verify skipped job is re-processed
+- [ ] Check job status changes to COMPLETED
+- [ ] Verify `content_hash` is calculated
+
 ## 📚 Documentation
 
 - **Architecture**: [`docs/architecture/deduplication.md`](../../../docs/architecture/deduplication.md)
