@@ -23,7 +23,7 @@ async def ingest_web_page(
 ):
     chunk_config_dict = request.chunking_config.model_dump() if request.chunking_config else None
 
-    # [Spec 065] Extract Metadata for early deduplication check
+    # [Spec 065] Extract Metadata for deduplication check
     custom_metadata = {"force_refresh": request.force_refresh}
     import re
 
@@ -32,17 +32,8 @@ async def ingest_web_page(
         if match:
             custom_metadata["video_id"] = match.group(1)
 
-    # [Spec 065] Concurrency & Deduplication Check: Don't even create a job if one is already active/completed
-    if not request.force_refresh and not request.bypass_early_dedup:
-        existing_job = service.is_already_queued(str(request.url), custom_metadata=custom_metadata)
-        if existing_job:
-            return AsyncIngestResponse(
-                job_id=existing_job.job_id,
-                current_status=existing_job.status,
-                message=f"Deduplication: Job {existing_job.job_id} is already in state {existing_job.status}.",
-            )
-
-    # [Spec 072] Pass force_refresh to process_job for deduplication bypass
+    # [Spec 072] Removed early deduplication to allow SKIPPED status creation
+    # All deduplication logic is now handled in process_job() for proper status tracking
     job = service.create_job(str(request.url), chunking_config=chunk_config_dict, custom_metadata=custom_metadata)
     background_tasks.add_task(service.process_job, job.job_id, request.force_refresh)
     return AsyncIngestResponse(
