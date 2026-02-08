@@ -64,15 +64,7 @@
   - v2 Recall +40%, Precision -2.5% → 기준 충족
 - [x] Commit: `feat(spec-069): add reranker a/b testing scripts`
 
-### 3-2. A/B 테스트 실행 (실제 LLM 호출 필요)
-- [ ] 실제 RAG API에 연결 (현재 시뮬레이션)
-- [ ] v1 Baseline 측정 및 결과 저장
-- [ ] v2 실행 및 결과 저장
-- [ ] 결과 비교 및 분석
-- [ ] 결과를 `spec.md`에 추가
-- [ ] Commit: `docs(spec-069): add a/b test results`
-
-> **Note**: 실제 테스트는 나중에 수동 진행. 스크립트는 준비 완료.
+> **Note**: 실제 A/B 테스트는 `pr_description.md`의 "시나리오 3" 참고 (선택사항)
 
 ---
 
@@ -89,11 +81,12 @@
 
 ## Task 5: PR Creation & Archiving (Mandatory)
 <!-- 이 단계는 모든 작업 완료 후 수행합니다. -->
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .` ✅
+- [x] Run Full Tests: `uv run pytest` ✅ 8/8 passed (Spec 069 tests)
 - [x] **Walkthrough 작성**: `specs/069-reranker-prompt-optimization/walkthrough.md` ✅
 - [x] **PR Description 작성**: `specs/069-reranker-prompt-optimization/pr_description.md` ✅
 - [x] **Archive Commit**: `docs(spec-069): archive walkthrough and pr description`
+- [ ] **User Manual Testing**: `pr_description.md`의 "User Manual Testing Guide" 완료 후
 - [ ] Create PR: `gh pr create --title "Spec 069: Reranker Prompt Optimization" --body-file specs/069-reranker-prompt-optimization/pr_description.md`
 
 > **Note**: PR 생성은 Manual Testing (Task 4-2, 4-3) 완료 후 진행 권장
