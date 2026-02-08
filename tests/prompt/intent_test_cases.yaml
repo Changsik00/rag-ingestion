@@ -1,0 +1,378 @@
+# Intent Classification Test Cases
+#
+# Purpose: 
+#   Intent Classifier의 품질을 검증하기 위한 50개 테스트 케이스
+#
+# Schema:
+#   - id: 고유 식별자 (001~050)
+#   - category: Intent 카테고리 (general_query, compare, summarize, filter_by_topic, edge_case)
+#   - query: 사용자 질문 (한국어)
+#   - expected_intent: 예상되는 Intent Type
+#   - expected_targets: 예상되는 Target 엔티티 리스트
+#   - reasoning: 테스트 케이스 선정 이유
+
+test_cases:
+  # ==============================
+  # Category 1: General Query (10개)
+  # ==============================
+  - id: "001"
+    category: "general_query"
+    query: "어쩌다 어른에 대해 알려줘"
+    expected_intent: "general_query"
+    expected_targets: ["어쩌다 어른"]
+    reasoning: "기존 프롬프트에 하드코딩된 예시 - Baseline"
+
+  - id: "002"
+    category: "general_query"
+    query: "알쓸신잡에 대해 알려줘"
+    expected_intent: "general_query"
+    expected_targets: ["알쓸신잡"]
+    reasoning: "편향 테스트 - 다른 TV 프로그램"
+
+  - id: "003"
+    category: "general_query"
+    query: "세바시가 뭐야?"
+    expected_intent: "general_query"
+    expected_targets: ["세바시"]
+    reasoning: "편향 테스트 - 강연 프로그램"
+
+  - id: "004"
+    category: "general_query"
+    query: "유 퀴즈 온 더 블럭에 대해 설명해줘"
+    expected_intent: "general_query"
+    expected_targets: ["유 퀴즈 온 더 블럭"]
+    reasoning: "편향 테스트 - 긴 프로그램 이름"
+
+  - id: "005"
+    category: "general_query"
+    query: "RAG가 뭐야?"
+    expected_intent: "general_query"
+    expected_targets: ["RAG"]
+    reasoning: "기술 용어 - 도메인 전환"
+
+  - id: "006"
+    category: "general_query"
+    query: "LangChain에 대해 알려줘"
+    expected_intent: "general_query"
+    expected_targets: ["LangChain"]
+    reasoning: "기술 프레임워크"
+
+  - id: "007"
+    category: "general_query"
+    query: "일론 머스크에 대해 알려줘"
+    expected_intent: "general_query"
+    expected_targets: ["일론 머스크"]
+    reasoning: "인물 질문"
+
+  - id: "008"
+    category: "general_query"
+    query: "김미경 강연 내용이 뭐야?"
+    expected_intent: "general_query"
+    expected_targets: ["김미경"]
+    reasoning: "인물 + 강연 컨텍스트"
+
+  - id: "009"
+    category: "general_query"
+    query: "Python이 뭐야?"
+    expected_intent: "general_query"
+    expected_targets: ["Python"]
+    reasoning: "프로그래밍 언어"
+
+  - id: "010"
+    category: "general_query"
+    query: "넷플릭스 추천 다큐멘터리 알려줘"
+    expected_intent: "general_query"
+    expected_targets: ["넷플릭스", "다큐멘터리"]
+    reasoning: "복합 엔티티 (플랫폼 + 장르)"
+
+  # ==============================
+  # Category 2: Compare (10개)
+  # ==============================
+  - id: "011"
+    category: "compare"
+    query: "일론 머스크의 SpaceX와 Tesla 비교해줘"
+    expected_intent: "compare"
+    expected_targets: ["SpaceX", "Tesla"]
+    reasoning: "Spec 069에서 문제된 비교 질문"
+
+  - id: "012"
+    category: "compare"
+    query: "Claude와 GPT-4의 차이점이 뭐야?"
+    expected_intent: "compare"
+    expected_targets: ["Claude", "GPT-4"]
+    reasoning: "LLM 모델 비교"
+
+  - id: "013"
+    category: "compare"
+    query: "Python과 JavaScript 비교"
+    expected_intent: "compare"
+    expected_targets: ["Python", "JavaScript"]
+    reasoning: "프로그래밍 언어 비교"
+
+  - id: "014"
+    category: "compare"
+    query: "RAG와 Fine-tuning 중 뭐가 나아?"
+    expected_intent: "compare"
+    expected_targets: ["RAG", "Fine-tuning"]
+    reasoning: "기술 전략 비교"
+
+  - id: "015"
+    category: "compare"
+    query: "알쓸신잡과 어쩌다 어른 비교해줘"
+    expected_intent: "compare"
+    expected_targets: ["알쓸신잡", "어쩌다 어른"]
+    reasoning: "TV 프로그램 비교"
+
+  - id: "016"
+    category: "compare"
+    query: "MongoDB vs PostgreSQL"
+    expected_intent: "compare"
+    expected_targets: ["MongoDB", "PostgreSQL"]
+    reasoning: "데이터베이스 비교 (영문 vs 표현)"
+
+  - id: "017"
+    category: "compare"
+    query: "LangChain이랑 LlamaIndex 차이 알려줘"
+    expected_intent: "compare"
+    expected_targets: ["LangChain", "LlamaIndex"]
+    reasoning: "프레임워크 비교"
+
+  - id: "018"
+    category: "compare"
+    query: "세바시와 TED 강연의 차이는?"
+    expected_intent: "compare"
+    expected_targets: ["세바시", "TED"]
+    reasoning: "강연 플랫폼 비교"
+
+  - id: "019"
+    category: "compare"
+    query: "김미경과 김난도 강연 스타일 비교"
+    expected_intent: "compare"
+    expected_targets: ["김미경", "김난도"]
+    reasoning: "인물 비교 (강연자)"
+
+  - id: "020"
+    category: "compare"
+    query: "Gemini와 ChatGPT 어떤 게 더 좋아?"
+    expected_intent: "compare"
+    expected_targets: ["Gemini", "ChatGPT"]
+    reasoning: "LLM 모델 비교"
+
+  # ==============================
+  # Category 3: Summarize (10개)
+  # ==============================
+  - id: "021"
+    category: "summarize"
+    query: "이 문서 요약해줘"
+    expected_intent: "summarize"
+    expected_targets: []
+    reasoning: "일반 요약 (컨텍스트 의존)"
+
+  - id: "022"
+    category: "summarize"
+    query: "어쩌다 어른 내용 정리해줘"
+    expected_intent: "summarize"
+    expected_targets: ["어쩌다 어른"]
+    reasoning: "TV 프로그램 요약"
+
+  - id: "023"
+    category: "summarize"
+    query: "RAG 관련 문서 요약"
+    expected_intent: "summarize"
+    expected_targets: ["RAG"]
+    reasoning: "기술 주제 요약"
+
+  - id: "024"
+    category: "summarize"
+    query: "김미경 강연 핵심 내용만 알려줘"
+    expected_intent: "summarize"
+    expected_targets: ["김미경"]
+    reasoning: "인물 강연 요약"
+
+  - id: "025"
+    category: "summarize"
+    query: "세바시에서 다룬 주제들 정리해줘"
+    expected_intent: "summarize"
+    expected_targets: ["세바시"]
+    reasoning: "프로그램 주제 요약"
+
+  - id: "026"
+    category: "summarize"
+    query: "Python 관련 내용 간단히 요약"
+    expected_intent: "summarize"
+    expected_targets: ["Python"]
+    reasoning: "프로그래밍 언어 요약"
+
+  - id: "027"
+    category: "summarize"
+    query: "LangChain 문서 핵심만 뽑아줘"
+    expected_intent: "summarize"
+    expected_targets: ["LangChain"]
+    reasoning: "프레임워크 문서 요약"
+
+  - id: "028"
+    category: "summarize"
+    query: "일론 머스크의 주요 업적 정리"
+    expected_intent: "summarize"
+    expected_targets: ["일론 머스크"]
+    reasoning: "인물 업적 요약"
+
+  - id: "029"
+    category: "summarize"
+    query: "넷플릭스 AI 다큐 내용 요약해줘"
+    expected_intent: "summarize"
+    expected_targets: ["넷플릭스", "AI"]
+    reasoning: "플랫폼 + 주제 요약"
+
+  - id: "030"
+    category: "summarize"
+    query: "지금까지 대화 내용 정리해줘"
+    expected_intent: "summarize"
+    expected_targets: []
+    reasoning: "대화 이력 요약 (컨텍스트 의존)"
+
+  # ==============================
+  # Category 4: Filter by Topic (10개)
+  # ==============================
+  - id: "031"
+    category: "filter_by_topic"
+    query: "Python 관련된 것만 보여줘"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["Python"]
+    reasoning: "프로그래밍 언어 필터"
+
+  - id: "032"
+    category: "filter_by_topic"
+    query: "AI 관련 문서만 검색해줘"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["AI"]
+    reasoning: "기술 주제 필터"
+
+  - id: "033"
+    category: "filter_by_topic"
+    query: "세바시에서 나온 것만 찾아줘"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["세바시"]
+    reasoning: "TV 프로그램 필터"
+
+  - id: "034"
+    category: "filter_by_topic"
+    query: "김미경 강연만 보여줘"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["김미경"]
+    reasoning: "강연자 필터"
+
+  - id: "035"
+    category: "filter_by_topic"
+    query: "RAG 시스템 관련 자료만"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["RAG"]
+    reasoning: "시스템 주제 필터"
+
+  - id: "036"
+    category: "filter_by_topic"
+    query: "LangChain으로 필터링"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["LangChain"]
+    reasoning: "프레임워크 필터"
+
+  - id: "037"
+    category: "filter_by_topic"
+    query: "어쩌다 어른 출연자만 찾아줘"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["어쩌다 어른"]
+    reasoning: "프로그램 출연자 필터"
+
+  - id: "038"
+    category: "filter_by_topic"
+    query: "데이터베이스 관련만 검색"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["데이터베이스"]
+    reasoning: "기술 카테고리 필터"
+
+  - id: "039"
+    category: "filter_by_topic"
+    query: "넷플릭스 다큐만 보여줘"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["넷플릭스", "다큐"]
+    reasoning: "플랫폼 + 장르 필터"
+
+  - id: "040"
+    category: "filter_by_topic"
+    query: "일론 머스크가 언급된 문서만"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["일론 머스크"]
+    reasoning: "인물 필터"
+
+  # ==============================
+  # Category 5: Edge Cases (10개)
+  # ==============================
+  - id: "041"
+    category: "edge_case"
+    query: "이것에 대해 알려줘"
+    expected_intent: "general_query"
+    expected_targets: []
+    reasoning: "모호한 질문 - 지시대명사 (컨텍스트 필요)"
+
+  - id: "042"
+    category: "edge_case"
+    query: "그 프로그램 어땠어?"
+    expected_intent: "general_query"
+    expected_targets: []
+    reasoning: "모호한 질문 - 대화 이력 의존"
+
+  - id: "043"
+    category: "edge_case"
+    query: "LangChain을 활용한 RAG 시스템 구축 시 Vector Database 선택 기준과 Embedding 모델 최적화 전략, 그리고 Retrieval 정확도를 높이기 위한 Reranking 기법에 대해 상세히 설명해주고, 실제 프로덕션 환경에서의 고려사항도 함께 알려줘"
+    expected_intent: "general_query"
+    expected_targets: ["LangChain", "RAG", "Vector Database", "Embedding", "Reranking"]
+    reasoning: "매우 긴 질문 (100자 이상) - 복합 주제"
+
+  - id: "044"
+    category: "edge_case"
+    query: "What is RAG in AI?"
+    expected_intent: "general_query"
+    expected_targets: ["RAG", "AI"]
+    reasoning: "영어 질문 - 다국어 테스트"
+
+  - id: "045"
+    category: "edge_case"
+    query: "RAG에 대해 알려줘 (Retrieval Augmented Generation)"
+    expected_intent: "general_query"
+    expected_targets: ["RAG", "Retrieval Augmented Generation"]
+    reasoning: "한영 혼용 - 괄호 주석 포함"
+
+  - id: "046"
+    category: "edge_case"
+    query: "Python이 아닌 JavaScript로 작성된 문서만"
+    expected_intent: "filter_by_topic"
+    expected_targets: ["JavaScript"]
+    reasoning: "부정형 표현 (A가 아닌 B)"
+
+  - id: "047"
+    category: "edge_case"
+    query: "?"
+    expected_intent: "general_query"
+    expected_targets: []
+    reasoning: "극단적으로 짧은 질문"
+
+  - id: "048"
+    category: "edge_case"
+    query: "LangChain"
+    expected_intent: "general_query"
+    expected_targets: ["LangChain"]
+    reasoning: "키워드만 입력 (단어 하나)"
+
+  - id: "049"
+    category: "edge_case"
+    query: "어쩌다 어른에서 김영하 출연분 vs 알쓸신잡 김영하 출연분 비교하고, 두 프로그램의 컨셉 차이도 설명해줘"
+    expected_intent: "compare"
+    expected_targets: ["어쩌다 어른", "알쓸신잡", "김영하"]
+    reasoning: "복합 비교 + 추가 요청 (Multi-intent)"
+
+  - id: "050"
+    category: "edge_case"
+    query: "없어"
+    expected_intent: "general_query"
+    expected_targets: []
+    reasoning: "대화 맥락 필요한 짧은 답변형 질문"
