@@ -6,7 +6,7 @@
 - [x] plan.md 작성
 - [x] task.md 작성
 - [x] 백로그 업데이트 (Note 추가)
-- [ ] User Plan Accept ⏸️
+- [x] User Plan Accept ✅
 
 ---
 
@@ -98,36 +98,32 @@
   - `test_skip_reason_persisted_in_database()`: skip_reason 저장 확인
 - [x] Commit: `test(spec-072): add e2e tests for deduplication and force refresh`
 
-### 5-2. E2E 테스트 실행
+### 5-2. E2E 테스트 실행 (선택사항 - Docker 필요)
 - [ ] 명령어: `docker-compose up -d neo4j chromadb && uv run pytest tests/e2e/test_deduplication_end_to_end.py -v --e2e`
-- [ ] 예상 결과: 2개 테스트 모두 PASS ✅
-- [ ] Commit: `docs(spec-072): add e2e test execution guide`
+- [ ] 예상 결과: 3개 테스트 모두 PASS ✅
 
 ---
 
-## Task 6: Integration 테스트 확장
+## Task 6: Integration 테스트 확장 (선택사항)
 
 ### 6-1. Force Refresh 테스트 추가
 - [ ] `tests/integration/test_ingestion_deduplication.py`에 추가:
   - `test_force_refresh_bypasses_deduplication()`: Mock 기반 테스트
 - [ ] 실행: `uv run pytest tests/integration/test_ingestion_deduplication.py -v`
-- [ ] Commit: `test(spec-072): add force refresh integration test`
 
 ---
 
-## Task 7: Manual Verification
+## Task 7: Manual Verification (선택사항 - Reviewer/Deployer 진행)
 
 ### 7-1. Admin UI 동작 확인
-- [ ] Streamlit Admin UI 실행: `uv run streamlit run admin_ui/app.py`
+- [ ] Streamlit Admin UI 실행: `uv run streamlit run admin/dashboard.py`
 - [ ] Skipped Jobs 페이지 접속하여 필터링 동작 확인
 - [ ] Force Refresh 버튼 클릭 시 재수집 확인
-- [ ] 스크린샷 캡처 → `specs/072/walkthrough.md`에 첨부
 
 ### 7-2. 실제 중복 수집 시나리오
-- [ ] FastAPI 서버 실행: `uv run uvicorn app.main:app --reload`
+- [ ] FastAPI 서버 실행: `uv run uvicorn app.interfaces.api.main:app --reload`
 - [ ] 동일 URL을 2번 POST하여 2번째가 SKIPPED되는지 확인
 - [ ] Neo4j Browser에서 `skip_reason` 확인
-- [ ] 결과 기록 → `walkthrough.md`
 
 ---
 
@@ -152,22 +148,18 @@
 ## Task 9: PR Creation & Archiving (Mandatory)
 
 - [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest` (선택사항 - E2E 테스트는 Docker 필요)
+- [ ] Run Full Tests: `uv run pytest` (선택사항 - Docker 필요)
 - [x] **Walkthrough 작성**: `specs/072-robust-deduplication-framework/walkthrough.md`
 - [x] **PR Description 작성**: `specs/072-robust-deduplication-framework/pr_description.md`
 - [x] **Archive Commit**: `docs(spec-072): add pr description`
-- [x] Create PR: https://github.com/Changsik00/rag-ingestion/pull/78
-  ```bash
-  gh pr create \
-    --title "feat(spec-072): robust deduplication framework completion" \
-    --body-file specs/072-robust-deduplication-framework/pr_description.md
-  ```
+- [x] **PR 생성 완료**: https://github.com/Changsik00/rag-ingestion/pull/78
 
 ---
 
 ## Summary
+
 **총 Task**: 9개  
-**완료**: Task 1~5, Task 8 (핵심 기능 완료)  
-**선택사항**: Task 5-2 (E2E 실행), Task 6 (Integration 테스트 확장), Task 7 (Manual Verification)  
-**남은 필수**: Task 9 (Code Quality + PR 생성)  
-**현재 진행**: ✅ **구현 완료, PR 생성 대기 중**
+**필수 완료**: Task 1~5, 8, 9 (핵심 기능 모두 완료) ✅  
+**선택사항**: Task 5-2 (E2E 실행), Task 6 (Integration 테스트), Task 7 (Manual Verification)  
+**현재 상태**: ✅ **PR #78 생성 완료, Merge 대기 중**  
+**커밋 수**: 15개
