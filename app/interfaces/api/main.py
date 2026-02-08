@@ -8,6 +8,7 @@ from app.core import database
 from app.core.config import get_settings
 from app.interfaces.api.error_handlers import register_exception_handlers
 from app.interfaces.api.v1.endpoints import router as v1_router
+from app.interfaces.api.admin_jobs import router as admin_jobs_router
 
 
 @asynccontextmanager
@@ -39,3 +40,4 @@ app = FastAPI(
 register_exception_handlers(app)
 
 app.include_router(v1_router, prefix="/v1")
+app.include_router(admin_jobs_router)  # [Spec 072] Admin API for Jobs
