@@ -130,7 +130,7 @@ def pytest_sessionfinish(session, exitstatus):
 
         if failed_cases:
             print(f"\nFailed Cases: {', '.join(failed_cases)}")
-        
+
         # Threshold Check
         accuracy_threshold = 80.0
         if accuracy < accuracy_threshold:

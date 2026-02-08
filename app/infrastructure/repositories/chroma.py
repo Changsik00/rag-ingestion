@@ -99,7 +99,7 @@ class ChromaVectorRepository(DocumentRepository):
             # Ensure mandatory fields or fallbacks if needed?
             # Chroma allows arbitrary metadata.
 
-            self.collection.add(documents=[document.content], metadatas=[flattened_metadata], ids=[str(document.id)])
+            self.collection.upsert(documents=[document.content], metadatas=[flattened_metadata], ids=[str(document.id)])
         except Exception as e:
             logger.error(f"Failed to save document to ChromaDB: {e}")
             raise InfrastructureError(f"Failed to save document to ChromaDB: {e}") from e
@@ -149,7 +149,7 @@ class ChromaVectorRepository(DocumentRepository):
 
             for attempt in range(max_retries):
                 try:
-                    self.collection.add(ids=batch_ids, documents=batch_documents, metadatas=batch_metas)
+                    self.collection.upsert(ids=batch_ids, documents=batch_documents, metadatas=batch_metas)
                     break  # Batch Success, move to next batch
                 except Exception as e:
                     # 429 (Rate Limit) or other errors

@@ -10,7 +10,7 @@ def test_chroma_storage_save_chunks(mock_client_cls):
     """
     Given: List of Chunks
     When: save_chunks is called
-    Then: It should extract contents, ids, and metadata and call collection.add
+    Then: It should extract contents, ids, and metadata and call collection.upsert
     """
     # Setup Mock
     mock_client = Mock()
@@ -28,9 +28,9 @@ def test_chroma_storage_save_chunks(mock_client_cls):
     # When
     storage.save_chunks(chunks)
 
-    # Then
-    mock_collection.add.assert_called_once()
-    call_args = mock_collection.add.call_args[1]
+    # Then: upsert 메서드 호출 검증 (add → upsert 변경)
+    mock_collection.upsert.assert_called_once()
+    call_args = mock_collection.upsert.call_args[1]
 
     assert call_args["ids"] == ["c1", "c2"]
     assert call_args["documents"] == ["Chunk 1", "Chunk 2"]
