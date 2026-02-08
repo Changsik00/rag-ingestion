@@ -39,5 +39,6 @@ app = FastAPI(
 
 register_exception_handlers(app)
 
+# [Spec 072] Include Admin API under /v1 prefix for consistency
 app.include_router(v1_router, prefix="/v1")
-app.include_router(admin_jobs_router)  # [Spec 072] Admin API for Jobs
+app.include_router(admin_jobs_router, prefix="/v1")  # Admin API: /v1/admin/jobs
