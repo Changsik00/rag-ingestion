@@ -54,6 +54,7 @@
     - [ ] 동일 문서 2번 수집 시 중복 생성 테스트
     - [ ] Integration Test 추가
   * **Expected Impact**: 중복 저장 방지
+  * **Note**: Planning 완료 (2026-02-08). [spec.md](../specs/071-chromadb-upsert-logic/spec.md), [plan.md](../specs/071-chromadb-upsert-logic/plan.md), [task.md](../specs/071-chromadb-upsert-logic/task.md) 작성 완료. User Plan Accept 대기 중.
 
 * [ ] **Spec 072: Robust Deduplication Framework** (P0, 5일)
   * **Goal**: 4가지 Strategy (ID/Metadata/TTL/Contents) 실제 구현
