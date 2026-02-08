@@ -237,7 +237,10 @@ class Ingestion:
                 if semantic_data and semantic_data.primary_entity:
                     doc_metadata["primary_entity"] = semantic_data.primary_entity
 
-                doc = Document(content=text, metadata=doc_metadata)
+                # [Spec 072] Generate deterministic document ID from source_url
+                # This ensures force_refresh will update the same document (upsert)
+                doc_id = hashlib.sha256(str(job.source_url).encode()).hexdigest()
+                doc = Document(id=doc_id, content=text, metadata=doc_metadata)
 
                 # Chunking & Save
                 chunker = self._get_chunker(job.chunking_config)
