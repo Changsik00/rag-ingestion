@@ -142,10 +142,45 @@ curl -X POST "http://localhost:8000/admin/jobs/{job_id}/force-refresh"
 - [x] Ruff lint 및 format 확인 완료
 - [x] Documentation 작성 (`docs/architecture/deduplication.md`)
 - [x] Admin UI 기능 구현 완료
-- [ ] Manual Verification (Reviewer/Deployer 진행 필요)
-  - [ ] Admin UI 동작 확인
-  - [ ] Deduplication Flow 확인
-  - [ ] Force Refresh API 테스트
+- [x] Manual Verification 완료 (8개 버그 발견 및 수정)
+
+### Manual Verification 중 발견된 이슈 및 수정
+
+Manual Verification 과정에서 다음 8개 버그를 발견하고 수정했습니다:
+
+**1. Force refresh 파라미터 전달 누락** ✅
+- **문제**: `/ingest/web` endpoint에서 `force_refresh`를 `process_job()`에 전달하지 않음
+- **수정**: `background_tasks.add_task(service.process_job, job.job_id, request.force_refresh)`
+
+**2. UI 피드백 부족** ✅
+- **문제**: SKIPPED 상태일 때 사용자에게 명확한 안내 없음
+- **수정**: 중복 감지 시 경고 메시지 및 Force Refresh 안내 추가
+
+**3. API 응답 필드 불일치** ✅
+- **문제**: API는 `current_status` 반환, UI는 `status` 기대 → "success" 표시 오류
+- **수정**: `JobResponse`에 `status` alias 추가, `map_job_to_response`에서 양쪽 다 설정
+
+**4. Early deduplication 로직 충돌** ✅  
+- **문제**: Early dedup이 job 생성 자체를 막아 SKIPPED 상태를 만들 수 없음
+- **수정**: Early dedup 제거, 모든 deduplication을 `process_job()`에서 처리
+
+**5. Admin API endpoint 404** ✅
+- **문제**: Admin API가 `/admin/jobs`로 등록, 클라이언트는 `/v1/admin/jobs` 요청
+- **수정**: Admin router를 `/v1` prefix 아래로 등록
+
+**6. Force refresh 시 document 중복 생성** ✅
+- **문제**: Document ID가 `uuid4()`로 랜덤 생성 → upsert 대신 insert 발생
+- **수정**: `source_url` 기반 SHA-256 hash로 deterministic ID 생성
+
+**7. Force Refresh UI 에러 핸들링 개선** ✅
+- **문제**: 에러 발생 시 명확한 메시지 없음
+- **수정**: None 체크 및 에러 메시지 명확화
+
+**8. Manual Verification 시나리오 업데이트** ✅
+- **문제**: PR description의 curl 명령어가 잘못된 endpoint 사용
+- **수정**: `/v1/ingest/web` 및 올바른 헤더로 업데이트
+
+**총 추가 커밋**: 8개 (버그 수정 및 문서 업데이트)
 
 ## 🔗 Related Specs
 
