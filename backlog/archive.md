@@ -303,3 +303,54 @@
 * [x] **Spec 062: Refactor RAG API**
   * **Goal**: Clean Architecture 적용 및 API 리팩토링.
   * **Status**: ✅ Completed
+
+---
+
+## 🎨 Phase 7: User Experience & Observability
+
+> **목표**: Admin 대시보드를 단순 제어 패널에서 "지식 관리 및 분석 플랫폼"으로 격상시킨다.  
+> **Status**: ✅ **Completed** (2026-02-08)
+
+* [x] **Spec 061: RAG Session Manual Cleanup & Admin Actions**
+  * **Goal**: Admin UI에서 테스트용 세션을 수동으로 생성하고, 필요 시 삭제할 수 있는 기능 구현
+  * **Status**: ✅ Completed & Merged (PR #68)
+
+* [x] **Spec 062: Refactor RAG API to Clean Architecture** (High)
+  * **Goal**: `rag.py`의 비대한 비즈니스 로직(SQL, Workflow Control, Mapper)을 Service/Domain 계층으로 분리하여 유지보수성 향상
+  * **Tasks**:
+    * `ConversationalRAGAgent` 내로 워크플로우 제어 로직 캡슐화
+    * SQL 기반 세션 삭제 로직을 Repository/Service로 이동
+    * DTO Mapper 클래스 분리
+
+* [x] **Spec 063: Admin UI/UX Improvements** (High)
+  * **Goal**: Graph Explorer/Playground UX 개선 및 Verification Lab 재설계
+  * **Tasks**:
+    * **Graph Style**: Dark Mode 가시성 개선 (Done)
+    * **Feedback**: UI 버튼 연동 (Done)
+    * **Verification Lab**: 재설계 및 구현 (Deferred)
+
+* [x] **Spec 064: RAG Observability Dashboard**
+  * **Goal**: LangFuse/Arize Phoenix 연동, Token Usage/Latency 시각화
+  * **Tasks**:
+    * **RAG Inspector**: 최근 요청의 단계별(Retrieval → Rerank → Generation) 로그 타임라인 뷰 구현
+    * Server-side API Call Logging (Streamlit 한계 극복)
+
+* [x] **Spec 065: Semantic De-Duplication (SDD)**
+  * **Goal**: 중복 문서 수집 방지 및 의미 기반 중복 제거 (Content Hash & Semantic Check)
+  * **Tasks**:
+    * **Content Hash**: 문서 내용 기반 해시 생성 및 중복 체크
+    * **Semantic Check**: VectorDB 조회 통해 유사/중복 문서 식별
+    * **Force Refresh**: 강제 재수집 옵션 추가
+
+* [x] **Spec 066: Enhanced Trace Viewer**
+  * **Goal**: Inspector에서 Rerank 단계의 상세 정보(점수, 필터링 사유, Drop된 청크)를 시각화하여 "왜 검색 안 됨?" 오해 해소
+  * **Tasks**:
+    * Add `rerank_log` to RAGResult
+    * Visualize "Dropped Chunks" in Admin UI with their scores and reasoning
+
+* [x] **Spec 067: Advanced Reranking Logic Research**
+  * **Goal**: 여러 청크를 "함께" 고려하여 점수를 매기거나(Listwise), 상호 보완적인 정보를 살리는 로직 연구
+  * **Tasks**:
+    * Listwise Reranking 전략 구현
+    * Contextual (Sliding Window) 확장 기능 도입
+    * Pointwise vs Listwise 전략 분기 구현
