@@ -62,12 +62,14 @@ with tabs[0]:
                     status = res.get("current_status")
                     msg = res.get("message", "")
 
-                    if "Duplicate" in msg:
-                        st.warning(f"⚠️ {msg}")
+                    # [Spec 072] Handle SKIPPED status
+                    if status == "SKIPPED" or "Duplicate" in msg or "Deduplication" in msg:
+                        st.warning(f"⚠️ **중복 감지**: {msg}")
+                        st.info(f"Job ID: `{job_id}` | Status: `{status}`")
+                        st.info("💡 중복을 무시하고 재수집하려면 'Force Refresh' 옵션을 활성화하세요.")
                     else:
                         st.success(f"✅ Job created: `{job_id}`")
-
-                    st.info(f"Current Status: `{status}`. Check 'Job Queue' for details.")
+                        st.info(f"Current Status: `{status}`. Check 'Job Queue' for details.")
         else:
             st.warning("Please enter a URL.")
 
