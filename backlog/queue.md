@@ -2,62 +2,152 @@
 
 이 문서는 프로젝트의 전체 여정과 실행 우선순위를 관리하는 마스터 대시보드입니다. 모든 작업은 [`constitution.md`](../docs/constitution.md)의 **Backlog Law**를 준수하며, 사용자의 승인을 통해 **Spec**으로 승격되어 실행됩니다.
 
-> **Note**: 완료된 작업(Phase 1~4 및 Phase 5의 Spec 050까지)은 [🗄️ Archive](archive.md)로 이동되었습니다.
+> **Note**: 완료된 작업(Phase 1~7)은 [🗄️ Archive](archive.md)로 이동되었습니다.
 
 ---
 
-## 🎨 Phase 7: User Experience & Observability 
+## 🏗️ Phase 8: Architecture & Quality Foundation
 
-> **목표**: Admin 대시보드를 단순 제어 패널에서 "지식 관리 및 분석 플랫폼"으로 격상시킨다.
+> **목표**: RAG 시스템의 근본적인 아키텍처 문제를 해결하고 품질 검증 인프라를 구축한다.  
+> **기반**: [**Spec 068: RAG System Architecture Review**](../specs/068-rag-architecture-review/README.md) 분석 결과  
+> **기간**: 8~10주 (순차적 진행)
 
-* [x] **Spec 061: RAG Session Manual Cleanup & Admin Actions** (Completed)
-  * **Goal**: Admin UI에서 테스트용 세션을 수동으로 생성하고, 필요 시 삭제할 수 있는 기능 구현
-  * **Status**: ✅ Completed & Merged (PR #68)
+### 📊 Phase 8 Overview
 
-* [x] **Spec 062: Refactor RAG API to Clean Architecture** (High) ✅
-  * **Goal**: `rag.py`의 비대한 비즈니스 로직(SQL, Workflow Control, Mapper)을 Service/Domain 계층으로 분리하여 유지보수성 향상
+[Spec 068](../specs/068-rag-architecture-review/spec.md)에서 분석한 4대 문제 영역:
+
+1. 🔴 **RAG 3-Layer 코드 구조 괴리** ([분석](../specs/068-rag-architecture-review/spec.md#10--근본적-구조-문제-개념과-코드의-괴리))
+2. 🟠 **프롬프트 편향 및 독소조항** ([분석](../specs/068-rag-architecture-review/root_cause_analysis.md#-high-issue-2-intent-classifier-prompt-bias))
+3. 🟠 **Ingestion 파이프라인 설계 결함** ([분석](../specs/068-rag-architecture-review/spec.md#3-ingestion-파이프라인-설계-결함))
+4. 🟡 **Clean Architecture 위반** ([분석](../specs/068-rag-architecture-review/spec.md#2-클린-아키텍처--ddd-위반-사항))
+
+---
+
+### 📋 Spec List
+
+* [ ] **Spec 069: Reranker Prompt Optimization** (P0, 1일) 🚀 **Quick Win**
+  * **Goal**: Reranker 독소조항 제거 및 Context-Aware 프롬프트로 교체
+  * **근거**: [Root Cause #3](../specs/068-rag-architecture-review/root_cause_analysis.md#-high-issue-3-reranker의-독소조항-penalty-rule)
   * **Tasks**:
-    * `ConversationalRAGAgent` 내로 워크플로우 제어 로직 캡슐화
-    * SQL 기반 세션 삭제 로직을 Repository/Service로 이동
-    * DTO Mapper 클래스 분리
+    - [ ] `PENALTY` 규칙 제거, Context-Aware 평가 기준 추가
+    - [ ] `reranker_v2.py` 작성 및 Feature Flag 추가
+    - [ ] A/B 테스트 10개 질문 실행
+    - [ ] Recall +10% 확인 후 v2 기본값 적용
+  * **Expected Impact**: Over-filtering 해결, Recall 향상
 
-* [x] **Spec 063: Admin UI/UX Improvements** (High)
-  * **Goal**: Graph Explorer/Playground UX 개선 및 Verification Lab 재설계.
-  * **Current State**: Partial Implementation (Graph/Feedback Done, Lab Deferred).
+* [ ] **Spec 070: Prompt Quality Testing Framework** (P0, 2일) 🚀 **Quick Win**
+  * **Goal**: Intent Classifier 테스트 케이스 50개 구축 및 자동 검증
+  * **근거**: [Root Cause #2](../specs/068-rag-architecture-review/root_cause_analysis.md#-high-issue-2-intent-classifier-prompt-bias)
   * **Tasks**:
-    * **Graph Style**: Dark Mode 가시성 개선 (Done).
-    * **Feedback**: UI 버튼 연동 (Done).
-    * **Verification Lab**: 재설계 및 구현 (Deferred).
+    - [ ] 다양한 도메인 테스트 케이스 50개 작성 (YAML)
+    - [ ] Pytest 자동 검증 스크립트
+    - [ ] 현재 Accuracy Baseline 측정
+    - [ ] CI/CD에 Prompt Quality Test 추가
+  * **Expected Impact**: "어쩌다 어른" 편향 해결
 
-* [x] **Spec 064: RAG Observability Dashboard**
-  * **Goal**: LangFuse/Arize Phoenix 연동, Token Usage/Latency 시각화.
-  * **Current State**: Proposed.
+* [ ] **Spec 071: ChromaDB Upsert Logic** (P1, 1일) 🚀 **Quick Win**
+  * **Goal**: 중복 저장 방지 (`add` → `upsert`)
+  * **근거**: [Root Cause #1](../specs/068-rag-architecture-review/root_cause_analysis.md#-critical-issue-1-ingestion-data-consistency-좀비-데이터)
   * **Tasks**:
-    * **RAG Inspector**: 최근 요청의 단계별(Retrieval -> Rerank -> Generation) 로그 타임라인 뷰 구현
-    * Server-side API Call Logging (Streamlit 한계 극복)
+    - [ ] ChromaDB `upsert` 메서드 적용
+    - [ ] 동일 문서 2번 수집 시 중복 생성 테스트
+    - [ ] Integration Test 추가
+  * **Expected Impact**: 중복 저장 방지
 
-* [x] **Spec 065: Semantic De-Duplication (SDD)**
-  * **Goal**: 중복 문서 수집 방지 및 의미 기반 중복 제거 (Content Hash & Semantic Check).
-  * **Current State**: Proposed.
+* [ ] **Spec 072: Robust Deduplication Framework** (P0, 5일)
+  * **Goal**: 4가지 Strategy (ID/Metadata/TTL/Contents) 실제 구현
+  * **근거**: [Spec 068 - Ingestion 중복 처리](../specs/068-rag-architecture-review/spec.md#32-중복-처리-deduplication-설계-결함)
+  * **상세 계획**: [Task 2.1](../specs/068-rag-architecture-review/recommendations.md#task-21-deduplication-service-완성-)
   * **Tasks**:
-    * **Content Hash**: 문서 내용 기반 해시 생성 및 중복 체크.
-    * **Semantic Check**: VectorDB 조회 통해 유사/중복 문서 식별.
-    * **Force Refresh**: 강제 재수집 옵션 추가.
+    - [ ] `DeduplicationStrategy` Protocol 정의
+    - [ ] 4가지 Strategy 클래스 구현
+    - [ ] Factory Pattern 적용
+    - [ ] Ingestion Graph에 `check_duplicate` Node 추가
+    - [ ] Admin UI Strategy 선택 기능
+  * **Expected Impact**: 중복 수집 방지, 불필요한 재수집 감소
 
-* [x] **Spec 066: Enhanced Trace Viewer** (Completed)
-  * **Goal**: Inspector에서 Rerank 단계의 상세 정보(점수, 필터링 사유, Drop된 청크)를 시각화하여 "왜 검색 안 됨?" 오해 해소.
-  * **Status**: ✅ Completed & Closed
+* [ ] **Spec 073: Fuzzy Filter Matching** (P1, 3일)
+  * **Goal**: Source Filter Semantic Similarity 기반 매칭
+  * **근거**: [Spec 068 - Filter 강제성의 함정](../specs/068-rag-architecture-review/spec.md#13-retrieval-layer-memorybody)
+  * **상세 계획**: [Task 2.2](../specs/068-rag-architecture-review/recommendations.md#task-22-fuzzy-filter-matching-)
   * **Tasks**:
-    * Add `rerank_log` to RAGResult.
-    * Visualize "Dropped Chunks" in Admin UI with their scores and reasoning.
+    - [ ] `FilterMatcher` Service 구현
+    - [ ] "Claude" ↔ "claude" 매칭 테스트
+    - [ ] RAG Graph `route_decision` 통합
+  * **Expected Impact**: Exact Match 실패 문제 해결
 
-* [x] **Spec 067: Advanced Reranking Logic Research** (Completed)
-  * **Goal**: 여러 청크를 "함께" 고려하여 점수를 매기거나(Listwise), 상호 보완적인 정보를 살리는 로직 연구.
-  * **Status**: ✅ Completed & Merged (PR created)
+* [ ] **Spec 074: LLMInterface Clean Architecture Compliance** (P1, 2일)
+  * **Goal**: `LLMInterface`를 Domain Layer로 이동
+  * **근거**: [Spec 068 - Domain Service LLM 의존성](../specs/068-rag-architecture-review/spec.md#22-domain-service의-llm-의존성-문제)
+  * **상세 계획**: [Task 2.3](../specs/068-rag-architecture-review/recommendations.md#task-23-llminterface-이동-clean-architecture-)
   * **Tasks**:
-    * Listwise Reranking 전략 구현
-    * Contextual (Sliding Window) 확장 기능 도입
-    * Pointwise vs Listwise 전략 분기 구현
+    - [ ] `app/application/interfaces/llm.py` → `app/domain/interfaces/llm_interface.py`
+    - [ ] 모든 Import 경로 수정
+    - [ ] Dependency Rule 검증 스크립트
+  * **Expected Impact**: Clean Architecture 준수, Dependency Rule 위반 해소
+
+* [ ] **Spec 075: RAG 3-Layer Code Structure Refactoring** ⭐⭐⭐⭐ (P0, 15일)
+  * **Goal**: 개념적 3-Layer를 실제 코드 구조에 반영
+  * **근거**: [Spec 068 - 1.0 근본적 구조 문제](../specs/068-rag-architecture-review/spec.md#10--근본적-구조-문제-개념과-코드의-괴리)
+  * **Core Problem**: 
+    - `app/infrastructure/ai/rag_nodes.py` (774 lines)에 Brain/Orchestration/Retrieval 혼재
+    - 문서 3-Layer 디자인이 코드에서 전혀 안 보임
+  * **상세 계획**: [Task 3.0 - Week별 계획](../specs/068-rag-architecture-review/recommendations.md#task-30-rag-3-layer-code-structure-refactoring-)
+  * **Tasks**:
+    - [ ] **Week 1**: Brain Layer 분리 (`app/domain/rag/brain/`)
+    - [ ] **Week 2**: Retrieval Layer 분리 (`app/infrastructure/rag/retrieval/`)
+    - [ ] **Week 3**: Orchestration Layer 분리 (`app/application/rag/orchestration/`)
+    - [ ] **Week 4**: LangGraph Integration & E2E Test
+    - [ ] `rag_nodes.py` (774 lines) 삭제
+    - [ ] Architecture 문서 업데이트 및 ADR 작성
+  * **Expected Impact**: 
+    - 아키텍처 문서 ↔ 코드 일치
+    - Layer별 독립 테스트
+    - Brain Layer 재사용
+
+* [ ] **Spec 076: Ingestion Transaction Integrity (Saga Pattern)** (P3, 10일)
+  * **Goal**: Neo4j ↔ ChromaDB Transaction Guarantee
+  * **근거**: [Spec 068 - Ingestion State Management](../specs/068-rag-architecture-review/spec.md#33-ingestion-state-management-부족)
+  * **상세 계획**: [Task 3.2](../specs/068-rag-architecture-review/recommendations.md#task-32-saga-pattern-for-ingestion-)
+  * **Tasks**:
+    - [ ] `IngestionSaga` Orchestrator 구현
+    - [ ] Audit Logging 인프라
+    - [ ] Compensation Logic (Rollback)
+    - [ ] Admin UI Saga 실패 조회
+  * **Expected Impact**: "좀비 데이터" 방지
+
+* [ ] **Constitution.md 업데이트: Prompt Quality Standard**
+  * **근거**: [Spec 068 - Process Improvements](../specs/068-rag-architecture-review/recommendations.md#-프로세스-개선-constitutionagentmd-업데이트)
+  * **Tasks**:
+    - [ ] 최소 20개 테스트 케이스 검증 규칙
+    - [ ] Prompt Versioning 규칙
+    - [ ] Hard-coded Examples 금지
+
+* [ ] **Agent.md 업데이트: Research Spec 카테고리**
+  * **근거**: [Spec 068 - Process Improvements](../specs/068-rag-architecture-review/recommendations.md#2-research-spec-카테고리-추가)
+  * **Tasks**:
+    - [ ] Research Spec Definition of Done
+    - [ ] Trade-off 측정 중심 프로세스
+
+---
+
+## 🎯 Phase 8 Success Metrics
+
+### Quick Wins (Spec 069~071)
+- [ ] Reranker Recall +10% 이상
+- [ ] Intent Classification Accuracy Baseline 측정
+- [ ] ChromaDB 중복 저장 0건
+
+### Core Improvements (Spec 072~074)
+- [ ] Deduplication Skip Rate 측정
+- [ ] Filter Matching Success Rate 95% 이상
+- [ ] Dependency Rule Violation 0건
+
+### Major Refactoring (Spec 075~076)
+- [ ] Clean Architecture Compliance 100%
+- [ ] RAG 3-Layer 코드 ↔ 문서 일치
+- [ ] Layer별 Unit Test Coverage 80% 이상
+- [ ] Ingestion Failure Rate < 1%
 
 ---
 
@@ -69,14 +159,19 @@
   * 성공 시나리오: 다양한 콘텐츠 타입
   * 실패 시나리오: 타임아웃, 네트워크 오류, 빈 콘텐츠
 
-
-
 * **[Feature] Admin Dashboard UX Improvement**
-
   * Job 상태 자동 갱신, 필터링/정렬
 
+* **[Feature] Automated Scenario Test Suite (E2E Verification)**
+  * API 기반 자동 시나리오 검증
+  * LLM Judge를 통한 품질 자동 채점
+
+* **[Feature] System Stability & Auto-Recovery**
+  * DB 초기화 자동화
+  * Ingestion Health Monitor
+
 * **[Tech] Multi-Model Comparison**
-  * 다양한 LLM(GPT, Claude 등) 성능/비용 비교 분석
+  * 다양한 LLM(GPT, Claude 등) 성능/비용 비교
 
 * **[Tech] E2E Testing with Playwright**
   * 전체 워크플로우(Ingest → Store → Retrieve) 검증
@@ -84,16 +179,14 @@
 * **[Integration] n8n Workflow Automation**
   * 외부 소스 감지 및 자동 수집 트리거
 
-* **[Tech] Metadata Robustness: Custom JSON Encoder**
+* **[Tech] Semantic Chunking POC**
+  * Google AI Semantic Chunker 비용 vs 품질 측정
+  * Research Spec으로 진행 시 우선순위 상승 가능
 
-* **[Tech] Multi-Model Tiers: 작업 난이도별 모델 자동 배분 로직**
+* **[Tech] LLM-based Content Cleaner**
+  * Ingestion 후처리에 LLM 도입
+  * 노이즈 제거 자동화
 
-* **[Tech] User Feedback Loop: 지식 추출 결과에 대한 사용자 피드백 반영 시스템**
-
-* **[Tech] HITL Persistence & Notification: PostgresSaver 도입 및 알림 시스템**
-
-* **Frontend Tech Stack Migration Study** *
-  * **Goal**: Streamlit의 한계를 극복하기 위한 Next.js/React 도입 타당성 검토 및 파일럿
-  * **Tasks**:
-    * Next.js + ShadcnUI로 핵심 페이지(Chat, Graph) POC 작성
-    * Streamlit vs Next.js 기능/공수 비교 보고서
+* **[Frontend] Tech Stack Migration Study**
+  * **Goal**: Streamlit → Next.js/React 타당성 검토
+  * **Tasks**: POC 작성, 비교 보고서

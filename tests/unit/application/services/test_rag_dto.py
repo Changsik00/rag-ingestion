@@ -7,7 +7,7 @@ def test_rag_result_contains_rerank_log():
     answer = "Hello"
     rerank_log = [
         {"id": "chunk1", "score": 0.9, "status": "passed"},
-        {"id": "chunk2", "score": 0.4, "status": "dropped"}
+        {"id": "chunk2", "score": 0.4, "status": "dropped"},
     ]
 
     # When
@@ -18,7 +18,7 @@ def test_rag_result_contains_rerank_log():
         keyword_chunks=[],
         graph_data=[],
         full_context="",
-        rerank_log=rerank_log  # This should fail if the field doesn't exist
+        rerank_log=rerank_log,  # This should fail if the field doesn't exist
     )
 
     # Then

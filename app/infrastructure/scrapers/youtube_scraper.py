@@ -147,6 +147,7 @@ class YouTubeScraper(ScraperInterface):
             "skip_download": True,
         }
         try:
+
             def fetch_info():
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     return ydl.extract_info(url, download=False)

@@ -102,7 +102,9 @@ class IngestionNodes:
 
         # 2. LLM 호출 (Prompt Injection)
         content_meta = state.get("content_metadata", {})
-        enriched_content = f"{system_prompt}\n\n--- SOURCE METADATA ---\n{content_meta}\n\n--- CONTENT ---\n{raw_content}"
+        enriched_content = (
+            f"{system_prompt}\n\n--- SOURCE METADATA ---\n{content_meta}\n\n--- CONTENT ---\n{raw_content}"
+        )
 
         # The orchestrator/llm implementation must provide aextract_metadata
         extracted = await self.llm.aextract_metadata(enriched_content)

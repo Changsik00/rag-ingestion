@@ -25,6 +25,7 @@ def test_admin_rapid_click_scenario(api_client):
     # Evaluates if API catches duplicates immediately
     assert len(job_ids) >= 1
 
+
 def test_status_masking_ping_pong_scenario(api_client):
     """
     Scenario: Status Masking Verification (Bypassing early check to hit worker dedup)
@@ -48,10 +49,7 @@ def test_status_masking_ping_pong_scenario(api_client):
         time.sleep(1.0)
 
     # 2. Second Ingestion (Bypass API early check to trigger worker dedup)
-    r2 = api_client.post("/v1/ingest/web", json={
-        "url": url,
-        "bypass_early_dedup": True
-    }).json()
+    r2 = api_client.post("/v1/ingest/web", json={"url": url, "bypass_early_dedup": True}).json()
     job2_id = r2["job_id"]
     assert job2_id != job1_id, f"Job 2 should have a new ID because we bypassed early check. Got {job2_id}"
 
@@ -63,10 +61,7 @@ def test_status_masking_ping_pong_scenario(api_client):
         time.sleep(1.0)
 
     # 3. Third Ingestion (The one that might be masked)
-    r3 = api_client.post("/v1/ingest/web", json={
-        "url": url,
-        "bypass_early_dedup": True
-    }).json()
+    r3 = api_client.post("/v1/ingest/web", json={"url": url, "bypass_early_dedup": True}).json()
     job3_id = r3["job_id"]
     assert job3_id != job2_id and job3_id != job1_id
 
@@ -83,5 +78,3 @@ def test_status_masking_ping_pong_scenario(api_client):
     assert s2 == "SKIPPED", f"Job 2 should be skipped by worker but got {s2}"
     assert s3 == "SKIPPED", f"Job 3 should be skipped by worker but got {s3}"
     print("✅ Worker-level status masking logic verified!")
-
-

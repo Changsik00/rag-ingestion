@@ -14,10 +14,12 @@ from typing import Any
 
 from langchain_core.runnables import RunnableConfig
 
+from app.core.config import get_settings
 from app.core.logger import setup_logger
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.prompts.listwise_reranker import LISTWISE_RERANKER_PROMPT
 from app.domain.services.prompts.reranker import RERANKER_PROMPT
+from app.domain.services.prompts.reranker_v2 import RERANKER_PROMPT_V2
 from app.domain.services.query_rewriter import QueryRewriter
 from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
@@ -325,7 +327,9 @@ class RAGNodes:
         else:
             return await self._rerank_pointwise(state, all_chunks, config)
 
-    async def _rerank_pointwise(self, state: RAGGraphState, all_chunks: list[Chunk], config: RunnableConfig) -> RAGGraphState:
+    async def _rerank_pointwise(
+        self, state: RAGGraphState, all_chunks: list[Chunk], config: RunnableConfig
+    ) -> RAGGraphState:
         """기존 Pointwise 리랭킹 로직"""
         query = state["query"]
         rewritten_query = state.get("rewritten_query") or query
@@ -340,8 +344,12 @@ class RAGNodes:
         rerank_log = []
         rerank_tasks = []
 
+        # [Spec 069] Feature Flag: Reranker Version Selection
+        settings = get_settings()
+        reranker_prompt = RERANKER_PROMPT_V2 if settings.RERANKER_VERSION == "v2" else RERANKER_PROMPT
+
         for chunk in rerank_targets:
-            prompt = RERANKER_PROMPT.format(query=rewritten_query, chunk_text=chunk.content)
+            prompt = reranker_prompt.format(query=rewritten_query, chunk_text=chunk.content)
             rerank_tasks.append(self._get_rerank_score(chunk, prompt, temperature, config))
 
         # Run 리랭킹 in parallel
@@ -391,7 +399,9 @@ class RAGNodes:
 
         return state
 
-    async def _rerank_listwise(self, state: RAGGraphState, all_chunks: list[Chunk], config: RunnableConfig) -> RAGGraphState:
+    async def _rerank_listwise(
+        self, state: RAGGraphState, all_chunks: list[Chunk], config: RunnableConfig
+    ) -> RAGGraphState:
         """[Spec 067] Listwise 리랭킹 로직"""
         query = state["query"]
         rewritten_query = state.get("rewritten_query") or query
@@ -426,6 +436,7 @@ class RAGNodes:
             content = await llm.agenerate(prompt)
 
             import json
+
             json_match = re.search(r"\[.*\]", content, re.DOTALL)
             if json_match:
                 rankings = json.loads(json_match.group())
@@ -448,14 +459,16 @@ class RAGNodes:
                     status = "passed" if score >= min_relevance_score else "dropped"
                     content_snippet = chunk.content[:100] + "..." if len(chunk.content) > 100 else chunk.content
 
-                    rerank_log.append({
-                        "chunk_id": chunk_id,
-                        "score": score,
-                        "reasoning": reasoning,
-                        "status": status,
-                        "content": content_snippet,
-                        "source": chunk.metadata.get("source", "Unknown"),
-                    })
+                    rerank_log.append(
+                        {
+                            "chunk_id": chunk_id,
+                            "score": score,
+                            "reasoning": reasoning,
+                            "status": status,
+                            "content": content_snippet,
+                            "source": chunk.metadata.get("source", "Unknown"),
+                        }
+                    )
 
                     if score >= min_relevance_score:
                         # Pydantic model_copy to update persistent chunk metadata
@@ -496,10 +509,7 @@ class RAGNodes:
 
             # asyncio.to_thread를 사용하여 동기식 리포지토리 호출
             adjacent = await asyncio.to_thread(
-                self.neo4j_doc_repo.get_adjacent_chunks,
-                parent_id=parent_id,
-                index=chunk.index,
-                window_size=window_size
+                self.neo4j_doc_repo.get_adjacent_chunks, parent_id=parent_id, index=chunk.index, window_size=window_size
             )
 
             if not adjacent:

@@ -18,18 +18,14 @@ def mock_components():
         "extractor": AsyncMock(),
     }
 
-class TestIngestionDeduplication:
 
+class TestIngestionDeduplication:
     @pytest.mark.asyncio
     async def test_process_job_skips_when_duplicate_detected(self, mock_components):
         # Given
         ingestion = Ingestion(**mock_components)
         job_id = "job-dup"
-        job = IngestionJob(
-            job_id=job_id,
-            source_url="http://example.com/dup",
-            status=JobStatus.PENDING
-        )
+        job = IngestionJob(job_id=job_id, source_url="http://example.com/dup", status=JobStatus.PENDING)
         mock_components["job_repository"].get_job.return_value = job
 
         # Mock Deduplication Factory to return a Strategy that says "True" (Duplicate)
@@ -66,7 +62,7 @@ class TestIngestionDeduplication:
 
             args, _ = mock_components["job_repository"].update_job.call_args
             updated_job = args[0]
-            assert updated_job.status == "SKIPPED" # or JobStatus.SKIPPED
+            assert updated_job.status == "SKIPPED"  # or JobStatus.SKIPPED
 
     @pytest.mark.asyncio
     async def test_process_job_runs_when_not_duplicate(self, mock_components):

@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
 
+    # RAG Reranker (Spec 069)
+    RERANKER_VERSION: str = "v1"  # Options: "v1" (PENALTY rule), "v2" (Context-Aware)
+
     @property
     def postgres_db_url(self) -> str:
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
