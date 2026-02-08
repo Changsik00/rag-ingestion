@@ -46,17 +46,17 @@
   * **Expected Impact**: "어쩌다 어른" 편향 해결 ✅
   * **Note**: Baseline Accuracy 89.3% (목표 80% 초과). 편향 해소 확인 완료.
 
-* [ ] **Spec 071: ChromaDB Upsert Logic** (P1, 1일) 🚀 **Quick Win**
+* [x] **Spec 071: ChromaDB Upsert Logic** (P1, 1일) 🚀 **Quick Win**
   * **Goal**: 중복 저장 방지 (`add` → `upsert`)
   * **근거**: [Root Cause #1](../specs/068-rag-architecture-review/root_cause_analysis.md#-critical-issue-1-ingestion-data-consistency-좀비-데이터)
   * **Tasks**:
-    - [ ] ChromaDB `upsert` 메서드 적용
-    - [ ] 동일 문서 2번 수집 시 중복 생성 테스트
-    - [ ] Integration Test 추가
+    - [x] ChromaDB `upsert` 메서드 적용
+    - [x] 동일 문서 2번 수집 시 중복 생성 테스트
+    - [x] Integration Test 추가
   * **Expected Impact**: 중복 저장 방지
-  * **Note**: Planning 완료 (2026-02-08). [spec.md](../specs/071-chromadb-upsert-logic/spec.md), [plan.md](../specs/071-chromadb-upsert-logic/plan.md), [task.md](../specs/071-chromadb-upsert-logic/task.md) 작성 완료. User Plan Accept 대기 중.
+  * **Note**: 완료 (2026-02-09). PR 머지 완료. ✅
 
-* [ ] **Spec 072: Robust Deduplication Framework** (P0, 5일)
+* [/] **Spec 072: Robust Deduplication Framework** (P0, 5일) 🔄 **Planning 진행 중**
   * **Goal**: 4가지 Strategy (ID/Metadata/TTL/Contents) 실제 구현
   * **근거**: [Spec 068 - Ingestion 중복 처리](../specs/068-rag-architecture-review/spec.md#32-중복-처리-deduplication-설계-결함)
   * **상세 계획**: [Task 2.1](../specs/068-rag-architecture-review/recommendations.md#task-21-deduplication-service-완성-)
@@ -67,6 +67,7 @@
     - [ ] Ingestion Graph에 `check_duplicate` Node 추가
     - [ ] Admin UI Strategy 선택 기능
   * **Expected Impact**: 중복 수집 방지, 불필요한 재수집 감소
+  * **Note**: Planning 완료 (2026-02-09). [spec.md](../specs/072-robust-deduplication-framework/spec.md), [plan.md](../specs/072-robust-deduplication-framework/plan.md), [task.md](../specs/072-robust-deduplication-framework/task.md) 작성 완료. **User Plan Accept 대기 중**.
 
 * [ ] **Spec 073: Fuzzy Filter Matching** (P1, 3일)
   * **Goal**: Source Filter Semantic Similarity 기반 매칭
