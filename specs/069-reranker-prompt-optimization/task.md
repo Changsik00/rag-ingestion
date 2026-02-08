@@ -5,8 +5,8 @@
 - [x] spec.md 작성
 - [x] plan.md 작성
 - [x] task.md 작성
-- [ ] 백로그 업데이트 (Note 추가)
-- [ ] User Plan Accept
+- [x] 백로그 업데이트 (Phase 8 생성 완료)
+- [x] User Plan Accept ✅
 
 ---
 
