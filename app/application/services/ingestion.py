@@ -205,8 +205,11 @@ class Ingestion:
                 scraped_content = result.markdown
             
             # Calculate and store content hash
-            if scraped_content:
+            if scraped_content and isinstance(scraped_content, str):
                 job.content_hash = hashlib.sha256(scraped_content.encode()).hexdigest()
+                logger.info(f"Content hash calculated for job {job_id}: {job.content_hash[:16]}...")
+            elif scraped_content and isinstance(scraped_content, bytes):
+                job.content_hash = hashlib.sha256(scraped_content).hexdigest()
                 logger.info(f"Content hash calculated for job {job_id}: {job.content_hash[:16]}...")
 
             job.docs_ids = []
