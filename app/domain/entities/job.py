@@ -29,5 +29,6 @@ class IngestionJob(BaseModel):
     # [Spec 065] Deduplication Fields
     content_hash: str | None = None
     custom_metadata: dict | None = None  # Flexible metadata for strategy-based deduplication
+    skip_reason: str | None = None  # [Spec 072] Reason for skipping (if SKIPPED)
 
     model_config = ConfigDict(frozen=False)  # Allow updates
