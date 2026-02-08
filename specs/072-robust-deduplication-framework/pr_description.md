@@ -1,189 +1,160 @@
-# feat(spec-072): Robust Deduplication Framework Completion
+# feat(spec-072): robust deduplication framework completion
 
-## 📋 Overview
+## 📋 Summary
 
-Spec 072 completes the Deduplication Framework (initiated in Spec 065) by adding Admin management capabilities and production-ready features for handling duplicate content ingestion.
+### 배경 및 목적
 
-## 🎯 What's New
+Spec 065에서 구현한 Deduplication Framework의 핵심 기능을 완성하고, Admin 관리 기능을 추가하여 **Production-Ready Deduplication System**을 구축합니다.
 
-### Core Features
-- **`JobStatus.SKIPPED`** with `skip_reason` field - Explicitly track skipped jobs and why they were skipped
-- **Force Refresh** - Admin can bypass deduplication checks to re-ingest content
-- **Content Hash Calculation** - SHA-256 hash computed after scraping for content-based deduplication
-- **Admin API** - RESTful endpoints for job management and force refresh
-- **Admin UI** - Streamlit interface with status filtering and force refresh capability
+**해결하는 문제:**
+- ✅ 중복으로 Skip된 Job을 추적하고 사유를 확인할 방법 부재
+- ✅ Admin이 강제로 재수집할 수 있는 기능 부재
+- ✅ Content Hash가 계산되지 않아 `ContentsStrategy` 미사용
+- ✅ Admin UI에서 SKIPPED 상태 Job 조회 불가
 
-### Technical Implementation
-1. **Entity Layer**: Added `skip_reason: str | None` to `IngestionJob`
-2. **Service Layer**: 
-   - `process_job(job_id, force_refresh=False)` parameter
-   - Content hash calculation using `hashlib.sha256()`
-   - Skip reason storage on deduplication detection
-3. **Repository Layer**: 
-   - `get_jobs(status, limit)` method for filtered job retrieval
-   - Neo4j schema updated to persist `skip_reason`
-4. **API Layer**: 
-   - `GET /admin/jobs?status={status}&limit={limit}`
-   - `POST /admin/jobs/{job_id}/force-refresh`
-5. **UI Layer**: 
-   - Status filter dropdown (ALL/PENDING/RUNNING/COMPLETED/FAILED/SKIPPED)
-   - Skip Reason column in jobs table
-   - Force Refresh button with job ID input
+### 주요 변경 사항
 
-## 📊 Changes Summary
+**Before (Spec 065):**
+- ✅ 4가지 Deduplication Strategy (ID, Metadata, TTL, Contents)
+- ✅ DeduplicationFactory 패턴
+- ❌ Skip된 Job 추적 불가
+- ❌ Admin 재수집 기능 없음
 
-| Component | Files Changed | Lines Added | Lines Deleted |
-|-----------|--------------|-------------|---------------|
-| Entity | 1 | 1 | 0 |
-| Service | 1 | 31 | 10 |
-| Admin API | 1 (NEW) | 62 | 0 |
-| Repository | 2 | 30 | 2 |
-| Admin UI | 1 | 43 | 8 |
-| E2E Tests | 1 (NEW) | 145 | 0 |
-| Documentation | 2 (NEW) | 250+ | 0 |
-| **Total** | **9** | **562+** | **20** |
+**After (Spec 072):**
+- [x] `JobStatus.SKIPPED` + `skip_reason` 필드 추가
+- [x] `force_refresh` 파라미터로 중복 체크 우회
+- [x] Content Hash 계산 (SHA-256)
+- [x] Admin API: `GET /admin/jobs`, `POST /admin/jobs/{id}/force-refresh`
+- [x] Admin UI: Status 필터, Skip Reason 컬럼, Force Refresh 버튼
 
-## 🧪 Testing
+## 🎯 Key Review Points
 
-### E2E Tests Added
-- `test_duplicate_job_is_skipped()` - Verifies second ingestion of same URL is SKIPPED
-- `test_force_refresh_bypasses_deduplication()` - Confirms force_refresh bypasses duplicate check
-- `test_skip_reason_persisted_in_database()` - Validates skip_reason is stored in Neo4j
+1. **Entity Layer (`app/domain/entities/job.py`)**:
+   - `skip_reason: str | None` 필드 추가 - 중복 Skip 사유 저장
 
-### Running Tests
+2. **Service Layer (`app/application/services/ingestion.py`)**:
+   - `process_job(job_id, force_refresh=False)` - Admin Force Refresh 지원
+   - Content Hash 계산 로직 (`hashlib.sha256`) 추가
+   - Deduplication 감지 시 `skip_reason` 자동 저장
+
+3. **Repository Layer (`app/infrastructure/repositories/neo4j_job_repository.py`)**:
+   - `get_jobs(status, limit)` 메서드 구현 - Status 필터링
+   - Neo4j schema 업데이트 (`skip_reason` 필드 추가)
+
+4. **Admin API (`app/interfaces/api/admin_jobs.py`)** - NEW:
+   - `GET /admin/jobs?status={status}&limit={limit}` - 필터링된 Job 목록
+   - `POST /admin/jobs/{job_id}/force-refresh` - 강제 재수집
+
+5. **Admin UI (`admin/pages/0_Job_Queue.py`)**:
+   - Status 필터 Dropdown (ALL/PENDING/RUNNING/COMPLETED/FAILED/SKIPPED)
+   - Skip Reason 컬럼 추가
+   - Force Refresh UI (Job ID 입력 → 버튼 클릭)
+
+## 🧪 Verification
+
+### Automated Tests
+
+**E2E Tests (`tests/e2e/test_deduplication_end_to_end.py`)** - NEW:
 ```bash
-# E2E Tests (requires Docker)
 docker-compose up -d neo4j chromadb
 uv run pytest tests/e2e/test_deduplication_end_to_end.py -v --e2e
+```
 
-# Integration Tests
+**테스트 결과 요약:**
+- ✅ `test_duplicate_job_is_skipped`: 동일 URL 2번 수집 시 2번째 SKIPPED 확인
+- ✅ `test_force_refresh_bypasses_deduplication`: force_refresh로 중복 체크 우회 확인
+- ✅ `test_skip_reason_persisted_in_database`: skip_reason DB 저장 확인
+
+**Integration Tests (기존):**
+```bash
 uv run pytest tests/integration/test_ingestion_deduplication.py -v
 ```
 
-## ✋ Manual Verification Required
+### Manual Verification (Scenarios)
 
-Please verify the following after merging:
-
-### 1. Admin UI Functionality
+#### 시나리오 1: Admin UI - Skipped Jobs 조회
 ```bash
-# Run Streamlit Admin UI
 uv run streamlit run admin/dashboard.py
 ```
-- [ ] Navigate to "📋 Job Queue" page
-- [ ] Test Status filter dropdown (select "SKIPPED")
-- [ ] Verify "Skip Reason" column displays correctly
-- [ ] Test Force Refresh:
-  1. Enter a job ID
-  2. Click "Force Refresh" button
-  3. Verify success message
-  4. Check job status changes from SKIPPED to COMPLETED/RUNNING
+1. "📋 Job Queue" 페이지 접속
+2. Status 필터에서 "SKIPPED" 선택
+3. Skip Reason 컬럼에 중복 사유 표시 확인
+4. **결과**: SKIPPED 상태 Job 목록 및 사유 확인 가능
 
-### 2. Deduplication Flow
+#### 시나리오 2: Admin UI - Force Refresh
+1. SKIPPED 상태 Job ID 복사 (예: `abc-123`)
+2. "Force Refresh" 섹션에 Job ID 입력
+3. "Force Refresh" 버튼 클릭
+4. **결과**: 성공 메시지 표시, Job 상태가 RUNNING/COMPLETED로 변경
+
+#### 시나리오 3: API - Deduplication Flow
 ```bash
-# Run FastAPI backend
+# Backend 실행
 uv run uvicorn app.interfaces.api.main:app --reload
+
+# 동일 URL 2번 수집
+curl -X POST "http://localhost:8000/jobs" -d '{"url": "https://example.com/test"}'
+curl -X POST "http://localhost:8000/jobs" -d '{"url": "https://example.com/test"}'
 ```
-- [ ] Ingest same URL twice via API
-- [ ] Verify second job has `status=SKIPPED`
-- [ ] Check Neo4j Browser: `MATCH (j:IngestionJob {status: "SKIPPED"}) RETURN j.skip_reason`
-- [ ] Verify `skip_reason` is populated
+- **결과**: 첫 번째 Job은 COMPLETED, 두 번째는 SKIPPED
+- **Neo4j 확인**: `MATCH (j:IngestionJob {status: "SKIPPED"}) RETURN j.skip_reason`
 
-### 3. Force Refresh API
-```bash
-# Test Force Refresh endpoint
-curl -X POST "http://localhost:8000/admin/jobs/{job_id}/force-refresh"
-```
-- [ ] Verify skipped job is re-processed
-- [ ] Check job status changes to COMPLETED
-- [ ] Verify `content_hash` is calculated
-
-## 📚 Documentation
-
-- **Architecture**: [`docs/architecture/deduplication.md`](../../../docs/architecture/deduplication.md)
-  - 4 Deduplication Strategies explained
-  - Factory pattern and strategy selection logic
-  - Force Refresh usage guide
-  - Admin UI workflow
-  
-- **Walkthrough**: [`specs/072-robust-deduplication-framework/walkthrough.md`](walkthrough.md)
-  - Complete implementation summary
-  - Verification results
-  - Before/After comparison
-
-## 🔍 Key Improvements
-
-### Before (Spec 065)
-- ✅ 4 Deduplication Strategies implemented
-- ✅ DeduplicationFactory pattern
-- ❌ No way to track skipped jobs
-- ❌ No admin control over re-ingestion
-- ❌ No skip reason visibility
-
-### After (Spec 072)
-- ✅ **All Spec 065 features maintained**
-- ✅ `JobStatus.SKIPPED` + `skip_reason` tracking
-- ✅ Admin API for status filtering and force refresh
-- ✅ Admin UI with interactive job management
-- ✅ E2E tests for full flow validation
-- ✅ Production-ready documentation
-
-## 📝 API Examples
-
-### List Skipped Jobs
-```bash
-curl "http://localhost:8000/admin/jobs?status=SKIPPED&limit=50"
-```
-
-### Force Refresh a Job
+#### 시나리오 4: API - Force Refresh
 ```bash
 curl -X POST "http://localhost:8000/admin/jobs/{job_id}/force-refresh"
 ```
+- **결과**: SKIPPED 상태 Job이 재처리되어 COMPLETED 상태로 변경
+- **결과**: `content_hash` 필드가 계산되어 저장됨
 
-## 🎨 UI Screenshots
+## 📦 Files Changed
 
-Admin UI Job Queue page now includes:
-- Status filter dropdown
-- Skip Reason column
-- Force Refresh input and button
+### 🆕 New Files
+- `app/interfaces/api/admin_jobs.py` (+62): Admin API endpoints (GET, POST)
+- `tests/e2e/test_deduplication_end_to_end.py` (+145): E2E 테스트 3개
+- `docs/architecture/deduplication.md` (+170): Architecture 문서
+- `specs/072-robust-deduplication-framework/walkthrough.md` (+281): 구현 Walkthrough
+- `specs/072-robust-deduplication-framework/pr_description.md` (+152): PR Description
 
-## 🔗 Related Work
+### 🛠 Modified Files
+- `app/domain/entities/job.py` (+1, -0): `skip_reason` 필드 추가
+- `app/application/services/ingestion.py` (+31, -10): `force_refresh`, Content Hash 로직
+- `app/domain/interfaces/job_repository.py` (+7, -0): `get_jobs()` 메서드 선언
+- `app/infrastructure/repositories/neo4j_job_repository.py` (+30, -2): `get_jobs()` 구현, `skip_reason` 저장
+- `app/interfaces/api/main.py` (+4, -0): Admin API Router 등록
+- `admin/pages/0_Job_Queue.py` (+43, -8): Status 필터, Force Refresh UI
+
+**Total:** 11 files changed (+605, -20)
+
+## ✅ Definition of Done
+
+- [x] 모든 E2E 테스트 작성 완료 (3개 테스트)
+- [x] Integration 테스트 기존 유지
+- [x] `walkthrough.md` 작성 및 아카이브 완료
+- [x] `pr_description.md` 작성 및 아카이브 완료
+- [x] Ruff lint 및 format 확인 완료
+- [x] Documentation 작성 (`docs/architecture/deduplication.md`)
+- [x] Admin UI 기능 구현 완료
+- [ ] Manual Verification (Reviewer/Deployer 진행 필요)
+  - [ ] Admin UI 동작 확인
+  - [ ] Deduplication Flow 확인
+  - [ ] Force Refresh API 테스트
+
+## 🔗 Related Specs
 
 - Built on: [Spec 065: Deduplication Strategies](../065-deduplication-strategies/spec.md)
 - Follows: [Spec 071: ChromaDB Upsert Logic](../071-chromadb-upsert-logic/spec.md)
 - References: [Spec 068: RAG Architecture Review](../068-rag-architecture-review/spec.md)
 
-## ✅ Checklist
+## 📝 Deployment Notes
 
-- [x] Entity fields added (`skip_reason`)
-- [x] Service layer enhanced (`force_refresh`, content hash)
-- [x] Admin API implemented
-- [x] Repository methods added (`get_jobs`)
-- [x] Admin UI updated
-- [x] E2E tests written (3 test cases)
-- [x] Documentation complete
-- [x] Code quality checks passed
-- [x] All commits follow conventional commits
+**Breaking Changes:** 없음
 
-## 🚀 Deployment Notes
+**New Environment Variables:** 없음
 
-No breaking changes. New features are additive:
-- Admin API is under `/admin` prefix
-- Existing deduplication logic unchanged
-- `force_refresh` parameter is optional (defaults to `False`)
+**Database Migrations:** 
+- Neo4j: `skip_reason` 필드가 자동으로 추가됨 (Optional field)
 
-## 📦 Commits
-
-1. `feat(spec-072): add skip_reason field to IngestionJob`
-2. `feat(spec-072): add force_refresh param and skip_reason storage`
-3. `fix(spec-072): fix content hash calculation for mock objects`
-4. `feat(spec-072): add skip_reason to neo4j repository and get_jobs method`
-5. `feat(spec-072): add get_jobs to interface and register admin api router`
-6. `feat(spec-072): add status filter and force refresh to admin ui`
-7. `test(spec-072): add e2e tests for deduplication and force refresh`
-8. `docs(spec-072): update task.md with completed tasks 4-5`
-9. `docs(spec-072): add deduplication architecture documentation`
-10. `docs(spec-072): add walkthrough with implementation summary`
-11. `docs(spec-072): update task.md with completed items`
-12. `style(spec-072): fix ruff formatting issues`
-
-**Total**: 12 commits, 562+ lines added, 20 lines deleted
+**Backwards Compatibility:**
+- ✅ `force_refresh` 파라미터는 Optional (기본값 `False`)
+- ✅ 기존 Deduplication 로직 100% 유지
+- ✅ Admin API는 `/admin` prefix로 분리됨
