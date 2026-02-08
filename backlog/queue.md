@@ -69,16 +69,17 @@
   * **Expected Impact**: 중복 수집 방지, 불필요한 재수집 감소
   * **Note**: Planning 완료 (2026-02-09). [spec.md](../specs/072-robust-deduplication-framework/spec.md), [plan.md](../specs/072-robust-deduplication-framework/plan.md), [task.md](../specs/072-robust-deduplication-framework/task.md) 작성 완료. **User Plan Accept 대기 중**.
 
-* [/] **Spec 073: Fuzzy Filter Matching** (P1, 3일) 🔄 **Planning 완료**
+* [x] **Spec 073: Fuzzy Filter Matching** (P1, 3일) ✅ **PR 제출 (#79)**
   * **Goal**: Source Filter Semantic Similarity 기반 매칭
   * **근거**: [Spec 068 - Filter 강제성의 함정](../specs/068-rag-architecture-review/spec.md#13-retrieval-layer-memorybody)
   * **상세 계획**: [Task 2.2](../specs/068-rag-architecture-review/recommendations.md#task-22-fuzzy-filter-matching-)
   * **Tasks**:
-    - [ ] `FilterMatcher` Service 구현
-    - [ ] "Claude" ↔ "claude" 매칭 테스트
-    - [ ] RAG Graph `route_decision` 통합
+    - [x] `FilterMatcher` Service 구현
+    - [x] "Claude" ↔ "claude" 매칭 테스트
+    - [x] RAG Graph `route_decision` 통합
   * **Expected Impact**: Exact Match 실패 문제 해결
-  * **Note**: Planning 완료 (2026-02-09). [spec.md](../specs/073-fuzzy-filter-matching/spec.md), [plan.md](../specs/073-fuzzy-filter-matching/plan.md), [task.md](../specs/073-fuzzy-filter-matching/task.md) 작성 완료. **User Plan Accept 대기 중**.
+  * **PR**: https://github.com/Changsik00/rag-ingestion/pull/79
+  * **완료 날짜**: 2026-02-09
 
 * [ ] **Spec 074: LLMInterface Clean Architecture Compliance** (P1, 2일)
   * **Goal**: `LLMInterface`를 Domain Layer로 이동
