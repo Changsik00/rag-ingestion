@@ -155,12 +155,36 @@ def get_intent_classifier() -> IntentClassifier:
     return IntentClassifier(llm_adapter)
 
 
+# FilterMatcher 의존성 (Spec 073: Fuzzy Filter Matching)
+@lru_cache
+def get_filter_matcher(
+    chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)]
+) -> "FilterMatcher":
+    from app.domain.services.filter_matcher import FilterMatcher
+    
+    # ChromaDB의 Embedding 함수를 재사용
+    # LangChain의 embed_query를 사용 (단일 쿼리 임베딩)
+    embedding_fn = chroma_repo.embedding_function
+    
+    # Wrapper to convert from batch function to single query function
+    def single_query_embed(text: str) -> list[float]:
+        # ChromaDB embedding_function expects list, returns list[list[float]]
+        result = embedding_fn([text])
+        return result[0] if result else []
+    
+    return FilterMatcher(
+        embedding_fn=single_query_embed,
+        similarity_threshold=0.85
+    )
+
+
 # RAG Nodes 의존성 (Spec 033)
 def get_rag_nodes(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     query_rewriter: Annotated[QueryRewriter, Depends(get_query_rewriter)],
     intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
     chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
+    filter_matcher: Annotated["FilterMatcher", Depends(get_filter_matcher)],
 ):
     from app.infrastructure.ai.rag_nodes import RAGNodes
 
@@ -175,6 +199,7 @@ def get_rag_nodes(
         query_rewriter=query_rewriter,
         intent_classifier=intent_classifier,
         llm=llm_adapter,
+        filter_matcher=filter_matcher,
     )
 
 
