@@ -24,11 +24,14 @@ def map_job_to_response(job: IngestionJob) -> JobResponse:
     return JobResponse(
         job_id=job.job_id,
         current_status=job.status,
+        status=job.status,  # [Spec 072] Duplicate for UI compatibility
         source_url=job.source_url,
         created_at=job.created_at,
         updated_at=job.updated_at,
         docs_ids=job.docs_ids,
         metadata={},
+        skip_reason=job.skip_reason,  # [Spec 072]
+        error_message=job.error_message if hasattr(job, "error_message") else None,
     )
 
 

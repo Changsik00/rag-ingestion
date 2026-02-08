@@ -12,12 +12,18 @@ class JobResponse(BaseResponse):
     """
 
     job_id: str
-    current_status: str
+    current_status: str = Field(..., alias="current_status")
+    status: str = Field(default=None, alias="status")  # [Spec 072] Alias for compatibility
     source_url: str
     created_at: datetime | None = None
     updated_at: datetime | None = None
     docs_ids: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
+    skip_reason: str | None = Field(default=None)  # [Spec 072]
+    error_message: str | None = Field(default=None)  # For failed jobs
+
+    class Config:
+        populate_by_name = True  # Allow both current_status and status
 
 
 class JobStatusResponse(BaseResponse):
