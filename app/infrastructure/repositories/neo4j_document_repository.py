@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from functools import lru_cache
 from uuid import UUID
 
 from neo4j import Driver
@@ -472,12 +473,13 @@ class Neo4jDocumentRepository(DocumentRepository):
             logger.error(f"Failed to get all chunk metadata from Neo4j: {e}")
             return []
 
+    @lru_cache(maxsize=1)
     def get_all_source_names(self) -> list[str]:
         """
         Neo4j에 저장된 모든 고유한 Source 이름 목록을 반환합니다.
 
         Spec 073: Fuzzy Filter Matching을 위한 Available Sources 조회용.
-        Document와 Chunk 양쪽에서 source를 조회하여 결합합니다.
+        성능 성능 저하 방지를 위해 캐싱을 적용합니다.
 
         Returns:
             list[str]: Source 이름 목록 (중복 제거, 정렬)

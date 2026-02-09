@@ -170,14 +170,14 @@ class Integrity:
 
     def propagate_document_metadata(self, doc_id: str) -> bool:
         """상위 문서의 제목(Title) 등을 하위 청크들로 전파"""
-        doc = self.primary_repo.get(doc_id)
-        if not doc:
+        document = self.primary_repo.get(doc_id)
+        if not document:
             return False
 
-        title = doc.metadata.get("title")
+        title = document.metadata.title
         if not title or title == "Untitled":
             # URL 기반 Fallback 시도 (나중에 고도화)
-            source = doc.metadata.get("source_url") or doc.metadata.get("source", "")
+            source = getattr(document.metadata, "url", None) or getattr(document.metadata, "source_id", "")
             if source:
                 # URL에서 파일명 추출 시도 (trailing slash 처리 및 디코딩)
                 from urllib.parse import unquote
@@ -189,28 +189,45 @@ class Integrity:
                 if new_title == "Untitled" and len(source.strip("/").split("/")) > 1:
                     new_title = source.strip("/").split("/")[-2]
 
-                doc.metadata["title"] = new_title
-                self.primary_repo.save(doc)
+                # DocumentMetadata is frozen=True by default in many places, 
+                # but here it's used to update. Document entity has frozen=False.
+                # If DocumentMetadata is frozen, we need to create a new one.
+                # Let's check the entity again. 
+                # Our DocumentMetadata has frozen=True in its definition.
+                
+                # Check if we can update directly or need model_copy
+                try:
+                    document.metadata.title = new_title
+                except Exception:
+                    # If frozen, use model_copy
+                    new_metadata = document.metadata.model_copy(update={"title": new_title})
+                    document.metadata = new_metadata
+                
+                self.primary_repo.save(document)
                 title = new_title
             else:
                 return False
 
         chunks = self.primary_repo.get_chunks(doc_id)
         for chunk in chunks:
+            # Chunk.metadata is usually a dict
             chunk.metadata["title"] = title
 
         # Primary Repo에 업데이트 (Neo4j MERGE 지원)
-        self.primary_repo.save_with_chunks(doc, chunks)
+        self.primary_repo.save_with_chunks(document, chunks)
         return True
 
     def sync_document(self, doc_id: str) -> dict[str, Any]:
         """특정 문서의 청크들을 ChromaDB로 강제 동기화"""
+        logger.info(f"Syncing document {doc_id} to target repository...")
         doc = self.primary_repo.get(doc_id)
         if not doc:
+            logger.error(f"Sync failed: Document {doc_id} not found in primary repo")
             return {"success": False, "error": "Document not found"}
 
         chunks = self.primary_repo.get_chunks(doc_id)
         if not chunks:
+            logger.warning(f"Sync: No chunks found for document {doc_id}")
             return {"success": False, "error": "No chunks found"}
 
         try:
@@ -220,9 +237,21 @@ class Integrity:
             updated_chunks = self.primary_repo.get_chunks(doc_id)
 
             # Target Repo (Chroma)에 저장
+            logger.info(f"Saving {len(updated_chunks)} chunks to target repo for doc {doc_id}...")
             self.target_repo.save_chunks(updated_chunks)
+            
+            # Verify if saved
+            verify_ids = [str(c.id) for c in updated_chunks]
+            target_ids = self.target_repo.get_all_chunk_ids()
+            actual_count = sum(1 for cid in verify_ids if cid in target_ids)
+            
+            if actual_count < len(verify_ids):
+                logger.error(f"Sync verification failed: Saved {len(verify_ids)} but target repo only has {actual_count}")
+                return {"success": False, "error": f"Verification failed: only {actual_count}/{len(verify_ids)} persisted"}
+
             return {"success": True, "count": len(updated_chunks)}
         except Exception as e:
+            logger.exception(f"Exception during sync_document {doc_id}: {e}")
             return {"success": False, "error": str(e)}
 
     async def get_cleaned_context(self, doc_id: str) -> str:
