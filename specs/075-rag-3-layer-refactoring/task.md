@@ -28,17 +28,17 @@
 ---
 
 ## Task 2: Retrieval Layer Refactoring (Week 2)
-### 2-1. Retrieval Layer 구조 생성
-- [ ] `app/infrastructure/rag/retrieval/` 디렉토리 생성
-- [ ] `app/infrastructure/rag/retrieval/service.py` 작성 (Hybrid Search 로직)
-- [ ] Test 작성: `tests/infrastructure/rag/retrieval/test_service.py`
+### 2-1. Retrieval Components Structure
+- [x] Create `app/infrastructure/rag/retrieval/` directory
+- [x] Create `app/infrastructure/rag/retrieval/service.py` (Hybrid Search logic)
+- [x] Test: `tests/infrastructure/rag/retrieval/test_service.py`
 
-### 2-2. Retrieval Service 로직 이관
-- [ ] `rag_nodes.py`의 `retrieve_hybrid` 로직 포팅
-- [ ] 헬퍼 함수 (`_search_vector`, `_search_keyword`, `_search_graph`) 이관
-- [ ] `rerank_results` 로직 (`_rerank_pointwise`, `_rerank_listwise`) 포팅
-- [ ] Unit Test Pass 확인 (Mocking 검증)
-- [ ] Commit: `refactor(spec-075): separate retrieval layer`
+### 2-2. Port Logic to Retrieval Service
+- [x] Port `retrieve_hybrid` from `rag_nodes.py`
+- [x] Port `_search_vector`, `_search_keyword`, `_search_graph` helpers
+- [x] Port `rerank_results` logic (`_rerank_pointwise`, `_rerank_listwise`)
+- [x] Unit Test passing (Mock DB Repos)
+- [x] Commit: `refactor(spec-075): separate retrieval layer`
 
 ---
 
