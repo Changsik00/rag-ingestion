@@ -1,0 +1,2140 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.12, pytest-9.0.2, pluggy-1.6.0 -- /Users/ck/Project/doit/rag-ingestion/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/ck/Project/doit/rag-ingestion
+configfile: pyproject.toml
+plugins: anyio-4.12.1, langsmith-0.6.4, asyncio-1.3.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 253 items
+
+tests/unit/application/services/test_agent.py::test_router_detects_url_intent PASSED [  0%]
+tests/unit/application/services/test_agent.py::test_router_detects_search_intent PASSED [  0%]
+tests/unit/application/services/test_agent_clarification.py::test_admin_state_schema PASSED [  1%]
+tests/unit/application/services/test_agent_clarification.py::test_ambiguity_detection_in_router PASSED [  1%]
+tests/unit/application/services/test_agent_clarification.py::test_clarify_node PASSED [  1%]
+tests/unit/application/services/test_agent_clarification.py::test_human_review_feedback_loop PASSED [  2%]
+tests/unit/application/services/test_agent_rerank_propagation.py::test_agent_search_node_propagates_rerank_log PASSED [  2%]
+tests/unit/application/services/test_analysis_node.py::test_analyze_failure_creates_hypothesis PASSED [  3%]
+tests/unit/application/services/test_analysis_node.py::test_analyze_failure_handles_unknown_error PASSED [  3%]
+tests/unit/application/services/test_file_processor.py::test_extract_text_txt PASSED [  3%]
+tests/unit/application/services/test_file_processor.py::test_extract_text_md PASSED [  4%]
+tests/unit/application/services/test_file_processor.py::test_extract_text_unsupported_extension PASSED [  4%]
+tests/unit/application/services/test_file_processor.py::test_extract_text_pdf PASSED [  5%]
+tests/unit/application/services/test_ingestion.py::test_create_job PASSED [  5%]
+tests/unit/application/services/test_ingestion.py::test_process_job_success PASSED [  5%]
+tests/unit/application/services/test_ingestion.py::test_process_job_handles_scraping_error PASSED [  6%]
+tests/unit/application/services/test_ingestion.py::test_process_job_handles_infrastructure_exception PASSED [  6%]
+tests/unit/application/services/test_ingestion.py::test_process_job_chunks_document PASSED [  7%]
+tests/unit/application/services/test_ingestion.py::test_process_job_handles_chunker_failure PASSED [  7%]
+tests/unit/application/services/test_integrity.py::test_get_drfit_report_finds_missing_ids PASSED [  7%]
+tests/unit/application/services/test_integrity.py::test_get_document_drift_report_groups_by_document PASSED [  8%]
+tests/unit/application/services/test_integrity.py::test_propagate_document_metadata_updates_chunks FAILED [  8%]
+tests/unit/application/services/test_rag_dto.py::test_rag_result_contains_rerank_log PASSED [  9%]
+tests/unit/domain/entities/test_job.py::test_job_creation PASSED         [  9%]
+tests/unit/domain/entities/test_job.py::test_job_status_update PASSED    [  9%]
+tests/unit/domain/ingestion/test_ingestion_domain_state.py::test_ingestion_state_initialization PASSED [ 10%]
+tests/unit/domain/ingestion/test_ingestion_domain_state.py::test_validation_feedback_model PASSED [ 10%]
+tests/unit/domain/ingestion/test_ingestion_domain_state.py::test_attempt_tracking PASSED [ 11%]
+tests/unit/domain/ingestion/test_state_advanced.py::test_strategy_enum_values PASSED [ 11%]
+tests/unit/domain/ingestion/test_state_advanced.py::test_validation_constraints_default PASSED [ 11%]
+tests/unit/domain/ingestion/test_state_advanced.py::test_validation_feedback_with_fields PASSED [ 12%]
+tests/unit/domain/ingestion/test_state_advanced.py::test_attempt_tracking_polymorphic PASSED [ 12%]
+tests/unit/domain/ingestion/test_state_advanced.py::test_ingestion_state_initialization PASSED [ 13%]
+tests/unit/domain/prompts/test_reranker_v2.py::test_reranker_v2_prompt_exists PASSED [ 13%]
+tests/unit/domain/prompts/test_reranker_v2.py::test_reranker_v2_prompt_format PASSED [ 13%]
+tests/unit/domain/prompts/test_reranker_v2.py::test_reranker_v2_response_format PASSED [ 14%]
+tests/unit/domain/prompts/test_reranker_v2.py::test_reranker_v2_multi_entity_guideline PASSED [ 14%]
+tests/unit/domain/prompts/test_reranker_v2.py::test_reranker_v2_name_mention_guideline PASSED [ 15%]
+tests/unit/domain/prompts/test_reranker_v2.py::test_reranker_v2_self_verification_guideline PASSED [ 15%]
+tests/unit/domain/rag/test_rag_state.py::test_rag_graph_state_has_citations_field PASSED [ 15%]
+tests/unit/domain/services/test_entity_relationship.py::test_entity_relationship_creation PASSED [ 16%]
+tests/unit/domain/services/test_entity_relationship.py::test_entity_relationship_with_confidence PASSED [ 16%]
+tests/unit/domain/services/test_entity_relationship.py::test_confidence_range_validation PASSED [ 16%]
+tests/unit/domain/services/test_entity_relationship.py::test_all_relationship_types PASSED [ 17%]
+tests/unit/domain/services/test_entity_relationship.py::test_entity_relationship_serialization PASSED [ 17%]
+tests/unit/domain/services/test_extractor.py::test_extract_success FAILED [ 18%]
+tests/unit/domain/services/test_extractor.py::test_extract_failure FAILED [ 18%]
+tests/unit/domain/services/test_filter_matcher.py::TestExactMatch::test_exact_match_lowercase PASSED [ 18%]
+tests/unit/domain/services/test_filter_matcher.py::TestExactMatch::test_exact_match_uppercase PASSED [ 19%]
+tests/unit/domain/services/test_filter_matcher.py::TestExactMatch::test_exact_match_mixed_case PASSED [ 19%]
+tests/unit/domain/services/test_filter_matcher.py::TestFuzzyMatch::test_fuzzy_match_similar_name PASSED [ 20%]
+tests/unit/domain/services/test_filter_matcher.py::TestFuzzyMatch::test_fuzzy_match_abbreviation PASSED [ 20%]
+tests/unit/domain/services/test_filter_matcher.py::TestFuzzyMatch::test_fuzzy_match_best_score PASSED [ 20%]
+tests/unit/domain/services/test_filter_matcher.py::TestNoMatch::test_no_match_low_similarity PASSED [ 21%]
+tests/unit/domain/services/test_filter_matcher.py::TestNoMatch::test_no_match_empty_sources PASSED [ 21%]
+tests/unit/domain/services/test_filter_matcher.py::TestEdgeCases::test_single_source_exact_match PASSED [ 22%]
+tests/unit/domain/services/test_filter_matcher.py::TestEdgeCases::test_single_source_fuzzy_match PASSED [ 22%]
+tests/unit/domain/services/test_filter_matcher.py::TestEdgeCases::test_duplicate_sources PASSED [ 22%]
+tests/unit/domain/services/test_filter_matcher.py::TestCosineSimilarity::test_identical_vectors PASSED [ 23%]
+tests/unit/domain/services/test_filter_matcher.py::TestCosineSimilarity::test_orthogonal_vectors PASSED [ 23%]
+tests/unit/domain/services/test_filter_matcher.py::TestCaching::test_embedding_caching PASSED [ 24%]
+tests/unit/domain/services/test_intent_classifier.py::test_classify_general_query PASSED [ 24%]
+tests/unit/domain/services/test_intent_classifier.py::test_classify_compare_intent PASSED [ 24%]
+tests/unit/domain/services/test_intent_classifier.py::test_classify_summarize_intent PASSED [ 25%]
+tests/unit/domain/services/test_intent_classifier.py::test_classify_filter_by_topic PASSED [ 25%]
+tests/unit/domain/services/test_intent_classifier.py::test_classify_with_invalid_json_raises_exception PASSED [ 26%]
+tests/unit/domain/services/test_intent_classifier.py::test_classify_with_invalid_intent_type_raises_validation_error PASSED [ 26%]
+tests/unit/domain/services/test_intent_classifier.py::test_classify_with_history_includes_context_in_prompt PASSED [ 26%]
+tests/unit/domain/services/test_ontology.py::test_entity_type_enum_values PASSED [ 27%]
+tests/unit/domain/services/test_ontology.py::test_relationship_type_enum_values PASSED [ 27%]
+tests/unit/domain/services/test_ontology.py::test_extracted_metadata_with_diverse_entities FAILED [ 28%]
+tests/unit/domain/services/test_ontology.py::test_extracted_metadata_with_korean_activities FAILED [ 28%]
+tests/unit/domain/services/test_ontology.py::test_entity_type_string_enum PASSED [ 28%]
+tests/unit/domain/services/test_ontology.py::test_relationship_type_string_enum PASSED [ 29%]
+tests/unit/domain/services/test_query_rewriter.py::test_rewrite_with_empty_history_returns_original PASSED [ 29%]
+tests/unit/domain/services/test_query_rewriter.py::test_rewrite_with_history_calls_llm PASSED [ 30%]
+tests/unit/domain/services/test_query_rewriter.py::test_rewrite_instruction_only_maintains_context PASSED [ 30%]
+tests/unit/domain/test_exceptions.py::test_exception_inheritance PASSED  [ 30%]
+tests/unit/domain/test_exceptions.py::test_exception_messages PASSED     [ 31%]
+tests/unit/domain/test_exceptions.py::test_exception_with_cause PASSED   [ 31%]
+tests/unit/domain/test_ingestion_top_level_state.py::test_ingestion_state_import PASSED [ 32%]
+tests/unit/domain/test_ingestion_top_level_state.py::test_ingestion_state_structure PASSED [ 32%]
+tests/unit/domain/test_reasoning_state.py::test_failure_hypothesis_structure PASSED [ 32%]
+tests/unit/domain/test_reasoning_state.py::test_decision_trace_structure PASSED [ 33%]
+tests/unit/domain/test_reasoning_state.py::test_ingestion_state_has_backtracking_context PASSED [ 33%]
+tests/unit/domain/value_objects/test_chunk_config.py::test_chunk_config_default_values PASSED [ 33%]
+tests/unit/domain/value_objects/test_chunk_config.py::test_chunk_config_semantic_defaults PASSED [ 34%]
+tests/unit/domain/value_objects/test_chunk_config.py::test_chunk_config_validation_invalid_strategy PASSED [ 34%]
+tests/unit/domain/value_objects/test_chunk_config.py::test_chunk_config_validation_invalid_types PASSED [ 35%]
+tests/unit/infrastructure/ai/extractors/test_langchain_extractor.py::test_generate_returns_string PASSED [ 35%]
+tests/unit/infrastructure/ai/extractors/test_langchain_extractor.py::test_generate_handles_error PASSED [ 35%]
+tests/unit/infrastructure/ai/nodes/test_logic.py::test_select_correction_strategy_on_first_error PASSED [ 36%]
+tests/unit/infrastructure/ai/nodes/test_logic.py::test_select_relaxation_strategy_on_repeated_error PASSED [ 36%]
+tests/unit/infrastructure/ai/nodes/test_logic.py::test_fallback_to_standard PASSED [ 37%]
+tests/unit/infrastructure/ai/nodes/test_logic.py::test_select_reinterpretation_on_schema_error PASSED [ 37%]
+tests/unit/infrastructure/ai/nodes/test_prompt_mutation.py::test_standard_prompt_construction PASSED [ 37%]
+tests/unit/infrastructure/ai/nodes/test_prompt_mutation.py::test_correction_prompt_with_feedback PASSED [ 38%]
+tests/unit/infrastructure/ai/nodes/test_prompt_mutation.py::test_relaxation_prompt PASSED [ 38%]
+tests/unit/infrastructure/chunker/test_chunker_infra.py::test_chunk_document_splits_long_content PASSED [ 39%]
+tests/unit/infrastructure/chunker/test_chunker_infra.py::test_chunk_document_preserves_metadata PASSED [ 39%]
+tests/unit/infrastructure/chunker/test_chunker_infra.py::test_chunk_overlap_preservation PASSED [ 39%]
+tests/unit/infrastructure/chunker/test_semantic_chunker.py::test_semantic_chunker_splitting PASSED [ 40%]
+tests/unit/infrastructure/factories/test_llm_factory.py::TestLLMFactory::test_get_google_llm_with_gemini_key PASSED [ 40%]
+tests/unit/infrastructure/factories/test_llm_factory.py::TestLLMFactory::test_get_google_llm_no_key_raises_error PASSED [ 41%]
+tests/unit/infrastructure/factories/test_llm_factory.py::TestLLMFactory::test_get_google_llm_ignores_google_key PASSED [ 41%]
+tests/unit/infrastructure/rag/test_citation_parsing.py::test_extract_citations_from_answer PASSED [ 41%]
+tests/unit/infrastructure/rag/test_context_cleaning.py::test_clean_context_noise_removes_wiki_templates PASSED [ 42%]
+tests/unit/infrastructure/rag/test_context_cleaning.py::test_clean_context_noise_removes_excessive_newlines PASSED [ 42%]
+tests/unit/infrastructure/rag/test_context_format.py::test_merge_and_format_context_injects_explicit_ids PASSED [ 43%]
+tests/unit/infrastructure/rag/test_graph_nodes.py::test_nodes_module_import PASSED [ 43%]
+tests/unit/infrastructure/rag/test_graph_nodes.py::test_nodes_initialization PASSED [ 43%]
+tests/unit/infrastructure/rag/test_graph_nodes.py::test_extract_metadata_node FAILED [ 44%]
+tests/unit/infrastructure/rag/test_graph_nodes.py::test_validate_content_node PASSED [ 44%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesClassifyIntent::test_updates_state_with_intent_and_rewritten_query PASSED [ 45%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesRouteDecision::test_converts_intent_to_auto_filters PASSED [ 45%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesRouteDecision::test_prioritizes_manual_filters_over_auto PASSED [ 45%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesRetrieveHybrid::test_parallel_search_updates_all_chunks PASSED [ 46%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesGenerateAnswer::test_formats_context_and_generates_answer PASSED [ 46%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesFallback::test_retrieve_hybrid_triggers_fallback_when_filtered_results_empty PASSED [ 47%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesFallback::test_retrieve_hybrid_calls_find_shortest_path_when_entities_present PASSED [ 47%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesFallback::test_retrieve_hybrid_calls_get_subgraph_when_no_entities PASSED [ 47%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesFallback::test_retrieve_hybrid_respects_strategy PASSED [ 48%]
+tests/unit/infrastructure/rag/test_rag_nodes.py::TestRAGNodesPromptGuard::test_generate_answer_includes_knowledge_mixing_rules PASSED [ 48%]
+tests/unit/infrastructure/rag/test_rag_reranker.py::test_rerank_results_success PASSED [ 49%]
+tests/unit/infrastructure/rag/test_rag_reranker.py::test_rerank_results_with_v2_prompt PASSED [ 49%]
+tests/unit/infrastructure/repositories/test_chroma.py::test_chroma_storage_save_chunks PASSED [ 49%]
+tests/unit/infrastructure/repositories/test_combined_storage.py::test_composite_storage_save PASSED [ 50%]
+tests/unit/infrastructure/repositories/test_combined_storage.py::test_composite_storage_get PASSED [ 50%]
+tests/unit/infrastructure/repositories/test_combined_storage.py::test_composite_storage_save_with_chunks PASSED [ 50%]
+tests/unit/infrastructure/repositories/test_combined_storage.py::test_chroma_storage_save_exception_handling PASSED [ 51%]
+tests/unit/infrastructure/repositories/test_combined_storage.py::test_chroma_storage_get_null_safety PASSED [ 51%]
+tests/unit/infrastructure/repositories/test_combined_storage.py::test_neo4j_storage_save_exception_handling PASSED [ 52%]
+tests/unit/infrastructure/repositories/test_combined_storage.py::test_neo4j_storage_get_null_safety PASSED [ 52%]
+tests/unit/infrastructure/repositories/test_ingestion_graph.py::test_graph_builder_import PASSED [ 52%]
+tests/unit/infrastructure/repositories/test_ingestion_graph.py::test_build_graph_returns_compiled_graph PASSED [ 53%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_save_entity_creates_node PASSED [ 53%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_save_entity_merge_duplicates PASSED [ 54%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_create_mention_relationship PASSED [ 54%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_get_entities_by_document PASSED [ 54%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_get_document_ids_by_entity PASSED [ 55%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_list_all_entities PASSED [ 55%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_list_all_entities_respects_limit PASSED [ 56%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_create_entity_relationship PASSED [ 56%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_get_entity_relationships_all PASSED [ 56%]
+tests/unit/infrastructure/repositories/test_neo4j_graph.py::test_get_entity_relationships_filtered PASSED [ 57%]
+tests/unit/infrastructure/repositories/test_neo4j_job.py::test_create_job PASSED [ 57%]
+tests/unit/infrastructure/repositories/test_neo4j_job.py::test_update_job PASSED [ 58%]
+tests/unit/infrastructure/repositories/test_neo4j_job.py::test_get_job PASSED [ 58%]
+tests/unit/infrastructure/repositories/test_neo4j_job.py::test_list_jobs PASSED [ 58%]
+tests/unit/infrastructure/repositories/test_neo4j_storage.py::test_neo4j_storage_save_with_chunks PASSED [ 59%]
+tests/unit/infrastructure/repositories/test_storage_reset.py::test_neo4j_reset_database PASSED [ 59%]
+tests/unit/infrastructure/repositories/test_storage_reset.py::test_chroma_reset_collection PASSED [ 60%]
+tests/unit/infrastructure/repositories/test_storage_reset.py::test_langgraph_adapter_reset_checkpoints PASSED [ 60%]
+tests/unit/infrastructure/scrapers/test_markdown_cleaner.py::test_remove_wiki_footnotes PASSED [ 60%]
+tests/unit/infrastructure/scrapers/test_markdown_cleaner.py::test_remove_wiki_edit_buttons PASSED [ 61%]
+tests/unit/infrastructure/scrapers/test_markdown_cleaner.py::test_remove_wiki_syntax_fragments PASSED [ 61%]
+tests/unit/infrastructure/scrapers/test_markdown_cleaner.py::test_remove_empty_links PASSED [ 62%]
+tests/unit/infrastructure/scrapers/test_markdown_cleaner.py::test_remove_navboxes_and_empty_tables PASSED [ 62%]
+tests/unit/infrastructure/scrapers/test_markdown_cleaner.py::test_remove_repeated_special_chars PASSED [ 62%]
+tests/unit/infrastructure/scrapers/test_markdown_cleaner.py::test_remove_invisible_chars PASSED [ 63%]
+tests/unit/infrastructure/scrapers/test_markdown_cleaner.py::test_comprehensive_clean PASSED [ 63%]
+tests/unit/infrastructure/scrapers/test_playwright_scraper.py::test_playwright_scraper_basic_scrape PASSED [ 64%]
+tests/unit/infrastructure/scrapers/test_playwright_scraper.py::test_playwright_scraper_dynamic_content PASSED [ 64%]
+tests/unit/infrastructure/scrapers/test_playwright_scraper.py::test_playwright_scraper_error_handling PASSED [ 64%]
+tests/unit/infrastructure/scrapers/test_scraper.py::test_scrape_basic_html PASSED [ 65%]
+tests/unit/infrastructure/scrapers/test_scraper.py::test_scrape_failure PASSED [ 65%]
+tests/unit/infrastructure/scrapers/test_trafilatura_scraper.py::test_scrape_clean_extraction PASSED [ 66%]
+tests/unit/infrastructure/scrapers/test_trafilatura_scraper.py::test_scrape_metadata_extraction PASSED [ 66%]
+tests/unit/infrastructure/scrapers/test_trafilatura_scraper.py::test_scrape_fallback_when_trafilatura_fails PASSED [ 66%]
+tests/unit/infrastructure/scrapers/test_youtube_scraper.py::test_youtube_scraper_with_transcript PASSED [ 67%]
+tests/unit/infrastructure/scrapers/test_youtube_scraper.py::test_youtube_scraper_fallback_to_whisper PASSED [ 67%]
+tests/unit/infrastructure/test_prompt_injection.py::test_prompt_includes_reasoning_context PASSED [ 67%]
+tests/unit/infrastructure/test_prompt_injection.py::test_prompt_without_hypothesis_is_standard PASSED [ 68%]
+tests/unit/interfaces/api/dto/test_common.py::test_generic_response_creation PASSED [ 68%]
+tests/unit/interfaces/api/dto/test_common.py::test_generic_response_json PASSED [ 69%]
+tests/unit/interfaces/api/dto/test_common.py::test_error_response_creation PASSED [ 69%]
+tests/unit/interfaces/api/dto/test_common.py::test_pagination_response PASSED [ 69%]
+tests/unit/interfaces/api/dto/test_jobs.py::test_job_response_creation PASSED [ 70%]
+tests/unit/interfaces/api/dto/test_jobs.py::test_resume_request PASSED   [ 70%]
+tests/unit/interfaces/api/v1/dto/test_rag_v1_dto.py::test_advanced_settings_defaults PASSED [ 71%]
+tests/unit/interfaces/api/v1/dto/test_rag_v1_dto.py::test_advanced_settings_validation PASSED [ 71%]
+tests/unit/interfaces/api/v1/dto/test_rag_v1_dto.py::test_chat_request_initialization PASSED [ 71%]
+tests/unit/interfaces/api/v1/dto/test_rag_v1_dto.py::test_chat_request_with_custom_settings PASSED [ 72%]
+tests/unit/interfaces/api/v1/dto/test_rag_v1_dto.py::test_chat_request_validation PASSED [ 72%]
+tests/unit/interfaces/mcp/test_mcp_server.py::test_ingest_url_tool PASSED [ 73%]
+tests/unit/interfaces/mcp/test_mcp_server.py::test_search_knowledge_base_tool PASSED [ 73%]
+tests/unit/test_deduplication_strategies.py::TestIDCheckingStrategy::test_detects_duplicate_if_completed PASSED [ 73%]
+tests/unit/test_deduplication_strategies.py::TestIDCheckingStrategy::test_detects_duplicate_if_running PASSED [ 74%]
+tests/unit/test_deduplication_strategies.py::TestIDCheckingStrategy::test_not_duplicate_if_failed PASSED [ 74%]
+tests/unit/test_deduplication_strategies.py::TestMetadataCheckStrategy::test_detects_duplicate_when_keys_match PASSED [ 75%]
+tests/unit/test_deduplication_strategies.py::TestMetadataCheckStrategy::test_detects_duplicate_if_running PASSED [ 75%]
+tests/unit/test_deduplication_strategies.py::TestMetadataCheckStrategy::test_not_duplicate_when_value_differs PASSED [ 75%]
+tests/unit/test_deduplication_strategies.py::TestTTLStrategy::test_detects_duplicate_within_ttl PASSED [ 76%]
+tests/unit/test_deduplication_strategies.py::TestTTLStrategy::test_detects_duplicate_if_running PASSED [ 76%]
+tests/unit/test_deduplication_strategies.py::TestTTLStrategy::test_not_duplicate_after_ttl PASSED [ 77%]
+tests/unit/test_deduplication_strategies.py::TestContentsStrategy::test_detects_duplicate_hash PASSED [ 77%]
+tests/unit/test_deduplication_strategies.py::TestContentsStrategy::test_detects_duplicate_hash_if_running PASSED [ 77%]
+tests/unit/test_deduplication_strategies.py::TestContentsStrategy::test_not_duplicate_different_hash PASSED [ 78%]
+tests/integration/functional/test_ai_orchestrator.py::test_langgraph_adapter_integration FAILED [ 78%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_health_check_flow PASSED [ 79%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_storage_stats_flow FAILED [ 79%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_storage_reports_access FAILED [ 79%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_rag_autocomplete_query PASSED [ 80%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_rag_ask_flow FAILED [ 80%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_rag_ask_validation_error FAILED [ 81%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_graph_schema_retrieval PASSED [ 81%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_list_jobs_with_mock PASSED [ 81%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_list_documents_with_seed PASSED [ 82%]
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_invalid_job_id_lookup PASSED [ 82%]
+tests/integration/functional/test_api_validation.py::TestApiValidation::test_validation_error_format PASSED [ 83%]
+tests/integration/functional/test_api_validation.py::TestApiValidation::test_chunking_config_validation PASSED [ 83%]
+tests/integration/functional/test_api_validation.py::TestApiValidation::test_method_not_allowed_format PASSED [ 83%]
+tests/integration/functional/test_api_validation.py::TestApiValidation::test_not_found_format PASSED [ 84%]
+tests/integration/functional/test_api_validation.py::TestApiValidation::test_rag_advanced_settings_validation PASSED [ 84%]
+tests/integration/functional/test_infrastructure.py::TestInfrastructure::test_dependency_injection_integrity PASSED [ 84%]
+tests/integration/functional/test_infrastructure.py::TestInfrastructure::test_global_exception_handlers PASSED [ 85%]
+tests/integration/functional/test_infrastructure.py::TestInfrastructure::test_test_fixtures_readiness PASSED [ 85%]
+tests/integration/functional/test_ingestion_with_semantic.py::test_ingestion_with_semantic_chunking PASSED [ 86%]
+tests/integration/functional/test_postgres_persistence.py::test_postgres_persistence_flow FAILED [ 86%]
+tests/integration/functional/test_rag_session_cleanup.py::test_session_creation_and_cleanup PASSED [ 86%]
+tests/integration/functional/test_repositories_chroma.py::test_chroma_mmr_diversity_logic FAILED [ 87%]
+tests/integration/functional/test_repositories_neo4j.py::test_neo4j_fulltext_search_logic FAILED [ 87%]
+tests/integration/functional/test_retrieval_logic.py::TestRetrievalLogic::test_hybrid_pipeline_components PASSED [ 88%]
+tests/integration/functional/test_retrieval_logic.py::TestRetrievalLogic::test_filtered_search_isolation PASSED [ 88%]
+tests/integration/functional/test_retrieval_logic.py::TestRetrievalLogic::test_graph_navigation_retrieval PASSED [ 88%]
+tests/integration/functional/test_retrieval_logic.py::TestRetrievalLogic::test_intent_classifier_contextual_history PASSED [ 89%]
+tests/integration/functional/test_retrieval_logic.py::TestRetrievalLogic::test_intent_classifier_summarize_with_pronoun PASSED [ 89%]
+tests/integration/functional/test_retrieval_logic.py::TestRetrievalLogic::test_select_strategy_logic PASSED [ 90%]
+tests/integration/functional/test_scraper_orchestration.py::test_orchestration_youtube_routing PASSED [ 90%]
+tests/integration/functional/test_scraper_orchestration.py::test_orchestration_tiered_fallback PASSED [ 90%]
+tests/integration/functional/test_scraper_orchestration.py::test_orchestration_quality_fallback PASSED [ 91%]
+tests/integration/scenarios/test_admin_ui_flow.py::test_admin_rapid_click_scenario PASSED [ 91%]
+tests/integration/scenarios/test_admin_ui_flow.py::test_status_masking_ping_pong_scenario PASSED [ 92%]
+tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_entity_extraction_and_retrieval_flow FAILED [ 92%]
+tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_hybrid_knowledge_consistency FAILED [ 92%]
+tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_entity_deduplication_and_mentions FAILED [ 93%]
+tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_human_in_the_loop_workflow FAILED [ 93%]
+tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_reasoning_flow_backtracking FAILED [ 94%]
+tests/integration/scenarios/test_ingestion_scenarios.py::TestIngestionScenarios::test_web_ingestion_with_chunking_verification PASSED [ 94%]
+tests/integration/scenarios/test_ingestion_scenarios.py::TestIngestionScenarios::test_web_ingestion_with_special_characters_url PASSED [ 94%]
+tests/integration/scenarios/test_ingestion_scenarios.py::TestIngestionScenarios::test_ingestion_idempotency_and_duplicates FAILED [ 95%]
+tests/integration/scenarios/test_ingestion_scenarios.py::TestIngestionScenarios::test_concurrent_ingestion_throughput PASSED [ 95%]
+tests/integration/scenarios/test_rag_pipeline.py::TestRagPipelineScenarios::test_combined_intent_and_rewriting_flow PASSED [ 96%]
+tests/integration/scenarios/test_rag_pipeline.py::TestRagPipelineScenarios::test_rag_service_e2e_integration PASSED [ 96%]
+tests/integration/scenarios/test_rag_pipeline.py::TestRagPipelineScenarios::test_reasoning_feedback_loop_scenario PASSED [ 96%]
+tests/integration/scenarios/test_special_flows.py::TestSpecialFlows::test_human_in_the_loop_checkpoint_logic PASSED [ 97%]
+tests/integration/scenarios/test_special_flows.py::TestSpecialFlows::test_full_data_integrity_reset PASSED [ 97%]
+tests/integration/test_duplicate_ingestion.py::test_duplicate_document_upsert FAILED [ 98%]
+tests/integration/test_duplicate_ingestion.py::test_duplicate_chunks_upsert PASSED [ 98%]
+tests/integration/test_duplicate_ingestion.py::test_batch_chunks_upsert PASSED [ 98%]
+tests/integration/test_ingestion_deduplication.py::TestIngestionDeduplication::test_process_job_skips_when_duplicate_detected FAILED [ 99%]
+tests/integration/test_ingestion_deduplication.py::TestIngestionDeduplication::test_process_job_runs_when_not_duplicate FAILED [ 99%]
+tests/integration/test_state_isolation.py::test_session_state_isolation_and_override PASSED [100%]
+
+=================================== FAILURES ===================================
+_______________ test_propagate_document_metadata_updates_chunks ________________
+
+service = <app.application.services.integrity.Integrity object at 0x12a1ff0e0>
+mock_primary_repo = <MagicMock id='4961956592'>
+
+    def test_propagate_document_metadata_updates_chunks(service, mock_primary_repo):
+        # Given
+        doc_id = str(uuid4())
+        doc = MagicMock(id=doc_id, metadata={"title": "New Title"})
+        chunk1 = Chunk(id=str(uuid4()), content="c1", parent_id=doc_id, index=0, metadata={})
+    
+        mock_primary_repo.get.return_value = doc
+        mock_primary_repo.get_chunks.return_value = [chunk1]
+    
+        # When
+>       service.propagate_document_metadata(doc_id)
+
+tests/unit/application/services/test_integrity.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.application.services.integrity.Integrity object at 0x12a1ff0e0>
+doc_id = 'eb3f9264-cbd3-4b6b-b2c4-38127103ec9d'
+
+    def propagate_document_metadata(self, doc_id: str) -> bool:
+        """상위 문서의 제목(Title) 등을 하위 청크들로 전파"""
+        document = self.primary_repo.get(doc_id)
+        if not document:
+            return False
+    
+>       title = document.metadata.title
+                ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'dict' object has no attribute 'title'
+
+app/application/services/integrity.py:177: AttributeError
+_____________________________ test_extract_success _____________________________
+
+    @pytest.mark.asyncio
+    async def test_extract_success():
+        """SemanticExtractor가 LLM interface(async)를 통해 메타데이터를 성공적으로 추출하는지 테스트"""
+        # Setup: Protocol Mock
+        mock_llm = MagicMock(spec=LLMInterface)
+>       expected_metadata = ExtractedMetadata(
+            title="AI Research and Development Practices",
+            summary="Comprehensive guide on modern AI development",
+            keywords=["AI", "Research", "Development"],
+            entities={
+                EntityType.PERSON: ["Geoffrey Hinton", "Yann LeCun"],
+                EntityType.ORGANIZATION: ["Google DeepMind", "Meta AI"],
+                EntityType.TECHNOLOGY: ["Python", "PyTorch", "TensorFlow"],
+                EntityType.CONCEPT: ["Deep Learning", "Neural Networks"],
+                EntityType.LOCATION: ["Silicon Valley", "Montreal"],
+                EntityType.EVENT: ["NeurIPS 2024"],
+                EntityType.ACTIVITY: ["벤치마킹", "모델 학습", "데이터 전처리"],
+            },
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for ExtractedMetadata
+E       primary_entity
+E         Field required [type=missing, input_value={'title': 'AI Research an...'데이터 전처리']}}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+tests/unit/domain/services/test_extractor.py:16: ValidationError
+_____________________________ test_extract_failure _____________________________
+
+    @pytest.mark.asyncio
+    async def test_extract_failure():
+        """LLM 추출 실패 시 None을 반환하는지 테스트"""
+        # Setup
+        mock_llm = MagicMock(spec=LLMInterface)
+        mock_llm.aextract_metadata = AsyncMock(return_value=None)
+    
+        # Execute
+        extractor = SemanticExtractor(llm=mock_llm)
+        result = await extractor.extract("Dummy text")
+    
+        # Verify
+        assert result is None
+>       mock_llm.aextract_metadata.assert_called_once_with("Dummy text", thread_id=None)
+
+tests/unit/domain/services/test_extractor.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/unittest/mock.py:961: in assert_called_once_with
+    return self.assert_called_with(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <AsyncMock name='mock.aextract_metadata' id='5001702112'>
+args = ('Dummy text',), kwargs = {'thread_id': None}
+expected = call('Dummy text', thread_id=None)
+actual = call('Dummy text', metadata=None, thread_id=None)
+_error_message = <function NonCallableMock.assert_called_with.<locals>._error_message at 0x12a314860>
+cause = None
+
+    def assert_called_with(self, /, *args, **kwargs):
+        """assert that the last call was made with the specified arguments.
+    
+        Raises an AssertionError if the args and keyword args passed in are
+        different to the last call to the mock."""
+        if self.call_args is None:
+            expected = self._format_mock_call_signature(args, kwargs)
+            actual = 'not called.'
+            error_message = ('expected call not found.\nExpected: %s\n  Actual: %s'
+                    % (expected, actual))
+            raise AssertionError(error_message)
+    
+        def _error_message():
+            msg = self._format_mock_failure_message(args, kwargs)
+            return msg
+        expected = self._call_matcher(_Call((args, kwargs), two=True))
+        actual = self._call_matcher(self.call_args)
+        if actual != expected:
+            cause = expected if isinstance(expected, Exception) else None
+>           raise AssertionError(_error_message()) from cause
+E           AssertionError: expected call not found.
+E           Expected: aextract_metadata('Dummy text', thread_id=None)
+E             Actual: aextract_metadata('Dummy text', metadata=None, thread_id=None)
+
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/unittest/mock.py:949: AssertionError
+________________ test_extracted_metadata_with_diverse_entities _________________
+
+    def test_extracted_metadata_with_diverse_entities():
+        """다양한 Entity 타입을 포함한 ExtractedMetadata 검증"""
+>       metadata = ExtractedMetadata(
+            title="Startup Growth Strategy",
+            summary="Analysis of startup scaling methods",
+            keywords=["startup", "growth", "strategy"],
+            entities={
+                EntityType.PERSON: ["Eric Ries", "Steve Blank"],
+                EntityType.ORGANIZATION: ["Y Combinator", "500 Startups"],
+                EntityType.TECHNOLOGY: ["AWS", "React", "PostgreSQL"],
+                EntityType.CONCEPT: ["Lean Startup", "Product-Market Fit"],
+                EntityType.LOCATION: ["San Francisco", "Seoul"],
+                EntityType.EVENT: ["TechCrunch Disrupt 2024"],
+                EntityType.ACTIVITY: ["고객 인터뷰", "MVP 개발", "피벗팅"],
+            },
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for ExtractedMetadata
+E       primary_entity
+E         Field required [type=missing, input_value={'title': 'Startup Growth... 개발', '피벗팅']}}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+tests/unit/domain/services/test_ontology.py:32: ValidationError
+________________ test_extracted_metadata_with_korean_activities ________________
+
+    def test_extracted_metadata_with_korean_activities():
+        """한글 활동명이 올바르게 처리되는지 검증"""
+>       metadata = ExtractedMetadata(
+            title="소프트웨어 개발 프로세스",
+            summary="현대적인 개발 방법론",
+            keywords=["개발", "프로세스"],
+            entities={
+                EntityType.ACTIVITY: ["책 쓰기", "벤치마킹", "코드 리뷰", "페어 프로그래밍", "회고", "스프린트 계획"]
+            },
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for ExtractedMetadata
+E       primary_entity
+E         Field required [type=missing, input_value={'title': '소프트웨...'스프린트 계획']}}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+tests/unit/domain/services/test_ontology.py:53: ValidationError
+__________________________ test_extract_metadata_node __________________________
+
+    @pytest.mark.asyncio
+    async def test_extract_metadata_node():
+        """extract_metadata 노드가 LLM을 호출하고 State를 갱신하는지 검증"""
+        from unittest.mock import AsyncMock
+    
+        from app.infrastructure.ai.ingestion_nodes import IngestionNodes
+    
+        mock_llm = AsyncMock(spec=LLMInterface)
+>       mock_metadata = ExtractedMetadata(
+            title="Test Title", summary="Test Summary", keywords=["test"], entities={}, language="en"
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for ExtractedMetadata
+E       primary_entity
+E         Field required [type=missing, input_value={'title': 'Test Title', '...': {}, 'language': 'en'}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+tests/unit/infrastructure/rag/test_graph_nodes.py:39: ValidationError
+______________________ test_langgraph_adapter_integration ______________________
+
+    @pytest.mark.asyncio
+    async def test_langgraph_adapter_integration():
+        """IngestionOrchestrator가 그래프를 실행하고 결과를 올바르게 반환하는지 통합 테스트"""
+    
+        # 1. Prepare Inner LLM (that Nodes will use)
+        mock_inner_llm = MockInnerLLM()
+    
+        # 2. Init Adapter
+        adapter = IngestionOrchestrator(llm=mock_inner_llm)
+    
+        # 3. Execute
+        text = "This is a test content."
+        # Adapter methods are now async
+        result = await adapter.aextract_metadata(text)
+    
+        # 4. Verify
+>       assert result is not None
+E       assert None is not None
+
+tests/integration/functional/test_ai_orchestrator.py:36: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    app.infrastructure.ai.ingestion_orchestrator:ingestion_orchestrator.py:87 Graph execution failed: 1 validation error for ExtractedMetadata
+primary_entity
+  Field required [type=missing, input_value={'title': 'Mock Title', '...': {}, 'language': 'en'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+___________________ TestApiEndpoints.test_storage_stats_flow ___________________
+
+self = <test_api_endpoints.TestApiEndpoints object at 0x12a072930>
+
+    def test_storage_stats_flow(self):
+        # Given: Valid storage state
+    
+        # When: GET /v1/storage/stats requested
+>       response = client.get("/v1/storage/stats")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/functional/test_api_endpoints.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/starlette/testclient.py:473: in get
+    return super().get(
+.venv/lib/python3.12/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+.venv/lib/python3.12/site-packages/starlette/testclient.py:445: in request
+    return super().request(
+.venv/lib/python3.12/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/testclient.py:348: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/testclient.py:345: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:334: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:259: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/applications.py:1135: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/applications.py:107: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:716: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:736: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:290: in handle
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:115: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:101: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/routing.py:345: in app
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:614: in solve_dependencies
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:637: in solve_dependencies
+    solved = await _solve_generator(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:551: in _solve_generator
+    return await stack.enter_async_context(cm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py:659: in enter_async_context
+    result = await _enter(cm)
+             ^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py:210: in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_checkpointer() -> AsyncIterator[AsyncPostgresSaver]:
+        if not database.pool:
+            # DB Pool이 초기화되지 않은 경우 (예: 테스트 등) 실패
+>           raise RuntimeError("Database pool has not been initialized. Check lifespan handler.")
+E           RuntimeError: Database pool has not been initialized. Check lifespan handler.
+
+app/interfaces/api/dependencies.py:82: RuntimeError
+------------------------------ Captured log call -------------------------------
+ERROR    app.interfaces.api.error_handlers:error_handlers.py:72 Unhandled exception: Database pool has not been initialized. Check lifespan handler.
+Traceback (most recent call last):
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 115, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 345, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 614, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 637, in solve_dependencies
+    solved = await _solve_generator(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 551, in _solve_generator
+    return await stack.enter_async_context(cm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py", line 659, in enter_async_context
+    result = await _enter(cm)
+             ^^^^^^^^^^^^^^^^
+  File "/Users/ck/.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/app/interfaces/api/dependencies.py", line 82, in get_checkpointer
+    raise RuntimeError("Database pool has not been initialized. Check lifespan handler.")
+RuntimeError: Database pool has not been initialized. Check lifespan handler.
+_________________ TestApiEndpoints.test_storage_reports_access _________________
+
+self = <test_api_endpoints.TestApiEndpoints object at 0x12a072b10>
+
+    def test_storage_reports_access(self):
+        # Given: Storage endpoints exist
+    
+        # When: GET /v1/storage/reports requested
+>       response = client.get("/v1/storage/reports")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/functional/test_api_endpoints.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/starlette/testclient.py:473: in get
+    return super().get(
+.venv/lib/python3.12/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+.venv/lib/python3.12/site-packages/starlette/testclient.py:445: in request
+    return super().request(
+.venv/lib/python3.12/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/testclient.py:348: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/testclient.py:345: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:334: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:259: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/applications.py:1135: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/applications.py:107: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:716: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:736: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:290: in handle
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:115: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:101: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/routing.py:345: in app
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:614: in solve_dependencies
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:637: in solve_dependencies
+    solved = await _solve_generator(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:551: in _solve_generator
+    return await stack.enter_async_context(cm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py:659: in enter_async_context
+    result = await _enter(cm)
+             ^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py:210: in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_checkpointer() -> AsyncIterator[AsyncPostgresSaver]:
+        if not database.pool:
+            # DB Pool이 초기화되지 않은 경우 (예: 테스트 등) 실패
+>           raise RuntimeError("Database pool has not been initialized. Check lifespan handler.")
+E           RuntimeError: Database pool has not been initialized. Check lifespan handler.
+
+app/interfaces/api/dependencies.py:82: RuntimeError
+------------------------------ Captured log call -------------------------------
+ERROR    app.interfaces.api.error_handlers:error_handlers.py:72 Unhandled exception: Database pool has not been initialized. Check lifespan handler.
+Traceback (most recent call last):
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 115, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 345, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 614, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 637, in solve_dependencies
+    solved = await _solve_generator(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 551, in _solve_generator
+    return await stack.enter_async_context(cm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py", line 659, in enter_async_context
+    result = await _enter(cm)
+             ^^^^^^^^^^^^^^^^
+  File "/Users/ck/.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/app/interfaces/api/dependencies.py", line 82, in get_checkpointer
+    raise RuntimeError("Database pool has not been initialized. Check lifespan handler.")
+RuntimeError: Database pool has not been initialized. Check lifespan handler.
+______________________ TestApiEndpoints.test_rag_ask_flow ______________________
+
+self = <test_api_endpoints.TestApiEndpoints object at 0x12a0bce00>
+
+    @pytest.mark.asyncio
+    async def test_rag_ask_flow(self):
+        # Given: Valid payload with advanced settings
+        payload = {
+            "message": "Hello",
+            "filters": {},
+            "advanced_settings": {"top_k": 5, "temperature": 0.5, "search_strategy": "hybrid"},
+        }
+    
+        # Use patch to avoid external API calls
+        with patch("app.application.services.agent.ChatGoogleGenerativeAI") as mock_llm_cls:
+            mock_instance = mock_llm_cls.return_value
+            mock_instance.ainvoke = AsyncMock(return_value=AIMessage(content="Mock Answer"))
+    
+            # When: POST /v1/rag/sessions/{id}/ask
+>           response = client.post("/v1/rag/sessions/test_session/ask", json=payload)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/functional/test_api_endpoints.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/starlette/testclient.py:546: in post
+    return super().post(
+.venv/lib/python3.12/site-packages/httpx/_client.py:1144: in post
+    return self.request(
+.venv/lib/python3.12/site-packages/starlette/testclient.py:445: in request
+    return super().request(
+.venv/lib/python3.12/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/testclient.py:348: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/testclient.py:345: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:334: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:259: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/applications.py:1135: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/applications.py:107: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:716: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:736: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:290: in handle
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:115: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:101: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/routing.py:345: in app
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:614: in solve_dependencies
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:614: in solve_dependencies
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:637: in solve_dependencies
+    solved = await _solve_generator(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:551: in _solve_generator
+    return await stack.enter_async_context(cm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py:659: in enter_async_context
+    result = await _enter(cm)
+             ^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py:210: in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_checkpointer() -> AsyncIterator[AsyncPostgresSaver]:
+        if not database.pool:
+            # DB Pool이 초기화되지 않은 경우 (예: 테스트 등) 실패
+>           raise RuntimeError("Database pool has not been initialized. Check lifespan handler.")
+E           RuntimeError: Database pool has not been initialized. Check lifespan handler.
+
+app/interfaces/api/dependencies.py:82: RuntimeError
+------------------------------ Captured log call -------------------------------
+ERROR    app.interfaces.api.error_handlers:error_handlers.py:72 Unhandled exception: Database pool has not been initialized. Check lifespan handler.
+Traceback (most recent call last):
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 115, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 345, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 614, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 614, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 637, in solve_dependencies
+    solved = await _solve_generator(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 551, in _solve_generator
+    return await stack.enter_async_context(cm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py", line 659, in enter_async_context
+    result = await _enter(cm)
+             ^^^^^^^^^^^^^^^^
+  File "/Users/ck/.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/app/interfaces/api/dependencies.py", line 82, in get_checkpointer
+    raise RuntimeError("Database pool has not been initialized. Check lifespan handler.")
+RuntimeError: Database pool has not been initialized. Check lifespan handler.
+________________ TestApiEndpoints.test_rag_ask_validation_error ________________
+
+self = <test_api_endpoints.TestApiEndpoints object at 0x12a0bdac0>
+
+    @pytest.mark.asyncio
+    async def test_rag_ask_validation_error(self):
+        """Spec 055: Test validation logic for AdvancedSettings"""
+        # Given: Invalid payload (top_k=0, allowed range 1-100)
+        payload = {"message": "Hello", "advanced_settings": {"top_k": 0}}
+    
+        # When: POST /v1/rag/sessions/{id}/ask
+>       response = client.post("/v1/rag/sessions/test_validation/ask", json=payload)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/functional/test_api_endpoints.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/starlette/testclient.py:546: in post
+    return super().post(
+.venv/lib/python3.12/site-packages/httpx/_client.py:1144: in post
+    return self.request(
+.venv/lib/python3.12/site-packages/starlette/testclient.py:445: in request
+    return super().request(
+.venv/lib/python3.12/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:914: in send
+    response = self._send_handling_auth(
+.venv/lib/python3.12/site-packages/httpx/_client.py:942: in _send_handling_auth
+    response = self._send_handling_redirects(
+.venv/lib/python3.12/site-packages/httpx/_client.py:979: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/httpx/_client.py:1014: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/starlette/testclient.py:348: in handle_request
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/testclient.py:345: in handle_request
+    portal.call(self.app, scope, receive, send)
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:334: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/concurrent/futures/_base.py:456: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/concurrent/futures/_base.py:401: in __get_result
+    raise self._exception
+.venv/lib/python3.12/site-packages/anyio/from_thread.py:259: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/applications.py:1135: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/applications.py:107: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:716: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:736: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/routing.py:290: in handle
+    await self.app(scope, receive, send)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:115: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.12/site-packages/fastapi/routing.py:101: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/fastapi/routing.py:345: in app
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:614: in solve_dependencies
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:614: in solve_dependencies
+    solved_result = await solve_dependencies(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:637: in solve_dependencies
+    solved = await _solve_generator(
+.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py:551: in _solve_generator
+    return await stack.enter_async_context(cm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py:659: in enter_async_context
+    result = await _enter(cm)
+             ^^^^^^^^^^^^^^^^
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py:210: in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_checkpointer() -> AsyncIterator[AsyncPostgresSaver]:
+        if not database.pool:
+            # DB Pool이 초기화되지 않은 경우 (예: 테스트 등) 실패
+>           raise RuntimeError("Database pool has not been initialized. Check lifespan handler.")
+E           RuntimeError: Database pool has not been initialized. Check lifespan handler.
+
+app/interfaces/api/dependencies.py:82: RuntimeError
+------------------------------ Captured log call -------------------------------
+ERROR    app.interfaces.api.error_handlers:error_handlers.py:72 Unhandled exception: Database pool has not been initialized. Check lifespan handler.
+Traceback (most recent call last):
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 115, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 345, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 614, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 614, in solve_dependencies
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 637, in solve_dependencies
+    solved = await _solve_generator(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py", line 551, in _solve_generator
+    return await stack.enter_async_context(cm)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py", line 659, in enter_async_context
+    result = await _enter(cm)
+             ^^^^^^^^^^^^^^^^
+  File "/Users/ck/.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/contextlib.py", line 210, in __aenter__
+    return await anext(self.gen)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ck/Project/doit/rag-ingestion/app/interfaces/api/dependencies.py", line 82, in get_checkpointer
+    raise RuntimeError("Database pool has not been initialized. Check lifespan handler.")
+RuntimeError: Database pool has not been initialized. Check lifespan handler.
+________________________ test_postgres_persistence_flow ________________________
+
+    @pytest.mark.asyncio
+    @pytest.mark.integration
+    async def test_postgres_persistence_flow():
+        settings = get_settings()
+    
+        # 1. Setup Connection Pool (Test Scoped)
+        try:
+            pool = AsyncConnectionPool(conninfo=settings.postgres_db_url, min_size=1, max_size=2)
+            await pool.open()
+        except Exception as e:
+            pytest.skip(f"Could not connect to Postgres: {e}")
+    
+        thread_id = str(uuid.uuid4())
+    
+        try:
+            # 2. Setup Tables
+            async with pool.connection() as conn:
+                await conn.set_autocommit(True)
+                saver = AsyncPostgresSaver(conn)
+                await saver.setup()
+    
+            # 3. Create Orchestrator with manual checkpointer injection
+            # Note: In real app, checkpointer is passed as dependency.
+            # Here we manually simulate what dependency injection does.
+    
+            async with pool.connection() as conn:
+                checkpointer = AsyncPostgresSaver(conn)
+                orchestrator = IngestionOrchestrator(llm=MockInnerLLM(), checkpointer=checkpointer)
+    
+                # 4. Execute Workflow
+                # This should persist state to Postgres
+                await orchestrator.aextract_metadata("Test content", thread_id=thread_id)
+    
+                # 5. Verify Persistence
+                # Check state using get_state
+                snapshot = await orchestrator.get_state(thread_id)
+                assert snapshot.values is not None, "Snapshot should exist"
+>               assert snapshot.values["metadata"] is not None
+E               assert None is not None
+
+tests/integration/functional/test_postgres_persistence.py:61: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    app.infrastructure.ai.ingestion_orchestrator:ingestion_orchestrator.py:87 Graph execution failed: 1 validation error for ExtractedMetadata
+primary_entity
+  Field required [type=missing, input_value={'title': 'Persisted Titl...': {}, 'language': 'en'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+_______________________ test_chroma_mmr_diversity_logic ________________________
+
+chroma_repo_mmr = <app.infrastructure.repositories.chroma.ChromaVectorRepository object at 0x12bac9f40>
+
+    @pytest.mark.integration
+    def test_chroma_mmr_diversity_logic(chroma_repo_mmr):
+        """
+        Scenario: MMR (Maximal Marginal Relevance) should prioritize diversity
+        over pure similarity to avoid redundant result sets.
+        """
+        # Given: Chunks with varying similarity (Exact, Similar, Diverse)
+        doc_id = str(uuid4())
+        chunks = [
+            Chunk(id=str(uuid4()), content="exact", parent_id=doc_id, index=0, metadata={"type": "A"}),
+            Chunk(id=str(uuid4()), content="similar", parent_id=doc_id, index=1, metadata={"type": "B"}),
+            Chunk(id=str(uuid4()), content="diverse", parent_id=doc_id, index=2, metadata={"type": "C"}),
+        ]
+        chroma_repo_mmr.save_chunks(chunks)
+    
+        # When: Performing standard kNN search
+        knn_results = chroma_repo_mmr.search("query", limit=2)
+        knn_content = [c.content for c in knn_results]
+    
+        # Then: Returns Exact and Similar (The two most similar ones)
+        assert "exact" in knn_content
+        assert "similar" in knn_content
+        assert "diverse" not in knn_content
+    
+        # When: Performing MMR search with high diversity penalty
+        mmr_results = chroma_repo_mmr.search_mmr("query", limit=2, diversity=0.8)
+        mmr_content = [c.content for c in mmr_results]
+    
+        # Then: Returns Exact and Diverse (Penalizing the redundant Similar result)
+        assert "exact" in mmr_content
+>       assert "diverse" in mmr_content
+E       AssertionError: assert 'diverse' in ['exact', 'similar']
+
+tests/integration/functional/test_repositories_chroma.py:82: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-02-09 12:47:15,810 - app.infrastructure.repositories.chroma - INFO - Saving batch 1/1 (3 chunks)...
+2026-02-09 12:47:15,911 - app.infrastructure.repositories.chroma - INFO - Chroma Search results: found 2 candidates. Top IDs: ['1461d196-22bd-49a3-981a-474b6e9a322a', '75656de8-e4d0-40a6-a8e9-8a410e5e1357']
+2026-02-09 12:47:15,920 - app.infrastructure.repositories.chroma - INFO - Chroma MMR candidates: 2/3 passed threshold 0.7. Top IDs: ['1461d196-22bd-49a3-981a-474b6e9a322a', '75656de8-e4d0-40a6-a8e9-8a410e5e1357']
+_______________________ test_neo4j_fulltext_search_logic _______________________
+
+neo4j_repo = <app.infrastructure.repositories.neo4j_document_repository.Neo4jDocumentRepository object at 0x12bb61f10>
+
+    @pytest.mark.integration
+    def test_neo4j_fulltext_search_logic(neo4j_repo):
+        """
+        Scenario: Verify Neo4j Fulltext Search on Chunks
+        """
+        # Given: A document and a chunk containing a unique keyword
+        doc_id = str(uuid4())
+        chunk_id = str(uuid4())
+        unique_keyword = f"Neo4jKeyword{uuid4().hex[:6]}"
+        chunk_content = f"This content contains {unique_keyword} for search."
+    
+        doc = Document(id=doc_id, content="Doc Content", metadata={"source_id": "test_neo4j", "title": "Neo4j Test"})
+        chunk = Chunk(id=chunk_id, content=chunk_content, parent_id=doc_id, index=0, metadata={"page": 1})
+    
+        # When: Saving data and creating index
+        neo4j_repo.save_with_chunks(doc, [chunk])
+    
+        with neo4j_repo.driver.session() as session:
+            session.run("DROP INDEX chunk_fulltext IF EXISTS")
+    
+        neo4j_repo.create_fulltext_index()
+    
+        # When: Searching for the unique keyword (with retries for eventual consistency)
+        target_query = f"*{unique_keyword}*"
+        results = []
+        for _ in range(20):
+            results = neo4j_repo.search(target_query, limit=5)
+            if len(results) > 0:
+                break
+            time.sleep(0.5)
+    
+        # Then: The exact chunk is found and correctly mapped
+>       assert len(results) > 0
+E       assert 0 > 0
+E        +  where 0 = len([])
+
+tests/integration/functional/test_repositories_neo4j.py:52: AssertionError
+_________ TestGraphScenarios.test_entity_extraction_and_retrieval_flow _________
+
+self = <test_graph_scenarios.TestGraphScenarios object at 0x12a0fd640>
+mock_scraper_graph = <Mock id='5009361424'>
+
+    def test_entity_extraction_and_retrieval_flow(self, mock_scraper_graph):
+        # Given: Ingestion request for entity-rich content with a unique URL
+        import uuid
+    
+        url = f"https://example.com/elon-musk-{uuid.uuid4()}"
+        unique_name = f"Musk-{uuid.uuid4().hex[:6]}"
+        mock_scraper_graph.scrape.return_value.url = url
+    
+        app.dependency_overrides[get_scraper] = lambda: mock_scraper_graph
+        try:
+            with patch.object(SemanticExtractor, "extract", new_callable=AsyncMock) as mock_extract:
+>               mock_extract.return_value = ExtractedMetadata(
+                    title="Elon Musk Bio",
+                    summary="Elon Musk is the CEO of Tesla.",
+                    keywords=["musk", "tesla"],
+                    entities={EntityType.PERSON: [unique_name], EntityType.ORGANIZATION: ["Tesla"]},
+                    language="en",
+                )
+E               pydantic_core._pydantic_core.ValidationError: 1 validation error for ExtractedMetadata
+E               primary_entity
+E                 Field required [type=missing, input_value={'title': 'Elon Musk Bio'...la']}, 'language': 'en'}, input_type=dict]
+E                   For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+tests/integration/scenarios/test_graph_scenarios.py:65: ValidationError
+---------------------------- Captured stdout setup -----------------------------
+2026-02-09 12:48:07,546 - app.infrastructure.repositories.neo4j_document_repository - WARNING - Neo4j Database has been reset (All nodes and relationships deleted).
+2026-02-09 12:48:07,792 - app.infrastructure.repositories.chroma - WARNING - ChromaDB Collection 'documents' has been reset.
+------------------------------ Captured log setup ------------------------------
+WARNING  app.application.services.integrity:integrity.py:50 Initiating FULL SYSTEM RESET...
+WARNING  app.infrastructure.ai.ingestion_orchestrator:ingestion_orchestrator.py:133 LangGraph Adapter: Checkpoints have been reset (Postgres tables truncated).
+_____________ TestGraphScenarios.test_hybrid_knowledge_consistency _____________
+
+self = <test_graph_scenarios.TestGraphScenarios object at 0x12a0fd9a0>
+mock_scraper_graph = <Mock id='5009336432'>
+
+    def test_hybrid_knowledge_consistency(self, mock_scraper_graph):
+        """
+        Scenario: Check that both Vector (Chroma) and Graph (Neo4j) store related info.
+        """
+        # Given: Documents with overlapping info and unique URL
+        import uuid
+    
+        url = f"https://example.com/elon-consistency-{uuid.uuid4()}"
+        unique_name = f"Tesla-Consist-{uuid.uuid4().hex[:6]}"
+        mock_scraper_graph.scrape.return_value.url = url
+    
+        app.dependency_overrides[get_scraper] = lambda: mock_scraper_graph
+        try:
+            with patch.object(SemanticExtractor, "extract", new_callable=AsyncMock) as mock_extract:
+>               mock_extract.return_value = ExtractedMetadata(
+                    title="Tesla Consistency Test",
+                    summary="Tesla consistency check.",
+                    keywords=["tesla"],
+                    entities={EntityType.ORGANIZATION: [unique_name]},
+                    language="en",
+                )
+E               pydantic_core._pydantic_core.ValidationError: 1 validation error for ExtractedMetadata
+E               primary_entity
+E                 Field required [type=missing, input_value={'title': 'Tesla Consiste...15']}, 'language': 'en'}, input_type=dict]
+E                   For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+tests/integration/scenarios/test_graph_scenarios.py:118: ValidationError
+---------------------------- Captured stdout setup -----------------------------
+2026-02-09 12:48:08,944 - app.infrastructure.repositories.neo4j_document_repository - WARNING - Neo4j Database has been reset (All nodes and relationships deleted).
+2026-02-09 12:48:08,974 - app.infrastructure.repositories.chroma - WARNING - ChromaDB Collection 'documents' has been reset.
+------------------------------ Captured log setup ------------------------------
+WARNING  app.application.services.integrity:integrity.py:50 Initiating FULL SYSTEM RESET...
+WARNING  app.infrastructure.ai.ingestion_orchestrator:ingestion_orchestrator.py:133 LangGraph Adapter: Checkpoints have been reset (Postgres tables truncated).
+__________ TestGraphScenarios.test_entity_deduplication_and_mentions ___________
+
+self = <test_graph_scenarios.TestGraphScenarios object at 0x12a0fdd00>
+
+    def test_entity_deduplication_and_mentions(self):
+        """
+        Scenario: Entity deduplication and mention count tracking (BDD/test_knowledge_graph.py)
+        """
+        from app.application.services.semantic_extractor import SemanticExtractor
+        from app.domain.value_objects.extracted_metadata import ExtractedMetadata
+        from app.domain.value_objects.ontology import EntityType
+        from app.interfaces.api.dependencies import get_scraper
+    
+        unique_name = f"Dedupe-Entity-{int(time.time())}"
+        url = f"https://example.com/dedupe-{int(time.time())}"
+    
+        mock_scraper = Mock()
+        mock_scraper.scrape = AsyncMock(
+            return_value=IngestResponse(
+                url=url,
+                markdown="Dedupe test content",
+                metadata={"title": "Dedupe Test", "source_id": url},
+                message="Success",
+            )
+        )
+    
+        app.dependency_overrides[get_scraper] = lambda: mock_scraper
+    
+        try:
+            # When: Ingesting the same entity from two different sources (URLs)
+            for i in range(2):
+                current_url = f"{url}-{i}"
+                mock_scraper.scrape.return_value.url = current_url
+                mock_scraper.scrape.return_value.metadata["source_id"] = current_url
+    
+                with patch.object(SemanticExtractor, "extract", new_callable=AsyncMock) as mock_extract:
+>                   mock_extract.return_value = ExtractedMetadata(
+                        title=f"Dedupe Doc {i}",
+                        summary="Dedupe check",
+                        keywords=["dedupe"],
+                        entities={EntityType.PERSON: [unique_name]},
+                        language="en",
+                    )
+E                   pydantic_core._pydantic_core.ValidationError: 1 validation error for ExtractedMetadata
+E                   primary_entity
+E                     Field required [type=missing, input_value={'title': 'Dedupe Doc 0',...91']}, 'language': 'en'}, input_type=dict]
+E                       For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+tests/integration/scenarios/test_graph_scenarios.py:185: ValidationError
+---------------------------- Captured stdout setup -----------------------------
+2026-02-09 12:48:10,056 - app.infrastructure.repositories.neo4j_document_repository - WARNING - Neo4j Database has been reset (All nodes and relationships deleted).
+2026-02-09 12:48:10,085 - app.infrastructure.repositories.chroma - WARNING - ChromaDB Collection 'documents' has been reset.
+------------------------------ Captured log setup ------------------------------
+WARNING  app.application.services.integrity:integrity.py:50 Initiating FULL SYSTEM RESET...
+WARNING  app.infrastructure.ai.ingestion_orchestrator:ingestion_orchestrator.py:133 LangGraph Adapter: Checkpoints have been reset (Postgres tables truncated).
+______________ TestGraphScenarios.test_human_in_the_loop_workflow ______________
+
+self = <test_graph_scenarios.TestGraphScenarios object at 0x12a0fe060>
+
+    @pytest.mark.asyncio
+    async def test_human_in_the_loop_workflow(self):
+        """
+        Scenario: Graph enters human_review node on critical failure (Spec-022)
+        """
+        # Given: A mock LLM that will trigger the validator
+        mock_llm = Mock()
+        mock_llm.aextract_metadata = AsyncMock(
+            return_value={"title": "HIITL Test", "summary": "Needs manual fix", "entities": {}, "language": "en"}
+        )
+    
+        checkpointer = MemorySaver()
+        builder = IngestionGraphBuilder(mock_llm)
+    
+        # When: Validator is mocked to return a critical error once
+        call_count = {"validate": 0}
+    
+        async def mock_validate(state: IngestionGraphState):
+            call_count["validate"] += 1
+            if call_count["validate"] == 1:
+                return {
+                    "error": "Critical validation failure",
+                    "steps_history": state.get("steps_history", []) + ["validate_content"],
+                }
+            return {"error": None, "steps_history": state.get("steps_history", []) + ["validate_content"]}
+    
+        builder.nodes.validate_content = mock_validate
+        graph = builder.build(checkpointer=checkpointer)
+    
+        initial_state = IngestionGraphState(
+            original_url="http://hiitl-test.com",
+            raw_content="Content",
+            steps_history=[],
+            retry_count=0,
+            max_retries=3,
+            current_strategy="STANDARD",
+            active_constraints={"strict_mode": True},
+        )
+    
+        thread_config = {"configurable": {"thread_id": "hiitl_thread"}}
+    
+        # When: Running until interrupt
+        events = []
+        async for event in graph.astream(initial_state, thread_config):
+            events.append(event)
+    
+        # Then: Graph is interrupted at human_review
+        state_snapshot = graph.get_state(thread_config)
+        assert "human_review" in state_snapshot.next
+    
+        # When: Manually providing feedback to resume
+        graph.update_state(
+            thread_config,
+>           {"error": None, "steps_history": state_snapshot.values["steps_history"] + ["human_review"]},
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            as_node="human_review",
+        )
+E       KeyError: 'steps_history'
+
+tests/integration/scenarios/test_graph_scenarios.py:275: KeyError
+---------------------------- Captured stdout setup -----------------------------
+2026-02-09 12:48:11,173 - app.infrastructure.repositories.neo4j_document_repository - WARNING - Neo4j Database has been reset (All nodes and relationships deleted).
+2026-02-09 12:48:11,223 - app.infrastructure.repositories.chroma - WARNING - ChromaDB Collection 'documents' has been reset.
+------------------------------ Captured log setup ------------------------------
+WARNING  app.application.services.integrity:integrity.py:50 Initiating FULL SYSTEM RESET...
+WARNING  app.infrastructure.ai.ingestion_orchestrator:ingestion_orchestrator.py:133 LangGraph Adapter: Checkpoints have been reset (Postgres tables truncated).
+_____________ TestGraphScenarios.test_reasoning_flow_backtracking ______________
+
+self = <test_graph_scenarios.TestGraphScenarios object at 0x12a0fe450>
+
+    @pytest.mark.asyncio
+    async def test_reasoning_flow_backtracking(self):
+        """
+        Scenario: Graph generates failure hypothesis and backtracks (Spec-021)
+        """
+        mock_llm = AsyncMock()
+        mock_llm.aextract_metadata.return_value = {"title": "Reasoning Test", "summary": "Initial summary"}
+    
+        builder = IngestionGraphBuilder(mock_llm)
+    
+        # When: Validator fails on first run but passes on second
+        async def failing_validate(state: IngestionGraphState):
+            history = state.get("steps_history", [])
+            if "analyze_failure" in history:
+                return {"error": None, "steps_history": history + ["validate_content"], "last_feedback": None}
+    
+            return {
+                "error": "Missing key entities",
+                "last_feedback": ValidationFeedback(
+                    source="validator", message="Retry with focus", target_fields=["entities"]
+                ),
+                "steps_history": history + ["validate_content"],
+            }
+    
+        builder.nodes.validate_content = failing_validate
+        graph = builder.build()
+    
+        initial_state = IngestionGraphState(
+            original_url="http://reasoning-test.com",
+            raw_content="Content",
+            steps_history=[],
+            retry_count=0,
+            max_retries=2,
+            current_strategy="STANDARD",
+        )
+    
+        # When: Invoking the graph
+>       final_state = await graph.ainvoke(initial_state)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/scenarios/test_graph_scenarios.py:325: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/langgraph/pregel/main.py:3161: in ainvoke
+    async for chunk in self.astream(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <langgraph.graph.state.CompiledStateGraph object at 0x12f09ff20>
+input = {'current_strategy': 'STANDARD', 'max_retries': 2, 'original_url': 'http://reasoning-test.com', 'raw_content': 'Content', ...}
+config = {'callbacks': None, 'configurable': {'__pregel_runtime': Runtime(context=None, store=None, stream_writer=<function Pre...tream.<locals>.stream_writer at 0x12b851300>, previous=None)}, 'metadata': ChainMap({}), 'recursion_limit': 10000, ...}
+context = None, stream_mode = ['updates', 'values'], print_mode = ()
+output_keys = ['messages', 'original_url', 'raw_content', 'content_metadata', 'metadata', 'error', ...]
+interrupt_before = None, interrupt_after = None, durability = None
+subgraphs = False
+
+    async def astream(
+        self,
+        input: InputT | Command | None,
+        config: RunnableConfig | None = None,
+        *,
+        context: ContextT | None = None,
+        stream_mode: StreamMode | Sequence[StreamMode] | None = None,
+        print_mode: StreamMode | Sequence[StreamMode] = (),
+        output_keys: str | Sequence[str] | None = None,
+        interrupt_before: All | Sequence[str] | None = None,
+        interrupt_after: All | Sequence[str] | None = None,
+        durability: Durability | None = None,
+        subgraphs: bool = False,
+        debug: bool | None = None,
+        **kwargs: Unpack[DeprecatedKwargs],
+    ) -> AsyncIterator[dict[str, Any] | Any]:
+        """Asynchronously stream graph steps for a single input.
+    
+        Args:
+            input: The input to the graph.
+            config: The configuration to use for the run.
+            context: The static context to use for the run.
+                !!! version-added "Added in version 0.6.0"
+            stream_mode: The mode to stream output, defaults to `self.stream_mode`.
+    
+                Options are:
+    
+                - `"values"`: Emit all values in the state after each step, including interrupts.
+                    When used with functional API, values are emitted once at the end of the workflow.
+                - `"updates"`: Emit only the node or task names and updates returned by the nodes or tasks after each step.
+                    If multiple updates are made in the same step (e.g. multiple nodes are run) then those updates are emitted separately.
+                - `"custom"`: Emit custom data from inside nodes or tasks using `StreamWriter`.
+                - `"messages"`: Emit LLM messages token-by-token together with metadata for any LLM invocations inside nodes or tasks.
+                    - Will be emitted as 2-tuples `(LLM token, metadata)`.
+                - `"checkpoints"`: Emit an event when a checkpoint is created, in the same format as returned by `get_state()`.
+                - `"tasks"`: Emit events when tasks start and finish, including their results and errors.
+                - `"debug"`: Emit debug events with as much information as possible for each step.
+    
+                You can pass a list as the `stream_mode` parameter to stream multiple modes at once.
+                The streamed outputs will be tuples of `(mode, data)`.
+    
+                See [LangGraph streaming guide](https://docs.langchain.com/oss/python/langgraph/streaming) for more details.
+            print_mode: Accepts the same values as `stream_mode`, but only prints the output to the console, for debugging purposes.
+    
+                Does not affect the output of the graph in any way.
+            output_keys: The keys to stream, defaults to all non-context channels.
+            interrupt_before: Nodes to interrupt before, defaults to all nodes in the graph.
+            interrupt_after: Nodes to interrupt after, defaults to all nodes in the graph.
+            durability: The durability mode for the graph execution, defaults to `"async"`.
+    
+                Options are:
+    
+                - `"sync"`: Changes are persisted synchronously before the next step starts.
+                - `"async"`: Changes are persisted asynchronously while the next step executes.
+                - `"exit"`: Changes are persisted only when the graph exits.
+            subgraphs: Whether to stream events from inside subgraphs, defaults to `False`.
+    
+                If `True`, the events will be emitted as tuples `(namespace, data)`,
+                or `(namespace, mode, data)` if `stream_mode` is a list,
+                where `namespace` is a tuple with the path to the node where a subgraph is invoked,
+                e.g. `("parent_node:<task_id>", "child_node:<task_id>")`.
+    
+                See [LangGraph streaming guide](https://docs.langchain.com/oss/python/langgraph/streaming) for more details.
+    
+        Yields:
+            The output of each step in the graph. The output shape depends on the `stream_mode`.
+        """
+        if (checkpoint_during := kwargs.get("checkpoint_during")) is not None:
+            warnings.warn(
+                "`checkpoint_during` is deprecated and will be removed. Please use `durability` instead.",
+                category=LangGraphDeprecatedSinceV10,
+                stacklevel=2,
+            )
+            if durability is not None:
+                raise ValueError(
+                    "Cannot use both `checkpoint_during` and `durability` parameters. Please use `durability` instead."
+                )
+            durability = "async" if checkpoint_during else "exit"
+    
+        if stream_mode is None:
+            # if being called as a node in another graph, default to values mode
+            # but don't overwrite stream_mode arg if provided
+            stream_mode = (
+                "values"
+                if config is not None and CONFIG_KEY_TASK_ID in config.get(CONF, {})
+                else self.stream_mode
+            )
+        if debug or self.debug:
+            print_mode = ["updates", "values"]
+    
+        stream = AsyncQueue()
+        aioloop = asyncio.get_running_loop()
+        stream_put = cast(
+            Callable[[StreamChunk], None],
+            partial(aioloop.call_soon_threadsafe, stream.put_nowait),
+        )
+    
+        config = ensure_config(self.config, config)
+        callback_manager = get_async_callback_manager_for_config(config)
+        run_manager = await callback_manager.on_chain_start(
+            None,
+            input,
+            name=config.get("run_name", self.get_name()),
+            run_id=config.get("run_id"),
+        )
+        # if running from astream_log() run each proc with streaming
+        do_stream = (
+            next(
+                (
+                    True
+                    for h in run_manager.handlers
+                    if isinstance(h, _StreamingCallbackHandler)
+                    and not isinstance(h, StreamMessagesHandler)
+                ),
+                False,
+            )
+            if _StreamingCallbackHandler is not None
+            else False
+        )
+        try:
+            # assign defaults
+            (
+                stream_modes,
+                output_keys,
+                interrupt_before_,
+                interrupt_after_,
+                checkpointer,
+                store,
+                cache,
+                durability_,
+            ) = self._defaults(
+                config,
+                stream_mode=stream_mode,
+                print_mode=print_mode,
+                output_keys=output_keys,
+                interrupt_before=interrupt_before,
+                interrupt_after=interrupt_after,
+                durability=durability,
+            )
+            if checkpointer is None and durability is not None:
+                warnings.warn(
+                    "`durability` has no effect when no checkpointer is present.",
+                )
+            # set up subgraph checkpointing
+            if self.checkpointer is True:
+                ns = cast(str, config[CONF][CONFIG_KEY_CHECKPOINT_NS])
+                config[CONF][CONFIG_KEY_CHECKPOINT_NS] = recast_checkpoint_ns(ns)
+            # set up messages stream mode
+            if "messages" in stream_modes:
+                # namespace can be None in a root level graph?
+                ns_ = cast(str | None, config[CONF].get(CONFIG_KEY_CHECKPOINT_NS))
+                run_manager.inheritable_handlers.append(
+                    StreamMessagesHandler(
+                        stream_put,
+                        subgraphs,
+                        parent_ns=tuple(ns_.split(NS_SEP)) if ns_ else None,
+                    )
+                )
+    
+            # set up custom stream mode
+            def stream_writer(c: Any) -> None:
+                aioloop.call_soon_threadsafe(
+                    stream.put_nowait,
+                    (
+                        tuple(
+                            get_config()[CONF][CONFIG_KEY_CHECKPOINT_NS].split(NS_SEP)[
+                                :-1
+                            ]
+                        ),
+                        "custom",
+                        c,
+                    ),
+                )
+    
+            if "custom" in stream_modes:
+    
+                def stream_writer(c: Any) -> None:
+                    aioloop.call_soon_threadsafe(
+                        stream.put_nowait,
+                        (
+                            tuple(
+                                get_config()[CONF][CONFIG_KEY_CHECKPOINT_NS].split(
+                                    NS_SEP
+                                )[:-1]
+                            ),
+                            "custom",
+                            c,
+                        ),
+                    )
+            elif CONFIG_KEY_STREAM in config[CONF]:
+                stream_writer = config[CONF][CONFIG_KEY_RUNTIME].stream_writer
+            else:
+    
+                def stream_writer(c: Any) -> None:
+                    pass
+    
+            # set durability mode for subgraphs
+            if durability is not None:
+                config[CONF][CONFIG_KEY_DURABILITY] = durability_
+    
+            runtime = Runtime(
+                context=_coerce_context(self.context_schema, context),
+                store=store,
+                stream_writer=stream_writer,
+                previous=None,
+            )
+            parent_runtime = config[CONF].get(CONFIG_KEY_RUNTIME, DEFAULT_RUNTIME)
+            runtime = parent_runtime.merge(runtime)
+            config[CONF][CONFIG_KEY_RUNTIME] = runtime
+    
+            async with AsyncPregelLoop(
+                input,
+                stream=StreamProtocol(stream.put_nowait, stream_modes),
+                config=config,
+                store=store,
+                cache=cache,
+                checkpointer=checkpointer,
+                nodes=self.nodes,
+                specs=self.channels,
+                output_keys=output_keys,
+                input_keys=self.input_channels,
+                stream_keys=self.stream_channels_asis,
+                interrupt_before=interrupt_before_,
+                interrupt_after=interrupt_after_,
+                manager=run_manager,
+                durability=durability_,
+                trigger_to_nodes=self.trigger_to_nodes,
+                migrate_checkpoint=self._migrate_checkpoint,
+                retry_policy=self.retry_policy,
+                cache_policy=self.cache_policy,
+            ) as loop:
+                # create runner
+                runner = PregelRunner(
+                    submit=config[CONF].get(
+                        CONFIG_KEY_RUNNER_SUBMIT, weakref.WeakMethod(loop.submit)
+                    ),
+                    put_writes=weakref.WeakMethod(loop.put_writes),
+                    use_astream=do_stream,
+                    node_finished=config[CONF].get(CONFIG_KEY_NODE_FINISHED),
+                )
+                # enable subgraph streaming
+                if subgraphs:
+                    loop.config[CONF][CONFIG_KEY_STREAM] = StreamProtocol(
+                        stream_put, stream_modes
+                    )
+                # enable concurrent streaming
+                get_waiter: Callable[[], asyncio.Task[None]] | None = None
+                _cleanup_waiter: Callable[[], Awaitable[None]] | None = None
+                if (
+                    self.stream_eager
+                    or subgraphs
+                    or "messages" in stream_modes
+                    or "custom" in stream_modes
+                ):
+                    # Keep a single waiter task alive; ensure cleanup on exit.
+                    waiter: asyncio.Task[None] | None = None
+    
+                    def get_waiter() -> asyncio.Task[None]:
+                        nonlocal waiter
+                        if waiter is None or waiter.done():
+                            waiter = aioloop.create_task(stream.wait())
+    
+                            def _clear(t: asyncio.Task[None]) -> None:
+                                nonlocal waiter
+                                if waiter is t:
+                                    waiter = None
+    
+                            waiter.add_done_callback(_clear)
+                        return waiter
+    
+                    async def _cleanup_waiter() -> None:
+                        """Wake pending waiter and/or cancel+await to avoid pending tasks."""
+                        nonlocal waiter
+                        # Try to wake via semaphore like SyncPregelLoop
+                        with contextlib.suppress(Exception):
+                            if hasattr(stream, "_count"):
+                                stream._count.release()
+                        t = waiter
+                        waiter = None
+                        if t is not None and not t.done():
+                            t.cancel()
+                            with contextlib.suppress(asyncio.CancelledError):
+                                await t
+    
+                # Similarly to Bulk Synchronous Parallel / Pregel model
+                # computation proceeds in steps, while there are channel updates
+                # channel updates from step N are only visible in step N+1
+                # channels are guaranteed to be immutable for the duration of the step,
+                # with channel updates applied only at the transition between steps
+                try:
+                    while loop.tick():
+                        for task in await loop.amatch_cached_writes():
+                            loop.output_writes(task.id, task.writes, cached=True)
+                        async for _ in runner.atick(
+                            [t for t in loop.tasks.values() if not t.writes],
+                            timeout=self.step_timeout,
+                            get_waiter=get_waiter,
+                            schedule_task=loop.aaccept_push,
+                        ):
+                            # emit output
+                            for o in _output(
+                                stream_mode,
+                                print_mode,
+                                subgraphs,
+                                stream.get_nowait,
+                                asyncio.QueueEmpty,
+                            ):
+                                yield o
+                        loop.after_tick()
+                        # wait for checkpoint
+                        if durability_ == "sync":
+                            await cast(asyncio.Future, loop._put_checkpoint_fut)
+                finally:
+                    # ensure waiter doesn't remain pending on cancel/shutdown
+                    if _cleanup_waiter is not None:
+                        await _cleanup_waiter()
+    
+            # emit output
+            for o in _output(
+                stream_mode,
+                print_mode,
+                subgraphs,
+                stream.get_nowait,
+                asyncio.QueueEmpty,
+            ):
+                yield o
+            # handle exit
+            if loop.status == "out_of_steps":
+                msg = create_error_message(
+                    message=(
+                        f"Recursion limit of {config['recursion_limit']} reached "
+                        "without hitting a stop condition. You can increase the "
+                        "limit by setting the `recursion_limit` config key."
+                    ),
+                    error_code=ErrorCode.GRAPH_RECURSION_LIMIT,
+                )
+>               raise GraphRecursionError(msg)
+E               langgraph.errors.GraphRecursionError: Recursion limit of 10000 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.
+E               For troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT
+
+.venv/lib/python3.12/site-packages/langgraph/pregel/main.py:3017: GraphRecursionError
+---------------------------- Captured stdout setup -----------------------------
+2026-02-09 12:48:12,365 - app.infrastructure.repositories.neo4j_document_repository - WARNING - Neo4j Database has been reset (All nodes and relationships deleted).
+2026-02-09 12:48:12,395 - app.infrastructure.repositories.chroma - WARNING - ChromaDB Collection 'documents' has been reset.
+------------------------------ Captured log setup ------------------------------
+WARNING  app.application.services.integrity:integrity.py:50 Initiating FULL SYSTEM RESET...
+WARNING  app.infrastructure.ai.ingestion_orchestrator:ingestion_orchestrator.py:133 LangGraph Adapter: Checkpoints have been reset (Postgres tables truncated).
+_______ TestIngestionScenarios.test_ingestion_idempotency_and_duplicates _______
+
+self = <test_ingestion_scenarios.TestIngestionScenarios object at 0x12a0fd820>
+
+    def test_ingestion_idempotency_and_duplicates(self):
+        """
+        Scenario: Multiple requests for the same URL (High Priority Scenario)
+        """
+        from app.application.interfaces.scraper import ScraperInterface
+        from app.application.services.semantic_extractor import SemanticExtractor
+        from app.interfaces.api.dependencies import get_scraper, get_semantic_extractor
+        from app.interfaces.api.v1.dto.ingest import IngestResponse
+    
+        # Given: A URL to ingest
+        url = "https://mock-service.com/idempotency-test"
+    
+        # Mock Scraper to avoid network calls and ensure stability
+        class MockScraper(ScraperInterface):
+            async def scrape(self, u: str) -> IngestResponse:
+                # Simulate a slight delay if necessary, or return immediately
+                return IngestResponse(
+                    url=u,
+                    markdown="Content for idempotency test",
+                    metadata={"title": "Idempotency Test", "source_id": u},
+                    message="Success",
+                )
+    
+        # Mock Extractor to avoid LLM calls
+        class MockExtractor(SemanticExtractor):
+            async def extract(self, content: str, url: str) -> dict:
+                return {
+                    "title": "Idempotency Test",
+                    "summary": "Mock Summary",
+                    "keywords": ["mock", "test"],
+                    "entities": [],
+                }
+    
+        mock_extractor_instance = MockExtractor(llm=None)  # type: ignore
+    
+        app.dependency_overrides[get_scraper] = lambda: MockScraper()
+        app.dependency_overrides[get_semantic_extractor] = lambda: mock_extractor_instance
+    
+        try:
+            # When: Requesting ingestion twice
+            res1 = client.post("/v1/ingest/web", json={"url": url})
+            res2 = client.post("/v1/ingest/web", json={"url": url})
+    
+            # Then: Both requests are accepted (accepted for processing)
+            assert res1.status_code == 202
+            assert res2.status_code == 202
+    
+            # Then: Job IDs are distinct
+            id1 = res1.json()["job_id"]
+            id2 = res2.json()["job_id"]
+            assert id1 != id2
+    
+            # When: Waiting for completion
+            wait_for_job_completion(id1)
+>           wait_for_job_completion(id2)
+
+tests/integration/scenarios/test_ingestion_scenarios.py:161: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+job_id = 'ed459e70-39b2-4169-b5f9-6d3bb55b3abe', timeout = 30
+
+    def wait_for_job_completion(job_id: str, timeout: int = 30):
+        for _ in range(timeout):
+            response = client.get(f"/v1/jobs/{job_id}")
+            if response.status_code != 200:
+                break
+            job = response.json()
+            status = job.get("current_status") or job.get("status")
+            if status in ["COMPLETED", "FAILED"]:
+                job["status"] = status
+                return job
+            time.sleep(1)
+>       raise TimeoutError(f"Job {job_id} did not complete within {timeout} seconds")
+E       TimeoutError: Job ed459e70-39b2-4169-b5f9-6d3bb55b3abe did not complete within 30 seconds
+
+tests/integration/scenarios/test_ingestion_scenarios.py:22: TimeoutError
+----------------------------- Captured stdout call -----------------------------
+2026-02-09 12:48:59,318 - app.application.services.ingestion - INFO - Starting ingestion job ffcb3a1b-1ce6-49e1-b081-8e36ff12bd64 for https://mock-service.com/idempotency-test
+2026-02-09 12:48:59,326 - app.application.services.ingestion - INFO - Content hash calculated for job ffcb3a1b-1ce6-49e1-b081-8e36ff12bd64: 5129d1b515df668c...
+2026-02-09 12:48:59,326 - app.application.services.ingestion - WARNING - Semantic extraction failed for segment in job ffcb3a1b-1ce6-49e1-b081-8e36ff12bd64: TestIngestionScenarios.test_ingestion_idempotency_and_duplicates.<locals>.MockExtractor.extract() got an unexpected keyword argument 'metadata'
+2026-02-09 12:48:59,357 - app.infrastructure.repositories.chroma - INFO - Saving batch 1/1 (1 chunks)...
+2026-02-09 12:48:59,780 - app.application.services.ingestion - INFO - Ingestion job ffcb3a1b-1ce6-49e1-b081-8e36ff12bd64 completed with 1 documents
+2026-02-09 12:48:59,790 - app.application.services.ingestion - INFO - Auto-Cleanup skipped (AUTO_CLEANUP_ENABLED=False) for job ffcb3a1b-1ce6-49e1-b081-8e36ff12bd64
+2026-02-09 12:48:59,840 - app.application.services.ingestion - INFO - Job ed459e70-39b2-4169-b5f9-6d3bb55b3abe skipping because of duplicate ffcb3a1b-1ce6-49e1-b081-8e36ff12bd64 (JobStatus.COMPLETED)
+2026-02-09 12:48:59,898 - app.application.services.ingestion - INFO - Auto-Cleanup skipped (AUTO_CLEANUP_ENABLED=False) for job ed459e70-39b2-4169-b5f9-6d3bb55b3abe
+________________________ test_duplicate_document_upsert ________________________
+
+chroma_repo = <app.infrastructure.repositories.chroma.ChromaVectorRepository object at 0x130121eb0>
+
+    @pytest.mark.integration
+    def test_duplicate_document_upsert(chroma_repo):
+        """동일 문서를 2번 수집 시 중복 저장 방지 테스트
+    
+        Given: 동일한 Document ID로 2번 save() 호출
+        When: ChromaDB upsert 메서드 사용
+        Then: 중복 저장 없이 업데이트만 발생
+        """
+        # Given: 문서 1차 수집
+        doc_id = str(uuid4())
+        doc_v1 = Document(
+            id=doc_id,
+            content="Initial content",
+            metadata={"source_id": "https://example.com/test", "title": "Test Document v1"},
+        )
+    
+        # When: 1차 저장
+        chroma_repo.save(doc_v1)
+    
+        # Then: 저장 확인
+        retrieved_v1 = chroma_repo.get(doc_id)
+>       assert retrieved_v1 is not None
+E       assert None is not None
+
+tests/integration/test_duplicate_ingestion.py:49: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+2026-02-09 12:49:37,595 - app.infrastructure.repositories.chroma - WARNING - ChromaDB Collection 'documents' has been reset.
+--------------------------- Captured stdout teardown ---------------------------
+2026-02-09 12:49:38,223 - app.infrastructure.repositories.chroma - WARNING - ChromaDB Collection 'documents' has been reset.
+__ TestIngestionDeduplication.test_process_job_skips_when_duplicate_detected ___
+
+self = <test_ingestion_deduplication.TestIngestionDeduplication object at 0x12a11d430>
+mock_components = {'chunker': <Mock id='5105490864'>, 'extractor': <AsyncMock id='5105490912'>, 'graph': <Mock id='5102273024'>, 'job_repository': <Mock id='5105490816'>, ...}
+
+    @pytest.mark.asyncio
+    async def test_process_job_skips_when_duplicate_detected(self, mock_components):
+        # Given
+        ingestion = Ingestion(**mock_components)
+        job_id = "job-dup"
+        job = IngestionJob(job_id=job_id, source_url="http://example.com/dup", status=JobStatus.PENDING)
+        mock_components["job_repository"].get_job.return_value = job
+    
+        # Mock Deduplication Factory to return a Strategy that says "True" (Duplicate)
+        mock_strategy = AsyncMock(spec=DeduplicationStrategy)
+        mock_strategy.is_duplicate.return_value = True
+    
+        with patch("app.application.services.ingestion.DeduplicationFactory") as MockFactory:
+            MockFactory.return_value.get_strategy.return_value = mock_strategy
+    
+            # When
+            await ingestion.process_job(job_id)
+    
+            # Then
+            # 1. Strategy was checked
+>           mock_strategy.is_duplicate.assert_awaited_once_with(job)
+
+tests/integration/test_ingestion_deduplication.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <AsyncMock name='DeduplicationFactory().get_strategy().is_duplicate' id='5102283968'>
+args = (IngestionJob(job_id='job-dup', source_url='http://example.com/dup', status=<JobStatus.FAILED: 'FAILED'>, created_at=d...nt=None, filename=None, docs_ids=[], chunking_config=None, content_hash=None, custom_metadata=None, skip_reason=None),)
+kwargs = {}
+msg = 'Expected is_duplicate to have been awaited once. Awaited 0 times.'
+
+    def assert_awaited_once_with(self, /, *args, **kwargs):
+        """
+        Assert that the mock was awaited exactly once and with the specified
+        arguments.
+        """
+        if not self.await_count == 1:
+            msg = (f"Expected {self._mock_name or 'mock'} to have been awaited once."
+                   f" Awaited {self.await_count} times.")
+>           raise AssertionError(msg)
+E           AssertionError: Expected is_duplicate to have been awaited once. Awaited 0 times.
+
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/unittest/mock.py:2362: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-02-09 12:49:40,965 - app.application.services.ingestion - INFO - Starting ingestion job job-dup for http://example.com/dup
+2026-02-09 12:49:40,969 - app.application.services.ingestion - ERROR - Unexpected error in ingestion job job-dup
+Traceback (most recent call last):
+  File "/Users/ck/Project/doit/rag-ingestion/app/application/services/ingestion.py", line 232, in process_job
+    doc_metadata["source_url"] = str(job.source_url)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^
+TypeError: 'coroutine' object does not support item assignment
+2026-02-09 12:49:40,976 - app.application.services.ingestion - INFO - Auto-Cleanup skipped (AUTO_CLEANUP_ENABLED=False) for job job-dup
+_____ TestIngestionDeduplication.test_process_job_runs_when_not_duplicate ______
+
+self = <test_ingestion_deduplication.TestIngestionDeduplication object at 0x12a11cf80>
+mock_components = {'chunker': <Mock id='5105484768'>, 'extractor': <AsyncMock id='5027781744'>, 'graph': <Mock id='5105485056'>, 'job_repository': <Mock id='5105484912'>, ...}
+
+    @pytest.mark.asyncio
+    async def test_process_job_runs_when_not_duplicate(self, mock_components):
+        # Given
+        ingestion = Ingestion(**mock_components)
+        job_id = "job-new"
+        job = IngestionJob(job_id=job_id, source_url="http://example.com/new", status=JobStatus.PENDING)
+        mock_components["job_repository"].get_job.return_value = job
+    
+        # Scraper returns dummy result
+        mock_components["scraper"].scrape.return_value = Mock(markdown="content", metadata={})
+        # Configure chunker to return a list
+        mock_components["chunker"].chunk_document.return_value = ["chunk1"]
+        # Configure extractor to return None (no semantic data) to avoid generic AsyncMock returning coroutines on attr access
+        mock_components["extractor"].extract.return_value = None
+    
+        mock_strategy = AsyncMock(spec=DeduplicationStrategy)
+        mock_strategy.is_duplicate.return_value = False
+    
+        with patch("app.application.services.ingestion.DeduplicationFactory") as MockFactory:
+            MockFactory.return_value.get_strategy.return_value = mock_strategy
+    
+            # When
+            await ingestion.process_job(job_id)
+    
+            # Then
+>           mock_strategy.is_duplicate.assert_awaited_once()
+
+tests/integration/test_ingestion_deduplication.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <AsyncMock name='DeduplicationFactory().get_strategy().is_duplicate' id='5026213008'>
+
+    def assert_awaited_once(self):
+        """
+        Assert that the mock was awaited exactly once.
+        """
+        if not self.await_count == 1:
+            msg = (f"Expected {self._mock_name or 'mock'} to have been awaited once."
+                   f" Awaited {self.await_count} times.")
+>           raise AssertionError(msg)
+E           AssertionError: Expected is_duplicate to have been awaited once. Awaited 0 times.
+
+../../../.local/share/uv/python/cpython-3.12.12-macos-x86_64-none/lib/python3.12/unittest/mock.py:2334: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-02-09 12:49:41,058 - app.application.services.ingestion - INFO - Starting ingestion job job-new for http://example.com/new
+2026-02-09 12:49:41,058 - app.application.services.ingestion - INFO - Content hash calculated for job job-new: ed7002b439e9ac84...
+2026-02-09 12:49:41,058 - app.application.services.ingestion - INFO - Ingestion job job-new completed with 1 documents
+2026-02-09 12:49:41,064 - app.application.services.ingestion - INFO - Auto-Cleanup skipped (AUTO_CLEANUP_ENABLED=False) for job job-new
+=============================== warnings summary ===============================
+app/interfaces/api/main.py:10
+  /Users/ck/Project/doit/rag-ingestion/app/interfaces/api/main.py:10: DeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+    from app.interfaces.api.error_handlers import register_exception_handlers
+
+app/interfaces/api/v1/dto/jobs.py:9
+  /Users/ck/Project/doit/rag-ingestion/app/interfaces/api/v1/dto/jobs.py:9: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class JobResponse(BaseResponse):
+
+<frozen importlib._bootstrap>:488
+<frozen importlib._bootstrap>:488
+  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute
+
+<frozen importlib._bootstrap>:488
+<frozen importlib._bootstrap>:488
+  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute
+
+<frozen importlib._bootstrap>:488
+  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type swigvarlink has no __module__ attribute
+
+tests/integration/functional/test_api_endpoints.py: 1 warning
+tests/integration/functional/test_repositories_chroma.py: 2 warnings
+tests/integration/functional/test_retrieval_logic.py: 1 warning
+tests/integration/scenarios/test_graph_scenarios.py: 5 warnings
+tests/integration/test_duplicate_ingestion.py: 9 warnings
+  /Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/chromadb/api/types.py:918: DeprecationWarning: The EmbeddingFunction class does not implement name(). This will be required in a future version.
+    self.name() is NotImplemented
+
+tests/integration/functional/test_api_endpoints.py: 1 warning
+tests/integration/functional/test_repositories_chroma.py: 1 warning
+tests/integration/functional/test_retrieval_logic.py: 1 warning
+tests/integration/scenarios/test_graph_scenarios.py: 5 warnings
+tests/integration/test_duplicate_ingestion.py: 9 warnings
+  /Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/chromadb/api/collection_configuration.py:791: DeprecationWarning: The EmbeddingFunction class does not implement name(). This will be required in a future version.
+    embedding_function.name() != "default"
+
+tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_list_documents_with_seed
+tests/integration/functional/test_rag_session_cleanup.py::test_session_creation_and_cleanup
+  /Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/google/genai/_api_client.py:755: DeprecationWarning: Inheritance class AiohttpClientSession from ClientSession is discouraged
+    class AiohttpClientSession(aiohttp.ClientSession):  # type: ignore[misc]
+
+tests/integration/functional/test_postgres_persistence.py::test_postgres_persistence_flow
+  /Users/ck/Project/doit/rag-ingestion/.venv/lib/python3.12/site-packages/psycopg_pool/pool_async.py:163: RuntimeWarning: opening the async pool AsyncConnectionPool in the constructor is deprecated and will not be supported anymore in a future release. Please use `await pool.open()`, or use the pool as context manager using: `async with AsyncConnectionPool(...) as pool: `...
+    warnings.warn(
+
+tests/integration/test_ingestion_deduplication.py::TestIngestionDeduplication::test_process_job_skips_when_duplicate_detected
+  /Users/ck/Project/doit/rag-ingestion/tests/integration/test_ingestion_deduplication.py:39: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    await ingestion.process_job(job_id)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unit/application/services/test_integrity.py::test_propagate_document_metadata_updates_chunks
+FAILED tests/unit/domain/services/test_extractor.py::test_extract_success - p...
+FAILED tests/unit/domain/services/test_extractor.py::test_extract_failure - A...
+FAILED tests/unit/domain/services/test_ontology.py::test_extracted_metadata_with_diverse_entities
+FAILED tests/unit/domain/services/test_ontology.py::test_extracted_metadata_with_korean_activities
+FAILED tests/unit/infrastructure/rag/test_graph_nodes.py::test_extract_metadata_node
+FAILED tests/integration/functional/test_ai_orchestrator.py::test_langgraph_adapter_integration
+FAILED tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_storage_stats_flow
+FAILED tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_storage_reports_access
+FAILED tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_rag_ask_flow
+FAILED tests/integration/functional/test_api_endpoints.py::TestApiEndpoints::test_rag_ask_validation_error
+FAILED tests/integration/functional/test_postgres_persistence.py::test_postgres_persistence_flow
+FAILED tests/integration/functional/test_repositories_chroma.py::test_chroma_mmr_diversity_logic
+FAILED tests/integration/functional/test_repositories_neo4j.py::test_neo4j_fulltext_search_logic
+FAILED tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_entity_extraction_and_retrieval_flow
+FAILED tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_hybrid_knowledge_consistency
+FAILED tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_entity_deduplication_and_mentions
+FAILED tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_human_in_the_loop_workflow
+FAILED tests/integration/scenarios/test_graph_scenarios.py::TestGraphScenarios::test_reasoning_flow_backtracking
+FAILED tests/integration/scenarios/test_ingestion_scenarios.py::TestIngestionScenarios::test_ingestion_idempotency_and_duplicates
+FAILED tests/integration/test_duplicate_ingestion.py::test_duplicate_document_upsert
+FAILED tests/integration/test_ingestion_deduplication.py::TestIngestionDeduplication::test_process_job_skips_when_duplicate_detected
+FAILED tests/integration/test_ingestion_deduplication.py::TestIngestionDeduplication::test_process_job_runs_when_not_duplicate
+=========== 23 failed, 230 passed, 46 warnings in 574.94s (0:09:34) ============
+sys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute

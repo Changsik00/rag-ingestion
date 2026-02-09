@@ -41,7 +41,7 @@ async def test_extract_success():
     assert result.keywords == ["AI", "Research", "Development"]
     assert result.entities[EntityType.PERSON] == ["Geoffrey Hinton", "Yann LeCun"]
     assert result.entities[EntityType.ACTIVITY] == ["벤치마킹", "모델 학습", "데이터 전처리"]
-    mock_llm.aextract_metadata.assert_called_once_with("Dummy text", thread_id=None)
+    mock_llm.aextract_metadata.assert_called_once_with("Dummy text", metadata=None, thread_id=None)
 
 
 @pytest.mark.asyncio
@@ -57,4 +57,4 @@ async def test_extract_failure():
 
     # Verify
     assert result is None
-    mock_llm.aextract_metadata.assert_called_once_with("Dummy text", thread_id=None)
+    mock_llm.aextract_metadata.assert_called_once_with("Dummy text", metadata=None, thread_id=None)

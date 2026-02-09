@@ -8,9 +8,9 @@ Run with: docker-compose up -d neo4j chromadb && uv run pytest tests/e2e/test_de
 import pytest
 
 from app.application.services.ingestion import Ingestion
-from app.core.database import get_neo4j_driver
+from app.interfaces.api.dependencies import get_neo4j_driver
 from app.domain.entities.job import JobStatus
-from app.infrastructure.repositories.chromadb_repository import ChromaDBRepository
+from app.infrastructure.repositories.chroma import ChromaVectorRepository
 from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
 
@@ -27,7 +27,7 @@ class TestDeduplicationEndToEnd:
         self.job_repository = Neo4jJobRepository(driver)
 
         # Initialize ChromaDB
-        self.doc_repository = ChromaDBRepository()
+        self.doc_repository = ChromaVectorRepository()
 
         # Initialize Scraper
         self.scraper = CompositeScraper()

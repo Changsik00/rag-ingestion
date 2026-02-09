@@ -32,6 +32,7 @@ class ExtractedMetadata(BaseModel):
     summary: str = Field(description="A comprehensive summary of the content (approx. 3 sentences).")
     keywords: list[str] = Field(description="List of 5-10 key topics or tags related to the content.")
     primary_entity: str | None = Field(
+        default=None,
         description="The main program, show, or subject this content belongs to (e.g., '어쩌다 어른', 'Elon Musk')."
     )
     aliases: dict[str, list[str]] = Field(
