@@ -4,9 +4,9 @@
 - [x] Spec 번호 확정 및 브랜치 생성 (명칭 확정)
 - [x] spec.md 작성 (Template 준수)
 - [x] plan.md 작성 (Template 준수)
-- [/] task.md 작성 (Template 준수)
-- [ ] 백로그 업데이트 (Note 추가)
-- [ ] User Plan Accept
+- [x] task.md 작성 (Template 준수)
+- [x] 백로그 업데이트 (Note 추가)
+- [x] User Plan Accept
 
 ---
 
@@ -39,6 +39,10 @@
 ### 2-3. Test References Update (Troubleshooting)
 - [x] 테스트 코드 내의 임포트 참조 수정 (`sed` 이용 전수 수정)
 - [x] 전체 테스트 재실행 및 확인
+
+---
+
+## Task 3: 정리 및 최종 검증
 ### 3-1. Cleanup
 - [x] `app/application/interfaces/llm.py` 삭제
 - [x] Commit: `cleanup(spec-074): remove legacy LLM interface file`
@@ -46,14 +50,14 @@
 ---
 
 ## Task 4: PR Creation & Archiving (Mandatory)
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
-- [ ] **Walkthrough 작성**: `specs/074-llm-interface-clean-architecture/walkthrough.md`
-- [ ] **PR Description 작성**: `specs/074-llm-interface-clean-architecture/pr_description.md`
-- [ ] **Archive Commit**: 위 파일을 `specs/`에 커밋 (`docs(spec-074): archive walkthrough and pr description`)
-- [ ] Create PR: `gh pr create --title "feat(spec-074): llm interface clean architecture compliance" --body-file specs/074-llm-interface-clean-architecture/pr_description.md`
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Run Full Tests: `uv run pytest`
+- [x] **Walkthrough 작성**: `specs/074-llm-interface-clean-architecture/walkthrough.md`
+- [x] **PR Description 작성**: `specs/074-llm-interface-clean-architecture/pr_description.md`
+- [x] **Archive Commit**: 위 파일을 `specs/`에 커밋 (`docs(spec-074): archive walkthrough and pr description`)
+- [x] Create PR: `gh pr create --title "feat(spec-074): llm interface clean architecture compliance" --body-file specs/074-llm-interface-clean-architecture/pr_description.md`
 
 ## Summary
 **총 Task**: 4개  
-**예상 커밋 수**: 5~6개  
-**현재 진행**: Planning
+**예상 커밋 수**: 7개  
+**현재 진행**: 완료 (Verification Passed & PR Created)
