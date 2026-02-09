@@ -25,7 +25,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from app.application.interfaces.llm import LLMInterface
+from app.domain.interfaces.llm_interface import LLMInterface
 from app.domain.services.intent_classifier import IntentClassifier
 from app.infrastructure.factories.llm_factory import LLMFactory
 
