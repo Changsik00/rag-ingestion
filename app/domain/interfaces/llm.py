@@ -14,7 +14,7 @@ class LLMInterface(Protocol):
     주로 메타데이터 추출 및 텍스트 생성에 사용됨.
     """
 
-    async def aextract_metadata(self, text: str) -> ExtractedMetadata | None:
+    async def aextract_metadata(self, text: str, metadata: dict | None = None, thread_id: str | None = None) -> ExtractedMetadata | None:
         """비동기 서버용 메타데이터 추출"""
         ...
 

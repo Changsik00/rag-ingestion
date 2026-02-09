@@ -86,7 +86,7 @@
   * **근거**: [Spec 068 - Domain Service LLM 의존성](../specs/068-rag-architecture-review/spec.md#22-domain-service의-llm-의존성-문제)
   * **상세 계획**: [Task 2.3](../specs/068-rag-architecture-review/recommendations.md#task-23-llminterface-이동-clean-architecture-)
   * **Tasks**:
-    - [ ] `app/application/interfaces/llm.py` → `app/domain/interfaces/llm_interface.py`
+    - [ ] `app/application/interfaces/llm.py` → `app/domain/interfaces/llm.py`
     - [ ] 모든 Import 경로 수정
     - [ ] Dependency Rule 검증 스크립트
   * **Expected Impact**: Clean Architecture 준수, Dependency Rule 위반 해소

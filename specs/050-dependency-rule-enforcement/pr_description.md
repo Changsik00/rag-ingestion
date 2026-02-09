@@ -76,7 +76,7 @@ uv run pytest tests/unit/ -v
 - `app/application/services/integrity_service.py`: IntegrityService 이동
 - `app/application/services/semantic_extractor.py`: SemanticExtractor 이동
 - `app/infrastructure/factories/llm_factory.py`: LLMFactory 이동 (core에서)
-- `app/domain/interfaces/llm_interface.py`: LLMInterface Protocol 정의
+- `app/domain/interfaces/llm.py`: LLMInterface Protocol 정의
 - `app/domain/value_objects/extracted_metadata.py`: ExtractedMetadata VO (schemas에서)
 - `app/domain/value_objects/intent.py`: UserIntent VO
 - `app/domain/value_objects/ontology.py`: Ontology VO

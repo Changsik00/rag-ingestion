@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.application.interfaces.llm import LLMInterface
+from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 from app.domain.value_objects.ingestion_state import IngestionGraphState
 

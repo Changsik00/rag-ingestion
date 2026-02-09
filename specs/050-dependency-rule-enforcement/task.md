@@ -170,7 +170,7 @@ grep -r "from app.domain.services.semantic_extractor" app/
 ### Task B-3: Protocol Enforcement ✅
 
 #### B-3-1. LLMInterface Protocol 생성 ✅
-- [x] 파일 생성: `app/domain/interfaces/llm_interface.py`
+- [x] 파일 생성: `app/domain/interfaces/llm.py`
 ```python
 class LLMInterface(Protocol):
     async def ainvoke(self, messages: Any) -> Any: ...

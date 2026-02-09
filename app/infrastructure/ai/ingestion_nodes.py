@@ -2,7 +2,7 @@ from typing import Any
 
 from langchain_core.messages import AIMessage
 
-from app.application.interfaces.llm import LLMInterface
+from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.ingestion_state import (
     IngestionGraphState,
     StrategyType,
