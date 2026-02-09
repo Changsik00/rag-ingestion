@@ -43,12 +43,11 @@ def test_composite_storage_get():
     storage = CompositeDocumentRepository(neo4j=neo4j_mock, chroma=chroma_mock)
 
     # When: Document 조회
-    result = storage.get(doc_id)
+    result = storage.get(str(doc_id))
 
     # Then: Neo4j에서 Document 반환
-    # Then: Neo4j에서 Document 반환
     assert result == expected_doc
-    neo4j_mock.get.assert_called_once_with(doc_id)
+    neo4j_mock.get.assert_called_once_with(str(doc_id))
 
 
 def test_composite_storage_save_with_chunks():
@@ -83,7 +82,7 @@ def test_chroma_storage_save_exception_handling(mock_client_cls):
     mock_client_cls.return_value = mock_client
 
     # Simulate ChromaDB failure
-    mock_collection.add.side_effect = Exception("Connection Refused")
+    mock_collection.upsert.side_effect = Exception("Connection Refused")
 
     storage = ChromaVectorRepository()
     doc = Document(content="Test", metadata={"source_id": "http://test.com", "url": "http://test.com"})
@@ -113,15 +112,15 @@ def test_chroma_storage_get_null_safety(mock_client_cls):
 
     # Case 1: Result is None
     mock_collection.get.return_value = None
-    assert storage.get(doc_id) is None
+    assert storage.get(str(doc_id)) is None
 
     # Case 2: Result has empty 'documents' list
     mock_collection.get.return_value = {"ids": [], "documents": [], "metadatas": []}
-    assert storage.get(doc_id) is None
+    assert storage.get(str(doc_id)) is None
 
     # Case 3: Result has None in 'documents' (if possible in library)
     mock_collection.get.return_value = {"ids": ["1"], "documents": [], "metadatas": []}
-    assert storage.get(doc_id) is None
+    assert storage.get(str(doc_id)) is None
 
 
 # --- New Tests for Neo4jStorage Hardening ---
@@ -181,4 +180,4 @@ def test_neo4j_storage_get_null_safety():
     result_mock.single.return_value = None
     mock_session.run.return_value = result_mock
 
-    assert storage.get(doc_id) is None
+    assert storage.get(str(doc_id)) is None

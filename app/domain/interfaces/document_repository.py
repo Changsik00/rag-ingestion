@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from uuid import UUID
 
 from app.domain.entities.document import Document
 from app.domain.value_objects.chunk import Chunk
@@ -17,7 +16,7 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
-    def get(self, doc_id: UUID) -> Document | None:
+    def get(self, doc_id: str) -> Document | None:
         """Retrieve a document by ID."""
         pass
 
@@ -27,7 +26,7 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
-    def get_chunks(self, doc_id: UUID) -> list[Chunk]:
+    def get_chunks(self, doc_id: str) -> list[Chunk]:
         """Retrieve all chunks for a document."""
         pass
 

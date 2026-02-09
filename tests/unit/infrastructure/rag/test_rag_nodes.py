@@ -48,12 +48,14 @@ def mock_repositories():
     """Mock Repositories (Neo4j, Chroma)"""
     neo4j_doc = Mock()
     neo4j_doc.search.return_value = []
+    neo4j_doc.get_all_source_names.return_value = []  # Spec 073: Fuzzy Filter Matching
 
     neo4j_graph = Mock()
     neo4j_graph.get_subgraph.return_value = []
 
     chroma = Mock()
     chroma.search_mmr.return_value = []
+    chroma.get_all_source_names.return_value = []  # Spec 073: Fuzzy Filter Matching
 
     return {"neo4j_doc": neo4j_doc, "neo4j_graph": neo4j_graph, "chroma": chroma}
 
@@ -117,7 +119,8 @@ class TestRAGNodesClassifyIntent:
 class TestRAGNodesRouteDecision:
     """route_decision 노드 테스트"""
 
-    def test_converts_intent_to_auto_filters(
+    @pytest.mark.asyncio
+    async def test_converts_intent_to_auto_filters(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
         """
@@ -153,14 +156,15 @@ class TestRAGNodesRouteDecision:
         }
 
         # When
-        result = nodes.route_decision(state)
+        result = await nodes.route_decision(state)
 
         # Then
         assert result["auto_filters"] is not None
         assert result["auto_filters"] == {"source": ["claude", "gpt-4"]}
         assert result["final_filters"] == {"source": ["claude", "gpt-4"]}
 
-    def test_prioritizes_manual_filters_over_auto(
+    @pytest.mark.asyncio
+    async def test_prioritizes_manual_filters_over_auto(
         self, mock_llm, mock_query_rewriter, mock_intent_classifier, mock_repositories
     ):
         """
@@ -197,7 +201,7 @@ class TestRAGNodesRouteDecision:
         }
 
         # When
-        result = nodes.route_decision(state)
+        result = await nodes.route_decision(state)
 
         # Then
         assert result["final_filters"] == manual_filters  # Manual이 우선

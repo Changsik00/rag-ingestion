@@ -37,7 +37,7 @@ async def get_documents_by_entity(
     docs = []
     for doc_id in doc_ids:
         try:
-            doc = storage.get(UUID(doc_id))
+            doc = storage.get(doc_id)
             if doc:
                 docs.append(
                     DocumentDTO(id=str(doc.id), content=doc.content, metadata=doc.metadata.model_dump(), score=None)
