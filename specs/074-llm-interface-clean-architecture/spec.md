@@ -28,7 +28,7 @@ graph TD
 ## 🎯 요구사항 (Requirements)
 
 ### Functional Requirements
-1. `LLMInterface` 정의를 `app/domain/interfaces/llm_interface.py`로 이동.
+1. `LLMInterface` 정의를 `app/domain/interfaces/llm.py`로 이동.
 2. `LLMResponse`, `LLMUsage` 등의 필수 데이터 구조를 도메인 계층으로 이동.
 3. 프로젝트 내 모든 관련 임포트 경로 (`app.application.interfaces.llm` -> `app.domain.interfaces.llm_interface`) 수정.
 

@@ -25,7 +25,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from app.domain.interfaces.llm_interface import LLMInterface
+from app.domain.interfaces.llm import LLMInterface
 from app.domain.services.intent_classifier import IntentClassifier
 from app.infrastructure.factories.llm_factory import LLMFactory
 
@@ -38,16 +38,16 @@ with open(TEST_CASES_PATH) as f:
 
 # Fixture: LLM Interface (Temperature=0 for reproducibility)
 @pytest.fixture(scope="module")
-def llm_interface() -> LLMInterface:
+def llm() -> LLMInterface:
     """Intent Classifier 테스트용 LLM Interface (Temperature 0)"""
     return LLMFactory.get_llm_adapter(temperature=0.0)
 
 
 # Fixture: Intent Classifier
 @pytest.fixture(scope="module")
-def intent_classifier(llm_interface: LLMInterface) -> IntentClassifier:
+def intent_classifier(llm: LLMInterface) -> IntentClassifier:
     """Intent Classifier Instance"""
-    return IntentClassifier(llm=llm_interface)
+    return IntentClassifier(llm=llm)
 
 
 # Parametrized Test: 50 Cases

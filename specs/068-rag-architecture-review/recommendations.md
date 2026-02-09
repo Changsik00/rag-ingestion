@@ -385,7 +385,7 @@ async def route_decision(state: RAGGraphState) -> RAGGraphState:
 #### 작업 순서
 ```bash
 # 1. 파일 이동
-git mv app/application/interfaces/llm.py app/domain/interfaces/llm_interface.py
+git mv app/application/interfaces/llm.py app/domain/interfaces/llm.py
 
 # 2. Import 경로 일괄 수정
 # app/domain/services/intent_classifier.py

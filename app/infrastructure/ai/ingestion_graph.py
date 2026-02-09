@@ -3,7 +3,7 @@ from typing import Any
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from app.domain.interfaces.llm_interface import LLMInterface
+from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.ingestion_state import IngestionGraphState
 from app.infrastructure.ai.ingestion_nodes import IngestionNodes
 

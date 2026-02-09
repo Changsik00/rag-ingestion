@@ -15,7 +15,7 @@
 - [x] 브랜치 생성: `git checkout -b feature/074-llm-interface-compliance`
 
 ### 1-2. Domain Interface Implementation
-- [x] 파일 생성: `app/domain/interfaces/llm_interface.py`
+- [x] 파일 생성: `app/domain/interfaces/llm.py`
 - [x] `LLMInterface` 및 관련 클래스 코드 이동
 - [x] Commit: `feat(spec-074): move LLMInterface to domain layer`
 
@@ -56,6 +56,11 @@
 - [x] **PR Description 작성**: `specs/074-llm-interface-clean-architecture/pr_description.md`
 - [x] **Archive Commit**: 위 파일을 `specs/`에 커밋 (`docs(spec-074): archive walkthrough and pr description`)
 - [x] Create PR: `gh pr create --title "feat(spec-074): llm interface clean architecture compliance" --body-file specs/074-llm-interface-clean-architecture/pr_description.md`
+
+## Task 5: 파일명 간소화 (llm_interface.py -> llm.py)
+- [x] 파일 이동: `llm_interface.py` -> `llm.py`
+- [x] 전역 임포트 경로 수정: `llm_interface` -> `llm`
+- [x] 전체 테스트 재검증 및 커밋
 
 ## Summary
 **총 Task**: 4개  

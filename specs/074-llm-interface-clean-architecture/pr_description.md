@@ -6,7 +6,7 @@
 Clean Architecture의 Dependency Rule을 준수하기 위해 `LLMInterface`를 Application Layer에서 Domain Layer로 이동하였습니다. 이를 통해 도메인 계층이 외부 계층(Application, Infrastructure)에 의존하는 아키텍처 위반 문제를 해결하고 고수준 정책의 독립성을 확보합니다.
 
 ### 주요 변경 사항
-- [x] **도메인 인터페이스 이동**: `app/application/interfaces/llm.py` -> `app/domain/interfaces/llm_interface.py`
+- [x] **도메인 인터페이스 이동**: `app/application/interfaces/llm.py` -> `app/domain/interfaces/llm.py`
 - [x] **의존성 방향 교정**: `IntentClassifier`, `QueryRewriter` 등 도메인 서비스가 도메인 내 인터페이스를 참조하도록 수정
 - [x] **참조 업데이트**: 애플리케이션(`SemanticExtractor`), 인프라(`IngestionGraph`, `LLMFactory`) 및 테스트 코드의 모든 참조 경로 업데이트
 - [x] **레거시 제거**: 더 이상 사용되지 않는 `app/application/interfaces/llm.py` 삭제
@@ -36,7 +36,7 @@ uv run ruff check app/domain
 ## 📦 Files Changed
 
 ### 🆕 New Files
-- `app/domain/interfaces/llm_interface.py`: `LLMInterface`, `LLMInvoker` 및 관련 데이터 구조 정의 이동
+- `app/domain/interfaces/llm.py`: `LLMInterface`, `LLMInvoker` 및 관련 데이터 구조 정의 이동
 
 ### 🛠 Modified Files
 - `app/domain/services/intent_classifier.py`: 임포트 경로 수정

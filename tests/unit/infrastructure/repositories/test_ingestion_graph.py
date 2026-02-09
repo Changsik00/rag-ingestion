@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.domain.interfaces.llm_interface import LLMInterface
+from app.domain.interfaces.llm import LLMInterface
 
 
 def test_graph_builder_import():

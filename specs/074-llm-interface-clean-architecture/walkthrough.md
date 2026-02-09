@@ -1,7 +1,7 @@
 # Walkthrough: Spec-074
 
 ## 📋 Changes Implemented
-- [x] `LLMInterface`를 Domain Layer (`app/domain/interfaces/llm_interface.py`)로 이동하여 Clean Architecture의 Dependency Rule 준수.
+- [x] `LLMInterface`를 Domain Layer (`app/domain/interfaces/llm.py`)로 이동하여 Clean Architecture의 Dependency Rule 준수.
 - [x] 도메인 서비스(`IntentClassifier`, `QueryRewriter`) 내의 상위 계층(Application) 의존성 제거.
 - [x] 프로젝트 전체의 `LLMInterface` 및 `LLMInvoker` 참조 경로 업데이트.
 - [x] 레거시 인터페이스 파일 (`app/application/interfaces/llm.py`) 삭제.

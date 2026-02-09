@@ -27,7 +27,7 @@ graph LR
 
 | Component | Strategy | Reasoning |
 |:---:|:---|:---|
-| **Domain Interface** | `app/domain/interfaces/llm_interface.py` 생성 | 도메인 독립성 및 아키텍처 규준 준수 |
+| **Domain Interface** | `app/domain/interfaces/llm.py` 생성 | 도메인 독립성 및 아키텍처 규준 준수 |
 | **Import Updates** | 전수 조사 및 수정 | 경로 변경으로 인한 런타임 오류 방지 |
 | **Cleanup** | `app/application/interfaces/llm.py` 삭제 | 중복 코드 방지 및 아키텍처 정합성 유지 |
 
@@ -35,7 +35,7 @@ graph LR
 
 ### [Domain Layer]
 
-#### [NEW] `app/domain/interfaces/llm_interface.py`
+#### [NEW] `app/domain/interfaces/llm.py`
 - `LLMInterface` 추상 클래스, `LLMResponse`, `LLMUsage` 정의 이동.
 
 #### [MODIFY] `app/domain/services/intent_classifier.py`, `query_rewriter.py`

@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from app.domain.interfaces.llm_interface import LLMInterface
+from app.domain.interfaces.llm import LLMInterface
 
 # The service module does not exist yet; this import is expected to fail initially.
 try:
