@@ -11,6 +11,7 @@
 > **목표**: RAG 시스템의 근본적인 아키텍처 문제를 해결하고 품질 검증 인프라를 구축한다.  
 > **기반**: [**Spec 068: RAG System Architecture Review**](../specs/068-rag-architecture-review/README.md) 분석 결과  
 > **기간**: 8~10주 (순차적 진행)
+> **현재 상태**: Spec 075 (Brain Layer Refactoring) 진행 중
 
 ### 📊 Phase 8 Overview
 
@@ -81,17 +82,17 @@
   * **PR**: https://github.com/Changsik00/rag-ingestion/pull/79
   * **완료 날짜**: 2026-02-09
 
-* [ ] **Spec 074: LLMInterface Clean Architecture Compliance** (P1, 2일)
+* [x] **Spec 074: LLMInterface Clean Architecture Compliance** (P1, 2일)
   * **Goal**: `LLMInterface`를 Domain Layer로 이동
   * **근거**: [Spec 068 - Domain Service LLM 의존성](../specs/068-rag-architecture-review/spec.md#22-domain-service의-llm-의존성-문제)
   * **상세 계획**: [Task 2.3](../specs/068-rag-architecture-review/recommendations.md#task-23-llminterface-이동-clean-architecture-)
   * **Tasks**:
-    - [ ] `app/application/interfaces/llm.py` → `app/domain/interfaces/llm.py`
-    - [ ] 모든 Import 경로 수정
-    - [ ] Dependency Rule 검증 스크립트
+    - [x] `app/application/interfaces/llm.py` → `app/domain/interfaces/llm.py`
+    - [x] 모든 Import 경로 수정
+    - [x] Dependency Rule 검증 스크립트
   * **Expected Impact**: Clean Architecture 준수, Dependency Rule 위반 해소
 
-* [ ] **Spec 075: RAG 3-Layer Code Structure Refactoring** ⭐⭐⭐⭐ (P0, 15일)
+* [/] **Spec 075: RAG 3-Layer Code Structure Refactoring** ⭐⭐⭐⭐ (P0, 15일) 🔄 **Execution 진행 중**
   * **Goal**: 개념적 3-Layer를 실제 코드 구조에 반영
   * **근거**: [Spec 068 - 1.0 근본적 구조 문제](../specs/068-rag-architecture-review/spec.md#10--근본적-구조-문제-개념과-코드의-괴리)
   * **Core Problem**: 
