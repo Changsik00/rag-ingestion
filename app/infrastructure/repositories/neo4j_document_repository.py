@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from functools import lru_cache
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from neo4j import Driver
 
@@ -145,11 +145,11 @@ class Neo4jDocumentRepository(DocumentRepository):
             logger.error(f"Failed to save chunks to Neo4j: {e}")
             raise InfrastructureError(f"Failed to save chunks to Neo4j: {e}") from e
 
-    def get(self, doc_id: UUID) -> Document | None:
+    def get(self, doc_id: str) -> Document | None:
         try:
             query = "MATCH (d:Document {id: $id}) RETURN d"
             with self.driver.session() as session:
-                result = session.run(query, id=str(doc_id)).single()
+                result = session.run(query, id=doc_id).single()
                 if result:
                     node = result["d"]
                     return Document(
@@ -195,16 +195,15 @@ class Neo4jDocumentRepository(DocumentRepository):
             logger.error(f"Failed to list documents from Neo4j: {e}")
             raise InfrastructureError(f"Failed to list documents from Neo4j: {e}") from e
 
-    def get_chunks(self, doc_id: UUID) -> list[Chunk]:
+    def get_chunks(self, doc_id: str) -> list[Chunk]:
         try:
             query = """
             MATCH (d:Document {id: $doc_id})-[:HAS_CHUNK]->(c:Chunk)
-            RETURN c
-            ORDER BY c.index ASC
+            RETURN c ORDER BY c.index
             """
             chunks = []
             with self.driver.session() as session:
-                results = session.run(query, doc_id=str(doc_id))
+                results = session.run(query, doc_id=doc_id)
                 for record in results:
                     node = record["c"]
                     chunks.append(

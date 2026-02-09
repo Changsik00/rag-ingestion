@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from app.domain.entities.document import Document
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.value_objects.chunk import Chunk
@@ -34,14 +32,14 @@ class CompositeDocumentRepository(DocumentRepository):
         # Interface save_with_chunks 호출 (내부적으로 save_chunks 호출)
         self.chroma.save_with_chunks(document, chunks)
 
-    def get(self, doc_id: UUID) -> Document | None:
+    def get(self, doc_id: str) -> Document | None:
         # Primary 검색 소스는 Neo4j
         return self.neo4j.get(doc_id)
 
     def list_documents(self, limit: int = 10, search_term: str | None = None) -> list[Document]:
         return self.neo4j.list_documents(limit, search_term=search_term)
 
-    def get_chunks(self, doc_id: UUID) -> list[Chunk]:
+    def get_chunks(self, doc_id: str) -> list[Chunk]:
         """Retrieve all chunks for a document."""
         return self.neo4j.get_chunks(doc_id)
 

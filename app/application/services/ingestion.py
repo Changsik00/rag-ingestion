@@ -250,7 +250,7 @@ class Ingestion:
 
                 # Build Knowledge Graph (Spec 010 + 016)
                 if semantic_data:
-                    self._build_knowledge_graph(UUID(doc.id), semantic_data)
+                    self._build_knowledge_graph(doc.id, semantic_data)
 
             # 4. Update Job (COMPLETED)
             job.status = JobStatus.COMPLETED
@@ -292,7 +292,7 @@ class Ingestion:
         job.error_message = error_message
         self.job_repository.update_job(job)
 
-    def _build_knowledge_graph(self, doc_id: UUID, semantic_data) -> None:
+    def _build_knowledge_graph(self, doc_id: str, semantic_data) -> None:
         """
         Entity 노드, MENTIONS 관계 및 Entity-Entity 관계 생성
         """
@@ -314,7 +314,7 @@ class Ingestion:
                     self.graph.save_entity(normalized_name, entity_type)
                     # We keep the mention relationship to the original or normalized?
                     # Let's use normalized for graph consistency
-                    self.graph.create_mention_relationship(str(doc_id), normalized_name)
+                    self.graph.create_mention_relationship(doc_id, normalized_name)
                     all_entity_names.add(normalized_name)
 
                     # Create implicit relationship to Primary Entity node if found

@@ -169,31 +169,30 @@ class ChromaVectorRepository(DocumentRepository):
                     logger.error(f"Failed to save batch to ChromaDB after {max_retries} attempts: {e}")
                     raise InfrastructureError(f"Failed to save chunks batch to ChromaDB: {e}") from e
 
-    def get(self, doc_id: UUID) -> Document | None:
+    def get(self, doc_id: str) -> Document | None:
+        """
+        문서 ID로 문서 정보를 가져옵니다. (ChromaDB에는 Chunk만 있으므로, Chunk 메타데이터를 기반으로 재구성)
+        """
         try:
-            # ChromaDB는 주된 검색 용도가 아니므로 최소 구현
-            # Neo4j가 primary source
-            result = self.collection.get(ids=[str(doc_id)])
+            # 해당 Doc ID를 가진 청크들 조회
+            results = self.collection.get(where={"parent_id": doc_id}, include=["metadatas", "documents"])
 
-            # Robust Null Check
-            if not result:
+            # Null Check
+            if not results or not results.get("ids") or len(results["ids"]) == 0:
                 return None
 
-            documents = result.get("documents")
-            if not documents or len(documents) == 0:
-                return None
-
-            metadatas = result.get("metadatas")
-            if not metadatas or len(metadatas) == 0:
-                return None
+            # 첫 번째 청크의 정보로 문서 재구성 (ChromaDB는 청크 중심이므로 완전한 문서 재구성은 한계가 있음)
+            # 실제 문서 정보는 Neo4j 등 다른 저장소에서 가져오는 것이 일반적
+            first_chunk_id = results["ids"][0]
+            first_chunk_content = results["documents"][0]
+            first_chunk_metadata = results["metadatas"][0]
 
             # ChromaDB에서 객체 재구성은 손실이 발생함 (full metadata 없음)
             # 하지만 기본 매핑은 구현
             return Document(
-                id=str(doc_id),  # str expected
-                content=documents[0],
-                # source_url removed from constructor
-                metadata=metadatas[0],
+                id=doc_id,
+                content=first_chunk_content,
+                metadata=first_chunk_metadata,
             )
         except Exception as e:
             # 조회 실패는 Logging 후 None 반환 (서비스 중단 방지)
@@ -219,23 +218,22 @@ class ChromaVectorRepository(DocumentRepository):
             logger.error(f"Failed to list documents from ChromaDB: {e}")
             raise InfrastructureError(f"Failed to list documents from ChromaDB: {e}") from e
 
-    def get_chunks(self, doc_id: UUID) -> list[Chunk]:
-        """Retrieve all chunks for a document from Chroma."""
+    def get_chunks(self, doc_id: str) -> list[Chunk]:
+        """문서에 속한 모든 청크를 가져옵니다."""
         try:
-            # use where filter on metadata
-            result = self.collection.get(where={"parent_id": str(doc_id)})
+            results = self.collection.get(where={"parent_id": doc_id}, include=["metadatas", "documents"])
             chunks = []
-            if result and result["ids"]:
-                for i in range(len(result["ids"])):
-                    chunk_id = result["ids"][i]
-                    content = result["documents"][i]
-                    metadata = result["metadatas"][i]
+            if results and results["ids"]:
+                for i in range(len(results["ids"])):
+                    chunk_id = results["ids"][i]
+                    content = results["documents"][i]
+                    metadata = results["metadatas"][i]
                     chunks.append(
                         Chunk(
                             id=chunk_id,
                             content=content,
                             metadata=metadata,
-                            parent_id=metadata.get("parent_id") if metadata.get("parent_id") else str(doc_id),
+                            parent_id=metadata.get("parent_id") if metadata.get("parent_id") else doc_id,
                             index=int(metadata.get("index", 0)),
                         )
                     )
