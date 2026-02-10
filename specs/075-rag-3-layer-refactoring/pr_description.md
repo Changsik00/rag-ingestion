@@ -1,4 +1,4 @@
-# refactor(spec-075): implementation of RAG 3-layer architecture
+# refactor(spec-075): RAG 3-layer architecture refactoring
 
 ## 📋 Summary
 

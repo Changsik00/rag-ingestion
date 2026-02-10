@@ -80,7 +80,7 @@
 - [x] **Walkthrough 작성**: `specs/075-rag-3-layer-refactoring/walkthrough.md`
 - [x] **PR Description 작성**: `specs/075-rag-3-layer-refactoring/pr_description.md` (템플릿 준수)
 - [x] **Archive Commit**: 위 파일을 `specs/`에 커밋 (`docs(spec-075): archive walkthrough and pr description`)
-- [ ] Create PR: `gh pr create --title "refactor: RAG 3-Layer Architecture (Spec 075)" --body-file specs/075-rag-3-layer-refactoring/pr_description.md`
+- [ ] Create PR: `gh pr create --title "refactor(spec-075): RAG 3-layer architecture refactoring" --body-file specs/075-rag-3-layer-refactoring/pr_description.md`
 
 ## Summary
 **총 Task**: 5 Phases
