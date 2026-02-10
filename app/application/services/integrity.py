@@ -256,17 +256,15 @@ class Integrity:
 
     async def get_cleaned_context(self, doc_id: str) -> str:
         """LLM에게 전달될 정제된 컨텍스트 미리보기"""
-        from app.infrastructure.ai.rag_nodes import RAGNodes
+        from app.domain.rag.text_cleaner import clean_context_noise
 
         chunks = self.primary_repo.get_chunks(doc_id)
         if not chunks:
             return "No chunks found."
 
-        # RAGNodes의 클리닝 로직 재사용 (Dependency injection 없이 정적 메서드처럼 활용 위해 임시 인스턴스)
-        nodes = RAGNodes(None, None, None, None, None, None)
         cleaned_parts = []
         for c in chunks:
-            cleaned_parts.append(nodes._clean_context_noise(c.content))
+            cleaned_parts.append(clean_context_noise(c.content))
 
         return "\n\n---\n\n".join(cleaned_parts)
 

@@ -47,29 +47,55 @@ async def provide_ingestion_service() -> Ingestion:
 
 
 async def provide_rag_service() -> RAG:
-    from app.domain.services.intent_classifier import IntentClassifier
+    from app.domain.rag.brain.service import BrainService
+    from app.domain.rag.brain.reranker import Reranker
+    from app.domain.rag.brain.answer_generator import AnswerGenerator
+    from app.infrastructure.rag.retrieval.service import RetrievalService
+    from app.application.rag.orchestration.service import RAGOrchestrator
     from app.infrastructure.ai.rag_graph import RAGGraphBuilder
-    from app.infrastructure.ai.rag_nodes import RAGNodes
+    from app.domain.services.filter_matcher import FilterMatcher
     from app.infrastructure.repositories.chroma import ChromaVectorRepository
     from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
+    from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
 
     driver = get_neo4j_driver()
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
-    graph_repo = get_graph_repository(driver)
+    graph_repo = Neo4jGraphRepository(driver)
     chroma_repo = ChromaVectorRepository()
+    
+    # 1. Brain Layer
     llm = LLMFactory.get_llm_adapter()
     query_rewriter = QueryRewriter(llm)
     intent_classifier = IntentClassifier(llm)
-
-    nodes = RAGNodes(
-        neo4j_doc_repo=neo4j_doc_repo,
-        neo4j_graph_repo=graph_repo,
-        chroma_repo=chroma_repo,
-        query_rewriter=query_rewriter,
-        intent_classifier=intent_classifier,
-        llm=llm,
+    brain_service = BrainService(intent_classifier, query_rewriter)
+    reranker = Reranker(llm, neo4j_doc_repo)
+    answer_generator = AnswerGenerator(llm)
+    
+    # 2. Retrieval Layer
+    retrieval_service = RetrievalService(neo4j_doc_repo, graph_repo, chroma_repo)
+    
+    # Optional Filter Matcher
+    # Reuse embedding function for filter matcher
+    embedding_fn = chroma_repo.embedding_function
+    def single_query_embed(text: str) -> list[float]:
+        result = embedding_fn([text])
+        return result[0] if result else []
+    
+    filter_matcher = FilterMatcher(
+        embedding_fn=single_query_embed,
+        similarity_threshold=0.85
     )
-    builder = RAGGraphBuilder(nodes)
+    
+    # 3. Orchestration Layer
+    orchestrator = RAGOrchestrator(
+        brain_service=brain_service,
+        reranker=reranker,
+        answer_generator=answer_generator,
+        retrieval_service=retrieval_service,
+        filter_matcher=filter_matcher
+    )
+
+    builder = RAGGraphBuilder(orchestrator)
     checkpointer = await get_checkpointer()
     graph = builder.build(checkpointer=checkpointer)
 

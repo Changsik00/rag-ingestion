@@ -178,36 +178,65 @@ def get_filter_matcher(
     )
 
 
-# RAG Nodes 의존성 (Spec 033)
-def get_rag_nodes(
-    driver: Annotated[Driver, Depends(get_neo4j_driver)],
-    query_rewriter: Annotated[QueryRewriter, Depends(get_query_rewriter)],
-    intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
-    chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
-    filter_matcher: Annotated["FilterMatcher", Depends(get_filter_matcher)],
-):
-    from app.infrastructure.ai.rag_nodes import RAGNodes
 
+# === RAG 3-Layer Dependencies (Spec 075) ===
+
+@lru_cache
+def get_brain_service(
+    intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
+    query_rewriter: Annotated[QueryRewriter, Depends(get_query_rewriter)],
+) -> "BrainService":
+    from app.domain.rag.brain.service import BrainService
+    return BrainService(intent_classifier, query_rewriter)
+
+
+@lru_cache
+def get_retrieval_service(
+    driver: Annotated[Driver, Depends(get_neo4j_driver)],
+    chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
+) -> "RetrievalService":
+    from app.infrastructure.rag.retrieval.service import RetrievalService
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
-    llm_adapter = LLMFactory.get_llm_adapter()
+    return RetrievalService(neo4j_doc_repo, neo4j_graph_repo, chroma_repo)
 
-    return RAGNodes(
-        neo4j_doc_repo=neo4j_doc_repo,
-        neo4j_graph_repo=neo4j_graph_repo,
-        chroma_repo=chroma_repo,
-        query_rewriter=query_rewriter,
-        intent_classifier=intent_classifier,
-        llm=llm_adapter,
+
+@lru_cache
+def get_reranker(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> "Reranker":
+    from app.domain.rag.brain.reranker import Reranker
+    llm = LLMFactory.get_llm_adapter()
+    neo4j_doc_repo = Neo4jDocumentRepository(driver)
+    return Reranker(llm, neo4j_doc_repo)
+
+
+@lru_cache
+def get_answer_generator() -> "AnswerGenerator":
+    from app.domain.rag.brain.answer_generator import AnswerGenerator
+    llm = LLMFactory.get_llm_adapter()
+    return AnswerGenerator(llm)
+
+
+def get_rag_orchestrator(
+    brain_service: Annotated["BrainService", Depends(get_brain_service)],
+    reranker: Annotated["Reranker", Depends(get_reranker)],
+    answer_generator: Annotated["AnswerGenerator", Depends(get_answer_generator)],
+    retrieval_service: Annotated["RetrievalService", Depends(get_retrieval_service)],
+    filter_matcher: Annotated["FilterMatcher", Depends(get_filter_matcher)],
+) -> "RAGOrchestrator":
+    from app.application.rag.orchestration.service import RAGOrchestrator
+    return RAGOrchestrator(
+        brain_service=brain_service,
+        reranker=reranker,
+        answer_generator=answer_generator,
+        retrieval_service=retrieval_service,
         filter_matcher=filter_matcher,
     )
 
 
-# RAG Graph Builder 의존성 (Spec 033)
-def get_rag_graph_builder(nodes=Depends(get_rag_nodes)):
+# RAG Graph Builder 의존성 (Updated for Spec 075)
+def get_rag_graph_builder(orchestrator: Annotated["RAGOrchestrator", Depends(get_rag_orchestrator)]):
     from app.infrastructure.ai.rag_graph import RAGGraphBuilder
-
-    return RAGGraphBuilder(nodes)
+    return RAGGraphBuilder(orchestrator)
 
 
 # RAG Service 의존성 (Spec 033: LangGraph 기반)
