@@ -66,14 +66,8 @@ class RetrievalService:
         # Context Noise Cleaning
         from app.core.text_cleaner import clean_context_noise
 
-        vector_results = [
-            c.model_copy(update={"content": clean_context_noise(c.content)})
-            for c in vector_results
-        ]
-        keyword_results = [
-            c.model_copy(update={"content": clean_context_noise(c.content)})
-            for c in keyword_results
-        ]
+        vector_results = [c.model_copy(update={"content": clean_context_noise(c.content)}) for c in vector_results]
+        keyword_results = [c.model_copy(update={"content": clean_context_noise(c.content)}) for c in keyword_results]
 
         return vector_results, keyword_results, graph_results
 
@@ -89,4 +83,3 @@ class RetrievalService:
         if entities and len(entities) > 0:
             return self.neo4j_graph_repo.find_shortest_path(entities)
         return self.neo4j_graph_repo.get_subgraph([query])
-

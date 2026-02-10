@@ -35,9 +35,7 @@ class BrainService:
         except Exception as e:
             logger.warning(f"Intent classification failed: {e}. Falling back to GENERAL_QUERY.")
             user_intent = UserIntent(
-                intent=IntentType.GENERAL_QUERY,
-                targets=[],
-                reasoning=f"Fallback due to classification error: {e}"
+                intent=IntentType.GENERAL_QUERY, targets=[], reasoning=f"Fallback due to classification error: {e}"
             )
 
         # 2. Query Rewriting

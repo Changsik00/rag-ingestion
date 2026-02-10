@@ -16,11 +16,11 @@ from app.infrastructure.rag.retrieval.service import RetrievalService
 def mock_brain():
     brain = MagicMock(spec=BrainService)
     # Async method needs to be explicitly set for AsyncMock when using spec
-    brain.classify_and_rewrite = AsyncMock(return_value=(
-        UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="test"),
-        "rewritten"
-    ))
+    brain.classify_and_rewrite = AsyncMock(
+        return_value=(UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="test"), "rewritten")
+    )
     return brain
+
 
 @pytest.fixture
 def mock_retrieval():
@@ -29,12 +29,14 @@ def mock_retrieval():
     retrieval.hybrid_search = AsyncMock(return_value=([chunk], [], []))
     return retrieval
 
+
 @pytest.fixture
 def mock_rerank_service():
     reranker = MagicMock(spec=Reranker)
     chunk = Chunk(id="1", content="content", parent_id="d1", index=0)
     reranker.rerank = AsyncMock(return_value=([chunk], []))
     return reranker
+
 
 @pytest.fixture
 def mock_generator():
@@ -46,6 +48,7 @@ def mock_generator():
     # But generate_answer is async
     return generator
 
+
 @pytest.fixture
 def rag_service(mock_brain, mock_retrieval, mock_rerank_service, mock_generator):
     # Assemble 3-Layer Components
@@ -53,7 +56,7 @@ def rag_service(mock_brain, mock_retrieval, mock_rerank_service, mock_generator)
         brain_service=mock_brain,
         reranker=mock_rerank_service,
         answer_generator=mock_generator,
-        retrieval_service=mock_retrieval
+        retrieval_service=mock_retrieval,
     )
 
     # Build Graph
@@ -62,18 +65,14 @@ def rag_service(mock_brain, mock_retrieval, mock_rerank_service, mock_generator)
 
     # RAG service usually takes 'graph' argument in init if updated
     # Let's check RAG service definition
-    return graph # RAG service might wrap it, but graph is runnable
+    return graph  # RAG service might wrap it, but graph is runnable
+
 
 @pytest.mark.asyncio
 async def test_rag_e2e_flow(rag_service, mock_brain, mock_retrieval):
     # Execute
     # Invoking graph directly
-    initial_state = {
-        "query": "test query",
-        "history": [],
-        "manual_filters": None,
-        "reasoning_log": []
-    }
+    initial_state = {"query": "test query", "history": [], "manual_filters": None, "reasoning_log": []}
 
     result = await rag_service.ainvoke(initial_state)
 

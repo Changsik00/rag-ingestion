@@ -75,7 +75,7 @@ class AnswerGenerator:
         vector_chunks: list[Chunk],
         keyword_chunks: list[Chunk],
         graph_data: list[dict],
-        reranked_chunks: list[Chunk] | None = None
+        reranked_chunks: list[Chunk] | None = None,
     ) -> tuple[str, dict[int, Chunk]]:
         """
         Formats retrieved chunks and graph data into a context string.

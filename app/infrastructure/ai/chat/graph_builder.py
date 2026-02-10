@@ -39,11 +39,7 @@ class ChatGraphBuilder:
             user_intent = state.get("user_intent")
 
             vector, keyword, graph, fallback = await self.orchestrator.search(
-                state.get("rewritten_query"),
-                final_filters,
-                user_intent,
-                config,
-                logs
+                state.get("rewritten_query"), final_filters, user_intent, config, logs
             )
 
             # Append logs manually because state reducer is 'replace' (lambda x,y: y)
@@ -55,7 +51,7 @@ class ChatGraphBuilder:
                 "keyword_chunks": keyword,
                 "graph_data": graph,
                 "fallback_triggered": fallback,
-                "reasoning_log": new_logs
+                "reasoning_log": new_logs,
             }
 
         async def rerank_adapter(state: RAGGraphState, config: RunnableConfig):
@@ -65,21 +61,13 @@ class ChatGraphBuilder:
             keyword = state.get("keyword_chunks", [])
 
             reranked, rerank_log = await self.orchestrator.rerank(
-                state.get("rewritten_query"),
-                vector,
-                keyword,
-                config,
-                logs
+                state.get("rewritten_query"), vector, keyword, config, logs
             )
 
             current_logs = state.get("reasoning_log", [])
             new_logs = current_logs + logs
 
-            return {
-                "reranked_chunks": reranked,
-                "rerank_log": rerank_log,
-                "reasoning_log": new_logs
-            }
+            return {"reranked_chunks": reranked, "rerank_log": rerank_log, "reasoning_log": new_logs}
 
         async def generate_adapter(state: RAGGraphState, config: RunnableConfig):
             # 5. Generate
@@ -90,13 +78,9 @@ class ChatGraphBuilder:
                 state.get("keyword_chunks", []),
                 state.get("graph_data", []),
                 state.get("reranked_chunks", []),
-                config
+                config,
             )
-            return {
-                "final_answer": answer,
-                "citations": citations,
-                "full_context": context
-            }
+            return {"final_answer": answer, "citations": citations, "full_context": context}
 
         # === Add Nodes ===
         workflow.add_node("classify", classify_adapter)

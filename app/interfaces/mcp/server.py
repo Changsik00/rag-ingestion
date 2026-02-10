@@ -78,14 +78,12 @@ async def provide_rag_service() -> RAG:
     # Optional Filter Matcher
     # Reuse embedding function for filter matcher
     embedding_fn = chroma_repo.embedding_function
+
     def single_query_embed(text: str) -> list[float]:
         result = embedding_fn([text])
         return result[0] if result else []
 
-    filter_matcher = FilterMatcher(
-        embedding_fn=single_query_embed,
-        similarity_threshold=0.85
-    )
+    filter_matcher = FilterMatcher(embedding_fn=single_query_embed, similarity_threshold=0.85)
 
     # 3. Orchestration Layer
     orchestrator = ChatOrchestrator(
@@ -93,7 +91,7 @@ async def provide_rag_service() -> RAG:
         reranker=reranker,
         answer_generator=answer_generator,
         retrieval_service=retrieval_service,
-        filter_matcher=filter_matcher
+        filter_matcher=filter_matcher,
     )
 
     builder = ChatGraphBuilder(orchestrator)

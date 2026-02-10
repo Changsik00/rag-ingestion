@@ -246,8 +246,13 @@ class Integrity:
             actual_count = sum(1 for cid in verify_ids if cid in target_ids)
 
             if actual_count < len(verify_ids):
-                logger.error(f"Sync verification failed: Saved {len(verify_ids)} but target repo only has {actual_count}")
-                return {"success": False, "error": f"Verification failed: only {actual_count}/{len(verify_ids)} persisted"}
+                logger.error(
+                    f"Sync verification failed: Saved {len(verify_ids)} but target repo only has {actual_count}"
+                )
+                return {
+                    "success": False,
+                    "error": f"Verification failed: only {actual_count}/{len(verify_ids)} persisted",
+                }
 
             return {"success": True, "count": len(updated_chunks)}
         except Exception as e:

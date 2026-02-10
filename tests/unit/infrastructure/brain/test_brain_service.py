@@ -24,17 +24,11 @@ def brain_service(mock_intent_classifier, mock_query_rewriter):
 
 
 @pytest.mark.asyncio
-async def test_classify_and_rewrite_success(
-    brain_service, mock_intent_classifier, mock_query_rewriter
-):
+async def test_classify_and_rewrite_success(brain_service, mock_intent_classifier, mock_query_rewriter):
     # Given
     query = "test query"
     history = []
-    expected_intent = UserIntent(
-        intent=IntentType.GENERAL_QUERY,
-        targets=[],
-        reasoning="test"
-    )
+    expected_intent = UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="test")
     mock_intent_classifier.classify.return_value = expected_intent
     mock_query_rewriter.rewrite.return_value = "rewritten query"
 
@@ -49,9 +43,7 @@ async def test_classify_and_rewrite_success(
 
 
 @pytest.mark.asyncio
-async def test_classify_and_rewrite_intent_failure_fallback(
-    brain_service, mock_intent_classifier, mock_query_rewriter
-):
+async def test_classify_and_rewrite_intent_failure_fallback(brain_service, mock_intent_classifier, mock_query_rewriter):
     # Given
     query = "test query"
     history = []
@@ -76,11 +68,7 @@ async def test_classify_and_rewrite_rewrite_failure_fallback(
     # Given
     query = "test query"
     history = []
-    expected_intent = UserIntent(
-        intent=IntentType.GENERAL_QUERY,
-        targets=[],
-        reasoning="test"
-    )
+    expected_intent = UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="test")
     mock_intent_classifier.classify.return_value = expected_intent
 
     # Mock QueryRewriter to raise exception (even though implementation swallows it,

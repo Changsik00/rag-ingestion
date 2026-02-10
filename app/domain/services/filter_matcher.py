@@ -77,10 +77,7 @@ class FilterMatcher:
                     best_match = source
 
             if best_score >= self.similarity_threshold:
-                logger.info(
-                    f"🔍 Fuzzy match found: '{target}' -> '{best_match}' "
-                    f"(similarity: {best_score:.2f})"
-                )
+                logger.info(f"🔍 Fuzzy match found: '{target}' -> '{best_match}' (similarity: {best_score:.2f})")
                 return best_match
             else:
                 logger.warning(

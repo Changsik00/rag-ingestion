@@ -165,7 +165,7 @@ def get_intent_classifier() -> IntentClassifier:
 # FilterMatcher 의존성 (Spec 073: Fuzzy Filter Matching)
 @lru_cache
 def get_filter_matcher(
-    chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)]
+    chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ) -> "FilterMatcher":
     # ChromaDB의 Embedding 함수를 재사용
     # LangChain의 embed_query를 사용 (단일 쿼리 임베딩)
@@ -177,14 +177,11 @@ def get_filter_matcher(
         result = embedding_fn([text])
         return result[0] if result else []
 
-    return FilterMatcher(
-        embedding_fn=single_query_embed,
-        similarity_threshold=0.85
-    )
-
+    return FilterMatcher(embedding_fn=single_query_embed, similarity_threshold=0.85)
 
 
 # === Refined 3-Layer Dependencies (Spec 076) ===
+
 
 @lru_cache
 def get_brain_service(
@@ -192,6 +189,7 @@ def get_brain_service(
     query_rewriter: Annotated[QueryRewriter, Depends(get_query_rewriter)],
 ) -> "IBrainService":
     from app.infrastructure.brain.service import BrainService
+
     return BrainService(intent_classifier, query_rewriter)
 
 
@@ -201,6 +199,7 @@ def get_retrieval_service(
     chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ) -> "IRetrievalService":
     from app.infrastructure.retrieval.service import RetrievalService
+
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
     return RetrievalService(neo4j_doc_repo, neo4j_graph_repo, chroma_repo)
@@ -209,6 +208,7 @@ def get_retrieval_service(
 @lru_cache
 def get_reranker(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> "IReranker":
     from app.infrastructure.brain.reranker import Reranker
+
     llm = LLMFactory.get_llm_adapter()
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
     return Reranker(llm, neo4j_doc_repo)
@@ -217,6 +217,7 @@ def get_reranker(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> "IRera
 @lru_cache
 def get_answer_generator() -> "IAnswerGenerator":
     from app.infrastructure.brain.answer_generator import AnswerGenerator
+
     llm = LLMFactory.get_llm_adapter()
     return AnswerGenerator(llm)
 
@@ -240,6 +241,7 @@ def get_chat_orchestrator(
 # RAG Graph Builder 의존성 (Updated for Spec 076)
 def get_rag_graph_builder(orchestrator: Annotated[ChatOrchestrator, Depends(get_chat_orchestrator)]):
     from app.infrastructure.ai.chat.graph_builder import ChatGraphBuilder
+
     return ChatGraphBuilder(orchestrator)
 
 
@@ -267,8 +269,9 @@ async def get_conversational_rag_agent(
 def get_feedback_service() -> Feedback:
     return Feedback()
 
-
     # Integrity Service 의존성 (Spec 042)
+
+
 async def get_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     checkpointer: Annotated[AsyncPostgresSaver, Depends(get_checkpointer)],

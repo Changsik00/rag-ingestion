@@ -23,6 +23,7 @@ def mock_components():
     retrieval = AsyncMock(spec=IRetrievalService)
     return brain, reranker, generator, retrieval
 
+
 @pytest.fixture
 def orchestrator(mock_components):
     brain, reranker, generator, retrieval = mock_components
@@ -34,6 +35,7 @@ def orchestrator(mock_components):
 
     return ChatOrchestrator(brain, reranker, generator, retrieval)
 
+
 @pytest.mark.asyncio
 async def test_run_pipeline(orchestrator, mock_components):
     brain, reranker, generator, retrieval = mock_components
@@ -41,13 +43,8 @@ async def test_run_pipeline(orchestrator, mock_components):
     # Setup Mocks
     # 1. Brain
     brain.classify_and_rewrite.return_value = (
-        UserIntent(
-            intent=IntentType.GENERAL_QUERY,
-            targets=[],
-            reasoning="test",
-            entities=[]
-        ),
-        "rewritten query"
+        UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="test", entities=[]),
+        "rewritten query",
     )
 
     # 2. Retrieval
@@ -59,9 +56,7 @@ async def test_run_pipeline(orchestrator, mock_components):
 
     # Execute
     final_state = await orchestrator.run_pipeline(
-        query="test query",
-        history=[],
-        config={"configurable": {"retrieval_config": {"top_k": 3}}}
+        query="test query", history=[], config={"configurable": {"retrieval_config": {"top_k": 3}}}
     )
 
     # Verify Flow
@@ -73,19 +68,15 @@ async def test_run_pipeline(orchestrator, mock_components):
     assert final_state["final_answer"] == "Final Answer"
     assert len(final_state["vector_chunks"]) == 1
 
+
 @pytest.mark.asyncio
 async def test_run_pipeline_fallback(orchestrator, mock_components):
     brain, reranker, generator, retrieval = mock_components
 
     # Setup Mocks
     brain.classify_and_rewrite.return_value = (
-        UserIntent(
-            intent=IntentType.FILTER_BY_TOPIC,
-            targets=["topic"],
-            reasoning="test",
-            entities=[]
-        ),
-        "rewritten"
+        UserIntent(intent=IntentType.FILTER_BY_TOPIC, targets=["topic"], reasoning="test", entities=[]),
+        "rewritten",
     )
 
     # First search returns empty with filters
@@ -94,8 +85,8 @@ async def test_run_pipeline_fallback(orchestrator, mock_components):
 
     # AsyncMock side_effect for multiple calls
     retrieval.hybrid_search.side_effect = [
-        ([], [], []), # First call (empty)
-        ([chunk], [], []) # Second call (fallback)
+        ([], [], []),  # First call (empty)
+        ([chunk], [], []),  # Second call (fallback)
     ]
 
     reranker.rerank.return_value = ([chunk], [])
@@ -103,10 +94,7 @@ async def test_run_pipeline_fallback(orchestrator, mock_components):
     # Execute
     # We pass manual_filters to ensure filter logic runs
     final_state = await orchestrator.run_pipeline(
-        query="test",
-        history=[],
-        config={},
-        manual_filters={"topic": "topic"}
+        query="test", history=[], config={}, manual_filters={"topic": "topic"}
     )
 
     # Verify Fallback Triggered

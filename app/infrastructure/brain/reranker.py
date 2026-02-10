@@ -45,7 +45,6 @@ class Reranker:
     async def _rerank_pointwise(
         self, query: str, all_chunks: list[Chunk], config: RunnableConfig | None
     ) -> tuple[list[Chunk], list[dict]]:
-
         retrieval_config = config.get("configurable", {}).get("retrieval_config", {}) if config else {}
         temperature = retrieval_config.get("temperature", 0.0)
 
@@ -73,14 +72,16 @@ class Reranker:
 
             content_snippet = chunk.content[:100] + "..." if len(chunk.content) > 100 else chunk.content
 
-            rerank_log.append({
-                "chunk_id": chunk.id,
-                "score": score,
-                "reasoning": reasoning,
-                "status": status,
-                "content": content_snippet,
-                "source": chunk.metadata.get("source", "Unknown"),
-            })
+            rerank_log.append(
+                {
+                    "chunk_id": chunk.id,
+                    "score": score,
+                    "reasoning": reasoning,
+                    "status": status,
+                    "content": content_snippet,
+                    "source": chunk.metadata.get("source", "Unknown"),
+                }
+            )
 
             if score >= min_relevance_score:
                 chunk.metadata["rerank_score"] = score
@@ -92,7 +93,6 @@ class Reranker:
     async def _rerank_listwise(
         self, query: str, all_chunks: list[Chunk], config: RunnableConfig | None
     ) -> tuple[list[Chunk], list[dict]]:
-
         retrieval_config = config.get("configurable", {}).get("retrieval_config", {}) if config else {}
         temperature = retrieval_config.get("temperature", 0.0)
 
@@ -120,6 +120,7 @@ class Reranker:
             content = await llm.agenerate(prompt)
 
             import json
+
             json_match = re.search(r"\[.*\]", content, re.DOTALL)
             if json_match:
                 rankings = json.loads(json_match.group())
@@ -139,14 +140,16 @@ class Reranker:
                     status = "passed" if score >= min_relevance_score else "dropped"
                     content_snippet = chunk.content[:100] + "..." if len(chunk.content) > 100 else chunk.content
 
-                    rerank_log.append({
-                        "chunk_id": chunk_id,
-                        "score": score,
-                        "reasoning": reasoning,
-                        "status": status,
-                        "content": content_snippet,
-                        "source": chunk.metadata.get("source", "Unknown"),
-                    })
+                    rerank_log.append(
+                        {
+                            "chunk_id": chunk_id,
+                            "score": score,
+                            "reasoning": reasoning,
+                            "status": status,
+                            "content": content_snippet,
+                            "source": chunk.metadata.get("source", "Unknown"),
+                        }
+                    )
 
                     if score >= min_relevance_score:
                         chunk.metadata["rerank_score"] = score
@@ -162,6 +165,7 @@ class Reranker:
 
     async def _get_rerank_score(self, chunk: Chunk, prompt: str, temperature: float = 0.0) -> dict:
         import json
+
         try:
             llm = self.llm.bind(temperature=temperature)
             content = await llm.agenerate(prompt)

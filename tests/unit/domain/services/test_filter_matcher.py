@@ -5,7 +5,6 @@ Spec 073: Fuzzy Filter Matching
 Tests for semantic similarity-based source matching.
 """
 
-
 import pytest
 
 from app.domain.services.filter_matcher import FilterMatcher
@@ -22,6 +21,7 @@ def mock_embedding_fn():
     - "GPT-4" -> [4, 5, 6]
     - "Llama" -> [7, 8, 9]
     """
+
     def embed(text: str) -> list[float]:
         text_lower = text.lower()
         if "claude" in text_lower:
@@ -33,16 +33,14 @@ def mock_embedding_fn():
         else:
             # Random vector for unknown texts
             return [10.0, 11.0, 12.0]
+
     return embed
 
 
 @pytest.fixture
 def filter_matcher(mock_embedding_fn):
     """FilterMatcher instance with mock embedding function."""
-    return FilterMatcher(
-        embedding_fn=mock_embedding_fn,
-        similarity_threshold=0.85
-    )
+    return FilterMatcher(embedding_fn=mock_embedding_fn, similarity_threshold=0.85)
 
 
 class TestExactMatch:
@@ -137,6 +135,7 @@ class TestCosineSimilarity:
     def test_identical_vectors(self, filter_matcher):
         """동일 벡터의 Cosine Similarity는 1.0"""
         import numpy as np
+
         vec1 = np.array([1.0, 2.0, 3.0])
         vec2 = np.array([1.0, 2.0, 3.0])
         similarity = filter_matcher._cosine_similarity(vec1, vec2)
@@ -145,6 +144,7 @@ class TestCosineSimilarity:
     def test_orthogonal_vectors(self, filter_matcher):
         """직교 벡터의 Cosine Similarity는 0.0"""
         import numpy as np
+
         vec1 = np.array([1.0, 0.0, 0.0])
         vec2 = np.array([0.0, 1.0, 0.0])
         similarity = filter_matcher._cosine_similarity(vec1, vec2)

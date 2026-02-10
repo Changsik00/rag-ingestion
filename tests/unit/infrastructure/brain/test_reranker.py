@@ -12,24 +12,21 @@ def mock_deps():
     neo4j_doc = MagicMock()
     return llm, neo4j_doc
 
+
 @pytest.fixture
 def reranker(mock_deps):
     return Reranker(*mock_deps)
+
 
 @pytest.mark.asyncio
 async def test_rerank_pointwise(reranker, mock_deps, caplog):
     llm, neo4j_doc = mock_deps
     import logging
+
     caplog.set_level(logging.DEBUG)
 
     # Setup
-    chunk = Chunk(
-        id="1",
-        content="test",
-        parent_id="d1",
-        index=0,
-        metadata={"source": "test"}
-    )
+    chunk = Chunk(id="1", content="test", parent_id="d1", index=0, metadata={"source": "test"})
 
     # Mock _get_rerank_score directly
     async def mock_get_score(*args, **kwargs):

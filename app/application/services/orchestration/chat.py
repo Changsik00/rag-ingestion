@@ -44,10 +44,10 @@ class ChatOrchestrator:
 
         # Basic intent-to-filter logic
         if intent.intent in [IntentType.COMPARE, IntentType.SUMMARIZE] and intent.targets:
-             auto_filters["source"] = intent.targets
+            auto_filters["source"] = intent.targets
 
         elif intent.intent == IntentType.FILTER_BY_TOPIC and intent.targets:
-             auto_filters["topic"] = intent.targets
+            auto_filters["topic"] = intent.targets
 
         # Merge filters
         final_filters = {}
@@ -64,7 +64,7 @@ class ChatOrchestrator:
         filters: dict | None,
         user_intent: UserIntent,
         config: RunnableConfig,
-        logging_list: list[str] | None = None
+        logging_list: list[str] | None = None,
     ) -> tuple[list[Chunk], list[Chunk], list[dict], bool]:
         """
         Step 3: Hybrid Search with Fallback
@@ -75,14 +75,10 @@ class ChatOrchestrator:
 
         entities = getattr(user_intent, "targets", [])
         if hasattr(user_intent, "entities"):
-             entities = user_intent.entities
+            entities = user_intent.entities
 
         vector_chunks, keyword_chunks, graph_data = await self.retrieval.hybrid_search(
-            rewritten_query,
-            filters=filters,
-            strategy=strategy,
-            top_k=top_k,
-            entities=entities
+            rewritten_query, filters=filters, strategy=strategy, top_k=top_k, entities=entities
         )
 
         if logging_list is not None:
@@ -98,11 +94,7 @@ class ChatOrchestrator:
             fallback_triggered = True
 
             vector_chunks, keyword_chunks, _ = await self.retrieval.hybrid_search(
-                rewritten_query,
-                filters=None,
-                strategy=strategy,
-                top_k=top_k,
-                entities=entities
+                rewritten_query, filters=None, strategy=strategy, top_k=top_k, entities=entities
             )
 
         return vector_chunks, keyword_chunks, graph_data, fallback_triggered
@@ -113,7 +105,7 @@ class ChatOrchestrator:
         vector_chunks: list[Chunk],
         keyword_chunks: list[Chunk],
         config: RunnableConfig,
-        logging_list: list[str] | None = None
+        logging_list: list[str] | None = None,
     ) -> tuple[list[Chunk], list[dict]]:
         """Step 4: Reranking"""
         all_chunks = vector_chunks + keyword_chunks
@@ -121,16 +113,11 @@ class ChatOrchestrator:
         unique_chunks = list(unique_chunks_map.values())
 
         reranked_chunks, rerank_log = await self.reranker.rerank(
-            rewritten_query,
-            unique_chunks,
-            strategy="pointwise",
-            config=config
+            rewritten_query, unique_chunks, strategy="pointwise", config=config
         )
 
         if logging_list is not None:
-            logging_list.append(
-                f"🎯 [Rerank] Passed {len(reranked_chunks)} / {len(unique_chunks)} chunks."
-            )
+            logging_list.append(f"🎯 [Rerank] Passed {len(reranked_chunks)} / {len(unique_chunks)} chunks.")
 
         return reranked_chunks, rerank_log
 
@@ -142,7 +129,7 @@ class ChatOrchestrator:
         keyword_chunks: list[Chunk],
         graph_data: list[dict],
         reranked_chunks: list[Chunk],
-        config: RunnableConfig
+        config: RunnableConfig,
     ) -> tuple[str, list[dict], str]:
         """Step 5: Answer Generation"""
         context_str, mapped_chunks = self.answer_generator.format_context(
@@ -161,19 +148,10 @@ class ChatOrchestrator:
         return answer_text, citations, context_str
 
     async def run_pipeline(
-        self,
-        query: str,
-        history: list[dict],
-        config: RunnableConfig,
-        manual_filters: dict | None = None
+        self, query: str, history: list[dict], config: RunnableConfig, manual_filters: dict | None = None
     ) -> dict:
         """Executes the complete Chat pipeline."""
-        state = {
-            "query": query,
-            "history": history,
-            "manual_filters": manual_filters,
-            "reasoning_log": []
-        }
+        state = {"query": query, "history": history, "manual_filters": manual_filters, "reasoning_log": []}
 
         user_intent, rewritten_query = await self.classify(query, history)
         state["user_intent"] = user_intent

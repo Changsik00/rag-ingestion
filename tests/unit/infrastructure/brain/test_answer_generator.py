@@ -10,9 +10,11 @@ from app.infrastructure.brain.answer_generator import AnswerGenerator
 def mock_llm():
     return MagicMock()
 
+
 @pytest.fixture
 def generator(mock_llm):
     return AnswerGenerator(mock_llm)
+
 
 @pytest.mark.asyncio
 async def test_generate_answer(generator, mock_llm):
@@ -23,32 +25,17 @@ async def test_generate_answer(generator, mock_llm):
 
     # Execute
     answer = await generator.generate_answer(
-        query="query",
-        rewritten_query="rewritten",
-        context_str="context",
-        config={},
-        temperature=0.0
+        query="query", rewritten_query="rewritten", context_str="context", config={}, temperature=0.0
     )
 
     # Verify
     assert "This is a test answer" in answer
     mock_llm.bind.assert_called_with(temperature=0.0)
 
+
 def test_format_and_parse_citation(generator):
-    chunk1 = Chunk(
-        id="1",
-        content="Text1",
-        parent_id="d1",
-        index=0,
-        metadata={"source": "s1", "title": "t1"}
-    )
-    chunk2 = Chunk(
-        id="2",
-        content="Text2",
-        parent_id="d2",
-        index=0,
-        metadata={"source": "s2", "title": "t2"}
-    )
+    chunk1 = Chunk(id="1", content="Text1", parent_id="d1", index=0, metadata={"source": "s1", "title": "t1"})
+    chunk2 = Chunk(id="2", content="Text2", parent_id="d2", index=0, metadata={"source": "s2", "title": "t2"})
     graph_data = [{"source": "s1", "relationship": "REL", "target": "s2"}]
 
     # 1. Format Context

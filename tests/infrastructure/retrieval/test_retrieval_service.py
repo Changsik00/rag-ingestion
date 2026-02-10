@@ -14,23 +14,19 @@ def mock_repos():
     chroma = MagicMock()
     return neo4j_doc, neo4j_graph, chroma
 
+
 @pytest.fixture
 def retrieval_service(mock_repos):
     neo4j_doc, neo4j_graph, chroma = mock_repos
     return RetrievalService(neo4j_doc, neo4j_graph, chroma)
+
 
 @pytest.mark.asyncio
 async def test_hybrid_search(retrieval_service, mock_repos):
     neo4j_doc, neo4j_graph, chroma = mock_repos
 
     # Setup mocks
-    chunk = Chunk(
-        id="1",
-        content="test",
-        parent_id="d1",
-        index=0,
-        metadata={"source": "test"}
-    )
+    chunk = Chunk(id="1", content="test", parent_id="d1", index=0, metadata={"source": "test"})
     # These are sync methods called in threads
     chroma.search_mmr.return_value = [chunk]
     neo4j_doc.search.return_value = [chunk]
@@ -38,9 +34,7 @@ async def test_hybrid_search(retrieval_service, mock_repos):
     neo4j_graph.find_shortest_path.return_value = []
 
     # Execute
-    v_res, k_res, g_res = await retrieval_service.hybrid_search(
-        "query", filters=None, strategy="hybrid"
-    )
+    v_res, k_res, g_res = await retrieval_service.hybrid_search("query", filters=None, strategy="hybrid")
 
     # Verify
     assert len(v_res) == 1

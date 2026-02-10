@@ -32,8 +32,8 @@ class TestIngestionDeduplication:
         mock_strategy = AsyncMock(spec=DeduplicationStrategy)
         mock_strategy.is_duplicate.return_value = True
 
-        with patch("app.application.services.ingestion.DeduplicationFactory") as MockFactory:
-            MockFactory.return_value.get_strategy.return_value = mock_strategy
+        with patch("app.application.services.ingestion.DeduplicationFactory") as mock_factory:
+            mock_factory.return_value.get_strategy.return_value = mock_strategy
 
             # When
             await ingestion.process_job(job_id)
@@ -82,8 +82,8 @@ class TestIngestionDeduplication:
         mock_strategy = AsyncMock(spec=DeduplicationStrategy)
         mock_strategy.is_duplicate.return_value = False
 
-        with patch("app.application.services.ingestion.DeduplicationFactory") as MockFactory:
-            MockFactory.return_value.get_strategy.return_value = mock_strategy
+        with patch("app.application.services.ingestion.DeduplicationFactory") as mock_factory:
+            mock_factory.return_value.get_strategy.return_value = mock_strategy
 
             # When
             await ingestion.process_job(job_id)
