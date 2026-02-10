@@ -11,19 +11,20 @@
 ---
 
 ## Task 1: Brain Layer Refactoring (Week 1)
-### 1-1. Brain Components Structure
-- [x] Create `app/domain/rag/brain/` directory
-- [x] Create `app/domain/rag/brain/service.py` (Intent Classifier, Query Rewriter logic)
-- [x] Create `app/domain/rag/brain/interfaces.py` (If needed for D.I.)
-- [x] Test: `tests/domain/rag/brain/test_service.py`
-- [x] Verify: Brain logic (classify_intent) works independently
+### 3-1. Orchestration Components Structure
+- [x] Create `app/application/rag/orchestration/` directory
+- [x] Create `app/application/rag/orchestration/service.py` (Main Orchestrator)
+- [x] Create `app/domain/rag/brain/answer_generator.py` (LLM Answer Logic)
+- [x] Create `app/domain/rag/brain/reranker.py` (Reranking Logic)
+- [x] Test: `tests/application/rag/orchestration/test_service.py`
 
-### 1-2. Port Logic to Brain Service
-- [x] Port `classify_intent` from `rag_nodes.py`
-- [x] Port `IntentClassifier` related logic
-- [x] Port `QueryRewriter` logic from `rag_nodes.py`
-- [x] Unit Test passing
-- [x] Commit: `refactor(spec-075): separate brain layer`
+### 3-2. Wiring Components & LangGraph Integration
+- [x] Implement `RAGOrchestrator` class
+- [x] Wiring: Brain -> Retrieval -> Brain (Rerank/Generate)
+- [x] Port `generate_answer` logic to `AnswerGenerator`
+- [x] Port `rerank` logic to `Reranker`
+- [x] Unit Test passing (Mock ALL dependencies)
+- [x] Commit: `refactor(spec-075): separate orchestration layer`
 
 ---
 
