@@ -11,17 +11,22 @@ from app.application.services.agent import ConversationalRAGAgent
 from app.application.services.feedback import Feedback
 from app.application.services.ingestion import Ingestion
 from app.application.services.integrity import Integrity
+from app.application.services.orchestration.chat import ChatOrchestrator
+from app.application.services.orchestration.ingest import IngestOrchestrator
 from app.application.services.rag import RAG
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.core import database
 from app.core.config import get_settings
+from app.domain.interfaces.brain import IAnswerGenerator, IBrainService, IReranker
 from app.domain.interfaces.chunker import Chunker
 from app.domain.interfaces.document_repository import DocumentRepository
 from app.domain.interfaces.graph_repository import GraphRepository
 from app.domain.interfaces.job_repository import JobRepository
+from app.domain.interfaces.retrieval import IRetrievalService
+from app.domain.services.filter_matcher import FilterMatcher
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
-from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
+from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
 from app.infrastructure.chunker.langchain_chunker import LangChainChunker
 from app.infrastructure.factories.llm_factory import LLMFactory
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
@@ -92,10 +97,12 @@ async def get_checkpointer() -> AsyncIterator[AsyncPostgresSaver]:
 async def get_semantic_extractor(
     checkpointer: Annotated[AsyncPostgresSaver, Depends(get_checkpointer)],
 ) -> SemanticExtractor:
-    llm_adapter = LLMFactory.get_llm_adapter()  # LangChainExtractor를 반환
-    # Spec 020: LangGraphAdapter를 통해 그래프 기반 추출 실행
-    # Spec 024: Checkpointer 주입
-    orchestrator = IngestionOrchestrator(llm=llm_adapter, checkpointer=checkpointer)
+    llm_adapter = LLMFactory.get_llm_adapter()
+
+    # Brain interfaces/implementations are shared
+    graph_builder = IngestionGraphBuilder(llm=llm_adapter)
+    orchestrator = IngestOrchestrator(graph_builder=graph_builder)
+    # Checkpointer might need to be passed to graph_builder or orchestrator if used inside
     return SemanticExtractor(llm=orchestrator)
 
 
@@ -128,14 +135,14 @@ def get_ingestion_service(
     )
 
 
-# Spec 024: IngestionOrchestrator 직접 접근 (HITL Control용)
-async def get_ingestion_orchestrator(
+# Spec 024: IngestOrchestrator 직접 접근 (HITL Control용)
+async def get_ingest_orchestrator(
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
-) -> IngestionOrchestrator:
-    # SemanticExtractor.llm is the IngestionOrchestrator
-    if isinstance(extractor.llm, IngestionOrchestrator):
+) -> IngestOrchestrator:
+    # SemanticExtractor.llm is the IngestOrchestrator
+    if isinstance(extractor.llm, IngestOrchestrator):
         return extractor.llm
-    raise ValueError("SemanticExtractor is not using IngestionOrchestrator")
+    raise ValueError("SemanticExtractor is not using IngestOrchestrator")
 
 
 # === RAG Service Dependencies (Spec 032) ===
@@ -160,8 +167,6 @@ def get_intent_classifier() -> IntentClassifier:
 def get_filter_matcher(
     chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)]
 ) -> "FilterMatcher":
-    from app.domain.services.filter_matcher import FilterMatcher
-
     # ChromaDB의 Embedding 함수를 재사용
     # LangChain의 embed_query를 사용 (단일 쿼리 임베딩)
     embedding_fn = chroma_repo.embedding_function
@@ -179,14 +184,14 @@ def get_filter_matcher(
 
 
 
-# === RAG 3-Layer Dependencies (Spec 075) ===
+# === Refined 3-Layer Dependencies (Spec 076) ===
 
 @lru_cache
 def get_brain_service(
     intent_classifier: Annotated[IntentClassifier, Depends(get_intent_classifier)],
     query_rewriter: Annotated[QueryRewriter, Depends(get_query_rewriter)],
-) -> "BrainService":
-    from app.domain.rag.brain.service import BrainService
+) -> "IBrainService":
+    from app.infrastructure.brain.service import BrainService
     return BrainService(intent_classifier, query_rewriter)
 
 
@@ -194,37 +199,36 @@ def get_brain_service(
 def get_retrieval_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     chroma_repo: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
-) -> "RetrievalService":
-    from app.infrastructure.rag.retrieval.service import RetrievalService
+) -> "IRetrievalService":
+    from app.infrastructure.retrieval.service import RetrievalService
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
     neo4j_graph_repo = Neo4jGraphRepository(driver)
     return RetrievalService(neo4j_doc_repo, neo4j_graph_repo, chroma_repo)
 
 
 @lru_cache
-def get_reranker(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> "Reranker":
-    from app.domain.rag.brain.reranker import Reranker
+def get_reranker(driver: Annotated[Driver, Depends(get_neo4j_driver)]) -> "IReranker":
+    from app.infrastructure.brain.reranker import Reranker
     llm = LLMFactory.get_llm_adapter()
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
     return Reranker(llm, neo4j_doc_repo)
 
 
 @lru_cache
-def get_answer_generator() -> "AnswerGenerator":
-    from app.domain.rag.brain.answer_generator import AnswerGenerator
+def get_answer_generator() -> "IAnswerGenerator":
+    from app.infrastructure.brain.answer_generator import AnswerGenerator
     llm = LLMFactory.get_llm_adapter()
     return AnswerGenerator(llm)
 
 
-def get_rag_orchestrator(
-    brain_service: Annotated["BrainService", Depends(get_brain_service)],
-    reranker: Annotated["Reranker", Depends(get_reranker)],
-    answer_generator: Annotated["AnswerGenerator", Depends(get_answer_generator)],
-    retrieval_service: Annotated["RetrievalService", Depends(get_retrieval_service)],
+def get_chat_orchestrator(
+    brain_service: Annotated["IBrainService", Depends(get_brain_service)],
+    reranker: Annotated["IReranker", Depends(get_reranker)],
+    answer_generator: Annotated["IAnswerGenerator", Depends(get_answer_generator)],
+    retrieval_service: Annotated["IRetrievalService", Depends(get_retrieval_service)],
     filter_matcher: Annotated["FilterMatcher", Depends(get_filter_matcher)],
-) -> "RAGOrchestrator":
-    from app.application.rag.orchestration.service import RAGOrchestrator
-    return RAGOrchestrator(
+) -> ChatOrchestrator:
+    return ChatOrchestrator(
         brain_service=brain_service,
         reranker=reranker,
         answer_generator=answer_generator,
@@ -233,10 +237,10 @@ def get_rag_orchestrator(
     )
 
 
-# RAG Graph Builder 의존성 (Updated for Spec 075)
-def get_rag_graph_builder(orchestrator: Annotated["RAGOrchestrator", Depends(get_rag_orchestrator)]):
-    from app.infrastructure.ai.rag_graph import RAGGraphBuilder
-    return RAGGraphBuilder(orchestrator)
+# RAG Graph Builder 의존성 (Updated for Spec 076)
+def get_rag_graph_builder(orchestrator: Annotated[ChatOrchestrator, Depends(get_chat_orchestrator)]):
+    from app.infrastructure.ai.chat.graph_builder import ChatGraphBuilder
+    return ChatGraphBuilder(orchestrator)
 
 
 # RAG Service 의존성 (Spec 033: LangGraph 기반)
@@ -264,19 +268,20 @@ def get_feedback_service() -> Feedback:
     return Feedback()
 
 
-# Integrity Service 의존성 (Spec 042)
+    # Integrity Service 의존성 (Spec 042)
 async def get_integrity_service(
     driver: Annotated[Driver, Depends(get_neo4j_driver)],
     checkpointer: Annotated[AsyncPostgresSaver, Depends(get_checkpointer)],
     chroma_storage: Annotated[ChromaVectorRepository, Depends(get_chroma_vector_repository)],
 ) -> Integrity:
     from app.application.services.integrity import Integrity
+    from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
 
     neo4j_storage = Neo4jDocumentRepository(driver)
-    # 어댑터 생성 (Checkpointer 리셋용)
     llm_adapter = LLMFactory.get_llm_adapter()
-    # SemanticExtractor는 LLMInterface(IngestionOrchestrator)를 사용
-    orchestrator = IngestionOrchestrator(llm=llm_adapter, checkpointer=checkpointer)
+
+    graph_builder = IngestionGraphBuilder(llm=llm_adapter)
+    orchestrator = IngestOrchestrator(graph_builder=graph_builder)
 
     return Integrity(
         primary_repo=neo4j_storage,

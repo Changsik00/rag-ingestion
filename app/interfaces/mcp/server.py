@@ -7,6 +7,7 @@ from app.application.services.rag import RAG
 
 # Domain Imports
 from app.domain.entities.job import JobStatus
+from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
 from app.infrastructure.factories.llm_factory import LLMFactory
 
@@ -47,16 +48,16 @@ async def provide_ingestion_service() -> Ingestion:
 
 
 async def provide_rag_service() -> RAG:
-    from app.application.rag.orchestration.service import RAGOrchestrator
-    from app.domain.rag.brain.answer_generator import AnswerGenerator
-    from app.domain.rag.brain.reranker import Reranker
-    from app.domain.rag.brain.service import BrainService
+    from app.application.services.orchestration.chat import ChatOrchestrator
     from app.domain.services.filter_matcher import FilterMatcher
-    from app.infrastructure.ai.rag_graph import RAGGraphBuilder
-    from app.infrastructure.rag.retrieval.service import RetrievalService
+    from app.infrastructure.ai.chat.graph_builder import ChatGraphBuilder
+    from app.infrastructure.brain.answer_generator import AnswerGenerator
+    from app.infrastructure.brain.reranker import Reranker
+    from app.infrastructure.brain.service import BrainService
     from app.infrastructure.repositories.chroma import ChromaVectorRepository
     from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
     from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
+    from app.infrastructure.retrieval.service import RetrievalService
 
     driver = get_neo4j_driver()
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
@@ -87,7 +88,7 @@ async def provide_rag_service() -> RAG:
     )
 
     # 3. Orchestration Layer
-    orchestrator = RAGOrchestrator(
+    orchestrator = ChatOrchestrator(
         brain_service=brain_service,
         reranker=reranker,
         answer_generator=answer_generator,
@@ -95,7 +96,7 @@ async def provide_rag_service() -> RAG:
         filter_matcher=filter_matcher
     )
 
-    builder = RAGGraphBuilder(orchestrator)
+    builder = ChatGraphBuilder(orchestrator)
     checkpointer = await get_checkpointer()
     graph = builder.build(checkpointer=checkpointer)
 

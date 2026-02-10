@@ -182,7 +182,6 @@ class ChromaVectorRepository(DocumentRepository):
 
             # 첫 번째 청크의 정보로 문서 재구성 (ChromaDB는 청크 중심이므로 완전한 문서 재구성은 한계가 있음)
             # 실제 문서 정보는 Neo4j 등 다른 저장소에서 가져오는 것이 일반적
-            first_chunk_id = results["ids"][0]
             first_chunk_content = results["documents"][0]
             first_chunk_metadata = results["metadatas"][0]
 
@@ -341,18 +340,18 @@ class ChromaVectorRepository(DocumentRepository):
             # [Spec 066 Fix] Similarity Thresholding
             # ChromaDB distances: lower is better (0.0 is exact match, typically > 1.0 is noise)
             # 0.7 is a standard threshold for balanced recall/precision.
-            THRESHOLD = 0.7
+            threshold = 0.7
 
-            valid_indices = [j for j, dist in enumerate(results["distances"][0]) if dist < THRESHOLD]
+            valid_indices = [j for j, dist in enumerate(results["distances"][0]) if dist < threshold]
 
             if not valid_indices:
                 logger.warning(
-                    f"Chroma MMR: Total {len(results['ids'][0])} candidates found, but ALL exceeded distance threshold {THRESHOLD}."
+                    f"Chroma MMR: Total {len(results['ids'][0])} candidates found, but ALL exceeded distance threshold {threshold}."
                 )
                 return []
 
             logger.info(
-                f"Chroma MMR candidates: {len(valid_indices)}/{len(results['ids'][0])} passed threshold {THRESHOLD}. Top IDs: {[results['ids'][0][j] for j in valid_indices[:3]]}"
+                f"Chroma MMR candidates: {len(valid_indices)}/{len(results['ids'][0])} passed threshold {threshold}. Top IDs: {[results['ids'][0][j] for j in valid_indices[:3]]}"
             )
 
             candidate_ids = [results["ids"][0][j] for j in valid_indices]
