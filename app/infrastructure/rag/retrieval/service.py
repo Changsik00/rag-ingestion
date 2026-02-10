@@ -65,12 +65,14 @@ class RetrievalService:
         graph_results = results[2]
 
         # Context Noise Cleaning
+        from app.domain.rag.text_cleaner import clean_context_noise
+        
         vector_results = [
-            c.model_copy(update={"content": self._clean_context_noise(c.content)}) 
+            c.model_copy(update={"content": clean_context_noise(c.content)}) 
             for c in vector_results
         ]
         keyword_results = [
-            c.model_copy(update={"content": self._clean_context_noise(c.content)}) 
+            c.model_copy(update={"content": clean_context_noise(c.content)}) 
             for c in keyword_results
         ]
 
@@ -89,13 +91,3 @@ class RetrievalService:
             return self.neo4j_graph_repo.find_shortest_path(entities)
         return self.neo4j_graph_repo.get_subgraph([query])
 
-    def _clean_context_noise(self, text: str) -> str:
-        if not text:
-            return ""
-        text = re.sub(r"\{\|.*?\|\}", "", text, flags=re.DOTALL)
-        text = re.sub(r"\{\{(?!(?:Infobox|정보상자)).*?\}\}", "", text, flags=re.DOTALL)
-        text = re.sub(r"\[\[파일:.*?\]\]", "", text)
-        text = re.sub(r"\[\[File:.*?\]\]", "", text)
-        text = re.sub(r"\n{3,}", "\n\n", text)
-        text = re.sub(r"\|[\s\|-]+\|\n", "", text)
-        return text.strip()
