@@ -1,6 +1,5 @@
 import json
 from functools import lru_cache
-from uuid import UUID
 
 import chromadb
 from chromadb.utils import embedding_functions

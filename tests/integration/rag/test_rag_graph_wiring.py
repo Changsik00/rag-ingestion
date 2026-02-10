@@ -1,22 +1,23 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from app.domain.rag.brain.service import BrainService
-from app.domain.rag.brain.reranker import Reranker
-from app.domain.rag.brain.answer_generator import AnswerGenerator
-from app.infrastructure.rag.retrieval.service import RetrievalService
+import pytest
+
 from app.application.rag.orchestration.service import RAGOrchestrator
-from app.infrastructure.ai.rag_graph import RAGGraphBuilder
-from app.application.services.rag import RAG
-from app.domain.value_objects.intent import UserIntent, IntentType
+from app.domain.rag.brain.answer_generator import AnswerGenerator
+from app.domain.rag.brain.reranker import Reranker
+from app.domain.rag.brain.service import BrainService
 from app.domain.value_objects.chunk import Chunk
+from app.domain.value_objects.intent import IntentType, UserIntent
+from app.infrastructure.ai.rag_graph import RAGGraphBuilder
+from app.infrastructure.rag.retrieval.service import RetrievalService
+
 
 @pytest.fixture
 def mock_brain():
     brain = MagicMock(spec=BrainService)
     # Async method needs to be explicitly set for AsyncMock when using spec
     brain.classify_and_rewrite = AsyncMock(return_value=(
-        UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="test"), 
+        UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="test"),
         "rewritten"
     ))
     return brain
@@ -54,11 +55,11 @@ def rag_service(mock_brain, mock_retrieval, mock_rerank_service, mock_generator)
         answer_generator=mock_generator,
         retrieval_service=mock_retrieval
     )
-    
+
     # Build Graph
     builder = RAGGraphBuilder(orchestrator)
     graph = builder.build()
-    
+
     # RAG service usually takes 'graph' argument in init if updated
     # Let's check RAG service definition
     return graph # RAG service might wrap it, but graph is runnable
@@ -68,21 +69,21 @@ async def test_rag_e2e_flow(rag_service, mock_brain, mock_retrieval):
     # Execute
     # Invoking graph directly
     initial_state = {
-        "query": "test query", 
-        "history": [], 
+        "query": "test query",
+        "history": [],
         "manual_filters": None,
         "reasoning_log": []
     }
-    
+
     result = await rag_service.ainvoke(initial_state)
-    
+
     # Verify
     assert result["final_answer"] == "Final Answer"
-    
+
     # Verify Wiring
     mock_brain.classify_and_rewrite.assert_called_once()
     mock_retrieval.hybrid_search.assert_called_once()
-    
+
     # Verify State Propagation
     assert result["rewritten_query"] == "rewritten"
     assert len(result["vector_chunks"]) == 1

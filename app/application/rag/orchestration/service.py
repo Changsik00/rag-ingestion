@@ -1,15 +1,14 @@
 import logging
-import asyncio
 from typing import Any
 
 from langchain_core.runnables import RunnableConfig
 
-from app.domain.rag.brain.service import BrainService
-from app.domain.rag.brain.reranker import Reranker
 from app.domain.rag.brain.answer_generator import AnswerGenerator
-from app.infrastructure.rag.retrieval.service import RetrievalService
-from app.domain.value_objects.intent import IntentType, UserIntent
+from app.domain.rag.brain.reranker import Reranker
+from app.domain.rag.brain.service import BrainService
 from app.domain.value_objects.chunk import Chunk
+from app.domain.value_objects.intent import IntentType, UserIntent
+from app.infrastructure.rag.retrieval.service import RetrievalService
 
 logger = logging.getLogger(__name__)
 
@@ -41,31 +40,31 @@ class RAGOrchestrator:
     async def route_filters(self, intent: UserIntent, manual_filters: dict | None) -> dict | None:
         """Step 2: Filter Routing"""
         auto_filters = {}
-        
+
         if not intent:
             return manual_filters
 
         # Basic intent-to-filter logic
         if intent.intent in [IntentType.COMPARE, IntentType.SUMMARIZE] and intent.targets:
              auto_filters["source"] = intent.targets
-                
+
         elif intent.intent == IntentType.FILTER_BY_TOPIC and intent.targets:
              auto_filters["topic"] = intent.targets
-                
+
         # Merge filters
         final_filters = {}
         if auto_filters:
             final_filters.update(auto_filters)
         if manual_filters:
             final_filters.update(manual_filters)
-            
+
         return final_filters if final_filters else None
 
     async def search(
-        self, 
-        rewritten_query: str, 
-        filters: dict | None, 
-        user_intent: UserIntent, 
+        self,
+        rewritten_query: str,
+        filters: dict | None,
+        user_intent: UserIntent,
         config: RunnableConfig,
         logging_list: list[str] | None = None
     ) -> tuple[list[Chunk], list[Chunk], list[dict], bool]:
@@ -76,7 +75,7 @@ class RAGOrchestrator:
         retrieval_config = config.get("configurable", {}).get("retrieval_config", {})
         top_k = retrieval_config.get("top_k", 5)
         strategy = retrieval_config.get("search_strategy", "hybrid")
-        
+
         entities = getattr(user_intent, "targets", [])
         if hasattr(user_intent, "entities"):
              entities = user_intent.entities
@@ -88,7 +87,7 @@ class RAGOrchestrator:
             top_k=top_k,
             entities=entities
         )
-        
+
         if logging_list is not None:
             logging_list.append(
                 f"🔍 [Search] Strategy: {strategy}, Top-K: {top_k}. Found {len(vector_chunks)} vector, {len(keyword_chunks)} keyword, {len(graph_data)} graph facts."
@@ -96,15 +95,15 @@ class RAGOrchestrator:
 
         fallback_triggered = False
         active_results_count = len(vector_chunks) + len(keyword_chunks)
-        
+
         # Fallback Logic
         if filters and active_results_count == 0:
             logger.info("No results found with filters. Triggering Fallback (Global Search)...")
             fallback_triggered = True
-            
+
             if logging_list is not None:
                 logging_list.append("🔄 [Fallback] Strict filters returned zero results. Retrying with Global Search.")
-            
+
             vector_chunks, keyword_chunks, _ = await self.retrieval.hybrid_search(
                 rewritten_query,
                 filters=None,
@@ -112,12 +111,12 @@ class RAGOrchestrator:
                 top_k=top_k,
                 entities=entities
             )
-            
+
             if logging_list is not None:
                 logging_list.append(
                     f"🔍 [Search/Fallback] Found {len(vector_chunks)} vector, {len(keyword_chunks)} keyword."
                 )
-                
+
         return vector_chunks, keyword_chunks, graph_data, fallback_triggered
 
     async def rerank(
@@ -132,19 +131,19 @@ class RAGOrchestrator:
         all_chunks = vector_chunks + keyword_chunks
         unique_chunks_map = {c.id: c for c in all_chunks}
         unique_chunks = list(unique_chunks_map.values())
-        
+
         reranked_chunks, rerank_log = await self.reranker.rerank(
-            rewritten_query, 
-            unique_chunks, 
-            strategy="pointwise", 
+            rewritten_query,
+            unique_chunks,
+            strategy="pointwise",
             config=config
         )
-        
+
         if logging_list is not None:
             logging_list.append(
                 f"🎯 [Rerank] Passed {len(reranked_chunks)} / {len(unique_chunks)} chunks."
             )
-            
+
         return reranked_chunks, rerank_log
 
     async def generate(
@@ -161,22 +160,22 @@ class RAGOrchestrator:
         context_str, mapped_chunks = self.answer_generator.format_context(
             vector_chunks, keyword_chunks, graph_data, reranked_chunks
         )
-        
+
         retrieval_config = config.get("configurable", {}).get("retrieval_config", {})
         temperature = retrieval_config.get("temperature", 0.0)
-        
+
         answer_text = await self.answer_generator.generate_answer(
             query, rewritten_query, context_str, config, temperature
         )
-        
+
         citations = self.answer_generator.parse_citations(answer_text, mapped_chunks)
-        
+
         return answer_text, citations, context_str
 
     async def run_pipeline(
-        self, 
-        query: str, 
-        history: list[dict], 
+        self,
+        query: str,
+        history: list[dict],
         config: RunnableConfig,
         manual_filters: dict | None = None
     ) -> dict:
@@ -184,8 +183,8 @@ class RAGOrchestrator:
         Executes the complete RAG pipeline sequentially.
         """
         state = {
-            "query": query, 
-            "history": history, 
+            "query": query,
+            "history": history,
             "manual_filters": manual_filters,
             "reasoning_log": []
         }
@@ -194,7 +193,7 @@ class RAGOrchestrator:
         user_intent, rewritten_query = await self.classify(query, history)
         state["user_intent"] = user_intent
         state["rewritten_query"] = rewritten_query
-        
+
         # 2. Route
         filters = await self.route_filters(user_intent, manual_filters)
         state["final_filters"] = filters

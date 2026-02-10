@@ -1,5 +1,4 @@
 import logging
-from typing import Tuple
 
 from app.domain.services.intent_classifier import IntentClassifier
 from app.domain.services.query_rewriter import QueryRewriter
@@ -18,7 +17,7 @@ class BrainService:
         self.intent_classifier = intent_classifier
         self.query_rewriter = query_rewriter
 
-    async def classify_and_rewrite(self, query: str, history: list[dict]) -> Tuple[UserIntent, str]:
+    async def classify_and_rewrite(self, query: str, history: list[dict]) -> tuple[UserIntent, str]:
         """
         Classifies the user's intent and rewrites the query for better search results.
 
@@ -36,8 +35,8 @@ class BrainService:
         except Exception as e:
             logger.warning(f"Intent classification failed: {e}. Falling back to GENERAL_QUERY.")
             user_intent = UserIntent(
-                intent=IntentType.GENERAL_QUERY, 
-                targets=[], 
+                intent=IntentType.GENERAL_QUERY,
+                targets=[],
                 reasoning=f"Fallback due to classification error: {e}"
             )
 

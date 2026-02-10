@@ -1,5 +1,6 @@
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock
 
 from app.domain.rag.brain.service import BrainService
 from app.domain.services.intent_classifier import IntentClassifier
@@ -30,8 +31,8 @@ async def test_classify_and_rewrite_success(
     query = "test query"
     history = []
     expected_intent = UserIntent(
-        intent=IntentType.GENERAL_QUERY, 
-        targets=[], 
+        intent=IntentType.GENERAL_QUERY,
+        targets=[],
         reasoning="test"
     )
     mock_intent_classifier.classify.return_value = expected_intent
@@ -54,7 +55,7 @@ async def test_classify_and_rewrite_intent_failure_fallback(
     # Given
     query = "test query"
     history = []
-    
+
     # Mock IntentClassifier to raise exception
     mock_intent_classifier.classify.side_effect = Exception("Intent error")
     mock_query_rewriter.rewrite.return_value = "rewritten query"
@@ -76,13 +77,13 @@ async def test_classify_and_rewrite_rewrite_failure_fallback(
     query = "test query"
     history = []
     expected_intent = UserIntent(
-        intent=IntentType.GENERAL_QUERY, 
-        targets=[], 
+        intent=IntentType.GENERAL_QUERY,
+        targets=[],
         reasoning="test"
     )
     mock_intent_classifier.classify.return_value = expected_intent
-    
-    # Mock QueryRewriter to raise exception (even though implementation swallows it, 
+
+    # Mock QueryRewriter to raise exception (even though implementation swallows it,
     # BrainService has extra safeguard we want to test)
     mock_query_rewriter.rewrite.side_effect = Exception("Rewrite error")
 

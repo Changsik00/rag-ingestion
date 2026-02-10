@@ -1,5 +1,6 @@
 from app.domain.rag.text_cleaner import clean_context_noise
 
+
 def test_clean_context_noise_removes_wiki_templates():
     raw_text = """Some content {{Infobox | role = CEO}}
     More content {{Navbox | topic = Tech}}
@@ -8,11 +9,11 @@ def test_clean_context_noise_removes_wiki_templates():
     cleaned = clean_context_noise(raw_text)
 
     # Infobox is kept (inner content) but wrapper removed?
-    # Logic in clean_context_noise: 
+    # Logic in clean_context_noise:
     # text = re.sub(r"\{\{(?!(?:Infobox|정보상자)).*?\}\}", "", text, flags=re.DOTALL)
     # This removes templates that are NOT Infobox.
     # So Infobox should remain AS IS.
-    
+
     assert "Infobox" in cleaned
     assert "CEO" in cleaned
     assert "Navbox" not in cleaned

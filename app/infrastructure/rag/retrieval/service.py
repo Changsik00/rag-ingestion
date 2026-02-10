@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import re
 from typing import Any
 
 from app.domain.value_objects.chunk import Chunk
@@ -36,7 +35,7 @@ class RetrievalService:
         Executes hybrid search across multiple repositories in parallel.
         """
         tasks = []
-        
+
         # 1. Vector Search Task
         if strategy in ["hybrid", "vector"]:
             tasks.append(asyncio.to_thread(self._search_vector, query, top_k, filters))
@@ -54,7 +53,7 @@ class RetrievalService:
             tasks.append(asyncio.to_thread(self._search_graph, query, entities))
         else:
             tasks.append(asyncio.to_thread(lambda: []))
-        
+
         logger.info(
             f"RetrievalService: query='{query}', filters={filters}, entities={entities}, strategy={strategy}, top_k={top_k}"
         )
@@ -66,13 +65,13 @@ class RetrievalService:
 
         # Context Noise Cleaning
         from app.domain.rag.text_cleaner import clean_context_noise
-        
+
         vector_results = [
-            c.model_copy(update={"content": clean_context_noise(c.content)}) 
+            c.model_copy(update={"content": clean_context_noise(c.content)})
             for c in vector_results
         ]
         keyword_results = [
-            c.model_copy(update={"content": clean_context_noise(c.content)}) 
+            c.model_copy(update={"content": clean_context_noise(c.content)})
             for c in keyword_results
         ]
 

@@ -47,13 +47,13 @@ async def provide_ingestion_service() -> Ingestion:
 
 
 async def provide_rag_service() -> RAG:
-    from app.domain.rag.brain.service import BrainService
-    from app.domain.rag.brain.reranker import Reranker
-    from app.domain.rag.brain.answer_generator import AnswerGenerator
-    from app.infrastructure.rag.retrieval.service import RetrievalService
     from app.application.rag.orchestration.service import RAGOrchestrator
-    from app.infrastructure.ai.rag_graph import RAGGraphBuilder
+    from app.domain.rag.brain.answer_generator import AnswerGenerator
+    from app.domain.rag.brain.reranker import Reranker
+    from app.domain.rag.brain.service import BrainService
     from app.domain.services.filter_matcher import FilterMatcher
+    from app.infrastructure.ai.rag_graph import RAGGraphBuilder
+    from app.infrastructure.rag.retrieval.service import RetrievalService
     from app.infrastructure.repositories.chroma import ChromaVectorRepository
     from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
     from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRepository
@@ -62,7 +62,7 @@ async def provide_rag_service() -> RAG:
     neo4j_doc_repo = Neo4jDocumentRepository(driver)
     graph_repo = Neo4jGraphRepository(driver)
     chroma_repo = ChromaVectorRepository()
-    
+
     # 1. Brain Layer
     llm = LLMFactory.get_llm_adapter()
     query_rewriter = QueryRewriter(llm)
@@ -70,22 +70,22 @@ async def provide_rag_service() -> RAG:
     brain_service = BrainService(intent_classifier, query_rewriter)
     reranker = Reranker(llm, neo4j_doc_repo)
     answer_generator = AnswerGenerator(llm)
-    
+
     # 2. Retrieval Layer
     retrieval_service = RetrievalService(neo4j_doc_repo, graph_repo, chroma_repo)
-    
+
     # Optional Filter Matcher
     # Reuse embedding function for filter matcher
     embedding_fn = chroma_repo.embedding_function
     def single_query_embed(text: str) -> list[float]:
         result = embedding_fn([text])
         return result[0] if result else []
-    
+
     filter_matcher = FilterMatcher(
         embedding_fn=single_query_embed,
         similarity_threshold=0.85
     )
-    
+
     # 3. Orchestration Layer
     orchestrator = RAGOrchestrator(
         brain_service=brain_service,

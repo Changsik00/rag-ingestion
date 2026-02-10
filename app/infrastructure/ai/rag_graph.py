@@ -1,11 +1,12 @@
-from typing import Any, Annotated
+from typing import Any
 
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
-from langchain_core.runnables import RunnableConfig
 
-from app.domain.value_objects.rag_state import RAGGraphState
 from app.application.rag.orchestration.service import RAGOrchestrator
+from app.domain.value_objects.rag_state import RAGGraphState
+
 
 class RAGGraphBuilder:
     """
@@ -36,19 +37,19 @@ class RAGGraphBuilder:
             logs = []
             final_filters = state.get("final_filters", {})
             user_intent = state.get("user_intent")
-            
+
             vector, keyword, graph, fallback = await self.orchestrator.search(
-                state.get("rewritten_query"), 
-                final_filters, 
-                user_intent, 
+                state.get("rewritten_query"),
+                final_filters,
+                user_intent,
                 config,
                 logs
             )
-            
+
             # Append logs manually because state reducer is 'replace' (lambda x,y: y)
             current_logs = state.get("reasoning_log", [])
             new_logs = current_logs + logs
-            
+
             return {
                 "vector_chunks": vector,
                 "keyword_chunks": keyword,
@@ -62,7 +63,7 @@ class RAGGraphBuilder:
             logs = []
             vector = state.get("vector_chunks", [])
             keyword = state.get("keyword_chunks", [])
-            
+
             reranked, rerank_log = await self.orchestrator.rerank(
                 state.get("rewritten_query"),
                 vector,
@@ -70,10 +71,10 @@ class RAGGraphBuilder:
                 config,
                 logs
             )
-            
+
             current_logs = state.get("reasoning_log", [])
             new_logs = current_logs + logs
-            
+
             return {
                 "reranked_chunks": reranked,
                 "rerank_log": rerank_log,

@@ -4,8 +4,8 @@ import pytest
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from psycopg_pool import AsyncConnectionPool
 
-from app.domain.interfaces.llm import LLMInterface
 from app.core.config import get_settings
+from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 

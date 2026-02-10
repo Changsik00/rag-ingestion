@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
 from functools import lru_cache
-from uuid import UUID, uuid4
 
 from neo4j import Driver
 

@@ -2,8 +2,8 @@ from functools import lru_cache
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from app.domain.interfaces.llm import LLMInvoker
 from app.core.config import get_settings
+from app.domain.interfaces.llm import LLMInvoker
 from app.infrastructure.ai.langchain_extractor import LangChainExtractor
 
 

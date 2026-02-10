@@ -39,13 +39,13 @@ class Reranker:
 
         if strategy == "listwise":
             return await self._rerank_listwise(query, chunks, config)
-        
+
         return await self._rerank_pointwise(query, chunks, config)
 
     async def _rerank_pointwise(
         self, query: str, all_chunks: list[Chunk], config: RunnableConfig | None
     ) -> tuple[list[Chunk], list[dict]]:
-        
+
         retrieval_config = config.get("configurable", {}).get("retrieval_config", {}) if config else {}
         temperature = retrieval_config.get("temperature", 0.0)
 
@@ -62,7 +62,7 @@ class Reranker:
             rerank_tasks.append(self._get_rerank_score(chunk, prompt, temperature))
 
         rerank_results = await asyncio.gather(*rerank_tasks)
-        
+
         min_relevance_score = 3
         final_reranked = []
 
@@ -70,9 +70,9 @@ class Reranker:
             score = score_data.get("score", 0)
             reasoning = score_data.get("reasoning", "No reasoning")
             status = "passed" if score >= min_relevance_score else "dropped"
-            
+
             content_snippet = chunk.content[:100] + "..." if len(chunk.content) > 100 else chunk.content
-            
+
             rerank_log.append({
                 "chunk_id": chunk.id,
                 "score": score,
@@ -92,13 +92,13 @@ class Reranker:
     async def _rerank_listwise(
         self, query: str, all_chunks: list[Chunk], config: RunnableConfig | None
     ) -> tuple[list[Chunk], list[dict]]:
-        
+
         retrieval_config = config.get("configurable", {}).get("retrieval_config", {}) if config else {}
         temperature = retrieval_config.get("temperature", 0.0)
-        
+
         rerank_targets = all_chunks[:10]
         expanded_targets = []
-        
+
         # Context Expansion
         for chunk in rerank_targets:
             expanded_content = await self._expand_context_window(chunk)
@@ -118,7 +118,7 @@ class Reranker:
         try:
             llm = self.llm.bind(temperature=temperature)
             content = await llm.agenerate(prompt)
-            
+
             import json
             json_match = re.search(r"\[.*\]", content, re.DOTALL)
             if json_match:
@@ -128,17 +128,17 @@ class Reranker:
 
             chunk_map = {c.id: c for c in rerank_targets}
             min_relevance_score = 3
-            
+
             for item in rankings:
                 chunk_id = item.get("chunk_id")
                 score = item.get("score", 0)
                 reasoning = item.get("reasoning", "No reasoning")
-                
+
                 if chunk_id in chunk_map:
                     chunk = chunk_map[chunk_id]
                     status = "passed" if score >= min_relevance_score else "dropped"
                     content_snippet = chunk.content[:100] + "..." if len(chunk.content) > 100 else chunk.content
-                    
+
                     rerank_log.append({
                         "chunk_id": chunk_id,
                         "score": score,

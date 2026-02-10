@@ -1,10 +1,10 @@
 import re
-import asyncio
-from typing import Any, Tuple
-from collections.abc import Mapping
+from typing import Any
+
 from langchain_core.runnables import RunnableConfig
 
 from app.domain.value_objects.chunk import Chunk
+
 
 class AnswerGenerator:
     """
@@ -71,23 +71,23 @@ class AnswerGenerator:
             return str(response)
 
     def format_context(
-        self, 
-        vector_chunks: list[Chunk], 
-        keyword_chunks: list[Chunk], 
+        self,
+        vector_chunks: list[Chunk],
+        keyword_chunks: list[Chunk],
         graph_data: list[dict],
         reranked_chunks: list[Chunk] | None = None
-    ) -> Tuple[str, dict[int, Chunk]]:
+    ) -> tuple[str, dict[int, Chunk]]:
         """
         Formats retrieved chunks and graph data into a context string.
         """
         # Usage priority: Reranked > Combined(Vector+Keyword)
         target_chunks = vector_chunks + keyword_chunks
         if reranked_chunks is not None:
-            target_chunks = reranked_chunks 
-        
+            target_chunks = reranked_chunks
+
         combined = []
         seen_ids = set()
-        
+
         for c in target_chunks:
             if c.id not in seen_ids:
                 combined.append(c)
@@ -117,7 +117,7 @@ class AnswerGenerator:
                 # Filter out MENTIONS (Internal link metadata) and None values
                 if r == "MENTIONS" or str(s) == "None" or str(t) == "None":
                     continue
-                
+
                 # Simple formatting
                 graph_lines.append(f"- ({s}) -[{r}]-> ({t})")
 
@@ -134,7 +134,7 @@ class AnswerGenerator:
         indices = [int(idx_str) for idx_str in re.findall(r"\[(\d+)\]", answer_text)]
         citations = []
         seen_indices = set()
-        
+
         for idx in indices:
             if idx in mapped_chunks and idx not in seen_indices:
                 chunk = mapped_chunks[idx]
@@ -147,5 +147,5 @@ class AnswerGenerator:
                     }
                 )
                 seen_indices.add(idx)
-        
+
         return citations
