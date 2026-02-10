@@ -60,28 +60,28 @@
 
 ## Task 4: LangGraph Integration (Week 4)
 ### 4-1. LangGraph Refactoring
-- [ ] Create `app/infrastructure/ai/rag_graph_v2.py` (or update existing)
-- [ ] Integrate `RAGOrchestrator` into the graph nodes
-- [ ] Verify State Flow (Input -> Brain -> Retrieval -> Orchestrator -> Output)
-- [ ] Integration Test: Verify end-to-end flow with mocks
+- [x] Create `app/infrastructure/ai/rag_graph_v2.py` (or update existing)
+- [x] Integrate `RAGOrchestrator` into the graph nodes
+- [x] Verify State Flow (Input -> Brain -> Retrieval -> Orchestrator -> Output)
+- [x] Integration Test: Verify end-to-end flow with mocks
 
 ### 4-2. Cleanup & Verification
-- [ ] `app/infrastructure/ai/rag_nodes.py` (Legacy) removal
-- [ ] Run full test suite (Unit + Integration)
-- [ ] Update Architecture Documents (ADR)
-- [ ] Final Cleanup: Unused imports, comments
+- [x] `app/infrastructure/ai/rag_nodes.py` (Legacy) removal
+- [x] Run full test suite (Unit + Integration)
+- [x] Update Architecture Documents (ADR)
+- [x] Final Cleanup: Unused imports, comments
 
 ---
 
 ## Task 5: PR Creation & Archiving (Mandatory)
 <!-- 이 단계는 모든 작업 완료 후 수행합니다. -->
-- [ ] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
-- [ ] Run Full Tests: `uv run pytest`
-- [ ] **Walkthrough 작성**: `specs/075-rag-3-layer-refactoring/walkthrough.md`
-- [ ] **PR Description 작성**: `specs/075-rag-3-layer-refactoring/pr_description.md` (템플릿 준수)
-- [ ] **Archive Commit**: 위 파일을 `specs/`에 커밋 (`docs(spec-075): archive walkthrough and pr description`)
+- [x] Code Quality Check: `uv run ruff check . --fix && uv run ruff format .`
+- [x] Run Full Tests: `uv run pytest`
+- [x] **Walkthrough 작성**: `specs/075-rag-3-layer-refactoring/walkthrough.md`
+- [x] **PR Description 작성**: `specs/075-rag-3-layer-refactoring/pr_description.md` (템플릿 준수)
+- [x] **Archive Commit**: 위 파일을 `specs/`에 커밋 (`docs(spec-075): archive walkthrough and pr description`)
 - [ ] Create PR: `gh pr create --title "refactor: RAG 3-Layer Architecture (Spec 075)" --body-file specs/075-rag-3-layer-refactoring/pr_description.md`
 
 ## Summary
 **총 Task**: 5 Phases
-**현재 진행**: Task 4 (LangGraph Integration)
+**현재 진행**: Task 5 (PR Creation phase - Walkthrough done)
