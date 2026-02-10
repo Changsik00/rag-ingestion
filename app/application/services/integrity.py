@@ -2,8 +2,8 @@ import logging
 from dataclasses import dataclass
 from typing import Any, NamedTuple
 
+from app.application.services.orchestration.ingest import IngestOrchestrator
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class Integrity:
         self,
         primary_repo: DocumentRepository,
         target_repo: DocumentRepository,
-        langgraph_adapter: IngestionOrchestrator | None = None,
+        langgraph_adapter: IngestOrchestrator | None = None,
     ):
         """
         Args:
@@ -256,7 +256,7 @@ class Integrity:
 
     async def get_cleaned_context(self, doc_id: str) -> str:
         """LLM에게 전달될 정제된 컨텍스트 미리보기"""
-        from app.domain.rag.text_cleaner import clean_context_noise
+        from app.core.text_cleaner import clean_context_noise
 
         chunks = self.primary_repo.get_chunks(doc_id)
         if not chunks:
