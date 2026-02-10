@@ -6,8 +6,8 @@ from app.application.services.ingestion import Ingestion
 from app.domain.entities.job import IngestionJob
 from app.domain.exceptions import EntityNotFoundError
 from app.domain.interfaces.job_repository import JobRepository
-from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
-from app.interfaces.api.dependencies import get_ingestion_orchestrator, get_ingestion_service, get_job_repository
+from app.application.services.orchestration.ingest import IngestOrchestrator
+from app.interfaces.api.dependencies import get_ingest_orchestrator, get_ingestion_service, get_job_repository
 from app.interfaces.api.v1.dto.jobs import (
     JobResponse,
     JobStatusResponse,
@@ -42,7 +42,7 @@ async def list_jobs(limit: int = 50, repo: JobRepository = Depends(get_job_repos
 
 
 @router.get("/active/threads", response_model=list[ThreadResponse])
-async def list_active_threads(limit: int = 10, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
+async def list_active_threads(limit: int = 10, adapter: IngestOrchestrator = Depends(get_ingest_orchestrator)):
     """List threads managed by LangGraph checkpointer."""
     threads = await adapter.list_threads(limit=limit)
     return [
@@ -64,14 +64,14 @@ async def get_job(job_id: str, repo: JobRepository = Depends(get_job_repository)
 
 
 @router.get("/{job_id}/status", response_model=JobStatusResponse)
-async def get_job_status(job_id: str, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
+async def get_job_status(job_id: str, adapter: IngestOrchestrator = Depends(get_ingest_orchestrator)):
     """Get LangGraph execution status for a job/thread."""
     status = await adapter.get_thread_status(job_id)
     return JobStatusResponse(job_id=job_id, current_status=status)
 
 
 @router.get("/{job_id}/trace", response_model=TraceResponse)
-async def get_job_trace(job_id: str, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)):
+async def get_job_trace(job_id: str, adapter: IngestOrchestrator = Depends(get_ingest_orchestrator)):
     """Get LangGraph state snapshot."""
 
     # [Spec 060] Explicitly serialize pydantic models in state values
@@ -103,7 +103,7 @@ async def get_job_trace(job_id: str, adapter: IngestionOrchestrator = Depends(ge
 
 @router.post("/{job_id}/resume", response_model=ResumeResponse, status_code=status.HTTP_202_ACCEPTED)
 async def resume_job(
-    job_id: str, request: ResumeRequest, adapter: IngestionOrchestrator = Depends(get_ingestion_orchestrator)
+    job_id: str, request: ResumeRequest, adapter: IngestOrchestrator = Depends(get_ingest_orchestrator)
 ):
     """Resume an interrupted job."""
     result = await adapter.resume(job_id, request.input)
