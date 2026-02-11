@@ -8,10 +8,6 @@ from app.infrastructure.factories.llm_factory import LLMFactory
 
 
 class TestLLMFactory:
-    def setup_method(self):
-        # Clear cache before each test
-        LLMFactory.get_google_llm.cache_clear()
-        LLMFactory.get_llm_adapter.cache_clear()
 
     @patch("app.infrastructure.factories.llm_factory.get_settings")
     def test_get_google_llm_with_gemini_key(self, mock_get_settings):
