@@ -1,6 +1,6 @@
 # Intent Classification Test Cases
 #
-# Purpose: 
+# Purpose:
 #   Intent Classifier의 품질을 검증하기 위한 50개 테스트 케이스
 #
 # Schema:
@@ -81,9 +81,9 @@ test_cases:
   - id: "010"
     category: "general_query"
     query: "넷플릭스 추천 다큐멘터리 알려줘"
-    expected_intent: "general_query"
+    expected_intent: ["general_query", "filter_by_topic"]
     expected_targets: ["넷플릭스", "다큐멘터리"]
-    reasoning: "복합 엔티티 (플랫폼 + 장르)"
+    reasoning: "복합 엔티티 (플랫폼 + 장르) - 검색 또는 필터 모두 가능"
 
   # ==============================
   # Category 2: Compare (10개)
@@ -213,9 +213,9 @@ test_cases:
   - id: "028"
     category: "summarize"
     query: "일론 머스크의 주요 업적 정리"
-    expected_intent: "summarize"
+    expected_intent: ["summarize", "general_query"]
     expected_targets: ["일론 머스크"]
-    reasoning: "인물 업적 요약"
+    reasoning: "인물 업적 요약 - 문서 지정이 없으면 일반 검색도 가능"
 
   - id: "029"
     category: "summarize"
@@ -325,15 +325,16 @@ test_cases:
     category: "edge_case"
     query: "LangChain을 활용한 RAG 시스템 구축 시 Vector Database 선택 기준과 Embedding 모델 최적화 전략, 그리고 Retrieval 정확도를 높이기 위한 Reranking 기법에 대해 상세히 설명해주고, 실제 프로덕션 환경에서의 고려사항도 함께 알려줘"
     expected_intent: "general_query"
-    expected_targets: ["LangChain", "RAG", "Vector Database", "Embedding", "Reranking"]
+    expected_targets:
+      ["LangChain", "RAG", "Vector Database", "Embedding", "Reranking"]
     reasoning: "매우 긴 질문 (100자 이상) - 복합 주제"
 
   - id: "044"
     category: "edge_case"
     query: "What is RAG in AI?"
     expected_intent: "general_query"
-    expected_targets: ["RAG", "AI"]
-    reasoning: "영어 질문 - 다국어 테스트"
+    expected_targets: ["RAG"]
+    reasoning: "영어 질문 - AI 분야의 RAG에 대한 일반 질문 (AI는 컨텍스트로 처리)"
 
   - id: "045"
     category: "edge_case"

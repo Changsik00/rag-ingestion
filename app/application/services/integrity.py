@@ -2,8 +2,8 @@ import logging
 from dataclasses import dataclass
 from typing import Any, NamedTuple
 
+from app.application.services.orchestration.ingest import IngestOrchestrator
 from app.domain.interfaces.document_repository import DocumentRepository
-from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class Integrity:
         self,
         primary_repo: DocumentRepository,
         target_repo: DocumentRepository,
-        langgraph_adapter: IngestionOrchestrator | None = None,
+        langgraph_adapter: IngestOrchestrator | None = None,
     ):
         """
         Args:
@@ -189,12 +189,12 @@ class Integrity:
                 if new_title == "Untitled" and len(source.strip("/").split("/")) > 1:
                     new_title = source.strip("/").split("/")[-2]
 
-                # DocumentMetadata is frozen=True by default in many places, 
+                # DocumentMetadata is frozen=True by default in many places,
                 # but here it's used to update. Document entity has frozen=False.
                 # If DocumentMetadata is frozen, we need to create a new one.
-                # Let's check the entity again. 
+                # Let's check the entity again.
                 # Our DocumentMetadata has frozen=True in its definition.
-                
+
                 # Check if we can update directly or need model_copy
                 try:
                     document.metadata.title = new_title
@@ -202,7 +202,7 @@ class Integrity:
                     # If frozen, use model_copy
                     new_metadata = document.metadata.model_copy(update={"title": new_title})
                     document.metadata = new_metadata
-                
+
                 self.primary_repo.save(document)
                 title = new_title
             else:
@@ -239,15 +239,20 @@ class Integrity:
             # Target Repo (Chroma)에 저장
             logger.info(f"Saving {len(updated_chunks)} chunks to target repo for doc {doc_id}...")
             self.target_repo.save_chunks(updated_chunks)
-            
+
             # Verify if saved
             verify_ids = [str(c.id) for c in updated_chunks]
             target_ids = self.target_repo.get_all_chunk_ids()
             actual_count = sum(1 for cid in verify_ids if cid in target_ids)
-            
+
             if actual_count < len(verify_ids):
-                logger.error(f"Sync verification failed: Saved {len(verify_ids)} but target repo only has {actual_count}")
-                return {"success": False, "error": f"Verification failed: only {actual_count}/{len(verify_ids)} persisted"}
+                logger.error(
+                    f"Sync verification failed: Saved {len(verify_ids)} but target repo only has {actual_count}"
+                )
+                return {
+                    "success": False,
+                    "error": f"Verification failed: only {actual_count}/{len(verify_ids)} persisted",
+                }
 
             return {"success": True, "count": len(updated_chunks)}
         except Exception as e:
@@ -256,17 +261,15 @@ class Integrity:
 
     async def get_cleaned_context(self, doc_id: str) -> str:
         """LLM에게 전달될 정제된 컨텍스트 미리보기"""
-        from app.infrastructure.ai.rag_nodes import RAGNodes
+        from app.core.text_cleaner import clean_context_noise
 
         chunks = self.primary_repo.get_chunks(doc_id)
         if not chunks:
             return "No chunks found."
 
-        # RAGNodes의 클리닝 로직 재사용 (Dependency injection 없이 정적 메서드처럼 활용 위해 임시 인스턴스)
-        nodes = RAGNodes(None, None, None, None, None, None)
         cleaned_parts = []
         for c in chunks:
-            cleaned_parts.append(nodes._clean_context_noise(c.content))
+            cleaned_parts.append(clean_context_noise(c.content))
 
         return "\n\n---\n\n".join(cleaned_parts)
 

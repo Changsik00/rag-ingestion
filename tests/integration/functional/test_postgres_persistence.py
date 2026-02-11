@@ -4,10 +4,10 @@ import pytest
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from psycopg_pool import AsyncConnectionPool
 
-from app.domain.interfaces.llm import LLMInterface
 from app.core.config import get_settings
+from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
-from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
+from app.application.services.orchestration.ingest import IngestOrchestrator
 
 
 # Mock LLM needed for Orchestrator
@@ -47,8 +47,12 @@ async def test_postgres_persistence_flow():
         # Here we manually simulate what dependency injection does.
 
         async with pool.connection() as conn:
+            from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
             checkpointer = AsyncPostgresSaver(conn)
-            orchestrator = IngestionOrchestrator(llm=MockInnerLLM(), checkpointer=checkpointer)
+            builder = IngestionGraphBuilder(llm=MockInnerLLM())
+            orchestrator = IngestOrchestrator(graph_builder=builder)
+            # Inject checkpointer into the COMPILED graph since IngestOrchestrator calls build()
+            orchestrator.graph = builder.build(checkpointer=checkpointer)
 
             # 4. Execute Workflow
             # This should persist state to Postgres

@@ -5,7 +5,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.ingestion_state import IngestionGraphState
-from app.infrastructure.ai.ingestion_nodes import IngestionNodes
+from app.infrastructure.ai.ingest.nodes import IngestionNodes
 
 
 class IngestionGraphBuilder:

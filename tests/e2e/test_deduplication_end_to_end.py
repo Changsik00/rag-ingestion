@@ -8,11 +8,11 @@ Run with: docker-compose up -d neo4j chromadb && uv run pytest tests/e2e/test_de
 import pytest
 
 from app.application.services.ingestion import Ingestion
-from app.interfaces.api.dependencies import get_neo4j_driver
 from app.domain.entities.job import JobStatus
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
 from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
+from app.interfaces.api.dependencies import get_neo4j_driver
 
 
 @pytest.mark.e2e
@@ -20,7 +20,7 @@ class TestDeduplicationEndToEnd:
     """End-to-End tests for deduplication with real databases"""
 
     @pytest.fixture(autouse=True)
-    async def setup(self):
+    def setup(self):
         """Setup real database connections"""
         # Initialize Neo4j
         driver = get_neo4j_driver()

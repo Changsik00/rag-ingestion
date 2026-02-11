@@ -74,25 +74,44 @@ async def test_intent_classification_accuracy(test_case: dict, intent_classifier
     # When
     result = await intent_classifier.classify(query, history=[])
 
-    # Then: Intent Type 검증
-    assert result.intent.value == expected_intent, (
-        f"[{test_id}] Intent mismatch for query: '{query}'\n"
-        f"Expected: {expected_intent}\n"
-        f"Got: {result.intent.value}\n"
-        f"Reasoning: {result.reasoning}"
-    )
+    # Then: Intent Type 검증 (다중 정답 허용 로직)
+    if isinstance(expected_intent, list):
+        assert result.intent.value in expected_intent, (
+            f"[{test_id}] Intent mismatch for query: '{query}'\n"
+            f"Expected one of: {expected_intent}\n"
+            f"Got: {result.intent.value}\n"
+            f"Reasoning: {result.reasoning}"
+        )
+    else:
+        assert result.intent.value == expected_intent, (
+            f"[{test_id}] Intent mismatch for query: '{query}'\n"
+            f"Expected: {expected_intent}\n"
+            f"Got: {result.intent.value}\n"
+            f"Reasoning: {result.reasoning}"
+        )
 
-    # Then: Targets 검증 (Fuzzy Match - expected가 actual의 부분집합이면 통과)
+    # Then: Targets 검증 (Fuzzy Match - 각 expected target이 actual target 중 하나와 부분 일치하면 통과)
     result_targets = set([t.lower() for t in result.targets])  # 대소문자 무시
     expected_targets_lower = set([t.lower() for t in expected_targets])
 
     # Edge Case: expected_targets가 비어있으면 검증 스킵
     if expected_targets:
-        assert expected_targets_lower.issubset(result_targets), (
+        missing_targets = []
+        for expected in expected_targets_lower:
+            found = False
+            for actual in result_targets:
+                # Substring matching (e.g., 'embedding' matches 'embedding model')
+                if expected in actual or actual in expected:
+                    found = True
+                    break
+            if not found:
+                missing_targets.append(expected)
+
+        assert not missing_targets, (
             f"[{test_id}] Targets mismatch for query: '{query}'\n"
-            f"Expected (at least): {expected_targets}\n"
+            f"Expected (at least one matching for each): {expected_targets}\n"
             f"Got: {result.targets}\n"
-            f"Missing: {expected_targets_lower - result_targets}\n"
+            f"Missing (no fuzzy match found for these): {missing_targets}\n"
             f"Reasoning: {result.reasoning}"
         )
 

@@ -2,7 +2,7 @@ import json
 import logging
 
 from app.domain.interfaces.llm import LLMInterface
-from app.domain.value_objects.intent import UserIntent
+from app.domain.value_objects.intent import IntentType, UserIntent
 
 logger = logging.getLogger(__name__)
 
@@ -20,55 +20,54 @@ class IntentClassifier:
     def __init__(self, llm: LLMInterface):
         self.llm = llm
 
-    async def classify(self, query: str, history: list[dict]) -> UserIntent:
+    async def classify(self, query: str, history: list[dict], max_retries: int = 3) -> UserIntent:
         """
-        사용자 쿼리와 대화 히스토리를 분석하여 의도를 분류한다.
-
-        Args:
-            query: 사용자의 현재 질문
-            history: 대화 이력 리스트 [{"role": "user", "content": "..."}, ...]
-
-        Returns:
-            UserIntent: 의도 분류 결과 (intent, targets, reasoning)
-
-        Raises:
-            JSONDecodeError: LLM 응답이 유효한 JSON이 아닐 때
-            ValidationError: Pydantic 스키마 검증 실패 시
+        사용자 쿼리와 대화 히스토리를 분석하여 의도를 분류한다. (Retry 로직 포함)
         """
-        # 1. 히스토리 포맷팅 (최근 5턴만 사용)
+        import asyncio
+        import random
+
+        # 1. 히스토리 포맷팅 (최근 10턴 사용)
         history_text = self._format_history(history[-10:])
-
-        # 2. Intent Classification Prompt 구성
         prompt = self._build_prompt(query, history_text)
 
-        # 3. LLM 호출
-        logger.info(f"Classifying intent for query: {query}")
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                # 2. LLM 호출
+                logger.info(f"Classifying intent (Attempt {attempt + 1}/{max_retries}) for query: {query}")
+                raw_response_obj = await self.llm.agenerate(prompt)
+                raw_response = str(raw_response_obj).strip()
 
-        raw_response_obj = await self.llm.agenerate(prompt)
-        raw_response = str(raw_response_obj).strip()
+                # 3. JSON 파싱 및 Pydantic 검증
+                json_start = raw_response.find("{")
+                json_end = raw_response.rfind("}") + 1
+                
+                if json_start == -1 or json_end == 0:
+                    raise ValueError(f"No JSON found in LLM response: {raw_response}")
 
-        # 4. JSON 파싱 및 Pydantic 검증
-        try:
-            # LLM이 가끔 앞뒤에 텍스트를 추가할 수 있으므로 JSON 부분만 추출
-            json_start = raw_response.find("{")
-            json_end = raw_response.rfind("}") + 1
-            if json_start == -1 or json_end == 0:
-                raise ValueError(f"No JSON found in LLM response: {raw_response}")
+                json_str = raw_response[json_start:json_end]
+                intent_data = json.loads(json_str)
+                user_intent = UserIntent(**intent_data)
 
-            json_str = raw_response[json_start:json_end]
-            intent_data = json.loads(json_str)
-            user_intent = UserIntent(**intent_data)
+                logger.info(f"Intent classified: {user_intent.intent.value}, targets: {user_intent.targets}")
+                return user_intent
 
-            logger.info(f"Intent classified: {user_intent.intent.value}, targets: {user_intent.targets}")
-            return user_intent
+            except (json.JSONDecodeError, ValueError, Exception) as e:
+                last_error = e
+                logger.warning(f"Attempt {attempt + 1} failed for query '{query}': {e}")
+                
+                # Exponential backoff with jitter
+                if attempt < max_retries - 1:
+                    wait_time = (2**attempt) + random.uniform(0, 1)
+                    await asyncio.sleep(wait_time)
+                continue
 
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse LLM response as JSON: {raw_response}")
-            raise ValueError(f"Invalid JSON from LLM: {e}") from e
-
-        except Exception as e:
-            logger.error(f"Intent classification failed: {e}")
-            raise
+        logger.error(f"Intent classification failed after {max_retries} attempts: {last_error}")
+        if last_error:
+            raise last_error
+        
+        raise ValueError("Intent classification failed with unknown error")
 
     def _format_history(self, history: list[dict]) -> str:
         """대화 히스토리를 프롬프트용 텍스트로 변환"""

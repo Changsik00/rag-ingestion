@@ -3,7 +3,11 @@ from fastapi.testclient import TestClient
 
 from app.interfaces.api.main import app
 
-client = TestClient(app)
+@pytest.fixture
+def client(api_client):
+    """Alias for session-scoped api_client."""
+    return api_client
+
 
 
 @pytest.mark.integration
@@ -13,7 +17,7 @@ class TestApiValidation:
     Focus: Verifying standard error responses and strict Pydantic validation.
     """
 
-    def test_validation_error_format(self):
+    def test_validation_error_format(self, client):
         """
         Scenario: Invalid URL provided (missing scheme).
         Expected: 422 Unprocessable Entity with standard ErrorResponse format.
@@ -36,7 +40,7 @@ class TestApiValidation:
         # And: Details contain specific field error
         assert "body.url" in data["details"]
 
-    def test_chunking_config_validation(self):
+    def test_chunking_config_validation(self, client):
         """
         Scenario: Chunking config with invalid values.
         Expected: 422 validation error.
@@ -60,7 +64,7 @@ class TestApiValidation:
         assert "body.chunking_config.chunk_overlap" in data["details"]
         assert "smaller than chunk_size" in data["details"]["body.chunking_config.chunk_overlap"]
 
-    def test_method_not_allowed_format(self):
+    def test_method_not_allowed_format(self, client):
         """
         Scenario: Using GET on a POST-only endpoint.
         Expected: 405 Method Not Allowed with standard ErrorResponse.
@@ -77,7 +81,7 @@ class TestApiValidation:
         assert "HTTP_405" in data["error_code"]
         assert "method not allowed" in data["message"].lower()
 
-    def test_not_found_format(self):
+    def test_not_found_format(self, client):
         """
         Scenario: Requesting a non-existent endpoint.
         Expected: 404 Not Found with standard ErrorResponse.
@@ -93,7 +97,7 @@ class TestApiValidation:
         assert data["status"] == "error"
         assert "HTTP_404" in data["error_code"]
 
-    def test_rag_advanced_settings_validation(self):
+    def test_rag_advanced_settings_validation(self, client):
         """
         Scenario: Invalid advanced settings in ChatRequest.
         Expected: 422 validation error.

@@ -152,7 +152,7 @@ class LangChainExtractor:
             return chain.invoke(prompt)
         except Exception as e:
             logger.error(f"Failed to generate text (Sync): {e}")
-            return f"Error: {str(e)}"
+            raise e
 
     async def agenerate(self, prompt: str) -> str:
         """단순 텍스트 생성 (비동기)"""
@@ -163,7 +163,7 @@ class LangChainExtractor:
             return await chain.ainvoke(prompt)
         except Exception as e:
             logger.error(f"Failed to generate text (Async): {e}")
-            return f"Error: {str(e)}"
+            raise e
 
     def bind(self, **kwargs):
         """LangChain Runnable binding delegation - Returns a new adapter instance"""

@@ -23,7 +23,7 @@ class MockEmbeddingFunction(embedding_functions.EmbeddingFunction):
             elif text == "similar":
                 embeddings.append([0.9, 0.1])
             elif text == "diverse":
-                embeddings.append([0.5, 0.8])
+                embeddings.append([0.7, 0.4])
             else:
                 embeddings.append([0.1, 0.1])
         return embeddings

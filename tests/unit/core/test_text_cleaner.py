@@ -1,14 +1,18 @@
-from app.infrastructure.ai.rag_nodes import RAGNodes
+from app.core.text_cleaner import clean_context_noise
 
 
 def test_clean_context_noise_removes_wiki_templates():
-    nodes = RAGNodes(None, None, None, None, None, None)
-
     raw_text = """Some content {{Infobox | role = CEO}}
     More content {{Navbox | topic = Tech}}
     Even more [[파일:image.jpg]]
     """
-    cleaned = nodes._clean_context_noise(raw_text)
+    cleaned = clean_context_noise(raw_text)
+
+    # Infobox is kept (inner content) but wrapper removed?
+    # Logic in clean_context_noise:
+    # text = re.sub(r"\{\{(?!(?:Infobox|정보상자)).*?\}\}", "", text, flags=re.DOTALL)
+    # This removes templates that are NOT Infobox.
+    # So Infobox should remain AS IS.
 
     assert "Infobox" in cleaned
     assert "CEO" in cleaned
@@ -18,7 +22,6 @@ def test_clean_context_noise_removes_wiki_templates():
 
 
 def test_clean_context_noise_removes_excessive_newlines():
-    nodes = RAGNodes(None, None, None, None, None, None)
     text = "Line 1\n\n\n\nLine 2"
-    cleaned = nodes._clean_context_noise(text)
+    cleaned = clean_context_noise(text)
     assert cleaned == "Line 1\n\nLine 2"

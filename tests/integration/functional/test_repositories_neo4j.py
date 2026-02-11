@@ -40,7 +40,7 @@ def test_neo4j_fulltext_search_logic(neo4j_repo):
     neo4j_repo.create_fulltext_index()
 
     # When: Searching for the unique keyword (with retries for eventual consistency)
-    target_query = f"*{unique_keyword}*"
+    target_query = unique_keyword
     results = []
     for _ in range(20):
         results = neo4j_repo.search(target_query, limit=5)

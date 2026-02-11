@@ -1,24 +1,34 @@
 import time
 from unittest.mock import AsyncMock, Mock, patch
 
+from langchain_core.messages import AIMessage
+
 import pytest
 from fastapi.testclient import TestClient
 from langgraph.checkpoint.memory import MemorySaver
 
 from app.application.services.semantic_extractor import SemanticExtractor
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
-from app.domain.value_objects.ingestion_state import IngestionGraphState, ValidationFeedback
+from app.domain.value_objects.ingestion_state import (
+    IngestionGraphState,
+    ValidationConstraints,
+    ValidationFeedback,
+)
 from app.domain.value_objects.ontology import EntityType
-from app.infrastructure.ai.ingestion_graph import IngestionGraphBuilder
+from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
 from app.interfaces.api.dependencies import get_scraper
 from app.interfaces.api.main import app
 from app.interfaces.api.v1.dto.ingest import IngestResponse
 
-client = TestClient(app)
+@pytest.fixture
+def client(api_client):
+    """Alias for session-scoped api_client."""
+    return api_client
+
 
 
 @pytest.fixture(autouse=True)
-def clean_database():
+def clean_database(client):
     """Reset the database before each test for isolation."""
     # Use the integrity reset endpoint
     client.post("/v1/integrity/reset")
@@ -51,7 +61,7 @@ class TestGraphScenarios:
     Pattern: Given-When-Then (GWT)
     """
 
-    def test_entity_extraction_and_retrieval_flow(self, mock_scraper_graph):
+    def test_entity_extraction_and_retrieval_flow(self, mock_scraper_graph, client):
         # Given: Ingestion request for entity-rich content with a unique URL
         import uuid
 
@@ -101,7 +111,7 @@ class TestGraphScenarios:
         finally:
             app.dependency_overrides.clear()
 
-    def test_hybrid_knowledge_consistency(self, mock_scraper_graph):
+    def test_hybrid_knowledge_consistency(self, mock_scraper_graph, client):
         """
         Scenario: Check that both Vector (Chroma) and Graph (Neo4j) store related info.
         """
@@ -150,7 +160,7 @@ class TestGraphScenarios:
         finally:
             app.dependency_overrides.clear()
 
-    def test_entity_deduplication_and_mentions(self):
+    def test_entity_deduplication_and_mentions(self, client):
         """
         Scenario: Entity deduplication and mention count tracking (BDD/test_knowledge_graph.py)
         """
@@ -191,30 +201,38 @@ class TestGraphScenarios:
                     )
 
                     response = client.post("/v1/ingest/web", json={"url": current_url, "enable_extraction": True})
+                    assert response.status_code in [200, 202]
                     job_id = response.json().get("job_id")
 
                     # Wait for completion
+                    completed = False
                     for _ in range(20):
                         job_resp = client.get(f"/v1/jobs/{job_id}")
                         if job_resp.json().get("current_status") == "COMPLETED":
+                            completed = True
                             break
+                        elif job_resp.json().get("current_status") == "FAILED":
+                            pytest.fail(f"Job {job_id} failed: {job_resp.json()}")
                         time.sleep(0.5)
+                    assert completed, f"Job {job_id} timed out"
 
             # Then: Entity list should contain only one instance of the entity (Deduplicated)
             ent_res = client.get("/v1/entities")
-            matches = [e for e in ent_res.json() if e["name"] == unique_name]
-            assert len(matches) == 1, f"Expected 1 entity but found {len(matches)}"
+            assert ent_res.status_code == 200
+            matches = [e for e in ent_res.json() if e["name"].lower() == unique_name.lower()]
+            assert len(matches) == 1, f"Expected 1 entity but found {len(matches)} in {ent_res.json()}"
 
             # Then: GET /entities/{name}/documents should return 2 unique documents (Mention tracking)
-            doc_res = client.get(f"/v1/entities/{unique_name}/documents")
+            actual_name = matches[0]["name"]
+            doc_res = client.get(f"/v1/entities/{actual_name}/documents")
             assert doc_res.status_code == 200
             docs = doc_res.json()
-            assert len(docs) >= 2
+            assert len(docs) >= 2, f"Expected at least 2 documents for {actual_name}, found {len(docs)}"
 
             # Then: Entity info should be accessible
-            info_res = client.get(f"/v1/entities/{unique_name}/info")
+            info_res = client.get(f"/v1/entities/{actual_name}/info")
             assert info_res.status_code == 200
-            assert info_res.json()["name"] == unique_name
+            assert info_res.json()["name"].lower() == unique_name.lower()
 
         finally:
             app.dependency_overrides.clear()
@@ -241,9 +259,9 @@ class TestGraphScenarios:
             if call_count["validate"] == 1:
                 return {
                     "error": "Critical validation failure",
-                    "steps_history": state.get("steps_history", []) + ["validate_content"],
+                    "messages": [AIMessage(content="Validation failed at validate_content")],
                 }
-            return {"error": None, "steps_history": state.get("steps_history", []) + ["validate_content"]}
+            return {"error": None, "messages": [AIMessage(content="Validation passed at validate_content")]}
 
         builder.nodes.validate_content = mock_validate
         graph = builder.build(checkpointer=checkpointer)
@@ -251,11 +269,12 @@ class TestGraphScenarios:
         initial_state = IngestionGraphState(
             original_url="http://hiitl-test.com",
             raw_content="Content",
-            steps_history=[],
+            messages=[],
             retry_count=0,
             max_retries=3,
             current_strategy="STANDARD",
             active_constraints={"strict_mode": True},
+            hitl_enabled=True,
         )
 
         thread_config = {"configurable": {"thread_id": "hiitl_thread"}}
@@ -272,7 +291,7 @@ class TestGraphScenarios:
         # When: Manually providing feedback to resume
         graph.update_state(
             thread_config,
-            {"error": None, "steps_history": state_snapshot.values["steps_history"] + ["human_review"]},
+            {"error": None, "messages": [AIMessage(content="Human approved")]},
             as_node="human_review",
         )
 
@@ -283,7 +302,8 @@ class TestGraphScenarios:
         # Then: Graph completes successfully
         final_state = graph.get_state(thread_config)
         assert final_state.values["error"] is None
-        assert "human_review" in final_state.values["steps_history"]
+        history = [m.content for m in final_state.values["messages"]]
+        assert "Human approved" in history
 
     @pytest.mark.asyncio
     async def test_reasoning_flow_backtracking(self):
@@ -297,16 +317,16 @@ class TestGraphScenarios:
 
         # When: Validator fails on first run but passes on second
         async def failing_validate(state: IngestionGraphState):
-            history = state.get("steps_history", [])
-            if "analyze_failure" in history:
-                return {"error": None, "steps_history": history + ["validate_content"], "last_feedback": None}
+            history = [m.content for m in state.get("messages", [])]
+            if any("analyze_failure" in str(h) for h in history):
+                return {"error": None, "messages": [AIMessage(content="Validation passed")], "last_feedback": None}
 
             return {
                 "error": "Missing key entities",
                 "last_feedback": ValidationFeedback(
                     source="validator", message="Retry with focus", target_fields=["entities"]
                 ),
-                "steps_history": history + ["validate_content"],
+                "messages": [AIMessage(content="Validation failed")],
             }
 
         builder.nodes.validate_content = failing_validate
@@ -315,18 +335,19 @@ class TestGraphScenarios:
         initial_state = IngestionGraphState(
             original_url="http://reasoning-test.com",
             raw_content="Content",
-            steps_history=[],
+            messages=[],
             retry_count=0,
             max_retries=2,
             current_strategy="STANDARD",
+            active_constraints=ValidationConstraints(),
         )
 
         # When: Invoking the graph
         final_state = await graph.ainvoke(initial_state)
 
         # Then: Analyze failure was executed
-        history = final_state["steps_history"]
-        assert "validate_content" in history
-        assert "analyze_failure" in history
+        history = [m.content for m in final_state["messages"]]
+        assert "Validation failed" in str(history)
+        assert "analyze_failure" in str(history)
         assert "backtracking_context" in final_state
         assert "failure_hypothesis" in final_state["backtracking_context"]

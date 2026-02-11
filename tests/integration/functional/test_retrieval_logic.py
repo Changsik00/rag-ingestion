@@ -180,7 +180,7 @@ class TestRetrievalLogic:
         Technical Test: Feedback-driven strategy selection
         """
         from app.domain.value_objects.ingestion_state import StrategyType, ValidationFeedback
-        from app.infrastructure.ai.ingestion_nodes import select_strategy
+        from app.infrastructure.ai.ingest.nodes import select_strategy
 
         # Given: Feedback indicating poor results
         feedback = [ValidationFeedback(source="validator", message="poor content", target_fields=[])]

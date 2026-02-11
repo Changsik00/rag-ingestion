@@ -37,8 +37,6 @@ def test_generate_handles_error(mock_chat_model):
 
     adapter = LangChainExtractor(llm=mock_chat_model)
 
-    # Execute
-    result = adapter.generate("Test prompt")
-
-    # Verify
-    assert "Error" in result
+    # Execute & Verify
+    with pytest.raises(Exception, match="API Error"):
+        adapter.generate("Test prompt")

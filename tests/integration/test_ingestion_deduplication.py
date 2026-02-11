@@ -23,7 +23,6 @@ class TestIngestionDeduplication:
     @pytest.mark.asyncio
     async def test_process_job_skips_when_duplicate_detected(self, mock_components):
         # Given
-        ingestion = Ingestion(**mock_components)
         job_id = "job-dup"
         job = IngestionJob(job_id=job_id, source_url="http://example.com/dup", status=JobStatus.PENDING)
         mock_components["job_repository"].get_job.return_value = job
@@ -32,8 +31,9 @@ class TestIngestionDeduplication:
         mock_strategy = AsyncMock(spec=DeduplicationStrategy)
         mock_strategy.is_duplicate.return_value = True
 
-        with patch("app.application.services.ingestion.DeduplicationFactory") as MockFactory:
-            MockFactory.return_value.get_strategy.return_value = mock_strategy
+        with patch("app.application.services.ingestion.DeduplicationFactory") as mock_factory:
+            mock_factory.return_value.get_strategy.return_value = mock_strategy
+            ingestion = Ingestion(**mock_components)
 
             # When
             await ingestion.process_job(job_id)
@@ -67,7 +67,6 @@ class TestIngestionDeduplication:
     @pytest.mark.asyncio
     async def test_process_job_runs_when_not_duplicate(self, mock_components):
         # Given
-        ingestion = Ingestion(**mock_components)
         job_id = "job-new"
         job = IngestionJob(job_id=job_id, source_url="http://example.com/new", status=JobStatus.PENDING)
         mock_components["job_repository"].get_job.return_value = job
@@ -82,8 +81,9 @@ class TestIngestionDeduplication:
         mock_strategy = AsyncMock(spec=DeduplicationStrategy)
         mock_strategy.is_duplicate.return_value = False
 
-        with patch("app.application.services.ingestion.DeduplicationFactory") as MockFactory:
-            MockFactory.return_value.get_strategy.return_value = mock_strategy
+        with patch("app.application.services.ingestion.DeduplicationFactory") as mock_factory:
+            mock_factory.return_value.get_strategy.return_value = mock_strategy
+            ingestion = Ingestion(**mock_components)
 
             # When
             await ingestion.process_job(job_id)
