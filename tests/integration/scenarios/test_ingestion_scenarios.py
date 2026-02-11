@@ -5,17 +5,20 @@ from fastapi.testclient import TestClient
 
 from app.interfaces.api.main import app
 
-client = TestClient(app)
+@pytest.fixture
+def client(api_client):
+    """Alias for session-scoped api_client to maintain compatibility while avoiding pool closing."""
+    return api_client
 
 
-def wait_for_job_completion(job_id: str, timeout: int = 30):
+def wait_for_job_completion(client: TestClient, job_id: str, timeout: int = 30):
     for _ in range(timeout):
         response = client.get(f"/v1/jobs/{job_id}")
         if response.status_code != 200:
             break
         job = response.json()
         status = job.get("current_status") or job.get("status")
-        if status in ["COMPLETED", "FAILED"]:
+        if status in ["COMPLETED", "FAILED", "SKIPPED"]:
             job["status"] = status
             return job
         time.sleep(1)
@@ -29,7 +32,7 @@ class TestIngestionScenarios:
     Pattern: Given-When-Then (GWT)
     """
 
-    def test_web_ingestion_with_chunking_verification(self):
+    def test_web_ingestion_with_chunking_verification(self, client):
         """
         Scenario: Ingest and verify chunking strategy (BDD/test_chunking.py logic)
         """
@@ -53,9 +56,9 @@ class TestIngestionScenarios:
             # When: Ingestion request is made
             response = client.post("/v1/ingest/web", json={"url": url})
             job_id = response.json()["job_id"]
-            wait_for_job_completion(job_id)
+            wait_for_job_completion(client, job_id)
 
-            # Then: Multiple chunks are created for the same document
+            # When: Searching for the unique keyword (with retries for eventual consistency)
             doc_id = url  # Standard mapping
             chunks_res = client.get(f"/v1/documents/{doc_id}/chunks")
             if chunks_res.status_code == 200:
@@ -65,7 +68,7 @@ class TestIngestionScenarios:
         finally:
             app.dependency_overrides.clear()
 
-    def test_web_ingestion_with_special_characters_url(self):
+    def test_web_ingestion_with_special_characters_url(self, client):
         """
         Scenario: Ingest URL with special characters (Korean, spaces) (BDD/test_edge_cases.py)
         """
@@ -94,7 +97,7 @@ class TestIngestionScenarios:
             # Then: Request is accepted (202) and processing succeeds
             assert response.status_code == 202
             job_id = response.json()["job_id"]
-            job = wait_for_job_completion(job_id)
+            job = wait_for_job_completion(client, job_id)
             assert job["status"] == "COMPLETED"
 
             # Then: Document is searchable by the encoded/original URL
@@ -104,7 +107,7 @@ class TestIngestionScenarios:
         finally:
             app.dependency_overrides.clear()
 
-    def test_ingestion_idempotency_and_duplicates(self):
+    def test_ingestion_idempotency_and_duplicates(self, client):
         """
         Scenario: Multiple requests for the same URL (High Priority Scenario)
         """
@@ -128,14 +131,17 @@ class TestIngestionScenarios:
                 )
 
         # Mock Extractor to avoid LLM calls
+        from app.domain.value_objects.extracted_metadata import ExtractedMetadata
+
         class MockExtractor(SemanticExtractor):
-            async def extract(self, content: str, url: str) -> dict:
-                return {
-                    "title": "Idempotency Test",
-                    "summary": "Mock Summary",
-                    "keywords": ["mock", "test"],
-                    "entities": [],
-                }
+            async def extract(self, text: str, metadata: dict | None = None, thread_id: str | None = None) -> ExtractedMetadata:
+                return ExtractedMetadata(
+                    title="Idempotency Test",
+                    summary="Mock Summary",
+                    keywords=["mock", "test"],
+                    entities={},
+                    language="en"
+                )
 
         mock_extractor_instance = MockExtractor(llm=None)  # type: ignore
 
@@ -157,22 +163,21 @@ class TestIngestionScenarios:
             assert id1 != id2
 
             # When: Waiting for completion
-            wait_for_job_completion(id1)
-            wait_for_job_completion(id2)
+            wait_for_job_completion(client, id1)
+            wait_for_job_completion(client, id2)
 
             # Then: Documents are searchable and IDs are unique
             doc_res = client.get("/v1/documents")
             docs = doc_res.json()
             matching = [d for d in docs if d.get("metadata", {}).get("source_url") == url]
 
-            # Should have at least 2 entries (duplicates allowed by design or handled as ensuring existence)
-            # The original test expected duplicates (len >= 2).
-            assert len(matching) >= 2
-            assert len(set(d["id"] for d in matching)) == len(matching)
+            # Should have exactly 1 entry due to deduplication (Spec 065)
+            assert len(matching) == 1
+            assert len(set(d["id"] for d in matching)) == 1
         finally:
             app.dependency_overrides.clear()
 
-    def test_concurrent_ingestion_throughput(self):
+    def test_concurrent_ingestion_throughput(self, client):
         """
         Scenario: Issuing multiple ingestion requests simultaneously
         """

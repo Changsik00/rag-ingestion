@@ -75,7 +75,12 @@ def test_get_document_drift_report_groups_by_document(service, mock_primary_repo
 def test_propagate_document_metadata_updates_chunks(service, mock_primary_repo):
     # Given
     doc_id = str(uuid4())
-    doc = MagicMock(id=doc_id, metadata={"title": "New Title"})
+    from app.domain.value_objects.document_metadata import DocumentMetadata
+    mock_meta = MagicMock(spec=DocumentMetadata)
+    mock_meta.title = "New Title"
+    mock_meta.source_id = "http://test.com"
+    
+    doc = MagicMock(id=doc_id, metadata=mock_meta)
     chunk1 = Chunk(id=str(uuid4()), content="c1", parent_id=doc_id, index=0, metadata={})
 
     mock_primary_repo.get.return_value = doc

@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
 from app.domain.value_objects.ingestion_state import IngestionGraphState, ValidationFeedback
-from app.infrastructure.ai.ingestion_nodes import IngestionNodes
+from app.infrastructure.ai.ingest.nodes import IngestionNodes
 
 
 def test_analyze_failure_creates_hypothesis():

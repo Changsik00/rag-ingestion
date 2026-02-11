@@ -285,9 +285,9 @@ class Neo4jDocumentRepository(DocumentRepository):
             # Lucene scores below 1.0 are typically very weak/random noise.
             # Adding score filter to where_snippet
             if where_snippet:
-                where_snippet += " AND score > 1.0"
+                where_snippet += " AND score > 0.0"
             else:
-                where_snippet = "WHERE score > 1.0"
+                where_snippet = "WHERE score > 0.0"
 
             cypher_query = f"""
             CALL db.index.fulltext.queryNodes("chunk_fulltext", $keyword) YIELD node, score

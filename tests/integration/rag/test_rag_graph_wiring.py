@@ -2,19 +2,18 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from app.application.rag.orchestration.service import RAGOrchestrator
-from app.domain.rag.brain.answer_generator import AnswerGenerator
-from app.domain.rag.brain.reranker import Reranker
-from app.domain.rag.brain.service import BrainService
+from app.application.services.orchestration.chat import ChatOrchestrator
+from app.domain.interfaces.brain import IAnswerGenerator, IBrainService, IReranker
+from app.domain.interfaces.retrieval import IRetrievalService
 from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
-from app.infrastructure.ai.rag_graph import RAGGraphBuilder
-from app.infrastructure.rag.retrieval.service import RetrievalService
+from app.infrastructure.ai.chat.graph_builder import ChatGraphBuilder
+from app.infrastructure.retrieval.service import RetrievalService
 
 
 @pytest.fixture
 def mock_brain():
-    brain = MagicMock(spec=BrainService)
+    brain = MagicMock(spec=IBrainService)
     # Async method needs to be explicitly set for AsyncMock when using spec
     brain.classify_and_rewrite = AsyncMock(
         return_value=(UserIntent(intent=IntentType.GENERAL_QUERY, targets=[], reasoning="test"), "rewritten")
@@ -24,7 +23,7 @@ def mock_brain():
 
 @pytest.fixture
 def mock_retrieval():
-    retrieval = MagicMock(spec=RetrievalService)
+    retrieval = MagicMock(spec=IRetrievalService)
     chunk = Chunk(id="1", content="content", parent_id="d1", index=0)
     retrieval.hybrid_search = AsyncMock(return_value=([chunk], [], []))
     return retrieval
@@ -32,7 +31,7 @@ def mock_retrieval():
 
 @pytest.fixture
 def mock_rerank_service():
-    reranker = MagicMock(spec=Reranker)
+    reranker = MagicMock(spec=IReranker)
     chunk = Chunk(id="1", content="content", parent_id="d1", index=0)
     reranker.rerank = AsyncMock(return_value=([chunk], []))
     return reranker
@@ -40,7 +39,7 @@ def mock_rerank_service():
 
 @pytest.fixture
 def mock_generator():
-    generator = MagicMock(spec=AnswerGenerator)
+    generator = MagicMock(spec=IAnswerGenerator)
     generator.generate_answer = AsyncMock(return_value="Final Answer")
     generator.format_context.return_value = ("context", {})
     generator.parse_citations.return_value = []
@@ -52,7 +51,7 @@ def mock_generator():
 @pytest.fixture
 def rag_service(mock_brain, mock_retrieval, mock_rerank_service, mock_generator):
     # Assemble 3-Layer Components
-    orchestrator = RAGOrchestrator(
+    orchestrator = ChatOrchestrator(
         brain_service=mock_brain,
         reranker=mock_rerank_service,
         answer_generator=mock_generator,
@@ -60,7 +59,7 @@ def rag_service(mock_brain, mock_retrieval, mock_rerank_service, mock_generator)
     )
 
     # Build Graph
-    builder = RAGGraphBuilder(orchestrator)
+    builder = ChatGraphBuilder(orchestrator)
     graph = builder.build()
 
     # RAG service usually takes 'graph' argument in init if updated

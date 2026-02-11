@@ -7,7 +7,11 @@ from app.application.services.integrity import ResetResult
 from app.interfaces.api.dependencies import get_integrity_service
 from app.interfaces.api.main import app
 
-client = TestClient(app)
+@pytest.fixture
+def client(api_client):
+    """Alias for session-scoped api_client."""
+    return api_client
+
 
 
 @pytest.mark.integration
@@ -30,7 +34,7 @@ class TestSpecialFlows:
         assert state["error"] is not None
         # (Verification logic mirrors the capability to halt and resume)
 
-    async def test_full_data_integrity_reset(self):
+    async def test_full_data_integrity_reset(self, client):
         # Given: A mock integrity service that can wipe all backends
         mock_integrity = MagicMock()
         mock_integrity.reset_all = AsyncMock(return_value=ResetResult(neo4j="ok", chroma="ok", sqlite="ok"))

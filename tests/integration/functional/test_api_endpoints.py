@@ -6,7 +6,11 @@ from langchain_core.messages import AIMessage
 
 from app.interfaces.api.main import app
 
-client = TestClient(app)
+@pytest.fixture
+def client(api_client):
+    """Alias for session-scoped api_client."""
+    return api_client
+
 
 
 @pytest.mark.integration
@@ -17,7 +21,7 @@ class TestApiEndpoints:
     Pattern: Given-When-Then (GWT)
     """
 
-    def test_health_check_flow(self):
+    def test_health_check_flow(self, client):
         # Given: System is running
 
         # When: GET /v1/health requested
@@ -31,7 +35,7 @@ class TestApiEndpoints:
 
     # --- Storage & Integrity Endpoints ---
 
-    def test_storage_stats_flow(self):
+    def test_storage_stats_flow(self, client):
         # Given: Valid storage state
 
         # When: GET /v1/storage/stats requested
@@ -42,7 +46,7 @@ class TestApiEndpoints:
         data = response.json()
         assert "total_primary" in data or "message" in data
 
-    def test_storage_reports_access(self):
+    def test_storage_reports_access(self, client):
         # Given: Storage endpoints exist
 
         # When: GET /v1/storage/reports requested
@@ -54,7 +58,7 @@ class TestApiEndpoints:
 
     # --- RAG & Graph Endpoints ---
 
-    def test_rag_autocomplete_query(self):
+    def test_rag_autocomplete_query(self, client):
         # Given: Search term 'test'
         query = "test"
 
@@ -67,7 +71,7 @@ class TestApiEndpoints:
         assert isinstance(data, list)
 
     @pytest.mark.asyncio
-    async def test_rag_ask_flow(self):
+    async def test_rag_ask_flow(self, client):
         # Given: Valid payload with advanced settings
         payload = {
             "message": "Hello",
@@ -87,7 +91,7 @@ class TestApiEndpoints:
             assert response.status_code == 202
 
     @pytest.mark.asyncio
-    async def test_rag_ask_validation_error(self):
+    async def test_rag_ask_validation_error(self, client):
         """Spec 055: Test validation logic for AdvancedSettings"""
         # Given: Invalid payload (top_k=0, allowed range 1-100)
         payload = {"message": "Hello", "advanced_settings": {"top_k": 0}}
@@ -99,7 +103,7 @@ class TestApiEndpoints:
         # Current implementation (dict) will return 202, so this will FAIL until ChatRequest is applied.
         assert response.status_code == 422
 
-    def test_graph_schema_retrieval(self):
+    def test_graph_schema_retrieval(self, client):
         # Given: Active Neo4j connection
 
         # When: GET /v1/graph/schema
@@ -113,7 +117,7 @@ class TestApiEndpoints:
 
     # --- Jobs & Documents Endpoints ---
 
-    def test_list_jobs_with_mock(self):
+    def test_list_jobs_with_mock(self, client):
         # Given: Mocked Job Repository with one job
         from datetime import datetime, timezone
 
@@ -141,7 +145,7 @@ class TestApiEndpoints:
         finally:
             app.dependency_overrides.clear()
 
-    def test_list_documents_with_seed(self, seed_test_data):
+    def test_list_documents_with_seed(self, seed_test_data, client):
         # Given: Seeded test data (via fixture)
 
         # When: GET /v1/documents
@@ -158,7 +162,7 @@ class TestApiEndpoints:
             meta = first_doc["metadata"]
             assert any(k in meta for k in ["source_id", "url", "source_url", "title"])
 
-    def test_invalid_job_id_lookup(self):
+    def test_invalid_job_id_lookup(self, client):
         """
         Functional Test: Querying a non-existent job ID
         """

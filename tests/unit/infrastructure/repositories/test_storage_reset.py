@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
-from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
+from app.application.services.orchestration.ingest import IngestOrchestrator
 from app.infrastructure.repositories.chroma import ChromaVectorRepository
 from app.infrastructure.repositories.neo4j_document_repository import Neo4jDocumentRepository
 
@@ -79,7 +79,14 @@ async def test_langgraph_adapter_reset_checkpoints():
     # execute is also async in AsyncPostgresSaver's conn
     mock_conn.execute = AsyncMock()
 
-    adapter = IngestionOrchestrator(llm=mock_llm, checkpointer=mock_checkpointer)
+    from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
+    builder = IngestionGraphBuilder(llm=mock_llm)
+    adapter = IngestOrchestrator(graph_builder=builder)
+    
+    # Inject checkpointer/graph for testing reset_checkpoints
+    mock_graph = MagicMock()
+    mock_graph.checkpointer = mock_checkpointer
+    adapter.graph = mock_graph
 
     # When
     await adapter.reset_checkpoints()

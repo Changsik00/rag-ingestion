@@ -17,6 +17,17 @@ class ChatOrchestrator:
     Refined from RAGOrchestrator to be use-case specific.
     """
 
+    async def cleanup_thread(self, thread_id: str) -> None:
+        """Helper to cleanup thread history."""
+        # ChatOrchestrator itself is stateless, but adapters using it might use checkpointers.
+        # This is a placeholder for parity with IngestOrchestrator.
+        pass
+
+    async def reset_checkpoints(self) -> None:
+        """Helper to reset checkpoints."""
+        # ChatOrchestrator itself is stateless. Placeholder.
+        pass
+
     def __init__(
         self,
         brain_service: IBrainService,

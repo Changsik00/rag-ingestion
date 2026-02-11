@@ -20,7 +20,7 @@ class Neo4jGraphRepository:
         with self.driver.session() as session:
             session.run(cq.CREATE_ENTITY_INDEX)
 
-    def save_entity(self, name: str, entity_type: EntityType | str) -> str:
+    def save_entity(self, name: str, entity_type: EntityType) -> str:
         """Entity 노드 MERGE (중복 시 기존 반환)"""
         type_val = entity_type.value if hasattr(entity_type, "value") else entity_type
         with self.driver.session() as session:

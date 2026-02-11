@@ -20,7 +20,7 @@ class TestDeduplicationEndToEnd:
     """End-to-End tests for deduplication with real databases"""
 
     @pytest.fixture(autouse=True)
-    async def setup(self):
+    def setup(self):
         """Setup real database connections"""
         # Initialize Neo4j
         driver = get_neo4j_driver()

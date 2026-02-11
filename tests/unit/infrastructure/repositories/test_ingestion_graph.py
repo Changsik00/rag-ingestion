@@ -7,18 +7,18 @@ from app.domain.interfaces.llm import LLMInterface
 
 
 def test_graph_builder_import():
-    if not importlib.util.find_spec("app.infrastructure.ai.ingestion_graph"):
-        pytest.fail("app.infrastructure.ai.ingestion_graph module not found")
+    if not importlib.util.find_spec("app.infrastructure.ai.ingest.graph_builder"):
+        pytest.fail("app.infrastructure.ai.ingest.graph_builder module not found")
 
     try:
-        from app.infrastructure.ai.ingestion_graph import IngestionGraphBuilder  # noqa: F401
+        from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder  # noqa: F401
     except ImportError:
-        pytest.fail("IngestionGraphBuilder not found in app.infrastructure.ai.ingestion_graph")
+        pytest.fail("IngestionGraphBuilder not found in app.infrastructure.ai.ingest.graph_builder")
 
 
 def test_build_graph_returns_compiled_graph():
     """GraphBuilder가 컴파일된 그래프를 반환하는지 검증"""
-    from app.infrastructure.ai.ingestion_graph import IngestionGraphBuilder
+    from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
 
     mock_llm = MagicMock(spec=LLMInterface)
     builder = IngestionGraphBuilder(llm=mock_llm)

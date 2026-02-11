@@ -2,6 +2,8 @@ import logging
 import uuid
 from typing import Any
 
+from langchain_core.messages import AIMessage
+
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
 logger = logging.getLogger(__name__)
@@ -67,3 +69,37 @@ class IngestOrchestrator:
                 logger.info(f"Cleanup: History for thread {thread_id} deleted.")
             except Exception as e:
                 logger.error(f"Cleanup failed for thread {thread_id}: {e}")
+
+    async def list_threads(self, limit: int = 50) -> list[Any]:
+        """List active threads using checkpointer."""
+        if not self.graph.checkpointer:
+            return []
+        return [t async for t in self.graph.checkpointer.alist(None, limit=limit)]
+
+    async def get_thread_status(self, thread_id: str) -> str:
+        """Get status of a specific thread."""
+        config = {"configurable": {"thread_id": thread_id}}
+        snapshot = await self.graph.aget_state(config)
+        return "INTERRUPTED" if snapshot.next else "COMPLETED"
+
+    async def get_state(self, thread_id: str) -> Any:
+        """Get full state for a thread."""
+        config = {"configurable": {"thread_id": thread_id}}
+        return await self.graph.aget_state(config)
+
+    async def resume(self, thread_id: str, user_input: Any) -> dict:
+        """Resume interrupted workflow with human feedback."""
+        config = {"configurable": {"thread_id": thread_id}}
+        # Spec 022: Manual update state before resume
+        await self.graph.aupdate_state(config, {"error": None, "messages": [AIMessage(content=f"Human Feedback: {user_input}")]}, as_node="human_review")
+        return await self.graph.ainvoke(None, config=config)
+
+    async def reset_checkpoints(self) -> None:
+        """Truncate all checkpoints (Admin use only)."""
+        if self.graph.checkpointer:
+            # Assuming PostgresSaver
+            conn = getattr(self.graph.checkpointer, "conn", None)
+            if conn:
+                await conn.execute("TRUNCATE checkpoints RESTART IDENTITY CASCADE;")
+                await conn.commit()
+                logger.info("Checkpoints truncated successfully.")

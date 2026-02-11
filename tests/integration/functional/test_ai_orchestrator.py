@@ -2,7 +2,7 @@ import pytest
 
 from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
-from app.infrastructure.ai.ingestion_orchestrator import IngestionOrchestrator
+from app.application.services.orchestration.ingest import IngestOrchestrator
 
 # pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
@@ -25,7 +25,9 @@ async def test_langgraph_adapter_integration():
     mock_inner_llm = MockInnerLLM()
 
     # 2. Init Adapter
-    adapter = IngestionOrchestrator(llm=mock_inner_llm)
+    from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
+    builder = IngestionGraphBuilder(llm=mock_inner_llm)
+    adapter = IngestOrchestrator(graph_builder=builder)
 
     # 3. Execute
     text = "This is a test content."
