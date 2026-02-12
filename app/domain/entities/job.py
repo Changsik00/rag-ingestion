@@ -7,6 +7,12 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class JobStatus(str, Enum):
     PENDING = "PENDING"
+    COLLECTING = "COLLECTING"
+    DEDUPLICATING = "DEDUPLICATING"
+    EXTRACTING = "EXTRACTING"
+    CHUNKING = "CHUNKING"
+    INDEXING = "INDEXING"
+    ROLLING_BACK = "ROLLING_BACK"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"

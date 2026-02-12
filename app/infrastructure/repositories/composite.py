@@ -52,6 +52,18 @@ class CompositeDocumentRepository(DocumentRepository):
     def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
         return self.neo4j.get_chunks_by_ids(chunk_ids)
 
+    async def delete(self, doc_id: str) -> bool:
+        """
+        [Spec 076] Delete a document from both Neo4j and ChromaDB.
+        """
+        # 1. Delete from Neo4j
+        neo4j_success = await self.neo4j.delete(doc_id)
+            
+        # 2. Delete from ChromaDB
+        chroma_success = await self.chroma.delete(doc_id)
+            
+        return neo4j_success or chroma_success
+
     def get_document_stats(self) -> list[dict]:
         return self.neo4j.get_document_stats()
 

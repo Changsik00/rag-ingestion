@@ -4,10 +4,10 @@ import pytest
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from psycopg_pool import AsyncConnectionPool
 
+from app.application.services.orchestration.ingest import IngestOrchestrator
 from app.core.config import get_settings
 from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
-from app.application.services.orchestration.ingest import IngestOrchestrator
 
 
 # Mock LLM needed for Orchestrator

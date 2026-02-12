@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -136,12 +137,66 @@ class Ingestion:
         self.job_repository.create_job(job)
         return job
 
-    async def process_job(self, job_id: str, force_refresh: bool = False) -> None:
-        """Execute the ingestion logic asynchronously.
+    async def ingest_url(
+        self,
+        url: str,
+        chunking_config: dict | None = None,
+        custom_metadata: dict | None = None,
+        force_refresh: bool = False,
+    ) -> IngestionJob:
+        """
+        [Spec 076] Entry point for Saga-based ingestion.
+        Publishes IngestionStarted event to the internal EventBus.
+        """
+        # [Spec 065] Initial ID/URL-based Deduplication Check
+        if not force_refresh:
+            from app.domain.entities.job import JobStatus
+            last_job = self.job_repository.find_last_job_by_source(
+                url,
+                statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING],
+            )
+            if last_job:
+                logger.info(f"URL {url} already has an active or completed job: {last_job.job_id}")
+                # We could return the existing job or create a SKIPPED one
+                # For consistency with existing logic, let's created a SKIPPED job
+                job = self.create_job(url=url, chunking_config=chunking_config, custom_metadata=custom_metadata)
+                job.status = JobStatus.SKIPPED
+                job.skip_reason = f"Duplicate of job {last_job.job_id} (Status: {last_job.status})"
+                self.job_repository.update_job(job)
+                return job
 
-        Args:
-            job_id: Job ID to process
-            force_refresh: If True, bypass deduplication check (Admin Force Refresh)
+        # 1. Create Job Entry
+        job = self.create_job(
+            url=url, 
+            chunking_config=chunking_config, 
+            custom_metadata=custom_metadata
+        )
+        
+        # [Spec 072/076] Store force_refresh in job for handlers to see
+        if force_refresh:
+             if job.custom_metadata is None:
+                 job.custom_metadata = {}
+             job.custom_metadata["force_refresh"] = True
+             self.job_repository.update_job(job)
+
+        # 2. Publish Event to start the Saga
+        from app.core.events import bus
+        from app.domain.events.ingestion_events import IngestionStarted
+        
+        # [Spec 076] Fire and forget: Decouple API response from Saga execution
+        # Use asyncio.create_task to ensure the Saga starts in the background
+        # but the current request returns immediately with the job ID.
+        asyncio.create_task(bus.publish("IngestionStarted", IngestionStarted(
+            job_id=job.job_id,
+            source_url=url
+        )))
+        
+        return job
+
+    async def process_job(self, job_id: str, force_refresh: bool = False) -> None:
+        """
+        [Spec 076] Orchestrate the job processing using the Saga pattern.
+        This replaces the old procedural logic to ensure transaction integrity.
         """
         job = self.job_repository.get_job(job_id)
         if not job:
@@ -149,141 +204,38 @@ class Ingestion:
             return
 
         try:
-            # [Spec 072] 1. Force Refresh Check (Admin Override)
+            from app.core.events import bus
+            
+            # [Spec 072/076] Store force_refresh in job for handlers to see
             if force_refresh:
-                logger.info(f"Job {job_id} force refresh enabled, bypassing deduplication")
+                 if job.custom_metadata is None:
+                     job.custom_metadata = {}
+                 job.custom_metadata["force_refresh"] = True
+                 self.job_repository.update_job(job)
 
-            # [Spec 065] 2. Immediate ID/URL-based Deduplication Check
-            if not force_refresh:
-                # Direct check for latest meaningful job for this URL
-                last_job = self.job_repository.find_last_job_by_source(
-                    job.source_url,
-                    exclude_job_id=job_id,
-                    statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING],
-                )
-
-                if last_job and last_job.status in [JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING]:
-                    logger.info(f"Job {job_id} skipping because of duplicate {last_job.job_id} ({last_job.status})")
-                    job.status = JobStatus.SKIPPED
-                    job.skip_reason = f"Duplicate of job {last_job.job_id} (Status: {last_job.status})"
-                    job.updated_at = datetime.now(timezone.utc)
-                    self.job_repository.update_job(job)
-                    return
-
-                # 3. Strategy-based check (Contents, TTL, Metadata-specific)
-                strategy = self.deduplication_factory.get_strategy(job.source_url)
-                if await strategy.is_duplicate(job):
-                    strategy_name = type(strategy).__name__
-                    logger.info(f"Job {job_id} detected as duplicate via {strategy_name}. Skipping.")
-                    job.status = JobStatus.SKIPPED
-                    job.skip_reason = f"Duplicate detected by {strategy_name}"
-                    job.updated_at = datetime.now(timezone.utc)
-                    self.job_repository.update_job(job)
-                    return
-
-            # 4. If not duplicate, Update Status to RUNNING and proceed
-            logger.info(f"Starting ingestion job {job_id} for {job.source_url}")
-            job.status = JobStatus.RUNNING
-            job.updated_at = datetime.now(timezone.utc)
-            self.job_repository.update_job(job)
-
-            # [Spec 072] 5. Calculate Content Hash after scraping
-            import hashlib
-
-            scraped_content = None
-
-            if job.raw_content and job.filename:
-                logger.info(f"Processing local file: {job.filename}")
-                from app.core.file_processor import FileProcessor
-
-                file_processor = FileProcessor()
-                segments = file_processor.extract_segments(job.raw_content, job.filename)
-                # For local files, use raw content for hash
-                scraped_content = job.raw_content.decode("utf-8", errors="ignore")
+            if job.raw_content:
+                # Local file processing: Skip Step 1 (Collection) and jump to Step 2 (Deduplication)
+                logger.info(f"Triggering Saga for local file: {job.filename} (Job {job_id})")
+                from app.domain.events.ingestion_events import ContentCollected
+                
+                await bus.publish("ContentCollected", ContentCollected(
+                    job_id=job.job_id,
+                    raw_content=job.raw_content.decode("utf-8", errors="ignore") if isinstance(job.raw_content, bytes) else job.raw_content,
+                    metadata=job.custom_metadata or {}
+                ))
             else:
-                result = await self.scraper.scrape(job.source_url)
-                segments = [(result.markdown, result.metadata)]
-                scraped_content = result.markdown
+                # Web scraping: Start from Step 1 (Collection)
+                logger.info(f"Triggering Saga for URL: {job.source_url} (Job {job_id})")
+                from app.domain.events.ingestion_events import IngestionStarted
+                
+                await bus.publish("IngestionStarted", IngestionStarted(
+                    job_id=job.job_id,
+                    source_url=job.source_url
+                ))
 
-            # Calculate and store content hash
-            if scraped_content and isinstance(scraped_content, str):
-                job.content_hash = hashlib.sha256(scraped_content.encode()).hexdigest()
-                logger.info(f"Content hash calculated for job {job_id}: {job.content_hash[:16]}...")
-            elif scraped_content and isinstance(scraped_content, bytes):
-                job.content_hash = hashlib.sha256(scraped_content).hexdigest()
-                logger.info(f"Content hash calculated for job {job_id}: {job.content_hash[:16]}...")
-
-            job.docs_ids = []
-
-            # 3. Process each segment
-            for text, metadata in segments:
-                # Semantic Extraction (Spec 005)
-                semantic_data = None
-                if self.extractor:
-                    try:
-                        semantic_data = await self.extractor.extract(text, metadata=metadata, thread_id=job_id)
-                        if semantic_data:
-                            metadata["semantic_data"] = semantic_data.model_dump()
-                    except Exception as e:
-                        logger.warning(f"Semantic extraction failed for segment in job {job_id}: {e}")
-
-                # Map to Domain Entity
-                doc_metadata = metadata.copy()
-                doc_metadata["source_url"] = str(job.source_url)
-                if "source_id" not in doc_metadata:
-                    doc_metadata["source_id"] = str(job.source_url)
-
-                # [Spec 068 Fix] Ensure primary_entity is passed to the document node
-                if semantic_data and semantic_data.primary_entity:
-                    doc_metadata["primary_entity"] = semantic_data.primary_entity
-
-                # [Spec 072] Generate deterministic document ID from source_url
-                # This ensures force_refresh will update the same document (upsert)
-                doc_id = hashlib.sha256(str(job.source_url).encode()).hexdigest()
-                doc = Document(id=doc_id, content=text, metadata=doc_metadata)
-
-                # Chunking & Save
-                chunker = self._get_chunker(job.chunking_config)
-                chunks = chunker.chunk_document(doc)
-                self.repository.save_with_chunks(doc, chunks)
-                job.docs_ids.append(doc.id)
-
-                # Build Knowledge Graph (Spec 010 + 016)
-                if semantic_data:
-                    self._build_knowledge_graph(doc.id, semantic_data)
-
-            # 4. Update Job (COMPLETED)
-            job.status = JobStatus.COMPLETED
-            job.updated_at = datetime.now(timezone.utc)
-            self.job_repository.update_job(job)
-            logger.info(f"Ingestion job {job_id} completed with {len(job.docs_ids)} documents")
-
-        except BaseAppError as e:
-            # Known domain/infrastructure exceptions
-            logger.error(f"Ingestion failed for job {job_id}: {str(e)}")
-            self._fail_job(job, str(e))
         except Exception as e:
-            # Unexpected system errors
-            logger.exception(f"Unexpected error in ingestion job {job_id}")
-            self._fail_job(job, f"System Error: {str(e)}")
-        finally:
-            # [Spec 060] Safety: Auto-cleanup history on Terminal States
-            # We must NOT delete if the job is PENDING/RUNNING (e.g. HITL Pause)
-            # Only clean up if it's truly done (Success or Failed) AND cleanup is enabled.
-            from app.core.config import get_settings
-
-            if get_settings().AUTO_CLEANUP_ENABLED:
-                try:
-                    # Reload job status to be sure
-                    final_job = self.job_repository.get_job(job_id)
-                    if final_job and final_job.status in [JobStatus.COMPLETED, JobStatus.FAILED]:
-                        if self.extractor:
-                            logger.info(f"Auto-Cleaning history for job {job_id} (Status: {final_job.status})")
-                            await self.extractor.cleanup(job_id)
-                except Exception as cleanup_error:
-                    logger.error(f"Failed to auto-clean history for job {job_id}: {cleanup_error}")
-            else:
-                logger.info(f"Auto-Cleanup skipped (AUTO_CLEANUP_ENABLED=False) for job {job_id}")
+            logger.exception(f"Failed to trigger Saga for job {job_id}")
+            self._fail_job(job, f"Saga Trigger Error: {str(e)}")
 
     def _fail_job(self, job: IngestionJob, error_message: str) -> None:
         """Helper to mark job as failed."""
@@ -320,7 +272,8 @@ class Ingestion:
                     # Create implicit relationship to Primary Entity node if found
                     if program_node and normalized_name != normalize_entity_name(program_node):
                         norm_program = normalize_entity_name(program_node)
-                        self.graph.save_entity(norm_program, "SHOW")
+                        # [FIX] Use valid EntityType. "SHOW" is not valid.
+                        self.graph.save_entity(norm_program, "CONCEPT")
 
                         self.graph.create_entity_relationship(
                             source_name=normalized_name, relationship_type="PART_OF_CONTEXT", target_name=norm_program

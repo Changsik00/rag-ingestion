@@ -1,10 +1,8 @@
 import time
 from unittest.mock import AsyncMock, Mock, patch
 
-from langchain_core.messages import AIMessage
-
 import pytest
-from fastapi.testclient import TestClient
+from langchain_core.messages import AIMessage
 from langgraph.checkpoint.memory import MemorySaver
 
 from app.application.services.semantic_extractor import SemanticExtractor
@@ -19,6 +17,7 @@ from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
 from app.interfaces.api.dependencies import get_scraper
 from app.interfaces.api.main import app
 from app.interfaces.api.v1.dto.ingest import IngestResponse
+
 
 @pytest.fixture
 def client(api_client):

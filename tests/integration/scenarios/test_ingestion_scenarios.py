@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.interfaces.api.main import app
 
+
 @pytest.fixture
 def client(api_client):
     """Alias for session-scoped api_client to maintain compatibility while avoiding pool closing."""
@@ -54,7 +55,7 @@ class TestIngestionScenarios:
 
         try:
             # When: Ingestion request is made
-            response = client.post("/v1/ingest/web", json={"url": url})
+            response = client.post("/v1/ingest/web", json={"url": url, "force_refresh": True})
             job_id = response.json()["job_id"]
             wait_for_job_completion(client, job_id)
 
@@ -88,11 +89,24 @@ class TestIngestionScenarios:
                     message="Success",
                 )
 
+        class MockExtractor:
+            async def extract(self, text, metadata=None, thread_id=None):
+                from app.domain.value_objects.extracted_metadata import ExtractedMetadata
+                return ExtractedMetadata(
+                    title="Mocked Title",
+                    summary="Mocked Summary",
+                    keywords=["mocked"],
+                    entities={},
+                    relationships=[]
+                )
+
         app.dependency_overrides[get_scraper] = lambda: MockScraper()
+        from app.interfaces.api.dependencies import get_semantic_extractor
+        app.dependency_overrides[get_semantic_extractor] = lambda: MockExtractor()
 
         try:
             # When: Ingestion request is made
-            response = client.post("/v1/ingest/web", json={"url": url_with_korean})
+            response = client.post("/v1/ingest/web", json={"url": url_with_korean, "force_refresh": True})
 
             # Then: Request is accepted (202) and processing succeeds
             assert response.status_code == 202

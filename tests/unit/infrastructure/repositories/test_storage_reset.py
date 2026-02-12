@@ -82,7 +82,7 @@ async def test_langgraph_adapter_reset_checkpoints():
     from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
     builder = IngestionGraphBuilder(llm=mock_llm)
     adapter = IngestOrchestrator(graph_builder=builder)
-    
+
     # Inject checkpointer/graph for testing reset_checkpoints
     mock_graph = MagicMock()
     mock_graph.checkpointer = mock_checkpointer

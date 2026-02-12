@@ -92,7 +92,7 @@
     - [x] Dependency Rule 검증 스크립트
   * **Expected Impact**: Clean Architecture 준수, Dependency Rule 위반 해소
 
-* [/] **Spec 075: RAG 3-Layer Code Structure Refactoring** ⭐⭐⭐⭐ (P0, 15일) 🔄 **Execution 진행 중**
+* [x] **Spec 075: RAG 3-Layer Code Structure Refactoring** ⭐⭐⭐⭐ (P0, 15일) 🔄 **Execution 진행 중**
   * **Goal**: 개념적 3-Layer를 실제 코드 구조에 반영
   * **근거**: [Spec 068 - 1.0 근본적 구조 문제](../specs/068-rag-architecture-review/spec.md#10--근본적-구조-문제-개념과-코드의-괴리)
   * **Core Problem**: 
@@ -100,12 +100,12 @@
     - 문서 3-Layer 디자인이 코드에서 전혀 안 보임
   * **상세 계획**: [Task 3.0 - Week별 계획](../specs/068-rag-architecture-review/recommendations.md#task-30-rag-3-layer-code-structure-refactoring-)
   * **Tasks**:
-    - [ ] **Week 1**: Brain Layer 분리 (`app/domain/rag/brain/`)
-    - [ ] **Week 2**: Retrieval Layer 분리 (`app/infrastructure/rag/retrieval/`)
-    - [ ] **Week 3**: Orchestration Layer 분리 (`app/application/rag/orchestration/`)
-    - [ ] **Week 4**: LangGraph Integration & E2E Test
-    - [ ] `rag_nodes.py` (774 lines) 삭제
-    - [ ] Architecture 문서 업데이트 및 ADR 작성
+    - [x] **Week 1**: Brain Layer 분리 (`app/domain/rag/brain/`)
+    - [x] **Week 2**: Retrieval Layer 분리 (`app/infrastructure/rag/retrieval/`)
+    - [x] **Week 3**: Orchestration Layer 분리 (`app/application/rag/orchestration/`)
+    - [x] **Week 4**: LangGraph Integration & E2E Test
+    - [x] `rag_nodes.py` (774 lines) 삭제
+    - [x] Architecture 문서 업데이트 및 ADR 작성
   * **Expected Impact**: 
     - 아키텍처 문서 ↔ 코드 일치
     - Layer별 독립 테스트

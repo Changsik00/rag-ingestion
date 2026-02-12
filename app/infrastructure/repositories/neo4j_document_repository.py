@@ -504,3 +504,21 @@ class Neo4jDocumentRepository(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to get source names from Neo4j: {e}")
             return []
+
+    async def delete(self, doc_id: str) -> bool:
+        """
+        [Spec 076] Delete a document and its chunks from Neo4j.
+        """
+        try:
+            query = """
+            MATCH (d:Document {id: $id})
+            OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
+            DETACH DELETE d, c
+            """
+            with self.driver.session() as session:
+                result = session.run(query, id=doc_id)
+                summary = result.consume()
+                return summary.counters.nodes_deleted > 0
+        except Exception as e:
+            logger.error(f"Failed to delete document {doc_id} from Neo4j: {e}")
+            return False

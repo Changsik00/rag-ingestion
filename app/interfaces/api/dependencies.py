@@ -11,6 +11,7 @@ from app.application.services.agent import ConversationalRAGAgent
 from app.application.services.feedback import Feedback
 from app.application.services.ingestion import Ingestion
 from app.application.services.integrity import Integrity
+from app.application.saga.ingestion_handlers import IngestionSagaHandlers
 from app.application.services.orchestration.chat import ChatOrchestrator
 from app.application.services.orchestration.ingest import IngestOrchestrator
 from app.application.services.rag import RAG
@@ -125,13 +126,25 @@ def get_ingestion_service(
     graph: Annotated[GraphRepository, Depends(get_graph_repository)],
     job_repository: Annotated[JobRepository, Depends(get_job_repository)],
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
+    chunker: Annotated[Chunker, Depends(get_chunker)],
 ) -> Ingestion:
+    # [Spec 076] Register Saga Handlers using the singleton-like initialize method
+    IngestionSagaHandlers.initialize(
+        job_repository=job_repository,
+        document_repository=repository,
+        graph_repository=graph,
+        scraper=scraper,
+        extractor=extractor,
+        chunker=chunker
+    )
+
     return Ingestion(
         scraper=scraper,
         repository=repository,
         graph=graph,
         job_repository=job_repository,
         extractor=extractor,
+        chunker=chunker
     )
 
 

@@ -8,7 +8,6 @@ from app.domain.interfaces.retrieval import IRetrievalService
 from app.domain.value_objects.chunk import Chunk
 from app.domain.value_objects.intent import IntentType, UserIntent
 from app.infrastructure.ai.chat.graph_builder import ChatGraphBuilder
-from app.infrastructure.retrieval.service import RetrievalService
 
 
 @pytest.fixture

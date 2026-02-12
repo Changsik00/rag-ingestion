@@ -2,7 +2,7 @@ import json
 import logging
 
 from app.domain.interfaces.llm import LLMInterface
-from app.domain.value_objects.intent import IntentType, UserIntent
+from app.domain.value_objects.intent import UserIntent
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class IntentClassifier:
                 # 3. JSON 파싱 및 Pydantic 검증
                 json_start = raw_response.find("{")
                 json_end = raw_response.rfind("}") + 1
-                
+
                 if json_start == -1 or json_end == 0:
                     raise ValueError(f"No JSON found in LLM response: {raw_response}")
 
@@ -56,7 +56,7 @@ class IntentClassifier:
             except (json.JSONDecodeError, ValueError, Exception) as e:
                 last_error = e
                 logger.warning(f"Attempt {attempt + 1} failed for query '{query}': {e}")
-                
+
                 # Exponential backoff with jitter
                 if attempt < max_retries - 1:
                     wait_time = (2**attempt) + random.uniform(0, 1)
@@ -66,7 +66,7 @@ class IntentClassifier:
         logger.error(f"Intent classification failed after {max_retries} attempts: {last_error}")
         if last_error:
             raise last_error
-        
+
         raise ValueError("Intent classification failed with unknown error")
 
     def _format_history(self, history: list[dict]) -> str:

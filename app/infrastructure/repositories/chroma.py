@@ -175,7 +175,7 @@ class ChromaVectorRepository(DocumentRepository):
         try:
             # 1. Try fetching by ID directly (for Documents saved via save())
             results = self.collection.get(ids=[doc_id], include=["metadatas", "documents"])
-            
+
             # 2. If not found, try fetching chunks by parent_id
             if not results or not results.get("ids") or len(results["ids"]) == 0:
                 results = self.collection.get(where={"parent_id": doc_id}, include=["metadatas", "documents"])
@@ -586,3 +586,17 @@ class ChromaVectorRepository(DocumentRepository):
         except Exception as e:
             logger.error(f"Failed to get source names from ChromaDB: {e}")
             return []
+
+    async def delete(self, doc_id: str) -> bool:
+        """
+        [Spec 076] Delete a document and its chunks from ChromaDB.
+        """
+        try:
+            # 1. Delete document entry
+            self.collection.delete(ids=[doc_id])
+            # 2. Delete all chunks associated with this document
+            self.collection.delete(where={"parent_id": str(doc_id)})
+            return True
+        except Exception as e:
+            logger.error(f"Failed to delete document {doc_id} from ChromaDB: {e}")
+            return False

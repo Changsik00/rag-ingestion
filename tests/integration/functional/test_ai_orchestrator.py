@@ -1,8 +1,8 @@
 import pytest
 
+from app.application.services.orchestration.ingest import IngestOrchestrator
 from app.domain.interfaces.llm import LLMInterface
 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
-from app.application.services.orchestration.ingest import IngestOrchestrator
 
 # pytestmark = pytest.mark.skip(reason="Requires infrastructure setup - see specs/integration-test-improvement.md")
 
