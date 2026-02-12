@@ -32,14 +32,17 @@ async def ingest_web_page(
         if match:
             custom_metadata["video_id"] = match.group(1)
 
-    # [Spec 072] Removed early deduplication to allow SKIPPED status creation
-    # All deduplication logic is now handled in process_job() for proper status tracking
-    job = service.create_job(str(request.url), chunking_config=chunk_config_dict, custom_metadata=custom_metadata)
-    background_tasks.add_task(service.process_job, job.job_id, request.force_refresh)
-    return AsyncIngestResponse(
-        job_id=job.job_id, current_status=job.status, message="Ingestion job created successfully."
+    # [Spec 076] Use Saga-based ingestion
+    job = await service.ingest_url(
+        url=str(request.url),
+        chunking_config=chunk_config_dict,
+        custom_metadata=custom_metadata,
+        force_refresh=request.force_refresh,
     )
 
+    return AsyncIngestResponse(
+        job_id=job.job_id, current_status=job.status, message="Ingestion job initiated via Saga pattern."
+    )
 
 @router.post("/files", status_code=status.HTTP_202_ACCEPTED, response_model=MultiAsyncIngestResponse)
 async def ingest_files(

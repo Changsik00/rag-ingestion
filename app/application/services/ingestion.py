@@ -136,6 +136,59 @@ class Ingestion:
         self.job_repository.create_job(job)
         return job
 
+    async def ingest_url(
+        self,
+        url: str,
+        chunking_config: dict | None = None,
+        custom_metadata: dict | None = None,
+        force_refresh: bool = False,
+    ) -> IngestionJob:
+        """
+        [Spec 076] Entry point for Saga-based ingestion.
+        Publishes IngestionStarted event to the internal EventBus.
+        """
+        # [Spec 065] Initial ID/URL-based Deduplication Check
+        if not force_refresh:
+            from app.domain.entities.job import JobStatus
+            last_job = self.job_repository.find_last_job_by_source(
+                url,
+                statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING],
+            )
+            if last_job:
+                logger.info(f"URL {url} already has an active or completed job: {last_job.job_id}")
+                # We could return the existing job or create a SKIPPED one
+                # For consistency with existing logic, let's created a SKIPPED job
+                job = self.create_job(url=url, chunking_config=chunking_config, custom_metadata=custom_metadata)
+                job.status = JobStatus.SKIPPED
+                job.skip_reason = f"Duplicate of job {last_job.job_id} (Status: {last_job.status})"
+                self.job_repository.update_job(job)
+                return job
+
+        # 1. Create Job Entry
+        job = self.create_job(
+            url=url, 
+            chunking_config=chunking_config, 
+            custom_metadata=custom_metadata
+        )
+        
+        # [Spec 072/076] Store force_refresh in job for handlers to see
+        if force_refresh:
+             if job.custom_metadata is None:
+                 job.custom_metadata = {}
+             job.custom_metadata["force_refresh"] = True
+             self.job_repository.update_job(job)
+
+        # 2. Publish Event to start the Saga
+        from app.core.events import bus
+        from app.domain.events.ingestion_events import IngestionStarted
+        
+        await bus.publish("IngestionStarted", IngestionStarted(
+            job_id=job.job_id,
+            source_url=url
+        ))
+        
+        return job
+
     async def process_job(self, job_id: str, force_refresh: bool = False) -> None:
         """Execute the ingestion logic asynchronously.
 
