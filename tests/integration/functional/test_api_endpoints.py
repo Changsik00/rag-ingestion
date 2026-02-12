@@ -1,10 +1,10 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
 from langchain_core.messages import AIMessage
 
 from app.interfaces.api.main import app
+
 
 @pytest.fixture
 def client(api_client):

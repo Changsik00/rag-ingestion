@@ -1,11 +1,11 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from fastapi.testclient import TestClient
 
 from app.application.services.integrity import ResetResult
 from app.interfaces.api.dependencies import get_integrity_service
 from app.interfaces.api.main import app
+
 
 @pytest.fixture
 def client(api_client):
