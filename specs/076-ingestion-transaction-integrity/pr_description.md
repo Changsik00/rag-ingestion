@@ -12,6 +12,8 @@
 - [x] 단계별 도메인 이벤트 정의 및 발행 로직 적용
 - [x] 보상 트랜잭션을 위한 저장소(Neo4j, Chroma) `delete` 메서드 구현
 - [x] 수집 단계별 상세 상태 추적 지원 (`COLLECTING`, `INDEXING` 등)
+- [x] **UX 최적화**: API 응답 Decoupling을 통해 즉각적인 Job ID 반환 및 백그라운드 Saga 실행 구현
+- [x] **파일 수집 통합**: 로컬 파일 업로드(`ingest_files`)도 Saga 패턴을 따르도록 마이그레이션하여 정합성 보장
 
 ## 🎯 Key Review Points (리뷰어 체크리스트)
 리뷰 시 다음 항목들을 중점적으로 확인 부탁드립니다:
@@ -31,6 +33,7 @@ uv run pytest tests/integration/test_ingestion_rollback.py tests/integration/sce
 **테스트 결과 요약:**
 - ✅ `test_saga_rollback_on_failure`: 단계별 실패 시 데이터 정합성 유지 확인
 - ✅ `test_web_ingestion_with_chunking_verification`: 전체 워크플로우 성공 확인
+- ✅ `test_admin_ui_flow`: API 응답 지연 해소 및 즉각적인 상태 리스트 반영 확인
 
 ### Manual Verification (Scenarios)
 1. **실패 시 롤백 확인**: 수집 과정 중간에 인위적인 오류를 주입하고, 대시보드에서 `FAILED` 상태를 확인한 뒤 Neo4j/ChromaDB에 파편 데이터가 남지 않았는지 확인합니다.
