@@ -64,3 +64,11 @@ class DocumentRepository(ABC):
         :param window_size: Number of chunks to fetch before and after.
         """
         pass
+
+    @abstractmethod
+    async def delete(self, doc_id: str) -> bool:
+        """
+        [Spec 076] Delete a document from all linked storages.
+        Used for compensating transactions in Saga pattern.
+        """
+        pass
