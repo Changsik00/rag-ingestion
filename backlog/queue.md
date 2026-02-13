@@ -7,7 +7,24 @@
 
 ## 🚀 Phase 9: Advanced RAG Operations (Planning)
 
-> **목표**: 운영 자동화 및 고급 RAG 기법 적용 (TBD)
+> **목표**: 운영 자동화 및 고급 RAG 기법 적용. "Autonomous Knowledge Operations" 달성.
+
+### 📋 Phase 9 Candidates
+
+* **[Agentic] Autonomous Discovery (Research Crawler)**
+  * **Goal**: 주제만 주어짐 -> 자율 탐색 -> 수집 -> 구조화
+  * **Key Features**: Google Search Tool, HTML Parsing, Recursive Link Following
+  * **Vision**: "사용자가 URL을 주지 않아도, 주제만 던지면 스스로 학습하는 에이전트"
+
+* **[Synthesis] Knowledge Synthesis (Report Generator)**
+  * **Goal**: 지식 그래프 서브그래프 추출 -> LLM 기반 리포트/챕터 작성
+  * **Key Features**: Subgraph Extraction, Contextual Summarization, Markdown Report Generation
+  * **Vision**: "단편적 질문-답변을 넘어, 완결된 지식 콘텐츠(Report)를 생산하는 공장"
+
+* **[Ops] Operational Excellence (Continuous Evaluation)**
+  * **Goal**: 답변 품질 자동 평가 및 RAG 파이프라인 모니터링
+  * **Key Features**: LLM Judge, Feedback Loop (Thumbs up/down), Performance Metrics
+  * **Vision**: "품질을 스스로 측정하고 개선하는 자가 발전 시스템"
 
 
 ## 🧊 Icebox (보류된 아이디어)
