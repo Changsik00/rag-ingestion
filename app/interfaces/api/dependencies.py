@@ -301,8 +301,13 @@ async def get_rag_service(
 async def get_conversational_rag_agent(
     rag_service: Annotated[RAG, Depends(get_rag_service)],
     ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
+    discovery_service: Annotated["DiscoveryService", Depends(get_discovery_service)],
 ) -> ConversationalRAGAgent:
-    return ConversationalRAGAgent(rag_service=rag_service, ingestion_service=ingestion_service)
+    return ConversationalRAGAgent(
+        rag_service=rag_service,
+        ingestion_service=ingestion_service,
+        discovery_service=discovery_service
+    )
 
 
 # Feedback Service 의존성

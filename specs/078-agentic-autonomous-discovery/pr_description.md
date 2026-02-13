@@ -17,6 +17,15 @@
 2. **Double Request Strategy**: Discovery 단계에서 `httpx`로 링크를 수집하고, 실제 저장은 `Ingestion.ingest_url`을 호출하여 다시 요청하는 방식의 타당성 (안정성 vs 효율성)
 3. **Async Tool**: `DiscoveryTool`의 비동기 실행 및 의존성 주입 방식
 
+### 3. Verification (Agent Chat)
+- Admin Chat에서 다음과 같이 입력하여 자동 탐색을 테스트할 수 있습니다.
+  - "Agentic RAG에 대해 조사해줘"
+  - "Find latest papers about LLMs"
+- Agent가 의도를 파악(`discovery`)하고, 수집 작업을 시작하는지 확인합니다.
+
+## 📸 Screenshots (Optional)
+(스크린샷 생략)
+
 ## 🧪 Verification
 
 ### Automated Tests

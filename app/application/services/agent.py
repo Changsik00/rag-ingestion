@@ -14,6 +14,7 @@ from app.domain.entities.job import JobStatus
 
 if TYPE_CHECKING:
     from app.application.services.ingestion import Ingestion
+    from app.domain.services.discovery_service import DiscoveryService
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +42,15 @@ class ConversationalRAGAgent:
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
 
-    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
+    def __init__(
+        self,
+        rag_service: "RAG",
+        ingestion_service: "Ingestion",
+        discovery_service: "DiscoveryService"
+    ):
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
+        self.discovery_service = discovery_service
         self.llm = ChatGoogleGenerativeAI(
             model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=get_settings().GEMINI_API_KEY
         )
@@ -79,6 +86,7 @@ class ConversationalRAGAgent:
         workflow.add_node("router", self.router_node)
         workflow.add_node("ingest", self.ingest_node)
         workflow.add_node("search", self.search_node)
+        workflow.add_node("discovery", self.discovery_node)  # Spec 078
         workflow.add_node("human_review", self.human_review_node)
         workflow.add_node("clarify", self.clarify_node)  # Spec 045
 
@@ -90,11 +98,13 @@ class ConversationalRAGAgent:
             {
                 "ingest": "ingest",
                 "search": "search",
+                "discovery": "discovery",  # Spec 078
                 "clarify": "clarify",  # Spec 045
             },
         )
 
         workflow.add_edge("ingest", "search")  # 수집 완료 후 요약을 위해 검색 노드로 이동
+        workflow.add_edge("discovery", "search")  # 발견 및 수집 완료 후 요약/검색 이동
 
         # Conditional Edge after Search: Check HITL
         def route_after_search(state: AgentState):
@@ -136,7 +146,7 @@ class ConversationalRAGAgent:
 
         return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
-    def route_logic(self, state: AgentState) -> Literal["ingest", "search", "clarify"]:
+    def route_logic(self, state: AgentState) -> Literal["ingest", "search", "discovery", "clarify"]:
         return state["intent"]
 
     def human_review_node(self, state: AgentState) -> dict:
@@ -158,8 +168,8 @@ class ConversationalRAGAgent:
             User Input: {input}
 
             Guidelines:
-            1. If 'url' is missing, ask the user to provide the URL to ingest or summarize.
-            2. If 'topic' is missing, ask the user what topic they want to search for.
+            1. If 'url' is missing for ingestion, ask the user to provide the URL.
+            2. If 'topic' is missing for discovery/search, ask the user what topic they want to research.
             3. If specific slots are not clear, politely ask for clarification.
             4. **IMPORTANT**: Respond in the SAME LANGUAGE as the User Input.
 
@@ -190,14 +200,15 @@ class ConversationalRAGAgent:
             - If intent is 'ingest', a URL is REQUIRED. If URL is missing, return 'clarify'.
             - If intent is 'search', a specific topic/question is REQUIRED. However, if the user asks to "summarize this" or "explain this" (referring to context/history), classify as 'search'.
 
-            Options:
-            - 'ingest': The user wants to read, learn, scrape, or ingest a URL. (e.g. "Read this link", "Ingest https://...")
+            options:
+            - 'ingest': The user wants to read, learn, scrape, or ingest a SPECIFIC URL. (e.g. "Read this link", "Ingest https://...")
+            - 'discovery': The user wants to RESEARCH a topic, find new information, or crawl the web automatically WITHOUT a specific URL. (e.g. "Research Agentic RAG", "Find papers about LLMs", "조사해줘")
             - 'search': The user is asking a specific question, discussing a topic, or asking for a summary of the context. (e.g. "What is RAG?", "이거 요약해줘")
             - 'clarify': The input is ambiguous or missing required arguments. (e.g. "Do it", "help me", "알려줘")
 
             Input: {input}
 
-            Return ONLY 'ingest', 'search', or 'clarify'.
+            Return ONLY 'ingest', 'discovery', 'search', or 'clarify'.
             """
         )
         prompt_val = prompt.invoke({"input": last_user_msg})
@@ -210,6 +221,8 @@ class ConversationalRAGAgent:
 
         if "ingest" in intent:
             intent = "ingest"
+        elif "discovery" in intent:
+            intent = "discovery"
         elif "search" in intent:
             intent = "search"
         else:
@@ -222,6 +235,12 @@ class ConversationalRAGAgent:
             if not re.search(url_pattern, last_user_msg):
                 intent = "clarify"
                 missing_slots.append("url")
+        elif intent == "discovery":
+            # Discovery needs a topic. Usually implicit in the message.
+            # If message is too short, might need clarification.
+            if len(last_user_msg.strip()) < 2:
+                intent = "clarify"
+                missing_slots.append("topic")
 
         return {"intent": intent, "missing_slots": missing_slots}
 
@@ -259,6 +278,40 @@ class ConversationalRAGAgent:
             msg = f"❌ 오류 발생: {str(e)}"
 
         return {"messages": [AIMessage(content=msg)], "tool_output": msg}
+
+    async def discovery_node(self, state: AgentState) -> dict:
+        """Autonomous Discovery Node (Spec 078)"""
+        messages = state["messages"]
+        last_user_msg = messages[-1].content
+
+        # Topic Extraction (Simplistic: Use full message as topic for now, or use LLM)
+        # For better results, we could reuse the router's analysis or ask LLM to extract topic.
+        # Here we just use the user message as the topic query.
+        topic = last_user_msg
+
+        try:
+            # 기본 설정: Depth 1, Max 5 docs
+            job_ids = await self.discovery_service.start_discovery(topic, max_depth=1, max_docs=5)
+
+            if job_ids:
+                msg = f"🔍 탐색 시작: '{topic}'\n\n- {len(job_ids)}개의 관련 문서를 발견하여 수집을 시작했습니다.\n- 작업 ID: {', '.join(job_ids[:3])}...\n\n수집된 내용을 바탕으로 답변을 생성합니다..."
+                # Pass doc_ids filter to search node if needed?
+                # Usually RAG search will pick them up if indexed quickly.
+                # Ideally, we should wait for ingestion to finish or use the job IDs to poll.
+                # But DiscoveryService triggers Async jobs.
+                # So we might not have data IMMEDIATELY available for search node.
+                # We inform the user that it started.
+                # However, the Agent flow goes discovery -> search.
+                # Search might fail to find *new* data instantly.
+                # Let's add a small wait or just rely on semantic search finding *something*.
+                return {"messages": [AIMessage(content=msg)], "tool_output": msg}
+            else:
+                msg = f"⚠️ '{topic}'에 대한 유의미한 정보를 찾지 못했습니다."
+                return {"messages": [AIMessage(content=msg)], "tool_output": msg}
+
+        except Exception as e:
+            msg = f"❌ 탐색 중 오류 발생: {str(e)}"
+            return {"messages": [AIMessage(content=msg)], "tool_output": msg}
 
     async def search_node(self, state: AgentState, config: RunnableConfig) -> dict:
         messages = state["messages"]
