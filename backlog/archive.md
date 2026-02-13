@@ -354,3 +354,60 @@
     * Listwise Reranking 전략 구현
     * Contextual (Sliding Window) 확장 기능 도입
     * Pointwise vs Listwise 전략 분기 구현
+    
+---
+
+## 🏗️ Phase 8: Architecture & Quality Foundation
+
+> **목표**: RAG 시스템의 근본적인 아키텍처 문제를 해결하고 품질 검증 인프라를 구축한다.
+> **기반**: [**Spec 068: RAG System Architecture Review**](../specs/068-rag-architecture-review/README.md) 분석 결과
+
+* [x] **Spec 068: RAG System Architecture Review**
+  * [x] 시스템 전반의 아키텍처 진단 및 개선안 도출
+  * [x] Clean Architecture 위반 사례 식별 (Brain Layer 등)
+  * [x] 품질 검증 프로세스 부재 확인 및 개선 계획 수립
+
+* [x] **Spec 069: Reranker Prompt Optimization**
+  * [x] Rerank 정확도 향상을 위한 프롬프트 엔지니어링 수행
+  * [x] 문서와 쿼리 간의 연관성 분석 로직 개선
+  * [x] Golden Dataset 기반 성능 측정 (Recall +10%)
+
+* [x] **Spec 070: Prompt Quality Testing Framework**
+  * [x] 프롬프트 변경 시 자동화된 회귀 테스트 환경 구축
+  * [x] 20개 이상의 필수 테스트 케이스 정의 (헌법 반영)
+  * [x] LLM Judge 기반의 평가 파이프라인 도입
+
+* [x] **Spec 071: ChromaDB Upsert Logic Improvement**
+  * [x] 벡터 DB 데이터 중복 저장 문제 해결 (Upsert 로직 수정)
+  * [x] Document ID 체계 정비
+  * [x] 데이터 무결성 검증 스크립트 작성
+
+* [x] **Spec 072: Robust Deduplication Framework**
+  * [x] 수집 단계에서의 중복 콘텐츠 필터링 강화
+  * [x] URL 정규화 및 Content Hash 기반 중복 제거
+  * [x] Skip Rate 모니터링 추가
+
+* [x] **Spec 073: Fuzzy Filter Matching Strategy**
+  * [x] 사용자 쿼리의 오타/유의어를 처리하는 필터링 로직 구현
+  * [x] Metadata 필터링 정확도 95% 달성
+  * [x] 검색 실패 시 완화된 조건으로 재검색하는 Fallback 구현
+
+* [x] **Spec 074: LLM Interface Clean Architecture**
+  * [x] LLM 의존성을 도메인 영역에서 격리
+  * [x] Port-Adapter 패턴을 적용한 LLM 인터페이스 추상화
+  * [x] 다양한 모델(Gemini, Claude 등) 교체 용이성 확보
+
+* [x] **Spec 075: Refined 3-Layer Brain Architecture**
+  * [x] Brain Layer의 책임과 역할을 명확히 재정의
+  * [x] 순환 참조 문제 해결을 위한 계층 구조 단순화
+  * [x] Router, Reranker, Generator 간의 의존성 정리
+
+* [x] **Spec 076: Ingestion Transaction Integrity**
+  * [x] 수집-저장 과정의 트랜잭션 관리 강화 (All or Nothing)
+  * [x] 실패 시 보상 트랜잭션(Rollback) 로직 구현
+  * [x] Ingestion Failure Rate 1% 미만 달성
+
+* [x] **Spec 077: Phase 8 Documentation & Archive**
+  * [x] Phase 8 완료 사항 아카이브 및 백로그 정리
+  * [x] Constitution 및 Agent Guide 업데이트 (Quality Standard)
+  * [x] README 현황 최신화

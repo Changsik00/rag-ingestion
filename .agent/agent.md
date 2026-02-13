@@ -150,3 +150,16 @@ The Agent MUST immediately **STOP** execution and request re-alignment if:
 - Be concise and structured (use bullet points).
 - Never assume approval.
 - Explicitly state when you are waiting for User input.
+
+## 9. Research Spec Protocol
+
+### 9.1 Definition of Done for Research
+Unlike implementation specs, Research Specs are considered "Done" when:
+1. **Trade-off Analysis**: At least two options are compared with quantitative data (e.g., Cost vs. Latency).
+2. **Prototype Code**: A proven POC script exists in `scripts/research/`.
+3. **Recommendation**: A clear "Go / No-Go" decision is documented.
+
+### 9.2 Deliverables
+- **Research Report**: `specs/XXX-research-name/report.md`
+- **POC Code**: `scripts/research/xxx_poc.py` (if applicable)
+

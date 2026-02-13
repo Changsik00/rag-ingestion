@@ -1,50 +1,90 @@
-# Getting Started
+# 🚀 Getting Started with RAG Ingestion
 
-## Prerequisites
-- **Python**: 3.9+
-- **uv**: Package manager (Required)
+This guide covers the prerequisites, installation, and steps to run the RAG Ingestion Engine.
 
-## Installation
+## 🛠️ Prerequisites
 
-1. 의존성 설치
+Before you begin, ensure you have the following installed:
+
+*   **Docker & Docker Compose**: For containerized deployment (Recommended).
+*   **Python 3.12+**: For local development.
+*   **Make**: For executing build commands.
+
+## ⚡ Quick Start (Docker)
+
+The easiest way to run the entire system (Backend, Admin, DBs) is using Docker Compose.
+
+### 1. Build & Run
+Docker Build Optimization (Spec 059) is applied using a Base Image.
+
 ```bash
-uv sync
+# Option A: Build Base Image & Run All Services (Recommended)
+make up
+
+# Option B: Manual Build & Run
+make build-base
+docker compose up -d --build
 ```
 
-## Service Ports
-각 서비스는 포트 충돌을 방지하기 위해 아래 포트를 기본값으로 사용합니다. `uvicorn` 실행 시 기본 포트(8000)를 사용하므로, ChromaDB는 8001로 우회 설정되어 있습니다.
+### 2. Verify Services
+Once running, you can access the following services:
 
-| Service | Port | Description |
+| System | URL | Description |
 | :--- | :--- | :--- |
-| **API Server (FastAPI)** | `8000` | 메인 애플리케이션 (Default) |
-| **ChromaDB** | `8001` | Vector DB (충돌 방지용) |
-| **Neo4j (HTTP)** | `7474` | Graph DB Browser |
-| **Neo4j (Bolt)** | `7687` | Graph DB Connection |
+| **Admin Dashboard** | [http://localhost:8501](http://localhost:8501) | Main Interface for Monitoring & Control |
+| **API Documentation** | [http://localhost:8000/docs](http://localhost:8000/docs) | Swagger UI for Backend API |
+| **Neo4j Browser** | [http://localhost:7474](http://localhost:7474) | Graph Database Viewer (ID/PW: neo4j/password) |
 
-## Running the Server
-
-FastAPI 서버를 개발 모드(Re-load enabled)로 실행합니다.
-
+### 3. Stop Services
 ```bash
-uv run uvicorn app.interfaces.api.main:app --reload
-```
-- API Docs: http://localhost:8000/docs
-
-## Running Tests
-
-전체 테스트를 실행합니다.
-
-```bash
-PYTHONPATH=. uv run pytest
+make down
+# OR
+docker compose down
 ```
 
 ---
-### Manual Testing (Curl)
 
-서버가 켜진 상태에서 아래 명령어로 수집 테스트를 할 수 있습니다.
+## 🔧 Configuration (.env)
 
-```bash
-curl -X POST "http://localhost:8000/ingest/web" \
-     -H "Content-Type: application/json" \
-     -d '{"url": "https://example.com"}'
+Create a `.env` file in the project root. You can copy from `.env.example`.
+
+```ini
+# Core
+PROJECT_NAME=rag-ingestion
+ENV=development
+
+# LLM (Gemini)
+GOOGLE_API_KEY=your_api_key_here
+GEMINI_MODEL_NAME=gemini-2.0-flash-exp
+
+# Database
+NEO4J_URI=bolt://neo4j:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=password
+
+# ... see .env.example for full list
 ```
+
+## 💻 Local Development
+
+If you want to run the code locally without Docker (e.g. for debugging):
+
+1.  **Install Dependencies**:
+    ```bash
+    uv sync
+    ```
+
+2.  **Run Dependencies (DBs only)**:
+    ```bash
+    docker compose up -d neo4j redis
+    ```
+
+3.  **Run Backend**:
+    ```bash
+    uv run uvicorn app.main:app --reload
+    ```
+
+4.  **Run Streamlit Admin**:
+    ```bash
+    uv run streamlit run admin/app.py
+    ```
