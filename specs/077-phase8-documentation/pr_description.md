@@ -1,47 +1,47 @@
-# docs(spec-077): phase 8 documentation and backlog cleanup
+# docs(spec-077): phase 8 documentation, archive, and readme renewal
 
 ## 📋 Summary
 
 ### 배경 및 목적
-Phase 8 (Architecture & Quality Foundation) 작업이 완료되었으나, 백로그에 완료된 항목들이 남아있고 문서화가 최신 상태를 반영하지 못하고 있었습니다. 또한, Phase 8 과정에서 도출된 중요한 품질 기준(Prompt Quality, Research Spec)이 프로젝트 표준(Constitution, Agent Guide)에 반영되지 않은 상태였습니다. 이를 정리하고 체계화하여 다음 단계(Phase 9)를 준비하는 것이 목적입니다.
+Phase 8 (Architecture & Quality Foundation) 작업 완료에 따른 문서화 및 백로그 정리를 진행합니다. 또한, 프로젝트의 비전과 아키텍처를 명확히 전달하기 위해 `README.md`를 **"Knowledge Factory"** 컨셉으로 전면 개편합니다.
 
 ### 주요 변경 사항
 - [x] **Archive**: `backlog/archive.md`에 Phase 8(Spec 068~077) 완료 내역 추가.
 - [x] **Backlog**: `backlog/queue.md` 정리 및 Phase 9 계획 수립.
-- [x] **Constitution**: Prompt Quality Standard (Test Coverage, Versioning) 추가.
-- [x] **Agent Guide**: Research Spec 프로세스(Definition of Done) 명시.
-- [x] **README**: 프로젝트 현황 업데이트 (Phase 8 완료 표시).
+- [x] **Core Docs**:
+    - `constitution.md`: Prompt Quality Standard 추가.
+    - `agent.md`: Research Spec 프로세스 명시.
+- [x] **README Renewal (Knowledge Factory)**:
+    - **Vision**: Raw Data -> Deep Structuring -> Knowledge Graph로 이어지는 흐름 강조.
+    - **Architecture**: 3-Layer Storage Strategy (Atomic, Semantic, Knowledge) 시각화.
+    - **Guide Separation**: 설치 및 배포 가이드를 `docs/guides/getting_started.md`로 분리.
 
 ## 🎯 Key Review Points
-1. **Archive Integrity**: `backlog/archive.md`에 추가된 Phase 8 내역이 누락 없이 정확한지 확인 부탁드립니다.
-2. **Quality Standards**: `constitution.md`에 추가된 Prompt 품질 기준이 팀의 합의된 내용과 일치하는지 검토 바랍니다.
+1. **README Clarity**: 새로운 `README.md`가 프로젝트의 가치를 잘 전달하는지, "Exploration" 대신 사용된 "Deep Structuring" 용어가 적절한지 확인 부탁드립니다.
+2. **Archive Integrity**: Phase 8 완료 내역이 누락 없이 아카이빙되었는지 확인 바랍니다.
 
 ## 🧪 Verification
 
-### Automated Tests
-*N/A (문서 작업이므로 자동화 테스트 없음)*
-
-### Manual Verification (Scenarios)
-1. **Archive 확인**: `backlog/archive.md` 파일을 열어 Phase 8 섹션이 기존 포맷과 일치하게 추가되었는지 확인.
-2. **Backlog 확인**: `backlog/queue.md`에서 Phase 8 섹션이 제거되고 Archive 링크가 연결되었는지 확인.
-3. **Markdown 렌더링**: 각 문서(`README.md`, `agent.md` 등)가 깨짐 없이 렌더링되는지 확인.
+### Manual Verification
+1. **README Rendering**: 메인 페이지의 다이어그램과 배지가 정상적으로 렌더링되는지 확인.
+2. **Link Check**: `README.md` -> `docs/guides/getting_started.md` 링크 동작 확인.
+3. **Archive 확인**: `backlog/archive.md` 포맷 일치 여부 확인.
 
 ## 📦 Files Changed
 
 ### 🆕 New Files
-- `docs/archive/phase_8_architecture_foundation.md`: Phase 8 상세 백로그 보관용 (상세 내역).
+- `docs/guides/getting_started.md`: 설치 및 배포 가이드.
+- `docs/archive/phase_8_architecture_foundation.md`: Phase 8 상세 아카이브.
 
 ### 🛠 Modified Files
-- `backlog/archive.md` (+45): Phase 8 요약 내역 추가.
-- `backlog/queue.md` (-40, +5): Phase 8 제거 및 Phase 9 추가.
-- `.agent/constitution.md` (+12): Prompt Engineering Standard 추가.
-- `.agent/agent.md` (+13): Research Spec Protocol 추가.
-- `README.md` (+4, -4): Roadmap 상태 업데이트.
-
-**Total:** 6 files changed
+- `README.md`: 전면 개편 (Vision & Architecture 중심).
+- `backlog/archive.md`: Phase 8 요약 추가.
+- `backlog/queue.md`: Phase 8 제거 및 Phase 9 추가.
+- `.agent/constitution.md`: Quality Standard 추가.
+- `.agent/agent.md`: Research Spec 추가.
 
 ## ✅ Definition of Done
-- [x] 모든 단위/통합 테스트 통과 (N/A)
-- [x] `walkthrough.md` 작성 및 아카이브 완료
-- [x] `pr_description.md` 작성 및 아카이브 완료
-- [x] Ruff lint 및 format 확인 완료 (N/A)
+- [x] `README.md` 전면 개편 및 가이드 분리 완료
+- [x] Phase 8 아카이빙 완료
+- [x] Core Docs (Constitution, Agent) 업데이트 완료
+- [x] PR Description 업데이트 완료
