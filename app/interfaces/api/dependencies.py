@@ -48,6 +48,23 @@ def get_scraper() -> ScraperInterface:
     return CompositeScraper()
 
 
+# Google Search Client 의존성 (Spec 078)
+@lru_cache
+def get_google_search_client() -> "GoogleSearchClient":
+    from app.infrastructure.external_api.google_search_client import GoogleSearchClient
+
+    settings = get_settings()
+    if not settings.GOOGLE_API_KEY or not settings.GOOGLE_CSE_ID:
+        # Optional: Warn or raise based on strictness. 
+        # For now, we assume it's configured if this dependency is requested.
+        pass
+        
+    return GoogleSearchClient(
+        api_key=settings.GOOGLE_API_KEY or "", 
+        cse_id=settings.GOOGLE_CSE_ID or ""
+    )
+
+
 # Neo4j Driver 의존성 (모든 Neo4j 저장소가 공유하는 단일 Driver)
 @lru_cache
 def get_neo4j_driver() -> Driver:
