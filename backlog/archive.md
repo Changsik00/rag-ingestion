@@ -354,6 +354,9 @@
     * Listwise Reranking 전략 구현
     * Contextual (Sliding Window) 확장 기능 도입
     * Pointwise vs Listwise 전략 분기 구현
+    
+---
+
 ## 🏗️ Phase 8: Architecture & Quality Foundation
 
 > **목표**: RAG 시스템의 근본적인 아키텍처 문제를 해결하고 품질 검증 인프라를 구축한다.

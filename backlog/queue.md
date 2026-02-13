@@ -4,13 +4,6 @@
 
 > **Note**: 완료된 작업(Phase 1~7)은 [🗄️ Archive](archive.md)로 이동되었습니다.
 
----
-
-## 🏗️ Phase 8: Architecture & Quality Foundation (Completed)
-
-> **Note**: Phase 8의 모든 작업이 완료되어 [🗄️ Archive](../docs/archive/phase_8_architecture_foundation.md)로 이동되었습니다.
-
----
 
 ## 🚀 Phase 9: Advanced RAG Operations (Planning)
 
