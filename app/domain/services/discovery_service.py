@@ -32,6 +32,23 @@ class DiscoveryService:
         }
         self.blocked_extensions = {".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".mp4", ".mp3", ".zip", ".exe"}
 
+    async def search_topic(self, topic: str, max_results: int = 5) -> list[dict]:
+        """
+        Search for a topic and return results without ingesting.
+        Returns: List of dicts with title, link, snippet.
+        """
+        logger.info(f"Searching topic: '{topic}' (Max: {max_results})")
+        try:
+            results = await self.search_client.search(topic, num_results=max_results)
+            return [
+                {"title": r.title, "link": r.link, "snippet": r.snippet}
+                for r in results
+                if not self._is_blocked(r.link)
+            ]
+        except Exception as e:
+            logger.error(f"Search failed: {e}")
+            return []
+
     async def start_discovery(self, topic: str, max_depth: int = 1, max_docs: int = 10) -> list[str]:
         """
         Start autonomous discovery for a topic.

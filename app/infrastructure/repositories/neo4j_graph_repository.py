@@ -8,12 +8,20 @@ from app.domain.value_objects.ontology import EntityType, TypedEntity
 from app.infrastructure.repositories import cypher_queries as cq
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class Neo4jGraphRepository:
     """Neo4j 기반 Knowledge Graph 저장소"""
 
     def __init__(self, driver: Driver):
         self.driver = driver
-        self._create_indexes()
+        try:
+            self._create_indexes()
+        except Exception as e:
+            # DB가 준비되지 않았을 때 App 시작이 차단되지 않도록 예외 처리
+            logger.warning(f"Failed to create Neo4j indexes on init (Database might be down): {e}")
 
     def _create_indexes(self):
         """Entity 검색 성능을 위한 인덱스 생성"""

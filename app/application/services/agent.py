@@ -34,6 +34,9 @@ class AgentState(TypedDict):
     draft_content: Annotated[str | None, lambda x, y: y]
     is_clarification: Annotated[bool, lambda x, y: y]
     missing_slots: Annotated[list[str], lambda x, y: y]
+    # Spec 078-B: Interactive Discovery
+    discovered_urls: Annotated[list[dict] | None, lambda x, y: y]  # Search results for review
+    original_discovery_topic: Annotated[str | None, lambda x, y: y]
 
 
 class ConversationalRAGAgent:
@@ -99,12 +102,18 @@ class ConversationalRAGAgent:
                 "ingest": "ingest",
                 "search": "search",
                 "discovery": "discovery",  # Spec 078
+                "ingest_selection": "ingest_selection",  # Spec 078-B
                 "clarify": "clarify",  # Spec 045
             },
         )
+        
+        workflow.add_node("ingest_selection", self.ingest_selection_node)
 
         workflow.add_edge("ingest", "search")  # 수집 완료 후 요약을 위해 검색 노드로 이동
-        workflow.add_edge("discovery", "search")  # 발견 및 수집 완료 후 요약/검색 이동
+        # Discovery now pauses for user input (Review)
+        workflow.add_edge("discovery", END)
+        # Selection -> Ingest -> Search
+        workflow.add_edge("ingest_selection", "search")
 
         # Conditional Edge after Search: Check HITL
         def route_after_search(state: AgentState):
@@ -146,7 +155,7 @@ class ConversationalRAGAgent:
 
         return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
-    def route_logic(self, state: AgentState) -> Literal["ingest", "search", "discovery", "clarify"]:
+    def route_logic(self, state: AgentState) -> Literal["ingest", "search", "discovery", "ingest_selection", "clarify"]:
         return state["intent"]
 
     def human_review_node(self, state: AgentState) -> dict:
@@ -187,9 +196,22 @@ class ConversationalRAGAgent:
 
         return {"messages": [response], "is_clarification": True, "tool_output": "Clarification Requested"}
 
+        return {"intent": intent, "missing_slots": missing_slots}
+
     async def router_node(self, state: AgentState) -> dict:
         messages = state["messages"]
         last_user_msg = messages[-1].content if messages else ""
+
+        # Spec 078-B: Check for Discovery URL Selection context
+        discovered_urls = state.get("discovered_urls")
+        if discovered_urls:
+            # Check if user input is a selection (numbers, 'all', '전부')
+            if self._is_selection(last_user_msg):
+                return {"intent": "ingest_selection"}
+            
+            # If user changes topic or asks something else, we clear context?
+            # For now, let standard routing handle it, but maybe clear discovered_urls if intent changes?
+            # We'll rely on next node to decide.
 
         # 의도 분류 프롬프트 (Spec 045: Clarify 추가)
         prompt = ChatPromptTemplate.from_template(
@@ -236,13 +258,27 @@ class ConversationalRAGAgent:
                 intent = "clarify"
                 missing_slots.append("url")
         elif intent == "discovery":
-            # Discovery needs a topic. Usually implicit in the message.
-            # If message is too short, might need clarification.
             if len(last_user_msg.strip()) < 2:
                 intent = "clarify"
                 missing_slots.append("topic")
+            # Clear previous discovery context if new discovery started
+            return {"intent": intent, "missing_slots": missing_slots, "discovered_urls": None}
 
         return {"intent": intent, "missing_slots": missing_slots}
+
+    def _is_selection(self, text: str) -> bool:
+        """Check if text is likely a selection (e.g. '1', '1, 3', 'all', '전부', '네')"""
+        clean = text.strip().lower()
+        # "all", "전부", "다"
+        if clean in ["all", "전부", "다", "모두"]:
+            return True
+        # "yes", "네", "응" (Treat as all or top 1? Maybe just return True and let handler decide)
+        if clean in ["yes", "y", "네", "응", "어"]:
+            return True
+        # Number patterns: "1", "1, 2", "1번 3번", "1 2"
+        if re.search(r"\d", clean):
+            return True
+        return False
 
     def ingest_node(self, state: AgentState) -> dict:
         messages = state["messages"]
@@ -280,37 +316,107 @@ class ConversationalRAGAgent:
         return {"messages": [AIMessage(content=msg)], "tool_output": msg}
 
     async def discovery_node(self, state: AgentState) -> dict:
-        """Autonomous Discovery Node (Spec 078)"""
+        """Autonomous Discovery Node (Spec 078-B: Interactive)"""
         messages = state["messages"]
         last_user_msg = messages[-1].content
 
-        # Topic Extraction (Simplistic: Use full message as topic for now, or use LLM)
-        # For better results, we could reuse the router's analysis or ask LLM to extract topic.
-        # Here we just use the user message as the topic query.
         topic = last_user_msg
+        # Clean topic if it was an explicit command like "Research X"
+        # For now, just use the whole message.
 
         try:
-            # 기본 설정: Depth 1, Max 5 docs
-            job_ids = await self.discovery_service.start_discovery(topic, max_depth=1, max_docs=5)
+            # Step 1: Search only (No Ingestion)
+            # Spec 078-B: Fetch 5 results for user review
+            search_results = await self.discovery_service.search_topic(topic, max_results=5)
 
-            if job_ids:
-                msg = f"🔍 탐색 시작: '{topic}'\n\n- {len(job_ids)}개의 관련 문서를 발견하여 수집을 시작했습니다.\n- 작업 ID: {', '.join(job_ids[:3])}...\n\n수집된 내용을 바탕으로 답변을 생성합니다..."
-                # Pass doc_ids filter to search node if needed?
-                # Usually RAG search will pick them up if indexed quickly.
-                # Ideally, we should wait for ingestion to finish or use the job IDs to poll.
-                # But DiscoveryService triggers Async jobs.
-                # So we might not have data IMMEDIATELY available for search node.
-                # We inform the user that it started.
-                # However, the Agent flow goes discovery -> search.
-                # Search might fail to find *new* data instantly.
-                # Let's add a small wait or just rely on semantic search finding *something*.
-                return {"messages": [AIMessage(content=msg)], "tool_output": msg}
+            if search_results:
+                # Format results for user
+                msg_lines = [f"🔍 '{topic}'에 대해 다음 {len(search_results)}개의 문서를 발견했습니다. 수집할 항목을 선택해주세요.\n"]
+                for idx, res in enumerate(search_results, 1):
+                    msg_lines.append(f"{idx}. [{res['title']}]({res['link']})")
+                
+                msg_lines.append("\n예: '1번, 3번', '전부', '1 2'")
+                msg = "\n".join(msg_lines)
+                
+                return {
+                    "messages": [AIMessage(content=msg)],
+                    "tool_output": msg,
+                    "discovered_urls": search_results,
+                    "original_discovery_topic": topic
+                }
             else:
                 msg = f"⚠️ '{topic}'에 대한 유의미한 정보를 찾지 못했습니다."
                 return {"messages": [AIMessage(content=msg)], "tool_output": msg}
 
         except Exception as e:
             msg = f"❌ 탐색 중 오류 발생: {str(e)}"
+            return {"messages": [AIMessage(content=msg)], "tool_output": msg}
+
+    async def ingest_selection_node(self, state: AgentState) -> dict:
+        """Process user selection and trigger ingestion (Spec 078-B)"""
+        messages = state["messages"]
+        last_user_msg = messages[-1].content
+        discovered_urls = state.get("discovered_urls", [])
+
+        if not discovered_urls:
+            return {
+                "messages": [AIMessage(content="선택할 수 있는 검색 결과가 없습니다. 다시 검색해주세요.")],
+                "tool_output": "No discovered URLs context"
+            }
+
+        selected_urls = []
+        clean_msg = last_user_msg.strip().lower()
+
+        # Parse Selection
+        if any(w in clean_msg for w in ["all", "전부", "다", "모두"]):
+            selected_urls = [res["link"] for res in discovered_urls]
+        else:
+            # Extract numbers
+            indices = [int(n) for n in re.findall(r"\d+", clean_msg)]
+            # Validate indices (1-based to 0-based)
+            valid_indices = [i-1 for i in indices if 1 <= i <= len(discovered_urls)]
+            selected_urls = [discovered_urls[i]["link"] for i in valid_indices]
+
+        if not selected_urls:
+            return {
+                "messages": [AIMessage(content="올바른 번호를 선택해주세요.")],
+                "tool_output": "Invalid selection"
+            }
+
+        # Trigger Ingestion for selected URLs
+        try:
+            job_ids = []
+            msg = f"✅ {len(selected_urls)}개의 문서 수집을 시작합니다...\n"
+            
+            # Using create_job/process_job for each URL. 
+            # Note: For multiple URLs, this might be slow if synchronous.
+            # Ideally, we should fire them asynchronously or use a batch API.
+            # But IngestionService seems to handle one by one. 
+            # Let's do it sequentially for safety or use gather if possible.
+            # Here we just iterate.
+            
+            for url in selected_urls:
+                job = self.ingestion_service.create_job(url)
+                # We can fire and forget process_job if we want async, 
+                # but if we want to search immediately, we might need to wait or rely on background.
+                # The prompt implies we wait or at least start it.
+                # self.ingestion_service.process_job(job.job_id) -> This is sync/blocking?
+                # In previous code "ingest_node" it was blocking.
+                self.ingestion_service.process_job(job.job_id)
+                job_ids.append(job.job_id)
+
+            msg += f"작업 ID: {', '.join(job_ids)}\n\n내용을 요약합니다..."
+            
+            # Clear discovery context after selection
+            return {
+                "messages": [AIMessage(content=msg)],
+                "tool_output": msg,
+                "discovered_urls": None,  # Context Cleared
+                "original_discovery_topic": None
+            }
+
+        except Exception as e:
+            msg = f"❌ 수집 중 오류 발생: {str(e)}"
             return {"messages": [AIMessage(content=msg)], "tool_output": msg}
 
     async def search_node(self, state: AgentState, config: RunnableConfig) -> dict:

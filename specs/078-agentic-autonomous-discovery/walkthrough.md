@@ -30,9 +30,12 @@ tests/unit/interfaces/tools/test_discovery_tool.py .                            
 - **Dependency Management**: `httpx` and `respx` were added to dependencies.
 - **Design Choice**: Decided to use "Double Request" strategy (Discovery fetches links -> Ingestion fetches content again) to maintain `Ingestion` pipeline integrity without complex refactoring. Use `GoogleSearchClient` -> `DiscoveryService` -> `Ingestion.ingest_url`.
 
-### 3. Chat Integration Verification
+### 3. Chat Integration Verification (Interactive Mode)
 - **Action:** Admin UI Chat Input: "Agentic RAG에 대해 조사해줘"
 - **Expected Result:**
-  - Agent detects 'discovery' intent.
-  - Triggers 'discovery_node'.
-  - Output: "🔍 탐색 시작: 'Agentic RAG'..." with Job IDs.
+  - Agent output: "🔍 'Agentic RAG'에 대해 다음 5개의 문서를 발견했습니다. 수집할 항목을 선택해주세요."
+  - List of 5 URLs.
+- **Action:** User Input: "1번이랑 3번"
+- **Expected Result:**
+  - Agent output: "✅ 2개의 문서 수집을 시작합니다... 작업 ID: ..."
+  - Verify ingestion starts for selected URLs.
