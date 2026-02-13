@@ -165,6 +165,16 @@ def get_ingestion_service(
     )
 
 
+# Discovery Service 의존성 (Spec 078)
+def get_discovery_service(
+    search_client: Annotated["GoogleSearchClient", Depends(get_google_search_client)],
+    ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
+) -> "DiscoveryService":
+    from app.domain.services.discovery_service import DiscoveryService
+
+    return DiscoveryService(search_client=search_client, ingestion_service=ingestion_service)
+
+
 # Spec 024: IngestOrchestrator 직접 접근 (HITL Control용)
 async def get_ingest_orchestrator(
     extractor: Annotated[SemanticExtractor, Depends(get_semantic_extractor)],
