@@ -457,7 +457,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                             break
 
                 # Spec 055 Debug: Show Raw Response
-                with st.expander("📝 Raw API Response (JSON)"):
+                with st.expander("📝 Raw API Response (JSON, Debug Only)", expanded=False):
                     st.json(res)
 
                 context_data = res.get("context_data") or {}
@@ -475,6 +475,14 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     # Display summary from current context
                     passed = sum(1 for item in (res.get("rerank_log") or []) if item.get("status") == "passed")
                     status_container.write(f"📊 **Rerank Summary**: {passed} chunks passed.")
+
+                # Fallback: If answer is still default, try to use the last message regardless of role if content exists
+                if answer == "No response generated." and res.get("messages"):
+                     last_msg = res["messages"][-1]
+                     if isinstance(last_msg, dict) and last_msg.get("content"):
+                         answer = last_msg["content"]
+                     elif hasattr(last_msg, "content"):
+                         answer = last_msg.content
 
                 st.markdown(answer)
 
