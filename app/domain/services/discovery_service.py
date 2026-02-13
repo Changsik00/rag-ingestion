@@ -1,6 +1,4 @@
-import asyncio
 import logging
-from typing import List, Set
 from urllib.parse import urljoin, urlparse
 
 import httpx
@@ -12,6 +10,7 @@ from app.infrastructure.external_api.google_search_client import GoogleSearchCli
 
 logger = logging.getLogger(__name__)
 
+
 class DiscoveryService:
     def __init__(
         self,
@@ -21,14 +20,19 @@ class DiscoveryService:
         self.search_client = search_client
         self.ingestion_service = ingestion_service
         self.blocked_domains = {
-            "youtube.com", "youtu.be", "facebook.com", "twitter.com", "instagram.com",
-            "linkedin.com", "tiktok.com", "pinterest.com", "reddit.com"
+            "youtube.com",
+            "youtu.be",
+            "facebook.com",
+            "twitter.com",
+            "instagram.com",
+            "linkedin.com",
+            "tiktok.com",
+            "pinterest.com",
+            "reddit.com",
         }
-        self.blocked_extensions = {
-            ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".mp4", ".mp3", ".zip", ".exe"
-        }
+        self.blocked_extensions = {".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".mp4", ".mp3", ".zip", ".exe"}
 
-    async def start_discovery(self, topic: str, max_depth: int = 1, max_docs: int = 10) -> List[str]:
+    async def start_discovery(self, topic: str, max_depth: int = 1, max_docs: int = 10) -> list[str]:
         """
         Start autonomous discovery for a topic.
         1. Search Google for seed URLs.
@@ -36,7 +40,7 @@ class DiscoveryService:
         3. Trigger Ingestion for each valid URL.
         """
         logger.info(f"Starting discovery for topic: '{topic}' (Depth: {max_depth}, Max Docs: {max_docs})")
-        
+
         # 1. Google Search
         try:
             search_results = await self.search_client.search(topic, num_results=max_docs)
@@ -47,15 +51,15 @@ class DiscoveryService:
             return []
 
         # 2. BFS Crawling
-        visited: Set[str] = set()
-        queue: List[tuple[str, int]] = [(url, 0) for url in seed_urls]
-        ingested_job_ids: List[str] = []
+        visited: set[str] = set()
+        queue: list[tuple[str, int]] = [(url, 0) for url in seed_urls]
+        ingested_job_ids: list[str] = []
         ingested_count = 0
 
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
             while queue and ingested_count < max_docs:
                 url, current_depth = queue.pop(0)
-                
+
                 if url in visited:
                     continue
                 visited.add(url)
@@ -72,9 +76,9 @@ class DiscoveryService:
                     ingested_count += 1
                 except Exception as e:
                     logger.error(f"Failed to ingest URL {url}: {e}")
-                    # Continue to crawl even if ingestion fails? 
+                    # Continue to crawl even if ingestion fails?
                     # Usually we want to crawl only if we can access it.
-                
+
                 # Recursive Step
                 if current_depth < max_depth:
                     try:
@@ -98,20 +102,20 @@ class DiscoveryService:
         # Domain Check (includes subdomains)
         if any(blocked in domain for blocked in self.blocked_domains):
             return True
-            
+
         # Extension Check
         if any(path.endswith(ext) for ext in self.blocked_extensions):
             return True
-            
+
         return False
 
     @retry(stop=stop_after_attempt(2), wait=wait_fixed(1))
-    async def _fetch_links(self, client: httpx.AsyncClient, url: str) -> List[str]:
+    async def _fetch_links(self, client: httpx.AsyncClient, url: str) -> list[str]:
         """Fetch HTML and extract valid links."""
         try:
             response = await client.get(url)
             response.raise_for_status()
-            
+
             # Simple content type check
             content_type = response.headers.get("content-type", "").lower()
             if "text/html" not in content_type:
@@ -126,7 +130,7 @@ class DiscoveryService:
                 parsed = urlparse(full_url)
                 if parsed.scheme in ("http", "https"):
                     links.append(full_url)
-            
+
             return links
         except Exception:
             raise

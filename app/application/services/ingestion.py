@@ -151,6 +151,7 @@ class Ingestion:
         # [Spec 065] Initial ID/URL-based Deduplication Check
         if not force_refresh:
             from app.domain.entities.job import JobStatus
+
             last_job = self.job_repository.find_last_job_by_source(
                 url,
                 statuses=[JobStatus.COMPLETED, JobStatus.RUNNING, JobStatus.PENDING],
@@ -166,31 +167,24 @@ class Ingestion:
                 return job
 
         # 1. Create Job Entry
-        job = self.create_job(
-            url=url, 
-            chunking_config=chunking_config, 
-            custom_metadata=custom_metadata
-        )
-        
+        job = self.create_job(url=url, chunking_config=chunking_config, custom_metadata=custom_metadata)
+
         # [Spec 072/076] Store force_refresh in job for handlers to see
         if force_refresh:
-             if job.custom_metadata is None:
-                 job.custom_metadata = {}
-             job.custom_metadata["force_refresh"] = True
-             self.job_repository.update_job(job)
+            if job.custom_metadata is None:
+                job.custom_metadata = {}
+            job.custom_metadata["force_refresh"] = True
+            self.job_repository.update_job(job)
 
         # 2. Publish Event to start the Saga
         from app.core.events import bus
         from app.domain.events.ingestion_events import IngestionStarted
-        
+
         # [Spec 076] Fire and forget: Decouple API response from Saga execution
         # Use asyncio.create_task to ensure the Saga starts in the background
         # but the current request returns immediately with the job ID.
-        asyncio.create_task(bus.publish("IngestionStarted", IngestionStarted(
-            job_id=job.job_id,
-            source_url=url
-        )))
-        
+        asyncio.create_task(bus.publish("IngestionStarted", IngestionStarted(job_id=job.job_id, source_url=url)))
+
         return job
 
     async def process_job(self, job_id: str, force_refresh: bool = False) -> None:
@@ -205,33 +199,35 @@ class Ingestion:
 
         try:
             from app.core.events import bus
-            
+
             # [Spec 072/076] Store force_refresh in job for handlers to see
             if force_refresh:
-                 if job.custom_metadata is None:
-                     job.custom_metadata = {}
-                 job.custom_metadata["force_refresh"] = True
-                 self.job_repository.update_job(job)
+                if job.custom_metadata is None:
+                    job.custom_metadata = {}
+                job.custom_metadata["force_refresh"] = True
+                self.job_repository.update_job(job)
 
             if job.raw_content:
                 # Local file processing: Skip Step 1 (Collection) and jump to Step 2 (Deduplication)
                 logger.info(f"Triggering Saga for local file: {job.filename} (Job {job_id})")
                 from app.domain.events.ingestion_events import ContentCollected
-                
-                await bus.publish("ContentCollected", ContentCollected(
-                    job_id=job.job_id,
-                    raw_content=job.raw_content.decode("utf-8", errors="ignore") if isinstance(job.raw_content, bytes) else job.raw_content,
-                    metadata=job.custom_metadata or {}
-                ))
+
+                await bus.publish(
+                    "ContentCollected",
+                    ContentCollected(
+                        job_id=job.job_id,
+                        raw_content=job.raw_content.decode("utf-8", errors="ignore")
+                        if isinstance(job.raw_content, bytes)
+                        else job.raw_content,
+                        metadata=job.custom_metadata or {},
+                    ),
+                )
             else:
                 # Web scraping: Start from Step 1 (Collection)
                 logger.info(f"Triggering Saga for URL: {job.source_url} (Job {job_id})")
                 from app.domain.events.ingestion_events import IngestionStarted
-                
-                await bus.publish("IngestionStarted", IngestionStarted(
-                    job_id=job.job_id,
-                    source_url=job.source_url
-                ))
+
+                await bus.publish("IngestionStarted", IngestionStarted(job_id=job.job_id, source_url=job.source_url))
 
         except Exception as e:
             logger.exception(f"Failed to trigger Saga for job {job_id}")

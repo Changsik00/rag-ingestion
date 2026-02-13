@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.interfaces.api.v1.endpoints import (
+    discovery,
     entities,
     graph,
     ingest,
@@ -9,7 +10,6 @@ from app.interfaces.api.v1.endpoints import (
     rag,
     storage,
     system,
-    discovery,
 )
 
 router = APIRouter()

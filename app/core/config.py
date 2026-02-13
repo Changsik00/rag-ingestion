@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     GEMINI_EMBEDDING_MODEL_NAME: str = "gemini-embedding-001"
     GEMINI_EMBEDDING_DIMENSIONALITY: int = 3072
     FIRECRAWL_API_KEY: str | None = None
-    
+
     # Google Search (Spec 078)
     GOOGLE_API_KEY: str | None = None
     GOOGLE_CSE_ID: str | None = None

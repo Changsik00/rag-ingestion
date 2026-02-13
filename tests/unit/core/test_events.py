@@ -22,6 +22,7 @@ async def test_event_bus_publish_subscribe():
 
     assert "hello" in received_data
 
+
 @pytest.mark.asyncio
 async def test_event_bus_multiple_handlers():
     bus = EventBus()
@@ -42,6 +43,7 @@ async def test_event_bus_multiple_handlers():
     await asyncio.sleep(0.01)
 
     assert count == 30  # 10 + 20
+
 
 @pytest.mark.asyncio
 async def test_event_bus_unsubscribe():

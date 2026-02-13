@@ -1,17 +1,17 @@
 from collections.abc import AsyncIterator
 from functools import lru_cache
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from neo4j import Driver, GraphDatabase
 
 from app.application.interfaces.scraper import ScraperInterface
+from app.application.saga.ingestion_handlers import IngestionSagaHandlers
 from app.application.services.agent import ConversationalRAGAgent
 from app.application.services.feedback import Feedback
 from app.application.services.ingestion import Ingestion
 from app.application.services.integrity import Integrity
-from app.application.saga.ingestion_handlers import IngestionSagaHandlers
 from app.application.services.orchestration.chat import ChatOrchestrator
 from app.application.services.orchestration.ingest import IngestOrchestrator
 from app.application.services.rag import RAG
@@ -37,6 +37,10 @@ from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRep
 from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
 
+if TYPE_CHECKING:
+    from app.domain.services.discovery_service import DiscoveryService
+    from app.infrastructure.external_api.google_search_client import GoogleSearchClient
+
 # === Dependency Injection 컨테이너 ===
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
 # 모든 의존성은 함수로 정의되어 테스트 시 Mock으로 대체 가능합니다.
@@ -55,14 +59,11 @@ def get_google_search_client() -> "GoogleSearchClient":
 
     settings = get_settings()
     if not settings.GOOGLE_API_KEY or not settings.GOOGLE_CSE_ID:
-        # Optional: Warn or raise based on strictness. 
+        # Optional: Warn or raise based on strictness.
         # For now, we assume it's configured if this dependency is requested.
         pass
-        
-    return GoogleSearchClient(
-        api_key=settings.GOOGLE_API_KEY or "", 
-        cse_id=settings.GOOGLE_CSE_ID or ""
-    )
+
+    return GoogleSearchClient(api_key=settings.GOOGLE_API_KEY or "", cse_id=settings.GOOGLE_CSE_ID or "")
 
 
 # Neo4j Driver 의존성 (모든 Neo4j 저장소가 공유하는 단일 Driver)
@@ -152,7 +153,7 @@ def get_ingestion_service(
         graph_repository=graph,
         scraper=scraper,
         extractor=extractor,
-        chunker=chunker
+        chunker=chunker,
     )
 
     return Ingestion(
@@ -161,7 +162,7 @@ def get_ingestion_service(
         graph=graph,
         job_repository=job_repository,
         extractor=extractor,
-        chunker=chunker
+        chunker=chunker,
     )
 
 

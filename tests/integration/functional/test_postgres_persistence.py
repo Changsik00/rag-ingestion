@@ -48,6 +48,7 @@ async def test_postgres_persistence_flow():
 
         async with pool.connection() as conn:
             from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
+
             checkpointer = AsyncPostgresSaver(conn)
             builder = IngestionGraphBuilder(llm=MockInnerLLM())
             orchestrator = IngestOrchestrator(graph_builder=builder)

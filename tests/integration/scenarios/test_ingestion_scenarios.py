@@ -92,16 +92,14 @@ class TestIngestionScenarios:
         class MockExtractor:
             async def extract(self, text, metadata=None, thread_id=None):
                 from app.domain.value_objects.extracted_metadata import ExtractedMetadata
+
                 return ExtractedMetadata(
-                    title="Mocked Title",
-                    summary="Mocked Summary",
-                    keywords=["mocked"],
-                    entities={},
-                    relationships=[]
+                    title="Mocked Title", summary="Mocked Summary", keywords=["mocked"], entities={}, relationships=[]
                 )
 
         app.dependency_overrides[get_scraper] = lambda: MockScraper()
         from app.interfaces.api.dependencies import get_semantic_extractor
+
         app.dependency_overrides[get_semantic_extractor] = lambda: MockExtractor()
 
         try:
@@ -148,13 +146,15 @@ class TestIngestionScenarios:
         from app.domain.value_objects.extracted_metadata import ExtractedMetadata
 
         class MockExtractor(SemanticExtractor):
-            async def extract(self, text: str, metadata: dict | None = None, thread_id: str | None = None) -> ExtractedMetadata:
+            async def extract(
+                self, text: str, metadata: dict | None = None, thread_id: str | None = None
+            ) -> ExtractedMetadata:
                 return ExtractedMetadata(
                     title="Idempotency Test",
                     summary="Mock Summary",
                     keywords=["mock", "test"],
                     entities={},
-                    language="en"
+                    language="en",
                 )
 
         mock_extractor_instance = MockExtractor(llm=None)  # type: ignore

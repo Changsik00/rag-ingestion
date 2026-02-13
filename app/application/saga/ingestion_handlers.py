@@ -21,10 +21,12 @@ from app.domain.interfaces.job_repository import JobRepository
 
 logger = logging.getLogger(__name__)
 
+
 class IngestionSagaHandlers:
     """
     Saga Handlers for Coordinating the Ingestion Choreography.
     """
+
     _instance: "IngestionSagaHandlers | None" = None
 
     def __init__(
@@ -34,7 +36,7 @@ class IngestionSagaHandlers:
         graph_repository: GraphRepository,
         scraper: Any,
         extractor: Any,
-        chunker: Any
+        chunker: Any,
     ):
         self.job_repository = job_repository
         self.document_repository = document_repository
@@ -65,7 +67,7 @@ class IngestionSagaHandlers:
 
     def register_all(self):
         """Register all handlers to the event bus once."""
-        # Use a class-level flag or check bus subscriptions? 
+        # Use a class-level flag or check bus subscriptions?
         # Since bus is singleton, we must be careful.
         # However, initialize() already guards this.
 
@@ -93,22 +95,25 @@ class IngestionSagaHandlers:
             logger.debug(f"Stage 1: Scraping {event.source_url}")
             result = await self.scraper.scrape(event.source_url)
             logger.debug(f"Stage 1: Scraped content length: {len(result.markdown) if result.markdown else 0}")
-            
+
             # Calculate Content Hash
             import hashlib
+
             # [Spec 072/076] Handle cases where scraped_content might be a Mock or None in tests
             scraped_content = result.markdown
             if hasattr(scraped_content, "__await__") or asyncio.iscoroutine(scraped_content):
-                logger.warning(f"Stage 1: scraped_content is a coroutine! (Mock issue?)")
+                logger.warning("Stage 1: scraped_content is a coroutine! (Mock issue?)")
                 scraped_content = await scraped_content
 
             if not isinstance(scraped_content, str):
-                logger.warning(f"Stage 1: scraped_content is {type(scraped_content)}, not string. Coercing to string for hashing.")
+                logger.warning(
+                    f"Stage 1: scraped_content is {type(scraped_content)}, not string. Coercing to string for hashing."
+                )
                 scraped_content = str(scraped_content)
 
             content_hash = hashlib.sha256(scraped_content.encode()).hexdigest()
             logger.debug(f"Stage 1: Content hash: {content_hash}")
-            
+
             if job:
                 job.content_hash = content_hash
                 self.job_repository.update_job(job)
@@ -116,11 +121,10 @@ class IngestionSagaHandlers:
             # Ensure metadata is a dict for Pydantic validation
             event_metadata = result.metadata if isinstance(result.metadata, dict) else {}
 
-            await bus.publish("ContentCollected", ContentCollected(
-                job_id=event.job_id,
-                raw_content=scraped_content,
-                metadata=event_metadata
-            ))
+            await bus.publish(
+                "ContentCollected",
+                ContentCollected(job_id=event.job_id, raw_content=scraped_content, metadata=event_metadata),
+            )
         except Exception as e:
             await self.publish_failed(event.job_id, "Collection", e)
 
@@ -136,9 +140,10 @@ class IngestionSagaHandlers:
             if not force_refresh:
                 # 1. Strategy-based check (Contents, TTL, Metadata-specific)
                 from app.application.services.deduplication_strategies import DeduplicationFactory
+
                 factory = DeduplicationFactory(self.job_repository)
                 strategy = factory.get_strategy(job.source_url)
-                
+
                 if job and await strategy.is_duplicate(job):
                     logger.info(f"Saga Step 2: Job {event.job_id} detected as duplicate. Skipping.")
                     job.status = JobStatus.SKIPPED
@@ -146,12 +151,15 @@ class IngestionSagaHandlers:
                     self.job_repository.update_job(job)
                     return
 
-            await bus.publish("ContentUnique", ContentUnique(
-                job_id=event.job_id,
-                content_hash=job.content_hash if job else "mock_hash",
-                raw_content=event.raw_content,
-                metadata=event.metadata
-            ))
+            await bus.publish(
+                "ContentUnique",
+                ContentUnique(
+                    job_id=event.job_id,
+                    content_hash=job.content_hash if job else "mock_hash",
+                    raw_content=event.raw_content,
+                    metadata=event.metadata,
+                ),
+            )
         except Exception as e:
             await self.publish_failed(event.job_id, "Deduplication", e)
 
@@ -172,19 +180,19 @@ class IngestionSagaHandlers:
             # Since the actual implementation might vary, let's assume 'extractor'
             # is a service that handles the logic.
             extracted = await self.extractor.extract(
-                text=event.raw_content if isinstance(event.raw_content, str) else event.raw_content.decode('utf-8'),
-                metadata=event.metadata
+                text=event.raw_content if isinstance(event.raw_content, str) else event.raw_content.decode("utf-8"),
+                metadata=event.metadata,
             )
-            
+
             # [Spec 076] Handle cases where extracted might be a coroutine (Mock issue)
             if asyncio.iscoroutine(extracted) or hasattr(extracted, "__await__"):
-                logger.warning(f"Stage 3: extracted is a coroutine! Awaiting.")
+                logger.warning("Stage 3: extracted is a coroutine! Awaiting.")
                 extracted = await extracted
 
             # Ensure extracted_metadata is a dict for Pydantic validation
             # Be careful with Mocks!
             is_mock = str(type(extracted)).startswith("<class 'unittest.mock.")
-            
+
             if hasattr(extracted, "model_dump") and not is_mock:
                 extracted_metadata = extracted.model_dump()
             elif isinstance(extracted, dict):
@@ -193,11 +201,12 @@ class IngestionSagaHandlers:
                 logger.warning(f"Stage 3: extracted metadata is {type(extracted)}, not dict (Mocking?). Falling back.")
                 extracted_metadata = {}
 
-            await bus.publish("MetadataExtracted", MetadataExtracted(
-                job_id=event.job_id,
-                extracted_metadata=extracted_metadata,
-                raw_content=event.raw_content
-            ))
+            await bus.publish(
+                "MetadataExtracted",
+                MetadataExtracted(
+                    job_id=event.job_id, extracted_metadata=extracted_metadata, raw_content=event.raw_content
+                ),
+            )
         except Exception as e:
             await self.publish_failed(event.job_id, "Extraction", e)
 
@@ -212,11 +221,12 @@ class IngestionSagaHandlers:
 
             # [Spec 072] Use deterministic doc_id based on source_url
             import hashlib
+
             source_url = job.source_url if job else ""
             doc_id = hashlib.sha256(source_url.encode()).hexdigest()
-            
+
             from app.domain.entities.document import Document
-            
+
             # [Spec 073] Ensure DocumentMetadata requirements are met
             metadata = event.extracted_metadata.copy()
             if "source_id" not in metadata:
@@ -229,16 +239,17 @@ class IngestionSagaHandlers:
 
             doc = Document(
                 id=doc_id,
-                content=event.raw_content if isinstance(event.raw_content, str) else event.raw_content.decode('utf-8'),
-                metadata=metadata
+                content=event.raw_content if isinstance(event.raw_content, str) else event.raw_content.decode("utf-8"),
+                metadata=metadata,
             )
-            
+
             # Actual Chunking Logic
             config = job.chunking_config if job else None
             from app.domain.value_objects.chunk_config import ChunkingConfig
             from app.infrastructure.chunker.chunker_factory import ChunkerFactory
+
             chunker = ChunkerFactory.get_chunker(ChunkingConfig(**config) if config else ChunkingConfig())
-            
+
             chunks = chunker.chunk_document(doc)
             logger.info(f"Saga Step 4: Chunked document {doc_id} into {len(chunks)} pieces")
 
@@ -258,11 +269,10 @@ class IngestionSagaHandlers:
             else:
                 logger.warning(f"Stage 4: chunks is {type(chunks)}, not list. using empty list.")
 
-            await bus.publish("DocumentChunked", DocumentChunked(
-                job_id=event.job_id,
-                chunks=event_chunks,
-                semantic_data=event.extracted_metadata
-            ))
+            await bus.publish(
+                "DocumentChunked",
+                DocumentChunked(job_id=event.job_id, chunks=event_chunks, semantic_data=event.extracted_metadata),
+            )
         except Exception as e:
             await self.publish_failed(event.job_id, "Chunking", e)
 
@@ -276,12 +286,13 @@ class IngestionSagaHandlers:
                 self.job_repository.update_job(job)
 
             import hashlib
+
             source_url = job.source_url if job else ""
             doc_id = hashlib.sha256(source_url.encode()).hexdigest()
-            
+
             from app.domain.entities.document import Document
             from app.domain.value_objects.chunk import Chunk as DocumentChunk
-            
+
             # Re-enrich metadata for consistency
             metadata = event.semantic_data.copy() if event.semantic_data else {}
             if "source_id" not in metadata:
@@ -293,7 +304,7 @@ class IngestionSagaHandlers:
 
             # Save Document and Chunks
             doc = Document(id=doc_id, content="", metadata=metadata)
-            
+
             # Ensure event.chunks is a list
             event_chunks = event.chunks if isinstance(event.chunks, list) else []
             chunks = []
@@ -304,17 +315,14 @@ class IngestionSagaHandlers:
                     logger.warning(f"Stage 5: chunk is {type(c)}, not dict. Skipping.")
 
             self.document_repository.save_with_chunks(doc, chunks)
-            
+
             # Build Knowledge Graph (Spec 010 + 016)
             if event.semantic_data:
-                # Need to convert dict back to SemanticData object if possible, 
+                # Need to convert dict back to SemanticData object if possible,
                 # or adapt _build_knowledge_graph to handle dict
                 self._build_knowledge_graph(doc_id, event.semantic_data)
 
-            await bus.publish("DataIndexed", DataIndexed(
-                job_id=event.job_id,
-                doc_id=doc_id
-            ))
+            await bus.publish("DataIndexed", DataIndexed(job_id=event.job_id, doc_id=doc_id))
         except Exception as e:
             await self.publish_failed(event.job_id, "Indexing", e)
 
@@ -327,10 +335,7 @@ class IngestionSagaHandlers:
             job.docs_ids.append(event.doc_id)
             self.job_repository.update_job(job)
 
-        await bus.publish("IngestionCompleted", IngestionCompleted(
-            job_id=event.job_id,
-            doc_id=event.doc_id
-        ))
+        await bus.publish("IngestionCompleted", IngestionCompleted(job_id=event.job_id, doc_id=event.doc_id))
 
     async def handle_failed(self, event: IngestionFailed):
         """Rollback Compensatory Transaction"""
@@ -338,7 +343,7 @@ class IngestionSagaHandlers:
 
         job = self.job_repository.get_job(event.job_id)
         if job:
-            job.status = JobStatus.FAILED # Or ROLLING_BACK
+            job.status = JobStatus.FAILED  # Or ROLLING_BACK
             job.error_message = f"Failed at {event.stage}: {event.error_message}"
             self.job_repository.update_job(job)
 
@@ -352,7 +357,7 @@ class IngestionSagaHandlers:
         Entity 노드, MENTIONS 관계 및 Entity-Entity 관계 생성 (Ported from Ingestion service)
         """
         from app.core.utils import normalize_entity_name
-        
+
         primary_entity = semantic_data_dict.get("primary_entity")
         entities = semantic_data_dict.get("entities", {})
         aliases = semantic_data_dict.get("aliases", {})
@@ -373,9 +378,7 @@ class IngestionSagaHandlers:
                         # [FIX] Use valid EntityType. "SHOW" is not valid.
                         self.graph_repository.save_entity(norm_primary, "CONCEPT")
                         self.graph_repository.create_entity_relationship(
-                            source_name=normalized_name, 
-                            relationship_type="PART_OF_CONTEXT", 
-                            target_name=norm_primary
+                            source_name=normalized_name, relationship_type="PART_OF_CONTEXT", target_name=norm_primary
                         )
                 except Exception as e:
                     logger.error(f"Failed to build graph for entity {name}: {e}")
@@ -404,7 +407,7 @@ class IngestionSagaHandlers:
                     source = rel_data.get("source")
                     target = rel_data.get("target")
                     rel_type = rel_data.get("relationship")
-                    
+
                     if not source or not target or not rel_type:
                         continue
 
@@ -421,9 +424,7 @@ class IngestionSagaHandlers:
 
     async def publish_failed(self, job_id: str, stage: str, exception: Exception):
         """Utility to publish failure events."""
-        await bus.publish("IngestionFailed", IngestionFailed(
-            job_id=job_id,
-            stage=stage,
-            error_message=str(exception),
-            exc_info=traceback.format_exc()
-        ))
+        await bus.publish(
+            "IngestionFailed",
+            IngestionFailed(job_id=job_id, stage=stage, error_message=str(exception), exc_info=traceback.format_exc()),
+        )

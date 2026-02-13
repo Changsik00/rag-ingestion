@@ -91,7 +91,11 @@ class IngestOrchestrator:
         """Resume interrupted workflow with human feedback."""
         config = {"configurable": {"thread_id": thread_id}}
         # Spec 022: Manual update state before resume
-        await self.graph.aupdate_state(config, {"error": None, "messages": [AIMessage(content=f"Human Feedback: {user_input}")]}, as_node="human_review")
+        await self.graph.aupdate_state(
+            config,
+            {"error": None, "messages": [AIMessage(content=f"Human Feedback: {user_input}")]},
+            as_node="human_review",
+        )
         return await self.graph.ainvoke(None, config=config)
 
     async def reset_checkpoints(self) -> None:
