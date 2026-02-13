@@ -6,19 +6,27 @@ from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from app.application.services.ingestion import Ingestion
-from app.infrastructure.external_api.google_search_client import GoogleSearchClient
+from app.infrastructure.external_api.duckduckgo_search_client import DuckDuckGoSearchClient
 
 logger = logging.getLogger(__name__)
+
 
 
 class DiscoveryService:
     def __init__(
         self,
-        search_client: GoogleSearchClient,
+        search_client: DuckDuckGoSearchClient,
         ingestion_service: Ingestion,
     ):
         self.search_client = search_client
         self.ingestion_service = ingestion_service
+        
+        # [Filter Policy] Blocked Domains
+        # These domains are excluded because they are:
+        # 1. Hard to scrape (Video/Audio/SPA heavy)
+        # 2. Login-walled (Social Media)
+        # 3. Low information density for RAG (Short comments/memes)
+        # Verify content quality before removing domains from this list.
         self.blocked_domains = {
             "youtube.com",
             "youtu.be",

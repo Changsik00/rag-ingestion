@@ -39,7 +39,7 @@ from app.infrastructure.scrapers.composite_scraper import CompositeScraper
 
 if TYPE_CHECKING:
     from app.domain.services.discovery_service import DiscoveryService
-    from app.infrastructure.external_api.google_search_client import GoogleSearchClient
+    from app.infrastructure.external_api.duckduckgo_search_client import DuckDuckGoSearchClient
 
 # === Dependency Injection 컨테이너 ===
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
@@ -52,18 +52,12 @@ def get_scraper() -> ScraperInterface:
     return CompositeScraper()
 
 
-# Google Search Client 의존성 (Spec 078)
+# DuckDuckGo Search Client 의존성 (Spec 078: Replaced Google Search)
 @lru_cache
-def get_google_search_client() -> "GoogleSearchClient":
-    from app.infrastructure.external_api.google_search_client import GoogleSearchClient
+def get_duckduckgo_search_client() -> "DuckDuckGoSearchClient":
+    from app.infrastructure.external_api.duckduckgo_search_client import DuckDuckGoSearchClient
 
-    settings = get_settings()
-    if not settings.GOOGLE_API_KEY or not settings.GOOGLE_CSE_ID:
-        # Optional: Warn or raise based on strictness.
-        # For now, we assume it's configured if this dependency is requested.
-        pass
-
-    return GoogleSearchClient(api_key=settings.GOOGLE_API_KEY or "", cse_id=settings.GOOGLE_CSE_ID or "")
+    return DuckDuckGoSearchClient()
 
 
 # Neo4j Driver 의존성 (모든 Neo4j 저장소가 공유하는 단일 Driver)
@@ -168,7 +162,7 @@ def get_ingestion_service(
 
 # Discovery Service 의존성 (Spec 078)
 def get_discovery_service(
-    search_client: Annotated["GoogleSearchClient", Depends(get_google_search_client)],
+    search_client: Annotated["DuckDuckGoSearchClient", Depends(get_duckduckgo_search_client)],
     ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
 ) -> "DiscoveryService":
     from app.domain.services.discovery_service import DiscoveryService

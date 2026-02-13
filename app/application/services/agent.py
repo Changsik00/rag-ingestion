@@ -224,7 +224,7 @@ class ConversationalRAGAgent:
 
             options:
             - 'ingest': The user wants to read, learn, scrape, or ingest a SPECIFIC URL. (e.g. "Read this link", "Ingest https://...")
-            - 'discovery': The user wants to RESEARCH a topic, find new information, or crawl the web automatically WITHOUT a specific URL. (e.g. "Research Agentic RAG", "Find papers about LLMs", "조사해줘")
+            - 'discovery': The user wants to RESEARCH a topic, find new information, or crawl the web automatically WITHOUT a specific URL. (e.g. "Research Agentic RAG", "Find papers about LLMs", "조사해줘", "찾아줘")
             - 'search': The user is asking a specific question, discussing a topic, or asking for a summary of the context. (e.g. "What is RAG?", "이거 요약해줘")
             - 'clarify': The input is ambiguous or missing required arguments. (e.g. "Do it", "help me", "알려줘")
 
@@ -241,6 +241,9 @@ class ConversationalRAGAgent:
         else:
             intent = str(response).strip().lower()
 
+        logger.info(f"Router LLM Decision: {intent} (Input: {last_user_msg})")
+
+        # Fallback / Force logic
         if "ingest" in intent:
             intent = "ingest"
         elif "discovery" in intent:
@@ -249,6 +252,13 @@ class ConversationalRAGAgent:
             intent = "search"
         else:
             intent = "clarify"
+
+        # Explicit Keyword Override (Korean)
+        if "조사" in last_user_msg or "찾아줘" in last_user_msg or "research" in last_user_msg.lower():
+             # Only if not a URL ingest request
+            if "http" not in last_user_msg:
+                 logger.info(f"Router Keyword Override: Force 'discovery' for input '{last_user_msg}'")
+                 intent = "discovery"
 
         # Basic slot filling check (fallback if LLM misses it)
         missing_slots = []
