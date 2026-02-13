@@ -45,6 +45,20 @@
 - [x] **Archive Commit**: `docs(spec-077): archive walkthrough and pr description`
 - [x] Create PR: `gh pr create --title "docs(spec-077): phase 8 documentation and backlog cleanup" --body-file specs/077-phase8-documentation/pr_description.md`
 
+## Task 4: README Renewal (Spec 077 Merged)
+### 4-1. Guide Separation
+- [x] Create Guide: `docs/guides/getting_started.md`
+- [x] Move Content: Installation & Deployment instructions
+
+### 4-2. Vision & Architecture
+- [x] Content Rewriting: "Knowledge Factory" Vision
+- [x] Visualization: 3-Layer Architecture Diagram
+- [x] Terminology Fix: "Exploration" -> "Deep Structuring"
+
+### 4-3. Verification
+- [x] Verify: Markdown Formatting & Links
+- [x] Update PR Body: Include README changes
+
 ## Summary
 **총 Task**: 6개 (Archive 2 + Docs 3 + PR 1)
 **예상 커밋 수**: 6개

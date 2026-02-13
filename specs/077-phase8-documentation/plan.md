@@ -44,7 +44,12 @@
     - Trade-off Analysis Requirement
 
 #### [MODIFY] `README.md`
-- Project Status 업데이트 (Phase 8 Completed -> Next Phase)
+- **Vision Redefinition**: "Knowledge Factory" 컨셉 강조 (Raw Data -> Wisdom)
+- **Architecture Visualization**: 3-Layer Strategy (Atomic, Semantic, Knowledge) 다이어그램 추가
+- **Content Restructuring**: 설치 가이드 분리, "Exploration" 용어 정제 ("Deep Structuring")
+
+#### [NEW] `docs/guides/getting_started.md`
+- 기존 `README.md`의 설치, 배포, 실행 방법 섹션 이동
 
 ## 🧪 Verification Plan
 

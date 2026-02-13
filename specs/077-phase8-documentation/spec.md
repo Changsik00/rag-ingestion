@@ -14,6 +14,7 @@ Phase 8 (Architecture & Quality Foundation)의 모든 엔지니어링 작업이 
 - **Phase 8 Archive**: `backlog/queue.md`의 완료 항목을 `docs/archive/phase_8_architecture_foundation.md`로 이동하여 보존합니다.
 - **Constitution Update**: Prompt Quality Standard (20+ test cases, Versioning 등)를 헌법(Constitution) 레벨로 격상합니다.
 - **Agent Guide Update**: Research Spec의 진행 방식과 완료 기준을 `agent.md`에 명시합니다.
+- **README Renewal**: `README.md`를 "Knowledge Factory" 비전에 맞춰 전면 개편하고, 3-Layer Architecture를 시각화하며, 설치 가이드를 분리합니다.
 
 ## 📊 개념도 (Conceptual Architecture)
 ```mermaid
@@ -30,7 +31,8 @@ graph TD
 1. `backlog/queue.md`에서 Phase 8 섹션이 제거되고, `docs/archive/phase_8_architecture_foundation.md`에 모든 내용이 보존되어야 한다.
 2. `constitution.md`에 "Prompt Quality Standard" 섹션이 추가되어야 한다.
 3. `agent.md`에 "Research Spec" 카테고리와 프로세스가 추가되어야 한다.
-4. `README.md`의 현황이 최신화되어야 한다.
+4. `README.md`가 "Knowledge Factory" 비전과 "3-Layer Architecture"를 명확히 전달하도록 전면 개편되어야 한다.
+5. 설치 및 배포 가이드는 `docs/guides/getting_started.md`로 분리되어야 한다.
 
 ### Non-Functional Requirements
 1. 마크다운 링크(Relative Link)가 깨지지 않고 정상 동작해야 한다.
