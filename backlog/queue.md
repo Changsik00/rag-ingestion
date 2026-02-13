@@ -9,32 +9,31 @@
 
 > **목표**: 운영 자동화 및 고급 RAG 기법 적용. "Autonomous Knowledge Operations" 달성.
 
-### 📋 Phase 9 Candidates
 
-* **[Agentic] Autonomous Discovery (Research Crawler)**
+* [ ] **Spec 078: [Agentic] Autonomous Discovery (Research Crawler)**
   * **Goal**: 주제만 주어짐 -> 자율 탐색 -> 수집 -> 구조화
   * **Key Features**: Google Search Tool, HTML Parsing, Recursive Link Following
   * **Vision**: "사용자가 URL을 주지 않아도, 주제만 던지면 스스로 학습하는 에이전트"
 
-* **[Synthesis] Knowledge Synthesis (Report Generator)**
+* [ ] **Spec 079: [Synthesis] Knowledge Synthesis (Report Generator)**
   * **Goal**: 지식 그래프 서브그래프 추출 -> LLM 기반 리포트/챕터 작성
   * **Key Features**: Subgraph Extraction, Contextual Summarization, Markdown Report Generation
   * **Vision**: "단편적 질문-답변을 넘어, 완결된 지식 콘텐츠(Report)를 생산하는 공장"
 
-* **[Ops] Operational Excellence (Continuous Evaluation)**
+* [ ] **Spec 080: [Ops] Operational Excellence (Continuous Evaluation)**
   * **Goal**: 답변 품질 자동 평가 및 RAG 파이프라인 모니터링
   * **Key Features**: LLM Judge, Feedback Loop (Thumbs up/down), Performance Metrics
   * **Vision**: "품질을 스스로 측정하고 개선하는 자가 발전 시스템"
 
-* **[Integration] n8n Workflow Automation** (Promoted)
+* [ ] **Spec 081: [Integration] n8n Workflow Automation** (Promoted)
   * **Goal**: 외부 소스 감지 및 자동 수집 트리거
   * **Fit**: "Autonomous Discovery"의 수동적 탐색(Trigger) 보완
 
-* **[Ops] System Stability & Auto-Recovery** (Promoted)
+* [ ] **Spec 082: [Ops] System Stability & Auto-Recovery** (Promoted)
   * **Goal**: Ingestion Health Monitor & DB Auto-Reset
   * **Fit**: "Operational Excellence"의 필수 요소
 
-* **[Quality] Automated Scenario Test Suite** (Promoted)
+* [ ] **Spec 083: [Quality] Automated Scenario Test Suite** (Promoted)
   * **Goal**: API 기반 시나리오 검증 & LLM Judge 채점
   * **Fit**: 품질 보증의 자동화
 
