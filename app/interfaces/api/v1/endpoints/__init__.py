@@ -9,6 +9,7 @@ from app.interfaces.api.v1.endpoints import (
     rag,
     storage,
     system,
+    discovery,
 )
 
 router = APIRouter()
@@ -22,3 +23,4 @@ router.include_router(storage.router, prefix="/storage")
 router.include_router(graph.router, prefix="/graph")
 router.include_router(integrity.router, prefix="/integrity")
 router.include_router(system.router)  # /health, /documents
+router.include_router(discovery.router)  # /discovery
