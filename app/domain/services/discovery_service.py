@@ -40,14 +40,14 @@ class DiscoveryService:
         }
         self.blocked_extensions = {".pdf", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".mp4", ".mp3", ".zip", ".exe"}
 
-    async def search_topic(self, topic: str, max_results: int = 5) -> list[dict]:
+    async def search_topic(self, topic: str, max_results: int = 5, time_limit: str = "y") -> list[dict]:
         """
         Search for a topic and return results without ingesting.
         Returns: List of dicts with title, link, snippet.
         """
-        logger.info(f"Searching topic: '{topic}' (Max: {max_results})")
+        logger.info(f"Searching topic: '{topic}' (Max: {max_results}, Time: {time_limit})")
         try:
-            results = await self.search_client.search(topic, num_results=max_results)
+            results = await self.search_client.search(topic, num_results=max_results, time_limit=time_limit)
             return [
                 {"title": r.title, "link": r.link, "snippet": r.snippet}
                 for r in results

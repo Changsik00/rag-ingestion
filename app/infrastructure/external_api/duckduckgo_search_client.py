@@ -10,14 +10,15 @@ class DuckDuckGoSearchClient:
     def __init__(self):
         self.ddgs = DDGS()
 
-    async def search(self, query: str, num_results: int = 5) -> list[SearchResult]:
+    async def search(self, query: str, num_results: int = 5, time_limit: str = None) -> list[SearchResult]:
         """
         Search DuckDuckGo for a given query.
+        time_limit: 'd' (day), 'w' (week), 'm' (month), 'y' (year)
         """
         try:
             # DDGS().text() is synchronous, but fast enough for this use case.
             # If blocking becomes an issue, we can wrap it in run_in_executor.
-            results = self.ddgs.text(query, max_results=num_results)
+            results = self.ddgs.text(query, max_results=num_results, timelimit=time_limit)
             
             search_results = []
             if results:
