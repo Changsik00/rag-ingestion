@@ -1,17 +1,17 @@
 from collections.abc import AsyncIterator
 from functools import lru_cache
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from neo4j import Driver, GraphDatabase
 
 from app.application.interfaces.scraper import ScraperInterface
+from app.application.saga.ingestion_handlers import IngestionSagaHandlers
 from app.application.services.agent import ConversationalRAGAgent
 from app.application.services.feedback import Feedback
 from app.application.services.ingestion import Ingestion
 from app.application.services.integrity import Integrity
-from app.application.saga.ingestion_handlers import IngestionSagaHandlers
 from app.application.services.orchestration.chat import ChatOrchestrator
 from app.application.services.orchestration.ingest import IngestOrchestrator
 from app.application.services.rag import RAG
@@ -37,6 +37,10 @@ from app.infrastructure.repositories.neo4j_graph_repository import Neo4jGraphRep
 from app.infrastructure.repositories.neo4j_job_repository import Neo4jJobRepository
 from app.infrastructure.scrapers.composite_scraper import CompositeScraper
 
+if TYPE_CHECKING:
+    from app.domain.services.discovery_service import DiscoveryService
+    from app.infrastructure.external_api.duckduckgo_search_client import DuckDuckGoSearchClient
+
 # === Dependency Injection 컨테이너 ===
 # FastAPI의 Depends를 사용하여 각 레이어의 구현체를 주입합니다.
 # 모든 의존성은 함수로 정의되어 테스트 시 Mock으로 대체 가능합니다.
@@ -46,6 +50,14 @@ from app.infrastructure.scrapers.composite_scraper import CompositeScraper
 @lru_cache
 def get_scraper() -> ScraperInterface:
     return CompositeScraper()
+
+
+# DuckDuckGo Search Client 의존성 (Spec 078: Replaced Google Search)
+@lru_cache
+def get_duckduckgo_search_client() -> "DuckDuckGoSearchClient":
+    from app.infrastructure.external_api.duckduckgo_search_client import DuckDuckGoSearchClient
+
+    return DuckDuckGoSearchClient()
 
 
 # Neo4j Driver 의존성 (모든 Neo4j 저장소가 공유하는 단일 Driver)
@@ -135,7 +147,7 @@ def get_ingestion_service(
         graph_repository=graph,
         scraper=scraper,
         extractor=extractor,
-        chunker=chunker
+        chunker=chunker,
     )
 
     return Ingestion(
@@ -144,8 +156,18 @@ def get_ingestion_service(
         graph=graph,
         job_repository=job_repository,
         extractor=extractor,
-        chunker=chunker
+        chunker=chunker,
     )
+
+
+# Discovery Service 의존성 (Spec 078)
+def get_discovery_service(
+    search_client: Annotated["DuckDuckGoSearchClient", Depends(get_duckduckgo_search_client)],
+    ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
+) -> "DiscoveryService":
+    from app.domain.services.discovery_service import DiscoveryService
+
+    return DiscoveryService(search_client=search_client, ingestion_service=ingestion_service)
 
 
 # Spec 024: IngestOrchestrator 직접 접근 (HITL Control용)
@@ -273,8 +295,13 @@ async def get_rag_service(
 async def get_conversational_rag_agent(
     rag_service: Annotated[RAG, Depends(get_rag_service)],
     ingestion_service: Annotated[Ingestion, Depends(get_ingestion_service)],
+    discovery_service: Annotated["DiscoveryService", Depends(get_discovery_service)],
 ) -> ConversationalRAGAgent:
-    return ConversationalRAGAgent(rag_service=rag_service, ingestion_service=ingestion_service)
+    return ConversationalRAGAgent(
+        rag_service=rag_service,
+        ingestion_service=ingestion_service,
+        discovery_service=discovery_service
+    )
 
 
 # Feedback Service 의존성

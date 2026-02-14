@@ -14,6 +14,7 @@ from app.domain.entities.job import JobStatus
 
 if TYPE_CHECKING:
     from app.application.services.ingestion import Ingestion
+    from app.domain.services.discovery_service import DiscoveryService
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,9 @@ class AgentState(TypedDict):
     draft_content: Annotated[str | None, lambda x, y: y]
     is_clarification: Annotated[bool, lambda x, y: y]
     missing_slots: Annotated[list[str], lambda x, y: y]
+    # Spec 078-B: Interactive Discovery
+    discovered_urls: Annotated[list[dict] | None, lambda x, y: y]  # Search results for review
+    original_discovery_topic: Annotated[str | None, lambda x, y: y]
 
 
 class ConversationalRAGAgent:
@@ -41,9 +45,15 @@ class ConversationalRAGAgent:
     수집(Ingest)과 검색(Search) 의도를 구분하여 처리합니다.
     """
 
-    def __init__(self, rag_service: "RAG", ingestion_service: "Ingestion"):
+    def __init__(
+        self,
+        rag_service: "RAG",
+        ingestion_service: "Ingestion",
+        discovery_service: "DiscoveryService"
+    ):
         self.rag_service = rag_service
         self.ingestion_service = ingestion_service
+        self.discovery_service = discovery_service
         self.llm = ChatGoogleGenerativeAI(
             model=get_settings().GEMINI_MODEL_NAME, temperature=0, google_api_key=get_settings().GEMINI_API_KEY
         )
@@ -79,6 +89,7 @@ class ConversationalRAGAgent:
         workflow.add_node("router", self.router_node)
         workflow.add_node("ingest", self.ingest_node)
         workflow.add_node("search", self.search_node)
+        workflow.add_node("discovery", self.discovery_node)  # Spec 078
         workflow.add_node("human_review", self.human_review_node)
         workflow.add_node("clarify", self.clarify_node)  # Spec 045
 
@@ -90,11 +101,19 @@ class ConversationalRAGAgent:
             {
                 "ingest": "ingest",
                 "search": "search",
+                "discovery": "discovery",  # Spec 078
+                "ingest_selection": "ingest_selection",  # Spec 078-B
                 "clarify": "clarify",  # Spec 045
             },
         )
+        
+        workflow.add_node("ingest_selection", self.ingest_selection_node)
 
         workflow.add_edge("ingest", "search")  # 수집 완료 후 요약을 위해 검색 노드로 이동
+        # Discovery now pauses for user input (Review)
+        workflow.add_edge("discovery", END)
+        # Selection -> Ingest -> Search
+        workflow.add_edge("ingest_selection", "search")
 
         # Conditional Edge after Search: Check HITL
         def route_after_search(state: AgentState):
@@ -136,7 +155,7 @@ class ConversationalRAGAgent:
 
         return workflow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
-    def route_logic(self, state: AgentState) -> Literal["ingest", "search", "clarify"]:
+    def route_logic(self, state: AgentState) -> Literal["ingest", "search", "discovery", "ingest_selection", "clarify"]:
         return state["intent"]
 
     def human_review_node(self, state: AgentState) -> dict:
@@ -158,8 +177,8 @@ class ConversationalRAGAgent:
             User Input: {input}
 
             Guidelines:
-            1. If 'url' is missing, ask the user to provide the URL to ingest or summarize.
-            2. If 'topic' is missing, ask the user what topic they want to search for.
+            1. If 'url' is missing for ingestion, ask the user to provide the URL.
+            2. If 'topic' is missing for discovery/search, ask the user what topic they want to research.
             3. If specific slots are not clear, politely ask for clarification.
             4. **IMPORTANT**: Respond in the SAME LANGUAGE as the User Input.
 
@@ -177,9 +196,22 @@ class ConversationalRAGAgent:
 
         return {"messages": [response], "is_clarification": True, "tool_output": "Clarification Requested"}
 
+        return {"intent": intent, "missing_slots": missing_slots}
+
     async def router_node(self, state: AgentState) -> dict:
         messages = state["messages"]
         last_user_msg = messages[-1].content if messages else ""
+
+        # Spec 078-B: Check for Discovery URL Selection context
+        discovered_urls = state.get("discovered_urls")
+        if discovered_urls:
+            # Check if user input is a selection (numbers, 'all', '전부')
+            if self._is_selection(last_user_msg):
+                return {"intent": "ingest_selection"}
+            
+            # If user changes topic or asks something else, we clear context?
+            # For now, let standard routing handle it, but maybe clear discovered_urls if intent changes?
+            # We'll rely on next node to decide.
 
         # 의도 분류 프롬프트 (Spec 045: Clarify 추가)
         prompt = ChatPromptTemplate.from_template(
@@ -190,14 +222,15 @@ class ConversationalRAGAgent:
             - If intent is 'ingest', a URL is REQUIRED. If URL is missing, return 'clarify'.
             - If intent is 'search', a specific topic/question is REQUIRED. However, if the user asks to "summarize this" or "explain this" (referring to context/history), classify as 'search'.
 
-            Options:
-            - 'ingest': The user wants to read, learn, scrape, or ingest a URL. (e.g. "Read this link", "Ingest https://...")
+            options:
+            - 'ingest': The user wants to read, learn, scrape, or ingest a SPECIFIC URL. (e.g. "Read this link", "Ingest https://...")
+            - 'discovery': The user wants to RESEARCH a topic, find new information, or crawl the web automatically WITHOUT a specific URL. (e.g. "Research Agentic RAG", "Find papers about LLMs", "조사해줘", "찾아줘")
             - 'search': The user is asking a specific question, discussing a topic, or asking for a summary of the context. (e.g. "What is RAG?", "이거 요약해줘")
             - 'clarify': The input is ambiguous or missing required arguments. (e.g. "Do it", "help me", "알려줘")
 
             Input: {input}
 
-            Return ONLY 'ingest', 'search', or 'clarify'.
+            Return ONLY 'ingest', 'discovery', 'search', or 'clarify'.
             """
         )
         prompt_val = prompt.invoke({"input": last_user_msg})
@@ -208,12 +241,24 @@ class ConversationalRAGAgent:
         else:
             intent = str(response).strip().lower()
 
+        logger.info(f"Router LLM Decision: {intent} (Input: {last_user_msg})")
+
+        # Fallback / Force logic
         if "ingest" in intent:
             intent = "ingest"
+        elif "discovery" in intent:
+            intent = "discovery"
         elif "search" in intent:
             intent = "search"
         else:
             intent = "clarify"
+
+        # Explicit Keyword Override (Korean)
+        if "조사" in last_user_msg or "찾아줘" in last_user_msg or "research" in last_user_msg.lower():
+             # Only if not a URL ingest request
+            if "http" not in last_user_msg:
+                 logger.info(f"Router Keyword Override: Force 'discovery' for input '{last_user_msg}'")
+                 intent = "discovery"
 
         # Basic slot filling check (fallback if LLM misses it)
         missing_slots = []
@@ -222,8 +267,28 @@ class ConversationalRAGAgent:
             if not re.search(url_pattern, last_user_msg):
                 intent = "clarify"
                 missing_slots.append("url")
+        elif intent == "discovery":
+            if len(last_user_msg.strip()) < 2:
+                intent = "clarify"
+                missing_slots.append("topic")
+            # Clear previous discovery context if new discovery started
+            return {"intent": intent, "missing_slots": missing_slots, "discovered_urls": None}
 
         return {"intent": intent, "missing_slots": missing_slots}
+
+    def _is_selection(self, text: str) -> bool:
+        """Check if text is likely a selection (e.g. '1', '1, 3', 'all', '전부', '네')"""
+        clean = text.strip().lower()
+        # "all", "전부", "다"
+        if clean in ["all", "전부", "다", "모두"]:
+            return True
+        # "yes", "네", "응" (Treat as all or top 1? Maybe just return True and let handler decide)
+        if clean in ["yes", "y", "네", "응", "어"]:
+            return True
+        # Number patterns: "1", "1, 2", "1번 3번", "1 2"
+        if re.search(r"\d", clean):
+            return True
+        return False
 
     def ingest_node(self, state: AgentState) -> dict:
         messages = state["messages"]
@@ -259,6 +324,110 @@ class ConversationalRAGAgent:
             msg = f"❌ 오류 발생: {str(e)}"
 
         return {"messages": [AIMessage(content=msg)], "tool_output": msg}
+
+    async def discovery_node(self, state: AgentState) -> dict:
+        """Autonomous Discovery Node (Spec 078-B: Interactive)"""
+        messages = state["messages"]
+        last_user_msg = messages[-1].content
+
+        topic = last_user_msg
+        # Clean topic if it was an explicit command like "Research X"
+        # For now, just use the whole message.
+
+        try:
+            # Step 1: Search only (No Ingestion)
+            # Spec 078-B: Fetch 5 results for user review
+            search_results = await self.discovery_service.search_topic(topic, max_results=5)
+
+            if search_results:
+                # Format results for user
+                msg_lines = [f"🔍 '{topic}'에 대해 다음 {len(search_results)}개의 문서를 발견했습니다. 수집할 항목을 선택해주세요.\n"]
+                for idx, res in enumerate(search_results, 1):
+                    msg_lines.append(f"{idx}. [{res['title']}]({res['link']})")
+                
+                msg_lines.append("\n예: '1번, 3번', '전부', '1 2'")
+                msg = "\n".join(msg_lines)
+                
+                return {
+                    "messages": [AIMessage(content=msg)],
+                    "tool_output": msg,
+                    "discovered_urls": search_results,
+                    "original_discovery_topic": topic
+                }
+            else:
+                msg = f"⚠️ '{topic}'에 대한 유의미한 정보를 찾지 못했습니다."
+                return {"messages": [AIMessage(content=msg)], "tool_output": msg}
+
+        except Exception as e:
+            msg = f"❌ 탐색 중 오류 발생: {str(e)}"
+            return {"messages": [AIMessage(content=msg)], "tool_output": msg}
+
+    async def ingest_selection_node(self, state: AgentState) -> dict:
+        """Process user selection and trigger ingestion (Spec 078-B)"""
+        messages = state["messages"]
+        last_user_msg = messages[-1].content
+        discovered_urls = state.get("discovered_urls", [])
+
+        if not discovered_urls:
+            return {
+                "messages": [AIMessage(content="선택할 수 있는 검색 결과가 없습니다. 다시 검색해주세요.")],
+                "tool_output": "No discovered URLs context"
+            }
+
+        selected_urls = []
+        clean_msg = last_user_msg.strip().lower()
+
+        # Parse Selection
+        if any(w in clean_msg for w in ["all", "전부", "다", "모두"]):
+            selected_urls = [res["link"] for res in discovered_urls]
+        else:
+            # Extract numbers
+            indices = [int(n) for n in re.findall(r"\d+", clean_msg)]
+            # Validate indices (1-based to 0-based)
+            valid_indices = [i-1 for i in indices if 1 <= i <= len(discovered_urls)]
+            selected_urls = [discovered_urls[i]["link"] for i in valid_indices]
+
+        if not selected_urls:
+            return {
+                "messages": [AIMessage(content="올바른 번호를 선택해주세요.")],
+                "tool_output": "Invalid selection"
+            }
+
+        # Trigger Ingestion for selected URLs
+        try:
+            job_ids = []
+            msg = f"✅ {len(selected_urls)}개의 문서 수집을 시작합니다...\n"
+            
+            # Using create_job/process_job for each URL. 
+            # Note: For multiple URLs, this might be slow if synchronous.
+            # Ideally, we should fire them asynchronously or use a batch API.
+            # But IngestionService seems to handle one by one. 
+            # Let's do it sequentially for safety or use gather if possible.
+            # Here we just iterate.
+            
+            for url in selected_urls:
+                job = self.ingestion_service.create_job(url)
+                # We can fire and forget process_job if we want async, 
+                # but if we want to search immediately, we might need to wait or rely on background.
+                # The prompt implies we wait or at least start it.
+                # self.ingestion_service.process_job(job.job_id) -> This is sync/blocking?
+                # In previous code "ingest_node" it was blocking.
+                self.ingestion_service.process_job(job.job_id)
+                job_ids.append(job.job_id)
+
+            msg += f"작업 ID: {', '.join(job_ids)}\n\n내용을 요약합니다..."
+            
+            # Clear discovery context after selection
+            return {
+                "messages": [AIMessage(content=msg)],
+                "tool_output": msg,
+                "discovered_urls": None,  # Context Cleared
+                "original_discovery_topic": None
+            }
+
+        except Exception as e:
+            msg = f"❌ 수집 중 오류 발생: {str(e)}"
+            return {"messages": [AIMessage(content=msg)], "tool_output": msg}
 
     async def search_node(self, state: AgentState, config: RunnableConfig) -> dict:
         messages = state["messages"]

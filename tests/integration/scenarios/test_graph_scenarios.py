@@ -25,7 +25,6 @@ def client(api_client):
     return api_client
 
 
-
 @pytest.fixture(autouse=True)
 def clean_database(client):
     """Reset the database before each test for isolation."""

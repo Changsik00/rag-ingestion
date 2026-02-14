@@ -26,6 +26,7 @@ async def test_langgraph_adapter_integration():
 
     # 2. Init Adapter
     from app.infrastructure.ai.ingest.graph_builder import IngestionGraphBuilder
+
     builder = IngestionGraphBuilder(llm=mock_inner_llm)
     adapter = IngestOrchestrator(graph_builder=builder)
 

@@ -6,11 +6,13 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class EventBus:
     """
     Internal Asynchronous Event Bus for decoupling system components.
     Implemented as a singleton to ensure a single event flow within the process.
     """
+
     _instance = None
 
     def __new__(cls):
@@ -56,6 +58,7 @@ class EventBus:
                 if isinstance(res, Exception):
                     handler_name = handlers[i].__name__ if i < len(handlers) else "unknown"
                     logger.error(f"Error in handler '{handler_name}' for {event_type}: {res}", exc_info=res)
+
 
 # Global singleton instance
 bus = EventBus()

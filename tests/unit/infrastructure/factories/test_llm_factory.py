@@ -8,7 +8,6 @@ from app.infrastructure.factories.llm_factory import LLMFactory
 
 
 class TestLLMFactory:
-
     @patch("app.infrastructure.factories.llm_factory.get_settings")
     def test_get_google_llm_with_gemini_key(self, mock_get_settings):
         """Should succeed when GEMINI_API_KEY is present"""

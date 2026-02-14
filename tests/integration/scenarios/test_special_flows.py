@@ -13,7 +13,6 @@ def client(api_client):
     return api_client
 
 
-
 @pytest.mark.integration
 @pytest.mark.asyncio
 class TestSpecialFlows:

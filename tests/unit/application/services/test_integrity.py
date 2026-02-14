@@ -76,6 +76,7 @@ def test_propagate_document_metadata_updates_chunks(service, mock_primary_repo):
     # Given
     doc_id = str(uuid4())
     from app.domain.value_objects.document_metadata import DocumentMetadata
+
     mock_meta = MagicMock(spec=DocumentMetadata)
     mock_meta.title = "New Title"
     mock_meta.source_id = "http://test.com"
